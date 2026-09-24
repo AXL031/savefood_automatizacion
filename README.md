@@ -1476,18 +1476,19 @@ La [sección 16](#16-división-del-equipo) detalla las responsabilidades.
 
 # 19. Flujo de trabajo con Git
 
-Ramas propuestas:
+Cada integrante trabaja en una rama permanente con su apellido en minúsculas: `cueva`, `sanchez`, `bohorquez`, `vera`, `aguirre` y `rojas`. `main` conserva la versión estable. La descripción completa y los comandos están en [flujo-git.md](docs/equipo/flujo-git.md).
 
-```text
-main
-desarrollo
-funcionalidad/*
-correccion/*
-refactorizacion/*
-docs/*
+Para crear una rama desde la versión actual de `main` y publicarla:
+
+```bash
+git fetch origin
+git switch main
+git pull --ff-only origin main
+git switch -c cueva
+git push -u origin cueva
 ```
 
-Cada persona trabaja en una rama de su módulo, abre una solicitud de incorporación y solicita revisión antes de unirla a `desarrollo`. Después de las pruebas de integración, los cambios pasan a `main`.
+Repite el último par de comandos con el apellido correspondiente. Cada integrante sube sus cambios a su rama, solicita revisión y la integra a `main` cuando las pruebas y la revisión estén completas.
 
 Convención de mensajes de cambios:
 
