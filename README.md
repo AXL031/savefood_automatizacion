@@ -1,22 +1,34 @@
 # FoodSave
 
-FoodSave es una plataforma SaaS para planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. Este README es la **referencia técnica principal y autosuficiente**: reúne todo el contenido técnico del proyecto, el estado del repositorio y las rutas a las especificaciones de producto. Las carpetas de código están preparadas para el desarrollo; aún no constituyen una aplicación ejecutable.
+FoodSave permite planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. **El MVP acordado es una instalación local por comercio y una sucursal por instalación.** La [decisión de arquitectura del MVP](docs/arquitectura/decisiones/ADR-005-instalacion-local-mvp.md) prevalece sobre las referencias anteriores a SaaS, varias sucursales o filtrado por `negocio_id` en este documento. La comercialización mediante suscripción es una etapa futura.
+
+El núcleo inicial ya incluye una interfaz mínima, API, PostgreSQL, Redis, trabajador y migración de negocio y usuario. Los demás módulos siguen en desarrollo; el [diccionario de datos](docs/base_de_datos/diccionario-de-datos.md) es la propuesta a revisar con sus responsables antes de crear sus tablas.
+
+## Arranque local de desarrollo
+
+1. Instala Docker con Compose y copia `.env.example` a `.env`. Cambia `POSTGRES_PASSWORD` por una clave alfanumérica larga y `JWT_SECRET` por una cadena aleatoria larga; no subas `.env` a Git.
+2. Ejecuta `docker compose up --build -d` desde la raíz del repositorio.
+3. Ejecuta `docker compose exec api alembic upgrade head` para crear el núcleo de datos.
+4. Ejecuta `docker compose exec -it api python -m app.core.crear_admin` y escribe el correo y contraseña del administrador.
+5. Abre `http://localhost:3000` para iniciar sesión. La API responde en `http://localhost:8000/salud` y su documentación en `http://localhost:8000/docs`.
+
+Cada PC tiene su propio volumen de PostgreSQL. `docker compose down` detiene los servicios y conserva los datos; evita `down -v` salvo que quieras borrar intencionalmente la base de desarrollo. Para probar el trabajador: `docker compose exec api python -c "from app.workers.celery_app import tarea_prueba; print(tarea_prueba.delay('ok').get(timeout=15))"`.
 
 ## Guía rápida
 
-- [Especificación integral de diseño](documentacion/diseno/especificacion-visual.md): reglas visuales, pantallas, componentes, estados y accesibilidad.
-- [Especificación funcional de módulos](documentacion/funcionalidades/especificacion-modulos.md): qué muestra y permite hacer cada sección.
-- [Cronograma semanal](documentacion/equipo/cronograma.md): hitos de las semanas 1 a 16 y estado de cada entrega.
-- [Responsabilidades del equipo](documentacion/equipo/responsabilidades.md): cada persona desarrolla interfaz, servidor y API de los módulos asignados.
-- [Arquitectura y diagramas](documentacion/arquitectura/diagramas/README.md), incluido el [diagrama entidad-relación](documentacion/base_de_datos/diagrama-entidad-relacion.md).
-- [Contratos de API](documentacion/api/contratos.md) y [rutas propuestas](documentacion/api/rutas-api.md).
-- [Índice de documentación](documentacion/README.md) y [referencias visuales conservadas](documentacion/diseno/mockups/README.md).
+- [Especificación integral de diseño](docs/diseno/especificacion-visual.md): reglas visuales, pantallas, componentes, estados y accesibilidad.
+- [Especificación funcional de módulos](docs/funcionalidades/especificacion-modulos.md): qué muestra y permite hacer cada sección.
+- [Cronograma semanal](docs/equipo/cronograma.md): hitos de las semanas 1 a 16 y estado de cada entrega.
+- [Responsabilidades del equipo](docs/equipo/responsabilidades.md): cada persona desarrolla interfaz, servidor y API de los módulos asignados.
+- [Arquitectura y diagramas](docs/arquitectura/diagramas/README.md), incluido el [diagrama entidad-relación](docs/base_de_datos/diagrama-entidad-relacion.md).
+- [Contratos de API](docs/api/contratos.md) y [rutas propuestas](docs/api/rutas-api.md).
+- [Índice de documentación](docs/README.md) y [referencias visuales conservadas](docs/diseno/mockups/README.md).
 
 ## Organización del repositorio
 
 | Carpeta | Propósito |
 |---|---|
-| [`documentacion/`](documentacion/README.md) | Arquitectura, diseño, funcionalidades, API, datos, automatización y equipo |
+| [`docs/`](docs/README.md) | Arquitectura, diseño, funcionalidades, API, datos, automatización y equipo |
 | [`frontend/`](frontend/README.md) | Interfaz Next.js y funciones por dominio |
 | [`backend/`](backend/README.md) | API FastAPI, módulos, trabajos asíncronos y pruebas |
 | [`scripts/`](scripts/README.md) | Herramientas de apoyo del equipo |
@@ -26,7 +38,7 @@ La distribución del trabajo es por **módulo completo**: su responsable impleme
 
 ## Estado del proyecto
 
-El repositorio contiene estructura y documentación de referencia. Los manifiestos de dependencias, archivos de Docker, migraciones, flujos de integración continua y código de aplicación se incorporarán conforme avance la implementación. La semana 5 corresponde a la presentación prevista del avance del repositorio; el cronograma separa entregas realizadas, un hito por confirmar y trabajo propuesto.
+El núcleo de desarrollo tiene manifiestos, contenedores, migración inicial y acceso básico. El resto de módulos y la integración del modelo aún están pendientes. El cronograma histórico separa hitos comunicados por el equipo de objetivos propuestos; no representa por sí solo el estado actual del código.
 
 `README.md`, `src/app`, `public` y `.github/workflows` conservan sus nombres porque las herramientas los requieren. Los nombres propios de tecnologías y la sintaxis de formatos técnicos también se mantienen.
 
@@ -48,7 +60,7 @@ Equipo:
 
 ## 2. Definición del proyecto
 
-**FoodSave es una plataforma SaaS de automatización preventiva para negocios que producen y comercializan alimentos perecibles.**
+**FoodSave es una plataforma de automatización preventiva para negocios que producen y comercializan alimentos perecibles.** En el MVP, cada comercio usa una instalación local independiente.
 
 Analiza ventas, producción, inventario, recetas, insumos, proveedores, excedentes y desperdicio para:
 - predecir demanda;
@@ -366,7 +378,6 @@ Entidad:
 
 Campos:
 - id
-- negocio_id
 - nombre
 - categoria
 - precio_venta
@@ -416,7 +427,6 @@ Entidad:
 
 Campos:
 - id
-- negocio_id
 - producto_id
 - cantidad
 - precio_unitario
@@ -562,7 +572,6 @@ Entidades:
 
 plan de producción:
 - id
-- negocio_id
 - fecha_plan
 - estado
 - creado_en
@@ -594,7 +603,6 @@ Entidades:
 
 proveedor:
 - id
-- negocio_id
 - nombre
 - correo
 - telefono
@@ -724,7 +732,6 @@ ENTONCES porcentaje_descuento = 10%
 
 Campos:
 - id
-- negocio_id
 - tipo
 - nombre
 - habilitado
@@ -1181,7 +1188,7 @@ foodsave/
 ├── README.md
 ├── .gitignore
 ├── .env.example
-├── documentacion/
+├── docs/
 │   ├── arquitectura/
 │   │   ├── vision_general.md
 │   │   ├── decisiones/
@@ -1477,7 +1484,7 @@ desarrollo
 funcionalidad/*
 correccion/*
 refactorizacion/*
-documentacion/*
+docs/*
 ```
 
 Cada persona trabaja en una rama de su módulo, abre una solicitud de incorporación y solicita revisión antes de unirla a `desarrollo`. Después de las pruebas de integración, los cambios pasan a `main`.
@@ -1563,12 +1570,7 @@ Servidor:
 - CORS;
 - limitación de solicitudes en una fase futura.
 
-Toda consulta debe respetar:
-```text
-negocio_id
-```
-
-Un negocio no debe poder acceder a información de otro.
+La API se expone solo en la computadora local durante el desarrollo. El acceso a operaciones requiere autenticación y los datos de otro comercio permanecen en otra instalación y base de datos.
 
 # 26. Variables de entorno
 

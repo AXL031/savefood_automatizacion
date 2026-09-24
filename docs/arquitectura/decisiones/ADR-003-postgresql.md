@@ -8,4 +8,4 @@ Usar PostgreSQL para los datos operativos y de automatización. Los cambios de e
 
 ## Consecuencias
 
-Las entidades del [diagrama entidad-relación](../../base_de_datos/diagrama-entidad-relacion.md) deben traducirse a tablas y restricciones concretas durante la implementación. Toda consulta de datos de un negocio debe respetar `negocio_id`.
+Las entidades del [diagrama entidad-relación](../../base_de_datos/diagrama-entidad-relacion.md) deben traducirse a tablas y restricciones concretas durante la implementación. Para el MVP, [ADR-005](ADR-005-instalacion-local-mvp.md) sustituye la separación por `negocio_id`: cada comercio tiene su propia instalación y base de datos.

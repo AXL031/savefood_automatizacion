@@ -1,14 +1,9 @@
 # Diagrama entidad-relación
 
-Este diagrama muestra las relaciones conceptuales entre entidades. Los nombres corresponden a conceptos de negocio; las tablas y columnas definitivas se definirán mediante migraciones.
+Este diagrama muestra relaciones conceptuales del MVP. Cada instalación tiene un único `NEGOCIO` como configuración local y una sola sucursal; por eso las tablas operativas no llevan `negocio_id`. Solo `NEGOCIO` y `USUARIO` existen en la migración inicial; las demás tablas se crearán tras revisar el [diccionario](diccionario-de-datos.md) con sus responsables.
 
 ```mermaid
 erDiagram
-    NEGOCIO ||--o{ USUARIO : tiene
-    NEGOCIO ||--o{ PRODUCTO : posee
-    NEGOCIO ||--o{ INGREDIENTE : posee
-    NEGOCIO ||--o{ PROVEEDOR : trabaja_con
-
     PRODUCTO ||--|| RECETA : tiene
     RECETA ||--o{ RECETA_INGREDIENTE : contiene
     INGREDIENTE ||--o{ RECETA_INGREDIENTE : se_usa_en
@@ -19,6 +14,7 @@ erDiagram
 
     INGREDIENTE ||--|| INVENTARIO : tiene
     INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : tiene
+    PRODUCTO ||--|| EXISTENCIA_PRODUCTO : tiene
 
     PLAN_PRODUCCION ||--o{ ELEMENTO_PLAN_PRODUCCION : contiene
     PRODUCTO ||--o{ ELEMENTO_PLAN_PRODUCCION : se_planifica
@@ -31,6 +27,7 @@ erDiagram
 
     PROVEEDOR ||--o{ PEDIDO_COMPRA : recibe
     PEDIDO_COMPRA ||--o{ ELEMENTO_PEDIDO_COMPRA : contiene
+    PEDIDO_COMPRA ||--o{ ENVIO_PEDIDO : registra
     INGREDIENTE ||--o{ ELEMENTO_PEDIDO_COMPRA : se_solicita
 
     PRODUCTO ||--o{ DETECCION_EXCEDENTE : se_detecta

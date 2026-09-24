@@ -1,5 +1,5 @@
 # Interfaz
 
-Aquí irá la aplicación web Next.js con TypeScript, Tailwind CSS y los componentes visuales. Cada responsable implementará las pantallas de su módulo en `src/app/` y la lógica de interfaz en `src/features/`; las piezas comunes van en `src/components/` y el acceso HTTP en `src/services/`.
+La aplicación Next.js inicial tiene una pantalla de acceso para comprobar la conexión con la API y consultar el negocio local. Cada responsable implementará las pantallas de su módulo en `src/app/` y la lógica de interfaz en `src/features/`; las piezas comunes van en `src/components/` y el acceso HTTP en `src/services/`.
 
-El [README principal](../README.md) propone `package.json`, `next.config.ts`, `tsconfig.json`, `tailwind.config.ts`, `Dockerfile`, `src/app/layout.tsx` y `src/app/page.tsx`. Esos archivos se crearán junto con una aplicación mínima ejecutable en la fase de implementación para que sus versiones y comandos sean coherentes. Next.js exige los nombres `layout.tsx` y `page.tsx`.
+El [README principal](../README.md) explica el arranque con Compose. La hoja de estilos inicial es deliberadamente mínima; Edu coordina la base visual compartida antes de ampliar las pantallas.

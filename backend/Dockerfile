@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+
+WORKDIR /code
+COPY . .
+RUN pip install --no-cache-dir .
+CMD ["uvicorn", "app.principal:app", "--host", "0.0.0.0", "--port", "8000"]

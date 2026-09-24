@@ -1,5 +1,7 @@
 # Responsabilidades del equipo
 
+**Alcance del MVP:** cada comercio usa una instalación y base local independientes, con una sola sucursal. La configuración del comercio pertenece a Axel; no hay permisos entre comercios dentro de una misma instalación. Véase [ADR-005](../arquitectura/decisiones/ADR-005-instalacion-local-mvp.md).
+
 Los módulos funcionales se reparten entre las seis personas. Una persona puede encargarse de varios módulos relacionados; **cada módulo tiene un único responsable de interfaz, servidor, API, pruebas e integración**. Los componentes compartidos tienen una persona coordinadora, pero los cambios de cada dominio siguen siendo responsabilidad de su dueño.
 
 | Responsable | Módulos asignados | Alcance integrado |

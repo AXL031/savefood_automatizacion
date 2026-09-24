@@ -1,6 +1,6 @@
 # Arquitectura general
 
-FoodSave seguirá la propuesta del [README principal](../../README.md): **monolito modular** con una aplicación web Next.js, una API FastAPI, PostgreSQL para persistencia y Celery con Redis para trabajos asíncronos. Celery Beat programará las automatizaciones periódicas.
+FoodSave seguirá la propuesta del [README principal](../../README.md): **monolito modular** con una aplicación web Next.js, una API FastAPI, PostgreSQL para persistencia y Celery con Redis para trabajos asíncronos. El [MVP local](decisiones/ADR-005-instalacion-local-mvp.md) usa una instalación y base por comercio, con una sola sucursal. Celery Beat programará las automatizaciones periódicas cuando se implemente ese módulo.
 
 ```mermaid
 flowchart LR
