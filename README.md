@@ -26,7 +26,7 @@ La distribución del trabajo es por **módulo completo**: su responsable impleme
 
 ## Estado del proyecto
 
-El repositorio contiene estructura y documentación de referencia. Los manifiestos de dependencias, archivos de Docker, migraciones, flujos de integración continua y código de aplicación se incorporarán conforme avance la implementación. La semana 5 corresponde a la presentación prevista del avance de desarrollo; el cronograma separa entregas realizadas, un hito por confirmar y trabajo propuesto.
+El repositorio contiene estructura y documentación de referencia. Los manifiestos de dependencias, archivos de Docker, migraciones, flujos de integración continua y código de aplicación se incorporarán conforme avance la implementación. La semana 5 corresponde a la presentación prevista del avance del repositorio; el cronograma separa entregas realizadas, un hito por confirmar y trabajo propuesto.
 
 `README.md`, `src/app`, `public` y `.github/workflows` conservan sus nombres porque las herramientas los requieren. Los nombres propios de tecnologías y la sintaxis de formatos técnicos también se mantienen.
 
@@ -1861,7 +1861,7 @@ La [especificación integral de diseño](documentacion/diseno/especificacion-vis
 
 # 39. Cronograma del proyecto
 
-El plan usa semanas académicas y evita asignar fechas de calendario no confirmadas. Las semanas 1 a 3 son hitos comunicados por el equipo; la semana 5 es la semana actual y contempla presentar el avance. El contenido de la semana 4 debe validarse con el equipo. Las semanas 6 a 16 son objetivos propuestos para seis responsables que trabajan **en paralelo por módulos completos**: interfaz, servidor, API, pruebas e integración.
+El plan usa semanas académicas y evita asignar fechas de calendario no confirmadas. Las semanas 1 a 3 son hitos comunicados por el equipo; la semana 5 es la semana actual y contempla presentar el avance del repositorio. El contenido de la semana 4 debe validarse con el equipo. Las semanas 6 a 16 son objetivos propuestos para seis responsables que trabajan **en paralelo por módulos completos**: interfaz, servidor, API, pruebas e integración.
 
 | Semana | Objetivo | Entregable o criterio de aceptación | Estado |
 |---|---|---|---|
@@ -1869,7 +1869,7 @@ El plan usa semanas académicas y evita asignar fechas de calendario no confirma
 | 2 | Presentar el flujo del sistema | Secuencia desde datos y predicción hasta prevención y control | Realizado según el equipo |
 | 3 | Presentar la propuesta de interfaz | Pantallas principales y sistema visual expuestos | Realizado según el equipo |
 | 4 | Consolidar alcance, arquitectura y responsabilidades | Acuerdos técnicos y distribución de todos los módulos; confirmar qué se entregó realmente esa semana | Por confirmar |
-| 5 | Presentar el avance del desarrollo | Repositorio organizado, documentación y demostración del código que esté funcionando en ese momento | Semana actual; presentación prevista |
+| 5 | Presentar el avance del repositorio | Estructura de carpetas, README principal, especificaciones, cronograma y distribución de responsabilidades | Semana actual; presentación prevista |
 | 6 | Crear la base ejecutable común | Interfaz y API arrancan localmente; PostgreSQL conectado; migración inicial; autenticación y negocio mínimos; contratos entre responsables acordados | Propuesto |
 | 7 | Implementar el primer corte de cada dominio | Productos, ingredientes, recetas, ventas, inventario y proveedores tienen datos y API básicos; pronóstico, plan, pedido, riesgo, panel y ejecución cuentan con un primer recorrido conectado | Propuesto |
 | **8** | **Presentar la versión preliminar integrada** | **Se puede recorrer con un negocio de demostración: registrar o cargar datos, generar demanda y plan, detectar faltantes, crear un pedido, visualizar riesgo y una acción preventiva, y ver el resultado en el panel. La interfaz usa rutas reales y persistencia; las integraciones externas aún pueden usar adaptadores de prueba claramente identificados.** | **Hito propuesto** |
