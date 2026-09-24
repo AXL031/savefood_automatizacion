@@ -1,9 +1,9 @@
-# Secrets and local environment
+# Secretos y configuración local
 .env
 .env.*
 !.env.example
 
-# Frontend
+# Interfaz
 node_modules/
 .next/
 out/
@@ -17,7 +17,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Editors and operating system
+# Editores y sistema operativo
 .DS_Store
 Thumbs.db
 .idea/

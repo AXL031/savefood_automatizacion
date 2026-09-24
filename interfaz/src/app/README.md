@@ -1,0 +1,5 @@
+# Rutas de Next.js
+
+Rutas, páginas y disposicion de Next.js.
+
+Esta carpeta forma parte del esqueleto del proyecto. El código se agregará al implementar su funcionalidad.

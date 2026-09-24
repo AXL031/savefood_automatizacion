@@ -1,4 +1,4 @@
-# .github
+# Configuración de GitHub
 
 Configuración del repositorio y automatización de GitHub.
 
