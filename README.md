@@ -17,9 +17,9 @@ FoodSave es una plataforma SaaS para planificar producción y abastecimiento y p
 | Carpeta | Propósito |
 |---|---|
 | [`documentacion/`](documentacion/README.md) | Arquitectura, diseño, funcionalidades, API, datos, automatización y equipo |
-| [`interfaz/`](interfaz/README.md) | Interfaz Next.js y funciones por dominio |
-| [`servidor/`](servidor/README.md) | API FastAPI, módulos, trabajos asíncronos y pruebas |
-| [`herramientas/`](herramientas/README.md) | Herramientas de apoyo del equipo |
+| [`frontend/`](frontend/README.md) | Interfaz Next.js y funciones por dominio |
+| [`backend/`](backend/README.md) | API FastAPI, módulos, trabajos asíncronos y pruebas |
+| [`scripts/`](scripts/README.md) | Herramientas de apoyo del equipo |
 | [`.github/workflows/`](.github/workflows/README.md) | Flujos de integración continua |
 
 La distribución del trabajo es por **módulo completo**: su responsable implementa interfaz, servidor, rutas de API, pruebas e integración de cada módulo asignado. Todos los módulos tienen un responsable asignado; la sección 16 detalla la propiedad de cada uno.
@@ -1193,7 +1193,7 @@ foodsave/
 │   ├── base_de_datos/
 │   ├── automatizacion/
 │   └── equipo/
-├── interfaz/
+├── frontend/
 │   ├── public/
 │   └── src/
 │       ├── app/
@@ -1209,15 +1209,15 @@ foodsave/
 │       │   ├── automatizaciones/
 │       │   ├── informes/
 │       │   └── configuracion/
-│       ├── componentes/
-│       │   ├── controles/
-│       │   ├── disposicion/
+│       ├── components/
+│       │   ├── ui/
+│       │   ├── layout/
 │       │   ├── panel/
-│       │   ├── graficos/
-│       │   ├── tablas/
+│       │   ├── charts/
+│       │   ├── tables/
 │       │   ├── automatizacion/
-│       │   └── formularios/
-│       ├── funcionalidades/
+│       │   └── forms/
+│       ├── features/
 │       │   ├── productos/
 │       │   ├── ingredientes/
 │       │   ├── recetas/
@@ -1231,25 +1231,25 @@ foodsave/
 │       │   ├── promociones/
 │       │   ├── desperdicio/
 │       │   └── automatizaciones/
-│       ├── servicios/
-│       ├── ganchos/
-│       ├── tipos/
-│       ├── utilidades/
-│       └── constantes/
-├── servidor/
-│   ├── migraciones/
-│   ├── pruebas/
-│   │   ├── unitarias/
-│   │   ├── integracion/
-│   │   └── datos_prueba/
-│   └── aplicacion/
-│       ├── nucleo/
-│       ├── compartido/
-│       │   ├── enumeraciones/
-│       │   ├── esquemas/
-│       │   ├── utilidades/
-│       │   └── eventos/
-│       ├── modulos/
+│       ├── services/
+│       ├── hooks/
+│       ├── types/
+│       ├── utils/
+│       └── constants/
+├── backend/
+│   ├── migrations/
+│   ├── tests/
+│   │   ├── unit/
+│   │   ├── integration/
+│   │   └── fixtures/
+│   └── app/
+│       ├── core/
+│       ├── shared/
+│       │   ├── enums/
+│       │   ├── schemas/
+│       │   ├── utils/
+│       │   └── events/
+│       ├── modules/
 │       │   ├── autenticacion/
 │       │   ├── negocios/
 │       │   ├── productos/
@@ -1268,14 +1268,14 @@ foodsave/
 │       │   ├── automatizaciones/
 │       │   ├── notificaciones/
 │       │   └── informes/
-│       ├── trabajos_asincronos/
-│       │   ├── tareas/
-│       │   └── reintentos/
-│       └── integraciones/
+│       ├── workers/
+│       │   ├── tasks/
+│       │   └── retry/
+│       └── integrations/
 │           ├── proveedores/
 │           ├── notificaciones/
 │           └── canales_venta/
-├── herramientas/
+├── scripts/
 └── .github/
     └── workflows/
 ```
@@ -1295,7 +1295,7 @@ modulo/
 ├── esquemas.py
 ├── dependencias.py
 ├── errores.py
-└── pruebas/
+└── tests/
 ```
 
 Responsabilidades:
@@ -1307,7 +1307,7 @@ Responsabilidades:
 - `esquemas.py`: define esquemas de Pydantic.
 - `dependencias.py`: reúne dependencias del módulo.
 - `errores.py`: define errores propios del dominio.
-- `pruebas/`: comprueba reglas de negocio y rutas.
+- `tests/`: comprueba reglas de negocio y rutas.
 
 Un módulo no accede directamente al repositorio de otro. Por ejemplo, planificación debe solicitar las existencias al servicio de inventario.
 
