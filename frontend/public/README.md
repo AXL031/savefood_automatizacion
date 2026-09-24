@@ -1,0 +1,5 @@
+# public
+
+Recursos estáticos públicos, como íconos e imágenes.
+
+Esta carpeta forma parte del esqueleto del proyecto. El código se agregará al implementar su funcionalidad.
