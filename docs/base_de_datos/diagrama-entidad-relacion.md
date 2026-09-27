@@ -1,38 +1,5 @@
 # Diagrama entidad-relación
 
-Este diagrama muestra relaciones conceptuales del MVP. Cada instalación tiene un único `NEGOCIO` como configuración local y una sola sucursal; por eso las tablas operativas no llevan `negocio_id`. Solo `NEGOCIO` y `USUARIO` existen en la migración inicial; las demás tablas se crearán tras revisar el [diccionario](diccionario-de-datos.md) con sus responsables.
+El archivo [diagrama-entidad-relacion.mmd](diagrama-entidad-relacion.mmd) es la única fuente del ER conceptual del prototipo. Sigue [ADR-005](../arquitectura/decisiones/ADR-005-instalacion-local-mvp.md) y [ADR-006](../arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md): una instalación local, ventas diarias y stock administrados en PostgreSQL, lotes con movimientos y corridas de pronóstico. Las dos relaciones hacia `MOVIMIENTO_INVENTARIO` son excluyentes por fila: cada movimiento afecta exactamente un lote de ingrediente o uno de producto.
 
-```mermaid
-erDiagram
-    PRODUCTO ||--|| RECETA : tiene
-    RECETA ||--o{ RECETA_INGREDIENTE : contiene
-    INGREDIENTE ||--o{ RECETA_INGREDIENTE : se_usa_en
-
-    PRODUCTO ||--o{ VENTA : tiene
-    PRODUCTO ||--o{ REGISTRO_PRODUCCION : tiene
-    PRODUCTO ||--o{ PRONOSTICO : tiene
-
-    INGREDIENTE ||--|| INVENTARIO : tiene
-    INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : tiene
-    PRODUCTO ||--|| EXISTENCIA_PRODUCTO : tiene
-
-    PLAN_PRODUCCION ||--o{ ELEMENTO_PLAN_PRODUCCION : contiene
-    PRODUCTO ||--o{ ELEMENTO_PLAN_PRODUCCION : se_planifica
-
-    PLAN_PRODUCCION ||--o{ NECESIDAD_INGREDIENTE : genera
-    INGREDIENTE ||--o{ NECESIDAD_INGREDIENTE : se_necesita
-
-    PROVEEDOR ||--o{ PROVEEDOR_INGREDIENTE : ofrece
-    INGREDIENTE ||--o{ PROVEEDOR_INGREDIENTE : es_suministrado
-
-    PROVEEDOR ||--o{ PEDIDO_COMPRA : recibe
-    PEDIDO_COMPRA ||--o{ ELEMENTO_PEDIDO_COMPRA : contiene
-    PEDIDO_COMPRA ||--o{ ENVIO_PEDIDO : registra
-    INGREDIENTE ||--o{ ELEMENTO_PEDIDO_COMPRA : se_solicita
-
-    PRODUCTO ||--o{ DETECCION_EXCEDENTE : se_detecta
-    DETECCION_EXCEDENTE ||--o{ PROMOCION : activa
-
-    AUTOMATIZACION ||--o{ EJECUCION_AUTOMATIZACION : ejecuta
-    EJECUCION_AUTOMATIZACION ||--o{ INTENTO_AUTOMATIZACION : reintenta
-```
+Solo `negocio` y `usuario` existen en `0001_nucleo`. Las demás entidades del diagrama son diseño objetivo de la futura migración `0002`, detalladas en el [diccionario](diccionario-de-datos.md) y el [esquema objetivo](esquema-objetivo-mvp.md).

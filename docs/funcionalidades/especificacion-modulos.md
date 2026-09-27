@@ -1,5 +1,7 @@
 # Especificación funcional integral de FoodSave
 
+**Visión de producto posterior al prototipo.** Para el trabajo universitario inmediato rige el [alcance congelado](../guia-inicio-desarrollo.md): primera carga de ventas y catálogo, stock local, CatBoost, plan y sugerencias de compra. Las pantallas y acciones de pedidos, promociones, automatización y reportes de esta página no forman parte de la demo ni declaran rutas implementadas.
+
 ## Objetivo del producto
 
 FoodSave presenta y coordina la operación de un negocio que produce alimentos perecibles. Permite consultar demanda y producción, preparar abastecimiento, anticipar excedentes, activar promociones, vigilar automatizaciones y revisar su impacto. El flujo operativo es **detectar → decidir → actuar → verificar → corregir → notificar**. Las acciones y cifras pertenecen al negocio activo; cada resultado muestra fecha u hora, estado y unidad cuando corresponda.
@@ -70,7 +72,7 @@ Las funciones de acceso, catálogos, recetas, ventas, notificaciones y desperdic
 
 **Estados.** Plan generado, pendiente de aprobación y aprobado; falta de insumos que requiere compra. La pantalla debe separar claramente una **recomendación** de una decisión ya aprobada.
 
-**Cálculo.** La explicación visible relaciona ventas históricas, stock actual y margen de seguridad. La fórmula exacta, redondeo y tratamiento del stock no quedan definidos por esta interfaz y deben cerrarse antes de implementar el motor de cálculo.
+**Cálculo.** Para la demo, la [fórmula y el redondeo](../api/contratos.md) están fijados con margen de seguridad cero. Para la visión futura, otros márgenes se configurarán explícitamente antes de aplicarse.
 
 ## 3. Predicciones
 
@@ -156,7 +158,7 @@ Las funciones de acceso, catálogos, recetas, ventas, notificaciones y desperdic
 
 **Acciones.** Reintentar el envío ahora, cambiar proveedor o registrar el pedido manualmente. Cada acción debe registrar un nuevo evento y actualizar estado e impacto; no debe presentar como exitosa una operación que no recibió confirmación.
 
-**Decisión pendiente.** El contador de ejecución indica «2 de 2» intentos, mientras el ajuste «Intentos de reenvío» también muestra el valor 2. La redacción debe aclarar si el límite cuenta intentos totales o reenvíos posteriores al primero. Hasta resolverlo, el valor no debe usarse para inferir silenciosamente el número total de envíos.
+**Decisión futura fijada.** `maximo_reintentos = 2` significa un intento inicial y dos reintentos, tres intentos totales. La interfaz futura mostrará `1 de 3`, `2 de 3` o `3 de 3`, según la [política de reintentos](../automatizacion/politica-de-reintentos.md).
 
 ## 11. Configuración y avisos
 

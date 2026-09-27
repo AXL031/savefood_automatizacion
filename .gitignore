@@ -8,6 +8,8 @@ node_modules/
 .next/
 out/
 coverage/
+frontend/.npm-cache/
+*.tsbuildinfo
 
 # Python
 __pycache__/

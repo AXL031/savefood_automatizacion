@@ -1,8 +1,8 @@
 # FoodSave
 
-FoodSave permite planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. **El MVP acordado es una instalación local por comercio y una sucursal por instalación.** La [decisión de arquitectura del MVP](docs/arquitectura/decisiones/ADR-005-instalacion-local-mvp.md) prevalece sobre las referencias anteriores a SaaS, varias sucursales o filtrado por `negocio_id` en este documento. La comercialización mediante suscripción es una etapa futura.
+FoodSave permite planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. **El alcance inmediato es un prototipo universitario local** para un comercio y una sucursal. Su [guía de desarrollo](docs/guia-inicio-desarrollo.md), [ADR-005](docs/arquitectura/decisiones/ADR-005-instalacion-local-mvp.md) y [ADR-006](docs/arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md) prevalecen sobre las referencias históricas de este README a SaaS, varias sucursales, stock en Excel permanente, pedidos automáticos o promoción operativa. La comercialización es futura.
 
-El núcleo inicial ya incluye una interfaz mínima, API, PostgreSQL, Redis, trabajador y migración de negocio y usuario. Los demás módulos siguen en desarrollo; el [diccionario de datos](docs/base_de_datos/diccionario-de-datos.md) es la propuesta a revisar con sus responsables antes de crear sus tablas.
+El núcleo inicial ya incluye una interfaz mínima, API, PostgreSQL, Redis, trabajador y migración de negocio y usuario. Los módulos de ventas, inventario, ML y plan **aún no están implementados**; el [esquema del prototipo](docs/base_de_datos/esquema-objetivo-mvp.md) define la futura migración `0002`. El trabajador actual solo ejecuta una tarea de prueba.
 
 ## Arranque local de desarrollo
 
@@ -16,6 +16,7 @@ Cada PC tiene su propio volumen de PostgreSQL. `docker compose down` detiene los
 
 ## Guía rápida
 
+- [Alcance y criterio de demo del prototipo universitario](docs/guia-inicio-desarrollo.md).
 - [Especificación integral de diseño](docs/diseno/especificacion-visual.md): reglas visuales, pantallas, componentes, estados y accesibilidad.
 - [Especificación funcional de módulos](docs/funcionalidades/especificacion-modulos.md): qué muestra y permite hacer cada sección.
 - [Cronograma semanal](docs/equipo/cronograma.md): hitos de las semanas 1 a 16 y estado de cada entrega.
@@ -1860,7 +1861,7 @@ REPORTES
 
 # 38. Especificaciones de producto
 
-La [especificación integral de diseño](documentacion/diseno/especificacion-visual.md) define identidad, colores, tipografía, componentes, composición, estados, accesibilidad y estructura de las pantallas. La [especificación funcional](documentacion/funcionalidades/especificacion-modulos.md) describe objetivo, información, acciones, estados y límites de cada sección del producto. Ambas pueden leerse de forma independiente. Las [referencias visuales conservadas](documentacion/diseno/mockups/README.md) se mantienen separadas de las especificaciones.
+La [especificación integral de diseño](docs/diseno/especificacion-visual.md) define identidad, colores, tipografía, componentes, composición, estados, accesibilidad y estructura de las pantallas. La [especificación funcional](docs/funcionalidades/especificacion-modulos.md) describe objetivo, información, acciones, estados y límites de cada sección del producto. Ambas pueden leerse de forma independiente. Las [referencias visuales conservadas](docs/diseno/mockups/README.md) se mantienen separadas de las especificaciones.
 
 # 39. Cronograma del proyecto
 

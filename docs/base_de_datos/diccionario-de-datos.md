@@ -1,40 +1,30 @@
-# Diccionario de datos del MVP — propuesta para revisión del equipo
+# Diccionario de datos — prototipo universitario
 
-Este diccionario sigue la [decisión de instalación local](../arquitectura/decisiones/ADR-005-instalacion-local-mvp.md): una base por comercio, una sucursal por instalación. Es el contrato de diseño antes de las migraciones de cada módulo. La migración inicial solo crea `negocio` y `usuario`; cada responsable implementa y revisa las tablas de su dominio. Los campos pendientes de negocio no se deben inventar en una migración sin actualizar este documento.
+**Estado:** diseño objetivo, sin tablas operativas creadas. [ADR-005](../arquitectura/decisiones/ADR-005-instalacion-local-mvp.md) fija una instalación por comercio/sucursal; [ADR-006](../arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md) fija ventas y stock propios. El [esquema objetivo](esquema-objetivo-mvp.md) contiene columnas, tipos y restricciones para la futura `0002`.
 
-## Convenciones compartidas
-
-| Regla | Decisión |
+| Concepto | Definición canónica |
 |---|---|
-| Claves internas | `id` entero autogenerado; claves foráneas del mismo tipo e índices en relaciones consultadas. |
-| Tiempo | `creado_en` y `actualizado_en` como instante UTC con zona horaria; fechas de venta, plan y pronóstico como `date` local según `negocio.zona_horaria`. |
-| Cantidades | Unidades de producto enteras no negativas; ingredientes como `numeric(14,3)` no negativo. Se registra la unidad de medida del ingrediente. |
-| Dinero | `numeric(14,2)` no negativo y moneda definida en `negocio`; no usar coma flotante. |
-| Borrado | Desactivar catálogos con `activo`; no borrar operaciones históricas por cascada. |
-| Auditoría | Toda operación automática y envío externo tiene estado, instante y referencia a su origen. |
-| Datos desconocidos | La ausencia de una venta diaria no equivale a cero ventas. Un cero explícito sí es cero conocido. |
+| Identidad | `negocio.id = 1`. SKU textual del archivo se traduce por `sku_producto` a `producto.id` entero. No hay `negocio_id` en las demás tablas. |
+| Venta | `venta_diaria` es agregado no negativo por producto y fecha local. Una fila ausente es desconocida; una corrección crea `revision_venta`. No se guardan tickets ni pagos. |
+| Producto e insumo | `producto` y `ingrediente` son catálogos propios. `receta` se versiona; `receta_ingrediente` expresa cantidad por unidad en la unidad base del insumo. |
+| Stock | `lote_producto` y `lote_ingrediente` guardan saldos. `movimiento_inventario` registra apertura/ajuste con clave única y actualiza el saldo en la misma transacción. `INVENTARIO`, `inventario_ingrediente` y `existencia_producto` son lecturas agregadas, no tablas. |
+| Caducidad | `fecha_caducidad` opcional por lote; producto puede tener `fecha_limite_venta` distinta. La falta de fecha se muestra como desconocida, nunca como vigencia comprobada. |
+| Tiempo | `fecha_local` y `fecha_objetivo` son `date` de la zona del negocio. `creado_en` y auditoría son instantes UTC. |
+| Cantidades | Unidades de producto y ventas enteras; ingrediente `numeric(14,3)` en su unidad base. Importación inicial y movimientos no admiten saldo negativo. |
+| Pronóstico | `artefacto_modelo` identifica `.cbm`, huella y versión; `corrida_pronostico` fija fecha y entradas; `pronostico` es único por corrida/producto. Sin cobertura, cantidad `null` y estado explicativo. |
+| Evaluación | `evaluacion_pronostico` compara una predicción con una revisión concreta de venta real **después** de inferir. El dashboard muestra MAE, WAPE, ±20% y cobertura; una venta ausente no equivale a cero. |
+| Plan | `plan_produccion` cita corrida. `elemento_plan` es el nombre físico canónico. `necesidad_ingrediente` guarda requerido, disponible, faltante y unidad; faltante positivo es sugerencia de compra, no pedido enviado. |
+| Idempotencia | `importacion_venta`, `movimiento_inventario` y `corrida_pronostico` usan clave única; misma clave con datos distintos es conflicto. |
+| Automatización | `programacion_demo` guarda el disparo real y el reloj histórico simulado. `ejecucion_automatizacion` e `intento_automatizacion` registran estado, reintentos y efectos sin duplicarlos. |
+| Promoción | `regla_promocion_demo` versiona la regla pura existente. `evaluacion_promocion` registra sugerencia o rechazo por lote con motivo; no activa ni publica descuentos. |
 
-## Núcleo inicial — Axel
+## Propiedad de módulos
 
-| Tabla | Campos y restricciones principales | Relaciones |
-|---|---|---|
-| `negocio` | `id` con valor único `1`, `nombre` texto obligatorio, `zona_horaria` texto obligatorio, `moneda` código de 3 caracteres, `hora_apertura` y `hora_cierre` opcionales, `creado_en`, `actualizado_en`. | Registro único por instalación. |
-| `usuario` | `id`, `correo` obligatorio y único sin distinguir mayúsculas, `hash_contrasena`, `nombre`, `rol` (`ADMINISTRADOR`, `OPERADOR`), `activo`, `creado_en`, `actualizado_en`. | Usuarios de la instalación. |
+| Responsable | Entidades de la demo |
+|---|---|
+| Axel Cueva | `negocio`, `usuario`, `configuracion_inicial`, `programacion_demo`, `ejecucion_automatizacion`, `intento_automatizacion` y base compartida de identidad. |
+| Leonardo Vera | `producto`, `sku_producto`, `importacion_venta`, `venta_diaria`, `revision_venta`, `lote_ingrediente`, `lote_producto`, `movimiento_inventario`. |
+| Kevin Bohorquez | `ingrediente`, `receta`, `receta_ingrediente`, `artefacto_modelo`, `corrida_pronostico`, `pronostico`, `evaluacion_pronostico`, `plan_produccion`, `elemento_plan`, `necesidad_ingrediente`. |
+| Max Rojas | `regla_promocion_demo` y `evaluacion_promocion`, usando la lectura pública de inventario y la regla pura existente. |
 
-## Catálogos y operación
-
-| Dueño | Tablas previstas | Restricciones que deben conservarse |
-|---|---|---|
-| Leonardo Vera | `producto`, `venta`, `registro_produccion`, `inventario_ingrediente`, `movimiento_inventario`, `existencia_producto` | Producto con código estable y nombre; venta con producto, fecha local, cantidad, origen y referencia externa opcional; referencia externa única por origen si existe; producción y movimientos con cantidad positiva y tipo; existencias de ingredientes y productos terminados separadas. |
-| Kevin Bohorquez | `ingrediente`, `receta`, `receta_ingrediente`, `pronostico`, `plan_produccion`, `elemento_plan`, `necesidad_ingrediente` | Ingrediente con unidad fija; receta ligada a producto y componentes únicos por ingrediente; pronóstico único por producto, fecha y versión/corrida; plan con elementos únicos por producto; necesidades únicas por ingrediente dentro del plan. |
-| Leonardo Aguirre | `proveedor`, `proveedor_ingrediente`, `pedido_compra`, `elemento_pedido`, `envio_pedido` | Pedido ligado a proveedor y opcionalmente a plan; elementos únicos por ingrediente; `envio_pedido` conserva canal, identificador externo, instante, resultado e intento; confirmar el pedido requiere evidencia independiente de la aceptación de Telegram. |
-| Max Rojas | `deteccion_excedente`, `promocion`, `registro_desperdicio` | Detección ligada a producto y medición temporal; promoción ligada a detección y producto; desperdicio real separado de excedente estimado. |
-| Axel Cueva | `automatizacion`, `ejecucion_automatizacion`, `intento_automatizacion`, `notificacion` | Ejecución con clave de idempotencia única por acción de negocio; intentos numerados y únicos dentro de cada ejecución; envío y error trazables. |
-
-`existencia_producto` se incluye porque el plan resta productos terminados disponibles. Las existencias pueden derivarse de movimientos, pero si se guarda un saldo materializado debe actualizarse en la misma transacción que el movimiento.
-
-## Puertas antes de cada migración de dominio
-
-El dueño del módulo completa para sus tablas: columna, tipo SQL, nulabilidad, valor por defecto, `CHECK`, claves únicas, índices, claves foráneas y política de actualización/borrado. Otro dueño revisa las relaciones compartidas antes de unir la migración. Una migración aplicada no se reescribe; los cambios posteriores usan una migración nueva.
-
-Quedan por acordar con datos reales: unidad y conversión de cada ingrediente, política de devoluciones de ventas, momento de cierre del día, stock de producto terminado al inicio del día, y qué respuesta exacta constituye confirmación del proveedor. Estas decisiones afectan reglas de negocio y deben cerrarse antes de migrar las tablas correspondientes.
+Proveedores, pedidos, recepción, **publicación** de promociones, desperdicio y notificaciones quedan fuera de `0002`. La evaluación programada de promociones y el registro de ejecuciones sí pertenecen a esta demo. El ER solo dibuja entidades de esta etapa. Antes de implementar una tabla, su responsable compara el modelo SQLAlchemy, la migración y los nombres de este diccionario en una misma revisión.

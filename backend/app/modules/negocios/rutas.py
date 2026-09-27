@@ -3,8 +3,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.base_datos import obtener_sesion
-from app.modules.autenticacion.modelos import Usuario
-from app.modules.autenticacion.rutas import usuario_actual
+from app.core.identidad import identidad_actual, requiere_administrador
 from app.modules.negocios.modelos import Negocio
 
 router = APIRouter(prefix="/negocios", tags=["negocios"])
@@ -21,7 +20,7 @@ def serializar(negocio: Negocio):
 
 
 @router.get("/actual")
-def negocio_actual(_usuario: Usuario = Depends(usuario_actual), sesion: Session = Depends(obtener_sesion)):
+def negocio_actual(_usuario=Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
     negocio = sesion.get(Negocio, 1)
     if not negocio:
         raise HTTPException(status_code=503, detail="Falta aplicar la migración inicial")
@@ -31,11 +30,9 @@ def negocio_actual(_usuario: Usuario = Depends(usuario_actual), sesion: Session 
 @router.patch("/actual")
 def actualizar_negocio(
     datos: CambioNegocio,
-    usuario: Usuario = Depends(usuario_actual),
+    _usuario=Depends(requiere_administrador),
     sesion: Session = Depends(obtener_sesion),
 ):
-    if usuario.rol != "ADMINISTRADOR":
-        raise HTTPException(status_code=403, detail="Se requiere administrador")
     negocio = sesion.get(Negocio, 1)
     if not negocio:
         raise HTTPException(status_code=503, detail="Falta aplicar la migración inicial")

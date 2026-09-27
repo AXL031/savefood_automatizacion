@@ -1,0 +1,24 @@
+# ADR-007: automatizaciones verificables en la demo
+
+**Estado:** aceptada para el diseño del prototipo universitario; sin implementación. Complementa [ADR-006](ADR-006-identidades-lotes-pronosticos.md).
+
+## Motivo
+
+El proyecto se presenta en un curso de automatizaciones. La demo debe probar disparadores, ejecución sin intervención, estados, reintentos e idempotencia. El dataset es histórico y el stock inicial es simulado; no se debe fingir que el 24-08-2022 es la fecha real del equipo ni que el CatBoost diario predice ventas intradía.
+
+## Decisión
+
+1. La primera carga completa encola **una sola** tarea `PREPARAR_MODELO` a demanda. Separa por fecha entrenamiento, validación y prueba según la [política temporal](../../../foodsave-ml/POLITICA_EVALUACION.md), entrena fuera de la solicitud HTTP y conserva artefacto, partición y métricas. El tramo de prueba no interviene en ajuste ni selección. No se vuelve a entrenar cada vez que se genera un plan.
+2. Celery Beat ejecuta cada 30 segundos un **despachador** de acciones de demostración vencidas. El administrador programa `GENERAR_PROPUESTA` para un instante UTC próximo; la acción usa `fecha_objetivo_demo` histórica, CatBoost listo, recetas y stock local. Su resultado es pronóstico, plan y sugerencias de compra, sin pedido ni movimiento físico. El reloj real decide **cuándo** se dispara; la fecha histórica decide **qué escenario** se calcula.
+3. Tras un ajuste de stock de producto terminado, se agenda `EVALUAR_PROMOCION` para un instante próximo. Se evalúa la regla pura existente con una **hora local simulada explícita** del escenario y con la hora efectiva del ajuste. Se guarda solo `evaluacion_promocion` con motivo y descuento propuesto. No se publican precios ni se activa nada en un POS. La regla usa stock, fecha límite de venta, umbral, horario y frescura; no presenta al CatBoost diario como predicción de venta restante.
+4. Tras `PREPARAR_MODELO`, el evento idempotente `EVALUAR_MODELO` recorre los días del tramo de prueba: hace inferencia un día adelante con el modelo fijo y solo historial anterior a cada objetivo, guarda corridas `BACKTEST` y después compara con ventas conocidas. Al completar `GENERAR_PROPUESTA`, otro evento `EVALUAR_PRONOSTICO` compara la corrida `DEMO_PROGRAMADA` con `venta_diaria`, **después** de persistirla. Solo entran productos con pronóstico y venta real conocidos; ausencia de fila sigue desconocida. Se guarda la revisión de venta usada. El panel muestra serie temporal del tramo reservado, cobertura y «último día evaluado», siempre rotulados como comprobación histórica exploratoria.
+5. `programacion_demo` conserva tipo, hora real de ejecución, hora local simulada, parámetros y clave única. `ejecucion_automatizacion` y `intento_automatizacion` conservan estado, huella de entrada, resultado y error. Cada efecto (`corrida_pronostico`, `plan_produccion`, `evaluacion_pronostico`, `evaluacion_promocion`) tiene unicidad ligada a la ejecución o a su clave. Beat y worker pueden reentregar; una repetición idéntica recupera el resultado. Reutilizar la clave con otros parámetros es conflicto.
+6. Una ejecución usa un intento inicial y hasta dos reintentos por fallos transitorios, con backoff de 60 y 120 segundos. Datos inválidos, modelo ausente, receta incompleta o stock sin vigencia comprobable se registran como fallo/resultado explicativo sin reintento ciego. La interfaz muestra «programada», «en ejecución», «reintentando», «completada» o «fallida», número de intento y trazas.
+
+## Límites de la simulación
+
+El `fecha_objetivo_demo` y la hora local simulada se muestran en pantalla junto a la hora real en que Beat disparó la tarea. Para proponer una promoción, el lote debe tener `fecha_limite_venta` igual al día simulado y una lectura de stock efectiva dentro del límite de frescura; el usuario puede simular un ajuste a las 17:45 y una evaluación a las 18:00. Si falta esa evidencia, se registra «sin sugerencia» con motivo. La planificación diaria real a una hora de cierre, evaluaciones cada 30 minutos, envíos a proveedores y activación de descuentos quedan fuera de esta demo.
+
+## Prueba de aceptación
+
+Programar una acción para dentro de un minuto y observar que Beat la despacha sin pulsar «Generar», que crea una sola corrida/plan y que reentregar el mensaje no los duplica. Ver la partición temporal guardada, el backtest sobre el tramo reservado y el panel de pronóstico frente a venta real con fecha, cobertura y error por producto. Ajustar stock, observar la programación de evaluación y una sugerencia de promoción o un motivo de rechazo. Provocar en prueba un fallo transitorio y comprobar intentos `1/3`, `2/3`, `3/3` y recuperación o fallo final. Todo efecto debe citar la ejecución que lo originó.

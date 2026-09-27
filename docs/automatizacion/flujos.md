@@ -1,208 +1,21 @@
-# Automatización y control
+# Flujos automatizados del prototipo
 
-## 8.1 Automatización
+**Estado:** diseño, sin tareas operativas implementadas. El worker actual solo tiene `tarea_prueba`. La [programación](programacion.md) y [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md) fijan disparadores y reloj real/simulado.
 
-Campos:
-- id
-- negocio_id
-- tipo
-- nombre
-- habilitado
-- programacion
-- maximo_reintentos
-- configuracion
-- creado_en
-- actualizado_en
+## 1. Primera carga → entrenamiento
 
-Tipos:
-- PLANIFICACION_DIARIA
-- PEDIDO_PROVEEDOR
-- SEGUIMIENTO_EXCEDENTES
-- ACTIVACION_PROMOCION
-- SEGUIMIENTO_PROMOCION
+Tras aceptar ventas, catálogo, recetas y stock inicial, `configuracion_inicial` queda `DATOS_CARGADOS` y se encola `PREPARAR_MODELO` una sola vez por huella. El worker registra ejecución e intento, separa entrenamiento, validación y prueba por [meses calendario](../../foodsave-ml/POLITICA_EVALUACION.md), entrena CatBoost sin mirar el tramo de prueba, valida vector, guarda `.cbm`/metadatos y marca `MODELO_LISTO`. Entonces se encola `EVALUAR_MODELO`, también idempotente: genera pronósticos de un día adelante por fecha de prueba, compara posteriormente con ventas conocidas y persiste la serie de métricas/cobertura. Un fallo transitorio se reintenta; un error de datos queda visible sin reentrenar a ciegas.
 
-## 8.2 Ejecución de automatización
+## 2. Hora programada → pronóstico → plan → faltantes
 
-Campos:
-- id
-- automatizacion_id
-- estado
-- inicio_en
-- fin_en
-- datos_entrada
-- datos_salida
-- mensaje_error
-- cantidad_reintentos
+El administrador elige una hora real próxima y una fecha histórica dentro del tramo de prueba. Beat despacha `GENERAR_PROPUESTA` al vencer. El worker lee el modelo listo y las ventas anteriores a `fecha_objetivo_demo`, persiste corrida con versión, lee lotes/recetas locales, persiste plan y calcula faltantes. Tras persistir la corrida se encola `EVALUAR_PRONOSTICO`, que lee la venta real del objetivo solo para comparar. La pantalla muestra el flujo, el resultado de ese día y su relación con la serie histórica de prueba. Reentregar las tareas con las mismas claves recupera los mismos efectos. Generar el plan no consume inventario ni envía pedidos.
 
-Estados:
-- PENDIENTE
-- EN_EJECUCION
-- VERIFICANDO
-- COMPLETADO
-- REINTENTANDO
-- FALLIDO
-- CANCELADO
+## 3. Ajuste de stock → evaluación programada de promoción
 
-## 8.3 Intento de automatización
+Un ajuste de stock de producto terminado registra movimiento con hora local **efectiva del escenario** y agenda `EVALUAR_PROMOCION` para una hora real próxima. Beat despacha la evaluación. Se aplica la regla pura existente con fecha límite de venta, stock umbral, horario simulado y frescura máxima; cada lote guarda `proponer=true/false`, descuento si procede y motivo. La tarea no modifica precio, venta, stock ni un POS. El CatBoost diario no estima ventas intradía.
 
-Campos:
-- id
-- ejecucion_automatizacion_id
-- numero_intento
-- inicio_en
-- fin_en
-- estado
-- mensaje_error
+## Control visible
 
-## 8.4 Patrón de control
+Cada automatización conserva programación, ejecución, hasta tres intentos, error o salida, instantes reales y parámetros del escenario histórico. Un duplicado inocuo queda marcado como resultado ya existente; una clave con entrada diferente es conflicto. La vista de exposición permite mostrar una ejecución completa y una sin sugerencia por vencimiento o stock insuficiente, sin simular éxito donde no hubo efecto.
 
-```text
-ejecutar()
-↓
-verificar()
-↓
-¿correcto?
-
-SI
-↓
-COMPLETADO
-
-NO
-↓
-¿quedan reintentos?
-
-SI
-↓
-REINTENTANDO
-↓
-ejecutar()
-
-NO
-↓
-FALLIDO
-↓
-notificar()
-```
-
-## 8.5 Automatización — Planificación diaria
-
-Disparador:
-```text
-22:00 todos los días
-```
-
-Flujo:
-```text
-leer ventas
-↓
-validar información
-↓
-generar pronóstico
-↓
-generar plan
-↓
-calcular ingredientes
-↓
-consultar inventario
-↓
-generar faltantes
-↓
-guardar resultado
-```
-
-Control:
-```text
-¿Plan generado correctamente?
-NO → reintentar
-nuevo fallo → registrar error → notificar
-```
-
-## 8.6 Automatización — Abastecimiento
-
-```text
-faltante > 0
-↓
-buscar proveedor
-↓
-agrupar necesidades
-↓
-crear pedido
-↓
-enviar
-↓
-verificar envío
-```
-
-Control:
-```text
-envío no confirmado
-↓
-reintentar
-↓
-si vuelve a fallar
-FALLIDO
-↓
-notificar
-```
-
-## 8.7 Automatización — Control de excedentes
-
-Disparador:
-```text
-cada 30 minutos
-```
-
-Flujo:
-```text
-leer producción
-↓
-leer ventas
-↓
-calcular existencias restantes
-↓
-predecir venta restante
-↓
-calcular excedente
-↓
-calcular riesgo
-```
-
-## 8.8 Automatización — Promoción preventiva
-
-```text
-riesgo detectado
-↓
-seleccionar estrategia
-↓
-calcular descuento
-↓
-crear promoción
-↓
-publicar
-↓
-verificar publicación
-```
-
-## 8.9 Automatización — Control de promoción
-
-```text
-esperar intervalo
-↓
-leer ventas nuevas
-↓
-recalcular excedente
-↓
-¿riesgo disminuyó?
-```
-
-Si sí:
-```text
-mantener / finalizar
-```
-
-Si no:
-```text
-recalcular acción
-↓
-ejecutar nueva promoción
-```
+Los flujos de pedidos, confirmación, recepción, promoción publicada y cierre diario real pertenecen a la [visión futura](../vision-futura.md).

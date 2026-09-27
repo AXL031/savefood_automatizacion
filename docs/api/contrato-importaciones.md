@@ -1,0 +1,49 @@
+# Contrato de primera inicialización
+
+**Estado:** diseño del prototipo universitario. El asistente de configuración solicita archivos **solo la primera vez**. Tras aceptar la carga, PostgreSQL es la fuente de ventas y stock; los archivos quedan como evidencia de origen. No existen todavía lector XLSX, endpoint de carga ni entrenamiento en backend.
+
+## Entrega
+
+- Preferida: `ventas.xlsx` con hoja `ventas` y `catalogo.xlsx` con hojas `productos`, `ingredientes`, `recetas`, `stock_inicial`.
+- Equivalente CSV UTF-8: `ventas.csv`, `productos.csv`, `ingredientes.csv`, `recetas.csv`, `stock_inicial.csv`. Un CSV no puede contener varias hojas. Encabezados exactos y fechas `YYYY-MM-DD`.
+- El sistema muestra vista previa, cantidad de filas, productos mapeados, fechas cubiertas, errores por archivo/hoja/fila y huellas. Solo una aceptación explícita inicia la carga. Si falla una validación, no se marca inicializado ni se entrena.
+- El asistente pide `fecha_objetivo_demo` y `fecha_referencia_stock` local. Para el caso del dataset se propone `2022-08-24` y stock simulado al cierre de `2022-08-23`. Se rechaza una referencia de stock igual o posterior al objetivo. Son supuestos visibles, no una fotografía histórica real del comercio.
+- `clave_importacion` estable y SHA-256 canónico evitan duplicar la carga al reintentar. Los dos archivos se conservan como referencia de auditoría; ninguna ruta absoluta de la computadora del usuario entra en las tablas de negocio. `configuracion_inicial` pasa por `PENDIENTE → DATOS_CARGADOS → MODELO_LISTO`.
+
+## Ventas históricas
+
+La hoja `ventas` usa `fecha_local`, `sku_externo`, `unidades_vendidas` (entero `>= 0`). Es una fila por fecha y SKU, incluido cero explícito; fila ausente significa desconocido. El CSV real del piloto tiene columnas `date`, `article`, `Quantity` y líneas de ticket: el adaptador `bakery` las valida y agrega a la misma forma diaria, conservando el archivo original y reportando filas negativas excluidas. `article` es texto externo; `sku_producto(origen, sku_externo)` lo resuelve a `producto.id`. El par `comercio_id`/`sucursal_id` canónico se toma del único negocio local cuando el archivo carece de él; si está presente debe ser un único par coincidente. No se mezclan dos sucursales.
+
+```csv
+fecha_local,sku_externo,unidades_vendidas
+2022-08-23,BAGUETTE,12
+2022-08-23,CROISSANT,0
+```
+
+Todos los SKU de ventas deben aparecer en `productos`; no se crean productos a escondidas ni se descartan filas desconocidas. El archivo puede contener todo el historial de productos; solo los 3–5 productos con receta seleccionados participan en el plan de la demostración. El entrenamiento usa únicamente días anteriores a la fecha objetivo. Las ventas históricas no descuentan stock inicial, que representa un escenario simulado posterior a esas ventas.
+
+## Catálogo y recetas
+
+| Hoja | Columnas obligatorias | Regla |
+|---|---|---|
+| `productos` | `codigo`, `nombre`, `sku_externo`, `demostrar` | `codigo` y `sku_externo` únicos, texto no vacío; `demostrar` es `si` o `no`. Elegir 3–5 `si` con historial y receta. |
+| `ingredientes` | `codigo`, `nombre`, `unidad_base` | Código único; unidades permitidas en la plantilla: `g`, `kg`, `ml`, `l`, `unidad`. No se convierten unidades implícitamente. |
+| `recetas` | `codigo_producto`, `codigo_ingrediente`, `cantidad_por_unidad` | Una línea por pareja; cantidad decimal positiva en la **unidad base** del ingrediente. Cada producto con `demostrar=si` necesita al menos una línea. La primera carga crea versión de receta `1`. |
+
+En la demo no hay precios, proveedores, fórmulas de costo ni cambios automáticos de receta. Códigos repetidos, referencias inexistentes y cantidades inválidas rechazan el catálogo completo. Una receta posterior se versiona; no edita la versión usada por un plan.
+
+## Stock inicial
+
+La hoja `stock_inicial` usa `tipo` (`producto`/`ingrediente`), `codigo` interno del catálogo, `cantidad` no negativa, `codigo_lote` opcional, `fecha_caducidad` opcional y `fecha_limite_venta` opcional solo para producto. Para cada producto seleccionado y cada ingrediente de sus recetas se exige una fila o una fila explícita de cantidad `0`: la ausencia significa **stock desconocido**, no cero. La cantidad de producto es entera; la de ingrediente usa su unidad base y hasta tres decimales. No se permite un mismo lote dos veces para el mismo ítem. Si lote no se conoce, el importador asigna un código técnico único y marca procedencia «lote no informado»; la caducidad permanece desconocida.
+
+```csv
+tipo,codigo,cantidad,codigo_lote,fecha_caducidad,fecha_limite_venta
+producto,baguette,4,PT-001,2022-08-25,2022-08-24
+ingrediente,harina,12.000,ING-001,2022-12-31,
+```
+
+El stock positivo se inserta mediante movimientos `APERTURA` idempotentes y saldo por lote en la misma transacción. Una fila explícita de cero registra stock conocido sin crear un movimiento de delta cero. Después se ajusta **en FoodSave** mediante movimientos `AJUSTE`; no hace falta volver a subir los archivos. La carga inicial no ejecuta ventas ni producción física y no descuenta stock por el historial importado. Lotes vencidos antes de la fecha objetivo no aportan disponibilidad; fecha desconocida produce advertencia en el plan.
+
+## Entrenamiento y disponibilidad
+
+Tras aceptar datos, la preparación separa entrenamiento, validación y prueba por la [regla de duración y meses completos](../../foodsave-ml/POLITICA_EVALUACION.md), entrena CatBoost **una vez** sin usar la prueba para ajustar/seleccionar y guarda `.cbm` y metadatos (`version_modelo`, SHA-256, variables ordenadas, productos cubiertos y partición). Para el CSV piloto, validación es abril–junio de 2022 y prueba julio–septiembre de 2022; `2022-08-24` cae en prueba. La fecha elegida para demo debe estar en la prueba reservada. Tras preparar el modelo, `EVALUAR_MODELO` realiza un backtest cronológico sobre esa prueba. Puede tardar; un fallo de entrenamiento deja el sistema en `DATOS_CARGADOS` y permite reintentar sin recargar ventas o stock. La acción programada solo carga el artefacto listo y hace inferencia; las ventas reales del objetivo solo aparecen después como comparación. Las métricas históricas no certifican uso comercial.

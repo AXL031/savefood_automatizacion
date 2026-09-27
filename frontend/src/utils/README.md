@@ -1,5 +1,5 @@
 # Utilidades
 
-Funciones auxiliares sin reglas de negocio de un módulo.
+Funciones puras que no dependen de React, del navegador ni de la API. `fechas.ts` da formato a instantes con la zona horaria del comercio y calcula duraciones; `numeros.ts` da formato a importes y cantidades con unidades; `estados.ts` traduce los estados de ejecución a etiquetas y tonos consistentes.
 
-Esta carpeta forma parte del esqueleto del proyecto. El código se agregará al implementar su funcionalidad.
+Las reglas de planificación, compras, excedentes y reintentos pertenecen a sus módulos o al backend, no a `utils/`.

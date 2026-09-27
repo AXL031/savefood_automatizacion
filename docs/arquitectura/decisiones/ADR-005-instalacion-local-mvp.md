@@ -10,7 +10,9 @@ La tabla `negocio` contiene exactamente un registro con la identidad y configura
 
 El CSV del experimento de predicción conserva `comercio_id` y `sucursal_id` como metadatos de intercambio. Al importar se acepta un único par de identificadores por instalación; esos campos no implican soporte para varias sucursales en PostgreSQL. Las fechas operativas son locales a la zona horaria configurada en `negocio` y los instantes de auditoría se guardan en UTC.
 
-El sistema sigue funcionando sin internet para registrar datos, calcular pronósticos y preparar pedidos. El envío a Telegram necesita internet: se registra como pendiente si falla la conexión y se reintenta. La aceptación por la API de Telegram y la confirmación del proveedor son estados diferentes. Para pruebas se usa un adaptador de Telegram; otros canales se agregarán detrás del mismo contrato.
+Para el prototipo universitario, [ADR-006](ADR-006-identidades-lotes-pronosticos.md) concreta que FoodSave guarda las ventas diarias y el stock en su base local. El dataset y el Excel estático son carga inicial de demostración; después de la carga no son una fuente de saldos paralela.
+
+El sistema sigue funcionando sin internet para registrar datos y calcular pronósticos. El envío a Telegram y la preparación de pedidos ejecutables pertenecen a una etapa futura; el prototipo termina en sugerencias de compra visibles, sin envío.
 
 ## Fuera del MVP
 
@@ -21,3 +23,4 @@ La comercialización por suscripción requerirá un servicio de licencias extern
 - El diagrama y el diccionario de datos del MVP describen una instalación independiente.
 - Cada desarrollador usa su propia base local creada con Compose. Git comparte migraciones y datos ficticios de demostración, nunca el volumen de PostgreSQL ni secretos.
 - Las rutas existentes `/negocios/actual` se refieren al único comercio de la instalación.
+- [ADR-006](ADR-006-identidades-lotes-pronosticos.md) concreta la validación del par externo y el mapeo de SKU sin introducir múltiples comercios o sucursales en esta base.

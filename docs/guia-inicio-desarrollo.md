@@ -1,0 +1,42 @@
+# Alcance congelado: prototipo universitario FoodSave
+
+**Estado al 25-09-2026:** diseño para iniciar desarrollo; código de negocio y migración `0002` todavía no implementados. Se presenta como **prototipo demostrativo de automatizaciones**, no producto terminado ni listo para comercios. La primera inicialización carga datos históricos y catálogo; desde entonces FoodSave administra ventas diarias y stock en su PostgreSQL local. [ADR-007](arquitectura/decisiones/ADR-007-automatizaciones-demo.md) fija las tareas de la demo.
+
+## Demostración que se construirá
+
+1. **Primera vez:** solicitar `ventas.xlsx` y `catalogo.xlsx` (o cinco CSV equivalentes); mostrar validación, vista previa y errores. `catalogo.xlsx` contiene productos, ingredientes, recetas y stock inicial. Cargar ventas agregadas, catálogos y movimientos de apertura sin duplicar si se reintenta. [Plantillas y reglas](api/contrato-importaciones.md).
+2. **Automatización de preparación y comprobación:** la carga completa encola una tarea única que separa el historial por [meses calendario](../foodsave-ml/POLITICA_EVALUACION.md), entrena CatBoost sin usar el tramo de prueba y guarda `.cbm`, metadatos, versión, huella y partición. Al completarse, `EVALUAR_MODELO` recorre automáticamente la prueba con pronósticos de un día adelante y conserva resultados y cobertura por fecha. Ambas ejecuciones e intentos son visibles e idempotentes. El experimento histórico no acredita precisión comercial.
+3. **Automatización programada de plan:** usar una fecha histórica (caso propuesto `2022-08-24`) y 3–5 productos con receta. El administrador programa `GENERAR_PROPUESTA` para dentro de un minuto; **Celery Beat** la despacha sin pulsar «Generar». El stock inicial representa un escenario simulado al cierre previo (`2022-08-23`). El worker hace inferencia real con el artefacto guardado y persiste corrida y plan. La pantalla muestra pronóstico, stock, producción sugerida, insumos faltantes y trazas de ejecución.
+4. **Evaluación automática y dashboard:** al terminar la propuesta, `EVALUAR_PRONOSTICO` compara cada predicción con la venta real histórica del objetivo **solo después** de inferir. El panel muestra la serie de prueba reservada y, para el «último día evaluado», barras pronóstico/real, diferencia por producto, MAE, WAPE, porcentaje dentro de ±20% y cobertura. Expone meses de entrenamiento/validación/prueba y versión del modelo. El día se identifica con su fecha histórica, sin llamarlo «ayer» de la fecha real ni usar ventas del objetivo como entrada.
+5. **Automatización de promoción propuesta:** un ajuste explícito de stock de producto terminado registra movimiento y programa `EVALUAR_PROMOCION`. Beat la despacha; la regla revisa lote, fecha límite de venta, stock, horario simulado y frescura. Guarda una sugerencia con descuento y motivo, o explica por qué no procede. No activa descuentos ni publica nada externamente.
+6. **Stock propio:** el stock inicial queda por lote en la base. Los ajustes tienen motivo, clave idempotente y saldo no negativo. Ni el plan ni las ventas históricas importadas descuentan el stock del escenario simulado.
+
+La fórmula de demostración es `producir = max(0, pronóstico - stock de producto)` con margen de seguridad **0** declarado. La receta calcula ingredientes; `faltante = max(0, requerido - stock de ingrediente)`. Los faltantes son **sugerencias de compra**, no pedidos reales. El stock sin caducidad conocida se muestra con aviso; lotes vencidos antes de la fecha objetivo no se cuentan.
+
+## Fuera del prototipo
+
+POS, tickets, pagos, facturación, devoluciones, actualización automática de stock por venta o producción, proveedores, órdenes y envíos por Telegram, recepción de compras, Google Sheets, **activación real** de promociones, predicción intradía de excedentes, cierre diario operativo, reportes de impacto y despliegue comercial. Las maquetas de esas áreas pueden permanecer visibles con estado «demostración/no implementado», pero no bloquean la entrega universitaria.
+
+## Autoridad de contratos
+
+1. [ADR-005](arquitectura/decisiones/ADR-005-instalacion-local-mvp.md): una instalación y sucursal. [ADR-006](arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md): ventas y stock locales, SKU externo, lotes y corridas.
+2. [Esquema objetivo](base_de_datos/esquema-objetivo-mvp.md), [ER](base_de_datos/diagrama-entidad-relacion.mmd) y [diccionario](base_de_datos/diccionario-de-datos.md): tablas y unidades de `0002`.
+3. [Contrato de primera carga](api/contrato-importaciones.md), [contratos de módulos](api/contratos.md), [artefacto ML](../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md) y [política de evaluación](../foodsave-ml/POLITICA_EVALUACION.md): entradas, salidas, partición temporal, métricas y errores.
+4. [ADR-007](arquitectura/decisiones/ADR-007-automatizaciones-demo.md) y [programación](automatizacion/programacion.md): disparadores, ejecución, reintentos y reloj simulado.
+
+El README y la especificación funcional amplios describen la **visión futura**. Si nombran `INVENTARIO`, `ELEMENTO_PLAN_PRODUCCION`, `negocio_id`, Excel como fuente permanente, hora fija 22:00 o pedidos automáticos, prevalecen los contratos anteriores para el prototipo. Las [rutas](api/rutas-api.md) distinguen las existentes de las propuestas.
+
+## Orden de trabajo para los desarrolladores
+
+1. Cerrar validación de `zona_horaria` y `moneda` en servidor y sobre uniforme de errores. Conservar la dependencia pública de identidad ya extraída y el CI/Dockerfile corregidos.
+2. Crear migración `0002` y modelos solo de [esquema del prototipo](base_de_datos/esquema-objetivo-mvp.md); verificar índices, `CHECK`, FK, lote, movimiento atómico y ejecución durable.
+3. Implementar asistente de primera carga, adaptador del CSV `bakery`, mapeo de SKU, vistas previas, validación atómica y stock de apertura. No crear productos implícitos.
+4. Implementar ejecución durable, worker y Beat antes de conectar resultados visuales. La primera automatización prepara CatBoost una vez y registra intentos/estado.
+5. Implementar tarea programada de inferencia → plan → faltantes; validar vector de 13 características, unidades y estados `HISTORIAL_INSUFICIENTE`/`PRODUCTO_NO_CUBIERTO`.
+6. Implementar `EVALUAR_MODELO` sobre la prueba reservada y `EVALUAR_PRONOSTICO` **posterior** a la propuesta; crear dashboard con serie temporal, pronóstico/real por fecha, MAE, WAPE, ±20%, cobertura y partición, replicando las definiciones del notebook.
+7. Conectar ajuste de stock → evaluación programada → sugerencia de promoción usando la regla pura existente. Mostrar reloj simulado y hora real de disparo por separado.
+8. Verificar el recorrido: carga repetida no duplica; SKU desconocido y sucursal ajena fallan; cero explícito se distingue de ausencia; movimiento repetido no altera stock dos veces; dos entregas de Beat generan un solo efecto; el dato real del objetivo no entra en inferencia; un ajuste nuevo produce plan o sugerencia nuevos sin borrar los anteriores; se ven intentos y errores.
+
+## Criterio de demo completa
+
+Partiendo solo de la migración inicial, una persona puede completar la carga de primera vez y observar el entrenamiento automático. Programa una ejecución próxima y **Beat** genera pronóstico, plan y sugerencias sin pulsar un botón de cálculo. El dashboard compara automáticamente pronóstico y venta real del día histórico, con cobertura visible. Ajusta stock y observa una evaluación programada que registra una sugerencia de promoción o un rechazo razonado. Puede mostrar ejecución, intentos, horario real, reloj histórico simulado, resultado e idempotencia. Los resultados se rotulan como simulación con datos históricos. Hasta que ese recorrido pase de extremo a extremo, el repositorio sigue siendo una base en desarrollo.

@@ -1,5 +1,5 @@
 # Base de datos
 
-Modelo entidad-relación y [diccionario propuesto](diccionario-de-datos.md) para el MVP de una instalación local por comercio. Solo las tablas `negocio` y `usuario` pertenecen a la migración inicial; los demás esquemas requieren revisión de sus responsables.
+Modelo entidad-relación, [diccionario de datos](diccionario-de-datos.md) y [esquema objetivo](esquema-objetivo-mvp.md) para el prototipo universitario local. Solo `negocio` y `usuario` pertenecen a la migración inicial; las entidades operativas aún no tienen migración ni implementación. El ER muestra únicamente el recorrido demostrable hasta sugerencias de compra; pedidos, automatizaciones y promociones son posteriores.
 
 Aquí se conserva y actualiza la documentación de esta área.
