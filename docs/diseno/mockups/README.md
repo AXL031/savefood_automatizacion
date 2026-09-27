@@ -1,5 +1,7 @@
 # Mockups de referencia
 
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Edu Sanchez**. Tareas, dependencias y avances se detallan en la guía local.
+
 Estas son copias de los nueve PNG entregados para el proyecto. Se conservan aquí para que las referencias de diseño funcionen al compartir o clonar el repositorio. Son prototipos con datos ilustrativos, no capturas de una aplicación operativa.
 
 | Archivo | Vista |

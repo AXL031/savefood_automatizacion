@@ -1,6 +1,6 @@
 # Especificación funcional integral de FoodSave
 
-**Visión de producto posterior al prototipo.** Para el trabajo universitario inmediato rige el [alcance congelado](../guia-inicio-desarrollo.md): primera carga de ventas y catálogo, stock local, CatBoost, plan y sugerencias de compra. Las pantallas y acciones de pedidos, promociones, automatización y reportes de esta página no forman parte de la demo ni declaran rutas implementadas.
+**Visión de producto posterior al prototipo.** Para el trabajo universitario inmediato rige el [alcance congelado](../guia-inicio-desarrollo.md): primera carga de ventas y catálogo, stock local, CatBoost, plan, evaluación histórica y automatizaciones demostrativas. La demo sí programa una propuesta, crea pedidos por proveedor, envía por Telegram real a un chat de pruebas y evalúa una promoción **sugerida**, con trazas y panel de pronóstico frente a venta real. Activación de promociones, recepción física, automatización diaria operativa y reportes de impacto quedan para después. Las secciones de esta página no declaran rutas implementadas.
 
 ## Objetivo del producto
 
@@ -22,6 +22,8 @@ La cabecera identifica el **negocio activo** y el rol **Administrador**. Las pan
 
 Cada sección conserva la misma navegación, encabezado y contexto de negocio.
 
+La propiedad vigente y las funciones fuera de la demo se detallan en [responsabilidades](../equipo/responsabilidades.md). Panel histórico corresponde a Kevin; Edu coordina la estructura visual común.
+
 ## Responsables de todos los módulos
 
 | Módulo | Responsable |
@@ -30,27 +32,27 @@ Cada sección conserva la misma navegación, encabezado y contexto de negocio.
 | Negocios y configuración | Axel Cueva |
 | Automatizaciones y control | Axel Cueva |
 | Notificaciones | Axel Cueva |
-| Panel principal | Edu Sanchez |
-| Informes | Edu Sanchez |
-| Ingredientes | Kevin Bohorquez |
-| Recetas | Kevin Bohorquez |
+| Panel principal | Kevin Bohorquez |
+| Informes | Kevin Bohorquez |
+| Ingredientes | Max Rojas |
+| Recetas | Max Rojas |
 | Pronósticos | Kevin Bohorquez |
-| Planificación | Kevin Bohorquez |
-| Productos | Leonardo Vera |
-| Ventas | Leonardo Vera |
+| Planificación | Max Rojas |
+| Productos | Edu Sanchez |
+| Ventas | Edu Sanchez |
 | Producción | Leonardo Vera |
 | Inventario | Leonardo Vera |
 | Proveedores | Leonardo Aguirre |
 | Compras | Leonardo Aguirre |
-| Excedentes | Max Rojas |
-| Promociones | Max Rojas |
-| Desperdicio | Max Rojas |
+| Excedentes | Leonardo Vera |
+| Promociones | Leonardo Vera |
+| Desperdicio | Leonardo Vera |
 
 Las funciones de acceso, catálogos, recetas, ventas, notificaciones y desperdicio aparecen en esta matriz para que ningún módulo quede sin dueño. Las secciones siguientes desarrollan el comportamiento del producto y señalan quién responde por cada una. Cuando una vista reúne datos de varios módulos, cada responsable entrega sus datos mediante un contrato compartido.
 
 ## 1. Panel principal
 
-**Responsable:** Edu Sanchez. Los indicadores de otros dominios proceden de sus respectivos responsables.
+**Responsable:** Kevin Bohorquez. Los indicadores de otros dominios proceden de sus respectivos responsables.
 
 **Finalidad.** Dar una lectura rápida del día y permitir entrar a la causa o el detalle de los cambios relevantes.
 
@@ -62,7 +64,7 @@ Las funciones de acceso, catálogos, recetas, ventas, notificaciones y desperdic
 
 ## 2. Planificación de producción
 
-**Responsable:** Kevin Bohorquez. El registro de producción real y las existencias corresponden a Leonardo Vera.
+**Responsable:** Max Rojas. El registro de producción real y las existencias corresponden a Leonardo Vera.
 
 **Finalidad.** Revisar y aprobar una propuesta de producción y conocer sus necesidades de abastecimiento.
 
@@ -114,7 +116,7 @@ Las funciones de acceso, catálogos, recetas, ventas, notificaciones y desperdic
 
 ## 7. Excedentes
 
-**Responsable:** Max Rojas.
+**Responsable:** Leonardo Vera.
 
 **Finalidad.** Detectar productos que podrían quedar sin vender antes del cierre y proponer una acción preventiva.
 
@@ -126,7 +128,7 @@ Las funciones de acceso, catálogos, recetas, ventas, notificaciones y desperdic
 
 ## 8. Promociones
 
-**Responsable:** Max Rojas.
+**Responsable:** Leonardo Vera.
 
 **Finalidad.** Aplicar descuentos de forma manual o como respuesta al riesgo de excedente y comprobar su efecto.
 
@@ -180,7 +182,7 @@ Las funciones de acceso, catálogos, recetas, ventas, notificaciones y desperdic
 
 ## 12. Informes e impacto
 
-**Responsable:** Edu Sanchez.
+**Responsable:** Kevin Bohorquez.
 
 **Finalidad visible.** Presentar resultados de producción, automatización y reducción de desperdicio para un periodo.
 

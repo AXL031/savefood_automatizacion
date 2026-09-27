@@ -59,7 +59,7 @@ La suma de ingredientes se redondea al final a tres decimales hacia arriba. `uni
 }
 ```
 
-No existe `pedido_compra` ni envío en el prototipo. Una corrida nueva o un ajuste de stock produce otro plan y conserva el anterior. Repetir la misma operación con igual entrada no duplica plan.
+Las necesidades con faltante positivo alimentan [pedidos por proveedor](contrato-pedidos.md). Una corrida nueva o un ajuste de stock produce otro plan y conserva el anterior. Repetir la misma operación con igual entrada no duplica plan ni pedido.
 
 ## Inventario propio
 
@@ -89,4 +89,4 @@ Una evaluación negativa se persiste con `proponer=false`, `descuento_pct=null` 
 
 ## Evolución posterior
 
-Pedidos, proveedores, recepción, **activación** de promociones, cierre diario real y conectores Excel/Google Sheets quedan fuera del primer recorrido. Requieren contratos propios antes de crear rutas o tablas. Las rutas de [rutas-api.md](rutas-api.md) están clasificadas como existentes o propuestas.
+Recepción física, pago, **activación** de promociones, cierre diario real y conectores Excel/Google Sheets quedan fuera del primer recorrido. Proveedor mínimo, pedido y Telegram forman parte de este prototipo según [contrato-pedidos.md](contrato-pedidos.md). Las rutas de [rutas-api.md](rutas-api.md) están clasificadas como existentes o propuestas.

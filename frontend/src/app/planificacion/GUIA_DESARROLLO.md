@@ -1,0 +1,48 @@
+# Guía de desarrollo — Planificación y necesidades de ingredientes
+
+**Carpeta:** `frontend/src/app/planificacion`.
+
+**Responsable:** Max Rojas. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.
+
+**Bloque:** Ingredientes, recetas y planificación. **Tareas:** M02, M03, M04.
+
+## Leer antes de trabajar
+
+- [Instrucciones para IA](../../../../AGENTS.md).
+- [Reparto vigente y criterios de entrega](../../../../docs/equipo/responsabilidades.md).
+- [Dependencias entre integrantes](../../../../docs/equipo/dependencias.md).
+- [Alcance de la demo](../../../../docs/guia-inicio-desarrollo.md).
+- [docs/api/contratos.md](../../../../docs/api/contratos.md).
+- [docs/api/contrato-pedidos.md](../../../../docs/api/contrato-pedidos.md).
+
+## Punto de partida
+
+La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Max Rojas](../../../../docs/equipo/avances/rojas.md) para el último estado.
+
+## Trabajo en esta carpeta
+
+1. Mostrar producción sugerida por producto con pronóstico, stock y receta de origen.
+2. Mostrar necesidades agregadas con disponible/faltante/unidad y advertencias.
+3. Enlazar corrida y pedidos; nunca cambiar stock desde una acción de consultar/generar plan.
+
+## Organización de implementación
+
+La ruta compone `page.tsx` y componentes del feature correspondiente. Usar layout protegido y cliente HTTP común. Resolver carga, vacío, error, permisos y sesión vencida. Tener una carpeta y una guía no hace que la página exista: conectarla solo cuando su contrato esté publicado.
+
+## Dependencias y contrato de entrega
+
+- **Recibe:** Corrida, recetas versionadas, disponibilidad por fecha y clave de operación.
+- **Entrega:** Plan reproducible y necesidades para Aguirre.
+- **Puede avanzar ahora:** reglas/formularios y pruebas con ejemplos de contrato identificados como fixtures.
+- **Integración real:** requiere el servicio del proveedor descrito en [la matriz de dependencias](../../../../docs/equipo/dependencias.md). Documentar firma, campos, errores y ejemplo antes de conectar al consumidor.
+
+## Criterios de terminado
+
+- No modifica inventario y no inventa ceros para predicción no disponible.
+- Ingrediente compartido por varios productos se suma una vez correctamente.
+- Repetir entrada recupera el plan; recálculo conserva el anterior.
+- API, tipos, persistencia e interfaz propios coinciden; pruebas relevantes documentadas con resultados reales.
+
+## Documentar el avance y entregar al siguiente
+
+Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/rojas.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.

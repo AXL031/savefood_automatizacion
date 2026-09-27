@@ -28,6 +28,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       FRONTEND_ORIGIN: http://localhost:3000
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -43,6 +44,7 @@ services:
       DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
     depends_on:
       postgres:
         condition: service_healthy

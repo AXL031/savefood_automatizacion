@@ -1,5 +1,7 @@
 # FoodSave ML
 
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Kevin Bohorquez**. Tareas, dependencias y avances se detallan en la guía local.
+
 Primer experimento de predicción diaria basado en la guía proporcionada. El notebook es autónomo y no depende del backend ni del frontend.
 
 En el [prototipo universitario](../docs/guia-inicio-desarrollo.md), las ventas históricas de este dataset se cargan **una vez** en PostgreSQL junto con catálogo, recetas y stock inicial. El entrenamiento CatBoost ocurre una vez como preparación de la demo; el botón «Generar» usa el artefacto guardado. El notebook actual sigue siendo experimental hasta añadir versión y huella al exportador.

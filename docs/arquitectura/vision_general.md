@@ -11,9 +11,8 @@ flowchart LR
     R --> W[Trabajadores<br/>Celery]
     B[Celery Beat] --> R
     W --> D
-    W --> P[Proveedores]
-    W --> C[Canales de venta]
-    W --> N[Servicio de notificaciones]
+    W --> T[Telegram Bot API]
+    T --> P[Chat de pruebas que simula al proveedor]
 ```
 
 La API organiza las reglas de negocio por dominio. Un módulo se comunica con otro a través de servicios o contratos definidos, sin acceder directamente a su repositorio. El motor de automatización orquesta las tareas, verifica sus resultados, reintenta los fallos y registra cada ejecución.

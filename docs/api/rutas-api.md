@@ -32,10 +32,18 @@ Base `/api/v1`, salvo `/salud`. **Solo la primera tabla está implementada**; la
 | `GET /pronosticos/evaluacion` | Partición, versión y serie diaria del backtest reservado con MAE, WAPE, ±20% y cobertura. | Bearer |
 | `GET /pronosticos/corridas/{id}/evaluacion` | Comparación por producto del día elegido: previsto, real conocido, error y cobertura. | Bearer |
 | `GET /planes/{id}` | Elementos y necesidades; faltante positivo es sugerencia. | Bearer |
+| `GET /proveedores` | Proveedores y ofertas de la demo. | Bearer |
+| `POST /proveedores` | Alta de proveedor. | Administrador |
+| `POST /proveedores/{id}/ofertas` | Asociar ingrediente y conversión explícita de compra. | Administrador |
+| `POST /proveedores/{id}/vincular-telegram` | Vincular y verificar chat de destino. | Administrador |
+| `GET /pedidos?plan_id={id}` | Pedidos generados y necesidades sin proveedor. | Bearer |
+| `GET /pedidos/{id}` | Líneas, aprobación, estado e intentos de Telegram. | Bearer |
+| `POST /pedidos/{id}/aprobar` | Aprobar envío en modo manual. | Administrador |
+| `POST /pedidos/{id}/conciliar` | Resolver resultado de envío incierto con evidencia. | Administrador |
 | `GET /promociones/evaluaciones` | Sugerencia o motivo de rechazo por lote; no activa descuentos. | Bearer |
 
 La preparación ML usa el worker existente **solo a demanda** y un estado durable en `configuracion_inicial`. Celery Beat ejecuta cada 30 segundos el despachador de programaciones de pronóstico/plan y promoción; el primer entrenamiento se encola por evento de carga, no por horario. Una segunda solicitud mientras entrena recupera la misma preparación, no inicia otro entrenamiento. Si falla, el estado vuelve a datos cargados con error visible y se permite reintentar.
 
 ## Visión futura, fuera de la demo
 
-Proveedores, pedidos/enviar/recibir, **activación** de promociones, excedentes intradía, notificaciones, informes, importación recurrente, Google Sheets y automatización diaria con ventas reales. Sus pantallas históricas no implican que haya API implementada ni tablas en la migración `0002` del prototipo.
+Recepción física de pedidos, **activación** de promociones, excedentes intradía, notificaciones, informes, importación recurrente, Google Sheets y automatización diaria con ventas reales. Proveedor mínimo, pedido y envío real a chat de pruebas sí están en la [demo](contrato-pedidos.md); sus rutas aún no están implementadas.

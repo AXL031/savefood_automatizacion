@@ -1,13 +1,12 @@
 # C4 · Contenedores
 
-Muestra la interfaz, la API, los trabajos asíncronos y los sistemas de almacenamiento.
+Muestra los contenedores y el canal externo del prototipo. La publicación de descuentos y las alertas externas son posteriores.
 
 ```mermaid
 flowchart LR
     administrador[Administrador]
-    proveedor[Proveedor]
-    canal[Canal de venta]
-    avisos[Servicio de notificaciones]
+    telegram[Telegram Bot API]
+    proveedor[Chat de pruebas que simula al proveedor]
 
     subgraph FoodSave
         interfaz[Aplicación web<br/>Next.js]
@@ -23,7 +22,6 @@ flowchart LR
     api -->|Encola tareas| cola
     cola -->|Entrega tareas| trabajador
     trabajador -->|Lee y escribe| base
-    trabajador -->|Envía pedidos| proveedor
-    trabajador -->|Publica promociones| canal
-    trabajador -->|Envía alertas| avisos
+    trabajador -->|sendMessage| telegram
+    telegram -->|Entrega pedido de demostración| proveedor
 ```

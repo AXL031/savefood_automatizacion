@@ -30,7 +30,7 @@ Todos los SKU de ventas deben aparecer en `productos`; no se crean productos a e
 | `ingredientes` | `codigo`, `nombre`, `unidad_base` | Código único; unidades permitidas en la plantilla: `g`, `kg`, `ml`, `l`, `unidad`. No se convierten unidades implícitamente. |
 | `recetas` | `codigo_producto`, `codigo_ingrediente`, `cantidad_por_unidad` | Una línea por pareja; cantidad decimal positiva en la **unidad base** del ingrediente. Cada producto con `demostrar=si` necesita al menos una línea. La primera carga crea versión de receta `1`. |
 
-En la demo no hay precios, proveedores, fórmulas de costo ni cambios automáticos de receta. Códigos repetidos, referencias inexistentes y cantidades inválidas rechazan el catálogo completo. Una receta posterior se versiona; no edita la versión usada por un plan.
+El catálogo inicial no incluye precios ni proveedores; después de cargarlo, el administrador configura el proveedor de prueba, sus ofertas por ingrediente y el chat de Telegram según el [contrato de pedidos](contrato-pedidos.md). No hay fórmulas de costo ni cambios automáticos de receta. Códigos repetidos, referencias inexistentes y cantidades inválidas rechazan el catálogo completo. Una receta posterior se versiona; no edita la versión usada por un plan.
 
 ## Stock inicial
 

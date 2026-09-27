@@ -2,6 +2,8 @@
 
 El plan usa semanas académicas y evita asignar fechas de calendario no confirmadas. Las semanas 1 a 3 son hitos comunicados por el equipo; la semana 5 es la semana actual y contempla presentar el avance del repositorio. El contenido de la semana 4 debe validarse con el equipo. Las semanas 6 a 16 son objetivos propuestos para seis responsables que trabajan **en paralelo por módulos completos**: interfaz, servidor, API, pruebas e integración.
 
+**Nota de vigencia (26-09-2026):** esta tabla conserva el plan original y sus hitos propuestos; no describe el estado actual del código ni el alcance de la entrega universitaria ya acotada. Para ejecutar el prototipo, usar las [puertas de integración](../base-para-desarrollo.md) y el [criterio de demo](../guia-inicio-desarrollo.md). Proveedor mínimo, pedido desde el plan y Telegram real a chat de pruebas **sí entran** por [ADR-008](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md). Activación de descuentos, recepción física y operación diaria siguen después.
+
 | Semana | Objetivo | Entregable o criterio de aceptación | Estado |
 |---|---|---|---|
 | 1 | Presentar la idea del proyecto | Problema, público objetivo y propuesta FoodSave explicados | Realizado según el equipo |

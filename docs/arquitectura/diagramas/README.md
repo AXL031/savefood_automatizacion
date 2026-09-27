@@ -1,5 +1,7 @@
 # Diagramas
 
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**. Tareas, dependencias y avances se detallan en la guía local.
+
 Abre estos archivos Markdown en GitHub para ver sus bloques Mermaid como gráficos:
 
 | Vista | Archivo | Qué muestra |

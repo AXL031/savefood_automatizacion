@@ -1,30 +1,34 @@
-# Puerta de arranque de los módulos
+# Puerta de arranque de los módulos del prototipo
 
-Esta guía aplica al MVP local de [ADR-005](../arquitectura/decisiones/ADR-005-instalacion-local-mvp.md). El núcleo ejecutable se entrega antes de que cada responsable incorpore su primera migración de dominio.
+Esta guía aplica al [alcance universitario congelado](../guia-inicio-desarrollo.md) y a las [puertas de integración](../base-para-desarrollo.md). El código actual solo contiene el núcleo de acceso y una tarea de prueba: aprobar esta puerta no significa que la demo ya funcione.
 
 ## Comprobación en cada computadora
 
-1. Clonar el repositorio, crear `.env` a partir de `.env.example` y elegir claves locales propias.
+1. Clonar el repositorio, copiar `.env.example` a `.env` y elegir claves locales propias.
 2. Levantar los servicios con `docker compose up --build -d`.
 3. Aplicar `docker compose exec api alembic upgrade head` y crear el administrador con `docker compose exec -it api python -m app.core.crear_admin`.
-4. Comprobar `GET http://localhost:8000/salud`, iniciar sesión en `http://localhost:3000` y comprobar que aparece el comercio local.
+4. Comprobar `GET http://localhost:8000/salud`, iniciar sesión en `http://localhost:3000` y abrir la configuración del comercio local.
 5. Ejecutar la tarea de prueba de Celery descrita en el README principal.
 
-Una persona distinta a quien preparó la base debe completar estos pasos antes de declarar reproducible el entorno. El resultado se registra en una solicitud de incorporación.
+Una segunda persona debe completar esos pasos en su computadora antes de declarar reproducible el núcleo. Registrar sistema operativo, versión de Docker, salida de migración, prueba de worker y fallos encontrados en la solicitud de incorporación.
 
-## Entrega de cada responsable
+## Primer corte por responsable
 
-| Responsable | Primer contrato a cerrar | Primer corte implementable |
-|---|---|---|
-| Axel | Identidad local, estados de ejecución, clave de idempotencia y aviso | Configuración del negocio, permisos y registro de una ejecución de prueba. |
-| Edu | Indicadores y componentes visuales compartidos | Navegación y panel que muestre datos reales de los módulos disponibles. |
-| Kevin | Unidad de ingrediente, receta, entrada del pronóstico y salida del plan | Ingredientes/recetas y servicio de pronóstico local con versión de modelo. |
-| Leonardo Vera | Identidad estable del producto, importación de ventas y saldos | Productos, ventas e inventario con API y persistencia. |
-| Leonardo Aguirre | Faltantes, estados de pedido y confirmación | Proveedor, pedido y adaptador de Telegram de prueba. |
-| Max | Riesgo, descuento y medición de desperdicio | Detección, promoción y registro de resultado. |
+Consultar el [reparto detallado](responsabilidades.md), las [dependencias](dependencias.md) y el [registro obligatorio de avances](avances/README.md).
 
-Cada dueño completa los campos y restricciones de sus tablas en el [diccionario](../base_de_datos/diccionario-de-datos.md), acuerda sus contratos de entrada y salida con quienes los consumen, incorpora su migración y verifica su ruta con una prueba significativa. Si dos ramas agregan migraciones en paralelo, se crea una revisión de unión de Alembic o se reordena la segunda migración antes de integrar; nunca se reescribe una migración ya aplicada por el equipo.
+| Responsable | Entrega del prototipo |
+|---|---|
+| Axel Cueva | Acceso, configuración y motor de automatizaciones. Tareas A01–A04 del reparto vigente. |
+| Edu Sanchez | Inicialización, productos, ventas y estructura visual compartida. Tareas E01–E04 del reparto vigente. |
+| Kevin Bohorquez | Modelo predictivo, evaluación histórica y dashboard. Tareas K01–K04 del reparto vigente. |
+| Leonardo Vera | Inventario por lotes y promociones sugeridas. Tareas V01–V04 del reparto vigente. |
+| Leonardo Aguirre | Proveedores, pedidos y Telegram. Tareas L01–L04 del reparto vigente. |
+| Max Rojas | Ingredientes, recetas y planificación. Tareas M01–M04 del reparto vigente. |
 
-## Integración mínima esperada
+Cada cambio de dominio incluye modelo, migración, API, interfaz necesaria y prueba de la frontera que modifica. El [esquema `0002`](../base_de_datos/esquema-objetivo-mvp.md) tiene claves cruzadas: acordar primero nombres y restricciones en una revisión conjunta. No reescribir una migración que otro integrante ya haya aplicado.
 
-La primera demostración conectada sigue esta ruta: venta registrada → pronóstico → plan → faltantes → pedido → intento de envío a Telegram → estado del pedido → panel. El estado `ENVIADO` exige respuesta satisfactoria de Telegram; `CONFIRMADO` exige acción explícita del proveedor. Si se corta internet, el pedido permanece pendiente y el reintento queda registrado.
+## Recorrido mínimo integrado
+
+Primera carga de ventas y catálogo → preparación automática de CatBoost → backtest histórico → propuesta programada por Beat → pronóstico, plan, faltantes y pedidos por proveedor → aprobación opcional y envío real a chat de pruebas por Telegram → evaluación posterior frente a la venta conocida → panel con cobertura → ajuste de stock → evaluación programada de promoción sugerida. La misma carga, programación o tarea entregada dos veces conserva un solo efecto local por clave y entrada. El plan, el pedido y la promoción no ejecutan producción física, recepción ni cambios de precio.
+
+La entrega se acepta con el [criterio de demo completa](../guia-inicio-desarrollo.md), no con una pantalla aislada o un servicio que solo funcione manualmente.

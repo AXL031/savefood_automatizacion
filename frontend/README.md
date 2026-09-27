@@ -1,5 +1,7 @@
 # Interfaz
 
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Edu Sanchez**. Tareas, dependencias y avances se detallan en la guía local.
+
 La aplicación Next.js incluye acceso, configuración del comercio, automatizaciones, detalle de ejecución y notificaciones. La configuración de nombre, zona horaria y moneda usa la API actual. Automatizaciones y notificaciones muestran estados honestos hasta que existan sus rutas de backend; ninguna acción se simula como guardada o enviada.
 
 Rutas: `/iniciar-sesion`, `/configuracion`, `/automatizaciones`, `/automatizaciones/ejecuciones/[id]` y `/notificaciones`. La raíz redirige a configuración. El acceso protegido comprueba perfil y negocio antes de mostrar datos.

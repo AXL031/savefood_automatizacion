@@ -12,7 +12,7 @@ El CSV del experimento de predicción conserva `comercio_id` y `sucursal_id` com
 
 Para el prototipo universitario, [ADR-006](ADR-006-identidades-lotes-pronosticos.md) concreta que FoodSave guarda las ventas diarias y el stock en su base local. El dataset y el Excel estático son carga inicial de demostración; después de la carga no son una fuente de saldos paralela.
 
-El sistema sigue funcionando sin internet para registrar datos y calcular pronósticos. El envío a Telegram y la preparación de pedidos ejecutables pertenecen a una etapa futura; el prototipo termina en sugerencias de compra visibles, sin envío.
+El sistema sigue funcionando sin internet para registrar datos y calcular pronósticos. La decisión posterior [ADR-008](ADR-008-pedidos-desde-el-plan.md) incorporó pedidos desde el plan y envío real a un chat de pruebas por Telegram. Esa salida requiere internet; si no está disponible, el pedido y el fallo quedan visibles y no se declara enviado.
 
 ## Fuera del MVP
 

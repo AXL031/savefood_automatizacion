@@ -8,7 +8,7 @@ Tras aceptar ventas, catálogo, recetas y stock inicial, `configuracion_inicial`
 
 ## 2. Hora programada → pronóstico → plan → faltantes
 
-El administrador elige una hora real próxima y una fecha histórica dentro del tramo de prueba. Beat despacha `GENERAR_PROPUESTA` al vencer. El worker lee el modelo listo y las ventas anteriores a `fecha_objetivo_demo`, persiste corrida con versión, lee lotes/recetas locales, persiste plan y calcula faltantes. Tras persistir la corrida se encola `EVALUAR_PRONOSTICO`, que lee la venta real del objetivo solo para comparar. La pantalla muestra el flujo, el resultado de ese día y su relación con la serie histórica de prueba. Reentregar las tareas con las mismas claves recupera los mismos efectos. Generar el plan no consume inventario ni envía pedidos.
+El administrador elige una hora real próxima y una fecha histórica dentro del tramo de prueba. Beat despacha `GENERAR_PROPUESTA` al vencer. El worker lee el modelo listo y las ventas anteriores a `fecha_objetivo_demo`, persiste corrida con versión, lee lotes/recetas locales, persiste plan y calcula faltantes. A partir de necesidades positivas crea pedidos por proveedor según [ADR-008](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md). En modo `REQUIERE_APROBACION` espera al administrador; en modo `AUTOMATICO` solicita el envío por Telegram tras validar el chat y las unidades. Tras persistir la corrida se encola `EVALUAR_PRONOSTICO`, que lee la venta real del objetivo solo para comparar. La pantalla muestra el flujo, la fecha histórica, el pedido y el estado real del mensaje. Reentregar tareas con las mismas claves recupera los mismos efectos. Generar el plan o enviar el pedido no consume inventario.
 
 ## 3. Ajuste de stock → evaluación programada de promoción
 
@@ -18,4 +18,4 @@ Un ajuste de stock de producto terminado registra movimiento con hora local **ef
 
 Cada automatización conserva programación, ejecución, hasta tres intentos, error o salida, instantes reales y parámetros del escenario histórico. Un duplicado inocuo queda marcado como resultado ya existente; una clave con entrada diferente es conflicto. La vista de exposición permite mostrar una ejecución completa y una sin sugerencia por vencimiento o stock insuficiente, sin simular éxito donde no hubo efecto.
 
-Los flujos de pedidos, confirmación, recepción, promoción publicada y cierre diario real pertenecen a la [visión futura](../vision-futura.md).
+La confirmación comercial del proveedor, recepción física, promoción publicada y cierre diario real pertenecen a la [visión futura](../vision-futura.md). El envío por Telegram de la demo usa un chat propio que simula al proveedor y se marca «no surtir».

@@ -1,6 +1,8 @@
 # Promociones
 
-Generación, activación y seguimiento de promociones.
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable: **Leonardo Vera**. Tareas, dependencias y avances se detallan en la guía local.
+
+Evaluación y persistencia de promociones sugeridas de la demo. La activación externa pertenece a una etapa posterior.
 
 ## Primera regla configurable
 
@@ -23,17 +25,14 @@ Por eso la condición es **más de 10**, no *menos de 10*: pocas existencias por
 sí solas no indican riesgo de desperdicio. Cada producto puede tener su propio
 umbral, horario y porcentaje; los números del ejemplo no son valores globales.
 
-La función devuelve `proponer`, `motivo` y `descuento_pct`. La aplicación
-deberá guardar el estado, evitar duplicados por producto/sucursal y fecha,
-permitir aprobación o activación según la configuración y confirmar con el
-punto de venta que el descuento realmente se aplicó. Una propuesta no cuenta
-como promoción activa ni como alimento salvado. Al cierre se deberán registrar
-las unidades vendidas bajo promoción y las desechadas para medir el resultado.
-Con el CSV histórico de solo ventas no se puede ejecutar esta regla: faltan
-stock actual, fecha límite de venta y descuentos.
+La función devuelve `proponer`, `motivo` y `descuento_pct`. En esta demo se guarda
+una evaluación por ejecución/lote con la versión de regla y el reloj simulado.
+Una propuesta no cuenta como promoción activa ni como alimento salvado. La
+activación en POS y medición posterior quedan fuera del alcance. El CSV de
+ventas se complementa con stock por lotes y fechas del escenario simulado.
 
-Esta carpeta forma parte del esqueleto del proyecto. El código se agregará al implementar su funcionalidad.
+Ya existe la regla pura; faltan persistencia, API, tarea y pantalla integradas.
 
-**Responsable del módulo:** Max Rojas. La responsabilidad incluye interfaz, servidor y APIs según [la división del equipo](../../../../documentacion/equipo/responsabilidades.md).
+**Responsable del módulo:** Leonardo Vera. La responsabilidad incluye interfaz, servidor y APIs según [la división del equipo](../../../../docs/equipo/responsabilidades.md).
 
 **Estructura prevista:** `rutas.py`, `servicio.py`, `repositorio.py`, `modelos.py`, `esquemas.py`, `dependencias.py`, `errores.py` y `tests/`. Crear estos archivos con su implementación, sin acceder directamente al repositorio de otro módulo.

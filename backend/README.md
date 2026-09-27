@@ -1,5 +1,7 @@
 # Servidor
 
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**. Tareas, dependencias y avances se detallan en la guía local.
+
 La API FastAPI inicial incluye conexión a PostgreSQL, autenticación básica, configuración del único negocio local y una tarea de prueba de Celery. `app/modules/` agrupa los dominios; `app/core/` contiene la sesión de datos y seguridad inicial; `app/workers/` aloja tareas asíncronas; `app/integrations/` contendrá adaptadores externos. Las pruebas generales van en `tests/`.
 
 En cada módulo, la estructura prevista es `rutas.py`, `servicio.py`, `repositorio.py`, `modelos.py`, `esquemas.py`, `dependencias.py`, `errores.py` y `tests/`. Estos archivos aparecerán al implementar cada módulo, con código y pruebas reales.

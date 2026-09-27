@@ -1,12 +1,12 @@
 # FoodSave
 
-FoodSave permite planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. **El alcance inmediato es un prototipo universitario local** para un comercio y una sucursal. Su [guía de desarrollo](docs/guia-inicio-desarrollo.md), [ADR-005](docs/arquitectura/decisiones/ADR-005-instalacion-local-mvp.md) y [ADR-006](docs/arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md) prevalecen sobre las referencias históricas de este README a SaaS, varias sucursales, stock en Excel permanente, pedidos automáticos o promoción operativa. La comercialización es futura.
+FoodSave permite planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. **El alcance inmediato es un prototipo universitario local** para un comercio y una sucursal. Su [guía de desarrollo](docs/guia-inicio-desarrollo.md), [ADR-005](docs/arquitectura/decisiones/ADR-005-instalacion-local-mvp.md), [ADR-006](docs/arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md) y [ADR-008](docs/arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) prevalecen sobre las referencias históricas de este README a SaaS, varias sucursales, stock en Excel permanente o promoción operativa. La demo sí contempla pedidos derivados del plan y envío real por Telegram a un chat de pruebas, con aprobación configurable. La comercialización es futura.
 
 El núcleo inicial ya incluye una interfaz mínima, API, PostgreSQL, Redis, trabajador y migración de negocio y usuario. Los módulos de ventas, inventario, ML y plan **aún no están implementados**; el [esquema del prototipo](docs/base_de_datos/esquema-objetivo-mvp.md) define la futura migración `0002`. El trabajador actual solo ejecuta una tarea de prueba.
 
 ## Arranque local de desarrollo
 
-1. Instala Docker con Compose y copia `.env.example` a `.env`. Cambia `POSTGRES_PASSWORD` por una clave alfanumérica larga y `JWT_SECRET` por una cadena aleatoria larga; no subas `.env` a Git.
+1. Instala Docker con Compose y copia `.env.example` a `.env`. Cambia `POSTGRES_PASSWORD` por una clave alfanumérica larga y `JWT_SECRET` por una cadena aleatoria larga; no subas `.env` a Git. `TELEGRAM_BOT_TOKEN` se completará al implementar la ruta de envío a tu chat de pruebas; hoy ningún módulo lo utiliza.
 2. Ejecuta `docker compose up --build -d` desde la raíz del repositorio.
 3. Ejecuta `docker compose exec api alembic upgrade head` para crear el núcleo de datos.
 4. Ejecuta `docker compose exec -it api python -m app.core.crear_admin` y escribe el correo y contraseña del administrador.
@@ -16,7 +16,13 @@ Cada PC tiene su propio volumen de PostgreSQL. `docker compose down` detiene los
 
 ## Guía rápida
 
+- [Guías por carpeta y responsable](docs/equipo/mapa-carpetas.md).
+- [Dependencias y entregas entre integrantes](docs/equipo/dependencias.md).
+- [Registro obligatorio de avances](docs/equipo/avances/README.md).
+- [Instrucciones para IA](AGENTS.md).
+
 - [Alcance y criterio de demo del prototipo universitario](docs/guia-inicio-desarrollo.md).
+- [Estado real de la base y puertas para desarrollar](docs/base-para-desarrollo.md): decisiones cerradas, brechas y orden de integración.
 - [Especificación integral de diseño](docs/diseno/especificacion-visual.md): reglas visuales, pantallas, componentes, estados y accesibilidad.
 - [Especificación funcional de módulos](docs/funcionalidades/especificacion-modulos.md): qué muestra y permite hacer cada sección.
 - [Cronograma semanal](docs/equipo/cronograma.md): hitos de las semanas 1 a 16 y estado de cada entrega.
@@ -372,7 +378,7 @@ Campos sugeridos:
 
 ## 7.3 Productos
 
-**Responsable:** Leonardo Vera.
+**Responsable:** Edu Sanchez.
 
 Entidad:
 - producto
@@ -397,7 +403,7 @@ Funcionalidades:
 
 ## 7.4 Ingredientes y recetas
 
-**Responsable de ambos módulos:** Kevin Bohorquez.
+**Responsable:** Max Rojas.
 
 Entidades:
 - ingrediente
@@ -421,7 +427,7 @@ Funcionalidades:
 
 ## 7.5 Ventas
 
-**Responsable:** Leonardo Vera.
+**Responsable:** Edu Sanchez.
 
 Entidad:
 - venta
@@ -553,7 +559,7 @@ Métodos futuros:
 
 ## 7.9 Planificación
 
-**Responsable:** Kevin Bohorquez.
+**Responsable:** Max Rojas.
 
 Fórmula conceptual:
 
@@ -664,7 +670,7 @@ Estados:
 
 ## 7.12 Excedentes
 
-**Responsable:** Max Rojas.
+**Responsable:** Leonardo Vera.
 
 Cálculo conceptual:
 ```text
@@ -695,7 +701,7 @@ Riesgo:
 
 ## 7.13 Promociones
 
-**Responsable:** Max Rojas.
+**Responsable:** Leonardo Vera.
 
 Entidad:
 - promoción
@@ -963,7 +969,7 @@ Posibles integraciones:
 
 # 10. Informes
 
-**Responsable:** Edu Sanchez.
+**Responsable:** Kevin Bohorquez.
 
 Métricas:
 
@@ -1384,96 +1390,95 @@ servicio_proveedores.buscar_proveedor_preferido(ingrediente_id)
 
 # 16. División del equipo
 
-Los módulos funcionales se reparten entre las seis personas. Una persona puede encargarse de varios módulos relacionados; **cada módulo tiene un único responsable de interfaz, servidor, API, pruebas e integración**. Los componentes compartidos tienen una persona coordinadora, pero los cambios de cada dominio siguen siendo responsabilidad de su dueño.
+El reparto vigente equilibra seis bloques completos por complejidad técnica. Cada integrante entrega interfaz, backend, API, datos, pruebas e integración. La definición detallada, tareas A01–M04 y criterios de terminado están en [responsabilidades](docs/equipo/responsabilidades.md). El reparto anterior queda sustituido.
 
-| Responsable | Módulos asignados | Alcance integrado |
+| Responsable | Bloque | Dificultad principal |
 |---|---|---|
-| Axel Cueva | Autenticación; Negocios y configuración; Automatizaciones y control; Notificaciones | Acceso por negocio, preferencias, programación, ejecuciones, reintentos y avisos |
-| Edu Sanchez | Panel principal; Informes | Indicadores, consultas agregadas, visualizaciones y componentes de interfaz compartidos |
-| Kevin Bohorquez | Ingredientes; Recetas; Pronósticos; Planificación | Catálogo de ingredientes, composición de productos, demanda prevista, planes y faltantes |
-| Leonardo Vera | Productos; Ventas; Producción; Inventario | Catálogo de productos, datos operativos, existencias y movimientos |
-| Leonardo Aguirre | Proveedores; Compras | Oferta de insumos, selección de proveedor, pedidos, envíos y confirmaciones |
-| Max Rojas | Excedentes; Promociones; Desperdicio | Detección de riesgo, acciones preventivas, medición y merma real |
+| Axel Cueva | Acceso, configuración y motor de automatizaciones | Concurrencia, programación durable y recuperación de tareas. |
+| Edu Sanchez | Inicialización, productos, ventas y estructura visual compartida | Validación de archivos, consistencia entre dominios y carga atómica. |
+| Kevin Bohorquez | Modelo predictivo, evaluación histórica y dashboard | Reproducibilidad, ventanas temporales, cobertura y ausencia de fuga de datos. |
+| Leonardo Vera | Inventario por lotes y promociones sugeridas | Atomicidad de saldos, concurrencia, caducidad y reloj simulado. |
+| Leonardo Aguirre | Proveedores, pedidos y Telegram | Efectos externos, estados de compra y duplicados entre planes. |
+| Max Rojas | Ingredientes, recetas y planificación | Versiones de recetas, cálculos decimales e integración pronóstico/stock/compras. |
 
-Esta tabla cubre todos los módulos de la sección 7 y los módulos de automatización, notificaciones e informes. **Configuración** forma parte de Negocios y configuración; **ejecuciones y recuperación** forman parte de Automatizaciones y control. Las dependencias entre responsables se coordinan mediante contratos, sin trasladar la propiedad de un módulo.
+## Axel Cueva
 
-## Responsabilidades comunes
+- **A01 — Completar identidad, roles y configuración:** Validar zona horaria y moneda; exponer modo de aprobación; uniformar errores y mantener acceso/sesión en UI.
+- **A02 — Construir programaciones y ejecuciones durables:** Modelos, rutas, pantallas, estados, clave idempotente, intentos y consulta de resultados.
+- **A03 — Implementar Beat y recuperación:** Despachador, lease, reentregas, reintentos de tareas internas y publicación recuperable tras commit.
+- **A04 — Preparar infraestructura común:** Compose, imágenes, volúmenes y variables; integrar requisitos ML de Kevin y canal de Aguirre; CI y migraciones.
 
-- **Interfaz:** crear las pantallas, formularios y visualizaciones de su módulo, con validaciones y estados de carga, error y ausencia de datos.
-- **Servidor:** implementar reglas de negocio, persistencia, modelos y migraciones de su módulo.
-- **API:** diseñar, implementar y documentar las rutas de su módulo y conectarlas con su interfaz.
-- **Calidad:** probar el módulo, aplicar los permisos por negocio y documentar su uso.
-- **Integración:** acordar contratos con los demás responsables y entregar su funcionalidad completa, desde la interfaz hasta la base de datos.
+Su entrega incluye las pruebas y criterios detallados del [reparto](docs/equipo/responsabilidades.md) y el registro [cueva.md](docs/equipo/avances/cueva.md).
 
-## Axel Cueva — Autenticación, negocios, automatización y notificaciones
+## Edu Sanchez
 
-- **Interfaz:** acceso, configuración del negocio, automatizaciones, historial de ejecuciones, errores, reintentos y notificaciones.
-- **Servidor:** autenticación, permisos por negocio, reglas de configuración, programación y ejecución de tareas, verificación, reintentos, eventos y avisos; configuración de Redis, Celery y Celery Beat.
-- **API:** autenticación, negocios y configuración, automatizaciones, ejecuciones, reintentos y notificaciones.
-- **Integración:** orquestar los servicios de los demás módulos mediante contratos acordados y coordinar la arquitectura general.
+- **E01 — Definir y cargar productos y ventas:** Mapear SKU externos, persistir ventas agregadas, conservar revisiones y distinguir ausencia de cero.
+- **E02 — Construir asistente XLSX/CSV:** Lectores, validación, vista previa, huellas y confirmación; orquestar servicios de Max y Vera en una transacción.
+- **E03 — Preparar primera inicialización:** Estado durable, datos de ejemplo, archivos y aviso de preparación ML; pedir ejecución a Axel y entrada a Kevin.
+- **E04 — Entregar pantallas y piezas comunes:** Productos, ventas y asistente; navegación, formularios y estados reutilizables; contratos del cliente HTTP con Axel.
 
-## Edu Sanchez — Panel principal e informes
+Su entrega incluye las pruebas y criterios detallados del [reparto](docs/equipo/responsabilidades.md) y el registro [sanchez.md](docs/equipo/avances/sanchez.md).
 
-- **Interfaz:** panel de control, filtros, indicadores, tablas y gráficos; coordinación de la estructura visual y los componentes compartidos.
-- **Servidor:** consultas y agregaciones para métricas operativas, de predicción, automatización, impacto económico y desperdicio.
-- **API:** rutas del panel y los informes, con filtros y respuestas adecuadas para las visualizaciones.
-- **Integración:** obtener datos de los demás módulos y presentar resultados consolidados.
+## Kevin Bohorquez
 
-## Kevin Bohorquez — Ingredientes, recetas, predicción y planificación
+- **K01 — Extraer entrenamiento reutilizable:** Llevar la lógica del notebook a funciones ejecutables en worker; partición temporal y validaciones del artefacto.
+- **K02 — Implementar inferencia y persistencia:** Construir las 13 características por calendario, validar modelo y cobertura, guardar corrida y pronósticos.
+- **K03 — Implementar evaluación histórica:** Backtest por fecha y comparación posterior con revisión de venta; MAE, WAPE, ±20% y cobertura.
+- **K04 — Construir dashboard y vistas de pronóstico:** API de métricas, serie histórica, comparación por producto, fecha y versión; gráficos con componentes de Edu.
 
-- **Interfaz:** ingredientes, recetas, pronósticos, métricas de predicción, planes de producción y necesidades de insumos.
-- **Servidor:** catálogo de ingredientes, composición de recetas, preparación de datos, predicción de demanda, planes y cálculo de ingredientes.
-- **API:** ingredientes, recetas, pronósticos, planes y necesidades de insumos.
-- **Integración:** utilizar ventas, recetas e inventario; entregar faltantes al módulo de compras y permitir la planificación automática.
+Su entrega incluye las pruebas y criterios detallados del [reparto](docs/equipo/responsabilidades.md) y el registro [bohorquez.md](docs/equipo/avances/bohorquez.md).
 
-## Leonardo Vera — Productos, ventas, producción e inventario
+## Leonardo Vera
 
-- **Interfaz:** productos, ventas, importación de archivos CSV, producción, existencias y movimientos de inventario.
-- **Servidor:** catálogo de productos, registro de ventas y producción, importación de datos, existencias y movimientos.
-- **API:** productos, ventas, producción e inventario; importación CSV y movimientos.
-- **Integración:** proporcionar datos operativos a predicción, planificación, excedentes e informes.
+- **V01 — Implementar lotes y apertura:** Persistir lote, unidad, caducidad, saldo y procedencia; servicio de apertura para el importador de Edu.
+- **V02 — Implementar ajustes y disponibilidad:** Bloqueo/transacción, delta, motivo, clave y hora efectiva; agregación de stock elegible por fecha para Max.
+- **V03 — Integrar regla de promoción:** Versionar regla y persistir aceptación/rechazo; programar evaluación mediante Axel tras el ajuste.
+- **V04 — Entregar inventario y promoción en UI:** Saldos, filtros por lote, movimientos, formulario de ajuste y detalle de evaluación.
 
-## Leonardo Aguirre — Proveedores y compras
+Su entrega incluye las pruebas y criterios detallados del [reparto](docs/equipo/responsabilidades.md) y el registro [vera.md](docs/equipo/avances/vera.md).
 
-- **Interfaz:** proveedores, insumos suministrados, precios, pedidos y seguimiento de estados y envíos.
-- **Servidor:** selección de proveedores, generación y envío de pedidos, precios y gestión de estados.
-- **API:** gestión de proveedores e insumos, generación y consulta de pedidos, envío y reintento de pedidos.
-- **Integración:** recibir faltantes de planificación y conectar el abastecimiento con las automatizaciones.
+## Leonardo Aguirre
 
-## Max Rojas — Excedentes, promociones y desperdicio
+- **L01 — Implementar proveedores y ofertas:** Proveedor activo, chat de prueba, ingrediente, unidad de compra, factor, mínimo y múltiplo.
+- **L02 — Generar pedidos desde necesidades:** Agrupar por proveedor y preservar cálculo; cerrar con Max la prevención de recompra entre planes de la misma fecha.
+- **L03 — Implementar aprobación y canal:** Estados de compra, snapshot de modo, aprobación administrativa, bot y mensaje real al chat propio.
+- **L04 — Resolver fallos y entregar UI:** Pantallas de proveedor/pedido/envío, destino bloqueado, timeout incierto y conciliación con evidencia.
 
-- **Interfaz:** excedentes, niveles de riesgo, promociones, seguimiento de resultados y registro de desperdicio.
-- **Servidor:** detección y clasificación de excedentes, reglas de promoción, activación, seguimiento, desperdicio y métricas del módulo.
-- **API:** consulta de excedentes, generación y gestión de promociones, registro y consulta de desperdicio.
-- **Integración:** utilizar ventas y producción, conectar las acciones preventivas con las automatizaciones y proporcionar resultados a informes.
+Su entrega incluye las pruebas y criterios detallados del [reparto](docs/equipo/responsabilidades.md) y el registro [aguirre.md](docs/equipo/avances/aguirre.md).
 
-## Coordinación de elementos compartidos
+## Max Rojas
 
-- Axel coordina arquitectura, contratos, infraestructura base e integración general; cada persona implementa y verifica la integración de sus módulos.
-- Edu coordina la estructura visual y los componentes compartidos; cada persona construye las pantallas de sus módulos con esa base.
-- Autenticación y negocios pertenecen a Axel; productos, a Leonardo Vera; ingredientes y recetas, a Kevin. Se consulta al dueño antes de cambiar contratos compartidos.
-- La responsabilidad integral definida aquí prevalece sobre las listas antiguas de entregables por capas de otras secciones.
+- **M01 — Implementar ingredientes y recetas:** Unidades base, relaciones, versiones y servicios para primera carga; formularios de consulta/edición acordados.
+- **M02 — Calcular plan de producción:** Consumir corrida de Kevin y stock de Vera; aplicar max(0, pronóstico-stock) y guardar snapshots.
+- **M03 — Calcular necesidades y faltantes:** Agregar ingredientes de todos los productos, redondear al final, guardar requerido/disponible/faltante y entregar a Aguirre.
+- **M04 — Entregar pantalla y contrato del plan:** Detalle, trazas de receta/stock/pronóstico, avisos y enlace a pedidos; versiones y respuesta API.
+
+Su entrega incluye las pruebas y criterios detallados del [reparto](docs/equipo/responsabilidades.md) y el registro [rojas.md](docs/equipo/avances/rojas.md).
+
+Axel coordina infraestructura; Edu coordina UI común. Cada dueño implementa sus servicios y pantallas. Kevin mantiene dashboard y gráficos; Max planificación; Vera promociones. Las carpetas futuras de producción, desperdicio, notificaciones e informes operativos no se suman a la carga de la demo.
 
 # 17. Dependencias del equipo
 
-**Planificación y abastecimiento:** Leonardo Vera entrega ventas e inventario a Kevin Bohorquez; Kevin genera pronósticos, planes y faltantes para Leonardo Aguirre; Leonardo gestiona proveedores y compras; Axel coordina la ejecución automática y el control.
+| Entrega | Responsable | Consumidor |
+|---|---|---|
+| Identidad y motor de tareas | Axel | Los cinco bloques de dominio |
+| Productos, ventas e importación | Edu | Kevin, Max y Vera |
+| Ingredientes y recetas | Max | Importador de Edu, inventario de Vera y ofertas de Aguirre |
+| Apertura y disponibilidad de lotes | Vera | Importador de Edu y plan de Max |
+| Corrida de pronóstico | Kevin | Plan de Max |
+| Necesidades agregadas del plan | Max | Pedidos de Aguirre |
+| Proveedor, pedido y estado Telegram | Aguirre | UI de compras y ejecución de Axel |
+| Métricas históricas | Kevin | Su dashboard, sobre layout de Edu |
 
-**Prevención de excedentes:** Leonardo Vera entrega ventas y producción a Max Rojas; Max detecta excedentes y gestiona promociones; Axel coordina la automatización y sus reintentos.
+La [matriz de dependencias](docs/equipo/dependencias.md) explica qué puede adelantarse con fixtures y qué bloquea integración real. No se espera un módulo completo: se entrega primero contrato y servicio mínimo. Edu orquesta la primera carga usando servicios de Max/Vera en una misma transacción. Cada dueño escribe su tarea; Axel ofrece el motor.
 
-**Visualización:** cada responsable desarrolla las pantallas de su módulo. Edu coordina la estructura visual compartida y construye el panel y los informes con los datos de los demás módulos.
+# 18. Entregables y registro de avances
 
-# 18. Entregables por persona
+Antes de implementar una frontera, su dueño publica tablas/restricciones, cuerpo de API, estados, errores y ejemplos. Una entrega termina cuando la API y pantalla propias usan persistencia real, sus pruebas pasan y un consumidor puede reproducir el ejemplo.
 
-Cada entrega incluye interfaz, lógica del servidor, rutas de la API, pruebas y documentación de su módulo:
+**Instrucción para cada integrante y su IA:** al cerrar un avance significativo, actualizar el resumen vigente y bitácora de [su registro](docs/equipo/avances/README.md). Incluir tarea, comportamiento disponible, archivos clave, contrato/ejemplo, pruebas ejecutadas, configuración, bloqueo y siguiente paso. Si queda parcial, indicar exactamente qué falta. El siguiente desarrollador parte del registro y los enlaces, sin tener que recorrer todo el código.
 
-- **Axel:** autenticación, negocios y configuración, automatizaciones, control, reintentos, notificaciones e integración general.
-- **Edu:** panel de control, informes, visualizaciones y componentes compartidos.
-- **Kevin:** ingredientes, recetas, pronósticos, planes de producción y faltantes.
-- **Leonardo Vera:** productos, ventas, producción, inventario e importación de archivos CSV.
-- **Leonardo Aguirre:** proveedores, pedidos, envíos y seguimiento de estados.
-- **Max:** excedentes, promociones, seguimiento y desperdicio.
-
-La [sección 16](#16-división-del-equipo) detalla las responsabilidades.
+Cada carpeta fuente/documental incluye `GUIA_DESARROLLO.md` con responsable, alcance, tareas, dependencias y aceptación. Consultar [mapa de carpetas](docs/equipo/mapa-carpetas.md) y [AGENTS.md](AGENTS.md). Cualquier cambio de contrato actualiza también la guía local y el registro de avance.
 
 # 19. Flujo de trabajo con Git
 
@@ -1503,15 +1508,14 @@ Cada solicitud debe incluir descripción, módulo afectado, forma de probarlo, d
 
 # 20. Orden de construcción
 
-1. **Base técnica:** estructura del repositorio, Docker, FastAPI, Next.js, PostgreSQL, Redis, Celery, autenticación y configuración.
-2. **Datos base:** negocios, productos, recetas, ingredientes y proveedores.
-3. **Operación:** ventas, producción e inventario.
-4. **Inteligencia:** pronósticos, planificación y necesidades de ingredientes.
-5. **Abastecimiento:** compras, selección de proveedores y envío de pedidos.
-6. **Prevención:** excedentes, promociones y desperdicio.
-7. **Automatización:** programación, ejecución, verificación, reintentos y notificaciones.
-8. **Visualización:** panel de control, informes e historial de automatizaciones.
-9. **Integración:** flujos completos, pruebas, manejo de errores y observabilidad.
+1. **Contratos y núcleo:** los seis cierran sus interfaces; Axel completa identidad/motor y Edu estructura visual compartida.
+2. **Catálogos y transacciones:** Edu productos/ventas; Max ingredientes/recetas; Vera lotes/apertura; Aguirre proveedor/oferta.
+3. **Carga y modelo:** Edu integra carga atómica; Kevin entrena e infiere mediante worker de Axel.
+4. **Plan y compra:** Max integra corrida/stock y entrega necesidades; Aguirre genera pedido y aplica aprobación/Telegram.
+5. **Evaluación y promoción:** Kevin integra métricas/panel; Vera ajusta stock y evalúa promoción vía motor común.
+6. **Recuperación y entrega:** los seis prueban fronteras, reentregas, rollback y fallos; actualizan registros y demuestran el recorrido.
+
+La [matriz de dependencias](docs/equipo/dependencias.md) detalla lo que cada integrante puede adelantar en paralelo.
 
 # 21. Flujos de extremo a extremo
 
@@ -1705,7 +1709,7 @@ kebab-case
 
 # 33. Panel principal
 
-**Responsable:** Edu Sanchez.
+**Responsable:** Kevin Bohorquez.
 
 Debe responder:
 - ¿Qué está pasando hoy?
@@ -1783,16 +1787,16 @@ FoodSave debe ser capaz de:
 
 # 36. Resumen de responsabilidades
 
-Cada persona entrega su módulo completo: interfaz, servidor y rutas de la API.
+El [reparto detallado](docs/equipo/responsabilidades.md) es la fuente vigente. Las [dependencias](docs/equipo/dependencias.md) y [avances](docs/equipo/avances/README.md) permiten continuar trabajo entre integrantes.
 
-| Persona | Módulo |
+| Persona | Bloque |
 |---|---|
-| Axel Cueva | Autenticación; negocios y configuración; automatizaciones y control; notificaciones |
-| Edu Sanchez | Panel principal; informes |
-| Kevin Bohorquez | Ingredientes; recetas; pronósticos; planificación |
-| Leonardo Vera | Productos; ventas; producción; inventario |
-| Leonardo Aguirre | Proveedores; compras |
-| Max Rojas | Excedentes; promociones; desperdicio |
+| Axel Cueva | Acceso, configuración y motor de automatizaciones |
+| Edu Sanchez | Inicialización, productos, ventas y estructura visual compartida |
+| Kevin Bohorquez | Modelo predictivo, evaluación histórica y dashboard |
+| Leonardo Vera | Inventario por lotes y promociones sugeridas |
+| Leonardo Aguirre | Proveedores, pedidos y Telegram |
+| Max Rojas | Ingredientes, recetas y planificación |
 
 # 37. Decisión técnica consolidada
 

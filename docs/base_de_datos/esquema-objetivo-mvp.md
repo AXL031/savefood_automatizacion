@@ -10,7 +10,7 @@
 
 ## Primera inicialización y catálogo
 
-La futura `0002` añade a `negocio` los campos textuales `comercio_externo` y `sucursal_externa`, configurados juntos durante la primera carga. Son metadatos del archivo/modelo, no IDs de otros registros locales. El dataset `bakery` puede usar `piloto`/`principal`; se rechaza un archivo que declare otro par.
+La futura `0002` añade a `negocio` los campos textuales `comercio_externo` y `sucursal_externa`, configurados juntos durante la primera carga, y `modo_envio_pedidos` con valor inicial `REQUIERE_APROBACION` y valores permitidos `REQUIERE_APROBACION`/`AUTOMATICO`. Los identificadores externos son metadatos del archivo/modelo, no IDs de otros registros locales. El dataset `bakery` puede usar `piloto`/`principal`; se rechaza un archivo que declare otro par.
 
 | Tabla | Campos mínimos | Claves y reglas |
 |---|---|---|
@@ -53,7 +53,7 @@ La apertura positiva y cada ajuste bloquean el lote, comprueban saldo final no n
 | `evaluacion_pronostico` | `id`, `ejecucion_id FK`, `corrida_id FK`, `pronostico_id FK`, `revision_venta_id FK`, `producto_id FK`, `cantidad_pronosticada`, `unidades_reales`, `error_absoluto`, `creado_en`. | `UNIQUE(corrida_id, producto_id, revision_venta_id)`; solo si predicción y venta real son conocidas. La revisión fija exactamente qué valor real se comparó. No alimenta la inferencia ni modifica el pronóstico. |
 | `plan_produccion` | `id`, `corrida_id FK`, `ejecucion_id FK`, `clave_ejecucion`, `huella_stock_recetas`, `fecha_objetivo`, `stock_leido_en`, `estado`, `creado_en`. | `UNIQUE(clave_ejecucion)`; misma clave y huella devuelve el mismo plan, distinta huella es conflicto. Una misma corrida admite otro plan si cambió stock o receta. Solo `PROPUESTO` en demo. No cambia stock. |
 | `elemento_plan` | `id`, `plan_id FK`, `producto_id FK`, `pronostico_id FK`, `receta_id FK`, `cantidad_pronosticada`, `stock_disponible`, `cantidad_producir`, `vigencia_stock_desconocida`. | `UNIQUE(plan_id, producto_id)`; enteros no negativos. Guarda cifras leídas para reproducibilidad. |
-| `necesidad_ingrediente` | `id`, `plan_id FK`, `ingrediente_id FK`, `cantidad_requerida`, `cantidad_disponible`, `cantidad_faltante`, `unidad`, `vigencia_stock_desconocida`. | `UNIQUE(plan_id, ingrediente_id)`; cantidades no negativas en unidad base. Es la **sugerencia de compra** cuando `cantidad_faltante > 0`; no existe pedido/enviado en demo. |
+| `necesidad_ingrediente` | `id`, `plan_id FK`, `ingrediente_id FK`, `cantidad_requerida`, `cantidad_disponible`, `cantidad_faltante`, `unidad`, `vigencia_stock_desconocida`. | `UNIQUE(plan_id, ingrediente_id)`; cantidades no negativas en unidad base. Cuando `cantidad_faltante > 0`, sirve de origen trazable para una línea de pedido si hay proveedor y conversión válidos. |
 
 Para la demo se fija margen de seguridad **cero** y se informa como supuesto. `cantidad_producir = max(0, cantidad_pronosticada - stock_disponible)`. `cantidad_requerida` suma `cantidad_producir × cantidad_por_unidad` por ingrediente usando las recetas versionadas; se redondea hacia arriba a tres decimales **al final**. `cantidad_faltante = max(0, cantidad_requerida - cantidad_disponible)`. Un pronóstico no disponible o receta faltante genera estado explicativo y no un cero ficticio. Un nuevo cálculo con ventas, modelo, receta o stock diferentes usa nueva clave y conserva corridas/planes anteriores.
 
@@ -75,6 +75,20 @@ El [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md) fija t
 
 La apertura tiene hora efectiva del escenario anterior al objetivo. Un ajuste de producto puede declarar, por ejemplo, `2022-08-24 17:45` y agenda evaluación para un instante real próximo con reloj simulado `2022-08-24 18:00`. La regla compara la hora efectiva del último movimiento con ese reloj para medir frescura; los dos instantes se muestran junto al disparo UTC real. Una reentrega de Beat o del worker no crea otra corrida, plan o evaluación para la misma clave y huella.
 
+## Proveedores y pedidos de la demo
+
+La decisión de [pedidos desde el plan](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) amplió el prototipo. La `0002` debe incluir estas entidades y sus relaciones en el ER antes de escribir la migración:
+
+| Tabla | Campos mínimos | Claves y reglas |
+|---|---|---|
+| `proveedor` | `id`, `codigo`, `nombre`, `telegram_chat_id NULL`, `telegram_verificado_en NULL`, `activo`, `creado_en`. | `UNIQUE(codigo)`; chat verificado para envío. El destino de la exposición es un chat propio que simula al proveedor. |
+| `oferta_ingrediente` | `id`, `proveedor_id FK`, `ingrediente_id FK`, `unidad_compra`, `factor_a_unidad_base`, `multiplo_compra`, `minimo_compra`, `preferida`, `activo`. | Factor y múltiplo positivos, mínimo no negativo; una sola oferta preferida activa por ingrediente en la demo. Todas las conversiones son explícitas. |
+| `pedido_compra` | `id`, `plan_id FK`, `proveedor_id FK`, `clave_idempotencia`, `huella_entrada`, `modo_envio`, `estado`, `aprobado_por FK NULL`, `aprobado_en NULL`, `creado_en`, `actualizado_en`. | `UNIQUE(plan_id, proveedor_id)` y `UNIQUE(clave_idempotencia)`; modo copiado del negocio al crear; estados según el [contrato de pedidos](../api/contrato-pedidos.md). |
+| `linea_pedido` | `id`, `pedido_id FK`, `necesidad_ingrediente_id FK`, `oferta_ingrediente_id FK`, `faltante_base`, `cantidad_compra`, `unidad_compra`, `factor_a_unidad_base`, `multiplo_compra`, `minimo_compra`. | `UNIQUE(necesidad_ingrediente_id)`; cantidades positivas; una necesidad no se asigna a dos proveedores; copia inmutable del cálculo y la oferta usada. |
+| `envio_pedido` | `id`, `pedido_id FK`, `numero_intento`, `estado`, `iniciado_en`, `finalizado_en NULL`, `telegram_message_id NULL`, `mensaje_enviado NULL`, `error NULL`. | `UNIQUE(pedido_id, numero_intento)`; `message_id` solo con respuesta exitosa; un resultado incierto queda pendiente de conciliación y no se reenvía solo. Nunca guarda el token del bot. |
+
+El [contrato de pedidos](../api/contrato-pedidos.md) fija fórmula, transiciones, aprobación opcional y evidencia del envío. El mensaje de prueba lleva la marca «DEMOSTRACIÓN — NO SURTIR» y la fecha histórica. Crear o enviar un pedido no altera inventario.
+
 ## No crear en `0002` del prototipo
 
-`proveedor`, `pedido_compra`, `envio_pedido`, `recepcion_pedido`, publicación de descuentos, predicción intradía de excedentes y Google Sheets pertenecen a la visión futura. `programacion_demo` y la evaluación de promoción **sí** están en `0002`, pero solo producen resultados de simulación. El [ER](diagrama-entidad-relacion.mmd) del prototipo contiene estas tablas y las dos existentes de `0001`.
+`recepcion_pedido`, factura, pago, publicación de descuentos, predicción intradía de excedentes y Google Sheets pertenecen a la visión futura. `programacion_demo`, pedidos y evaluación de promoción **sí** están en `0002`. El [ER](diagrama-entidad-relacion.mmd) del prototipo debe reflejar estas tablas junto a las dos existentes de `0001`.
