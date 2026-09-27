@@ -17,26 +17,42 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
 
   useEffect(() => {
     const control = new AbortController();
-    obtenerEjecucion(token, id, control.signal)
-      .then((dato) => { setEjecucion(dato); setError(""); })
-      .catch((fallo: unknown) => {
+    let temporizador: ReturnType<typeof setTimeout>;
+    setEjecucion(null);
+    setCargando(true);
+    async function actualizar() {
+      let continuar = true;
+      try {
+        const dato = await obtenerEjecucion(token, id, control.signal);
         if (control.signal.aborted) return;
-        setError(fallo instanceof Error ? fallo.message : "No se pudo cargar la ejecución.");
-      })
-      .finally(() => { if (!control.signal.aborted) setCargando(false); });
-    return () => control.abort();
+        setEjecucion(dato);
+        setError("");
+        continuar = dato.estado !== "COMPLETADA" && dato.estado !== "FALLIDA";
+      } catch (fallo) {
+        if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudo cargar la ejecución.");
+      } finally {
+        if (!control.signal.aborted) {
+          setCargando(false);
+          if (continuar) temporizador = setTimeout(actualizar, 3000);
+        }
+      }
+    }
+    void actualizar();
+    return () => { control.abort(); clearTimeout(temporizador); };
   }, [token, id]);
 
   if (cargando) return <EstadoPanel titulo="Cargando ejecución" descripcion="Consultando el estado en la API local." />;
-  if (error) {
+  if (error && !ejecucion) {
     return <EstadoPanel tono="alerta" titulo="No se pudo abrir la ejecución" descripcion={error} accion={<Link href="/automatizaciones">Volver a automatizaciones</Link>} />;
   }
   if (!ejecucion) return <EstadoPanel titulo="Ejecución no encontrada" descripcion="Comprueba el identificador o vuelve al historial." />;
 
   return <>
     <Link className="back-link" href="/automatizaciones">← Todas las automatizaciones</Link>
+    {error && <div className="inline-error" role="alert">No se pudo actualizar: {error}</div>}
     {ejecucion.estado === "FALLIDA" && <EstadoPanel tono="alerta" titulo="Esta ejecución requiere atención" descripcion={ejecucion.mensaje_error || "Consulta los intentos para identificar la causa."} />}
-    {ejecucion.estado === "PENDIENTE" && <EstadoPanel tono="info" titulo="Pendiente de despacho" descripcion="La programación y esta ejecución están guardadas. El despachador automático se incorporará en el corte A03." />}
+    {ejecucion.estado === "PENDIENTE" && <EstadoPanel tono="info" titulo="Ejecución pendiente" descripcion="La tarea está guardada y espera su hora o un worker disponible. El estado se actualiza automáticamente mientras la ejecución está activa." />}
+    {ejecucion.estado === "REINTENTANDO" && <EstadoPanel tono="info" titulo="Reintento programado" descripcion={ejecucion.mensaje_error || "El motor volverá a intentar la tarea después de la espera indicada."} />}
     <div className="stats-grid">
       <div className="card stat"><span>Estado</span><div className="stat-badge"><EstadoBadge estado={ejecucion.estado} /></div></div>
       <div className="card stat"><span>Intentos realizados</span><strong>{ejecucion.intentos.length}</strong></div>
@@ -52,6 +68,7 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
         <h2>Datos de ejecución</h2>
         <p>Tipo: {ejecucion.tipo}</p>
         <p>Clave: {ejecucion.clave_idempotencia}</p>
+        <p>Primer despacho: {ejecucion.despachada_en ? formatearFechaHora(ejecucion.despachada_en, zonaHoraria) : "Pendiente"}</p>
         {typeof ejecucion.datos_entrada.ejecutar_desde_utc === "string" && <p>Hora real programada: {formatearFechaHora(ejecucion.datos_entrada.ejecutar_desde_utc, zonaHoraria)}</p>}
         {typeof ejecucion.datos_entrada.fecha_hora_simulada_local === "string" && <p>Escenario histórico: {ejecucion.datos_entrada.fecha_hora_simulada_local.replace("T", " ")}</p>}
         <p>Próximo intento: {ejecucion.proximo_intento_en ? formatearFechaHora(ejecucion.proximo_intento_en, zonaHoraria) : "Sin programar"}</p>

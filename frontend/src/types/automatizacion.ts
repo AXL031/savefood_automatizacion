@@ -53,6 +53,8 @@ export type EjecucionAutomatizacion = {
   inicio_en: string | null;
   fin_en: string | null;
   proximo_intento_en: string | null;
+  despachada_en: string | null;
+  lease_hasta: string | null;
   datos_salida: Record<string, unknown> | null;
   mensaje_error: string | null;
   intentos: IntentoAutomatizacion[];

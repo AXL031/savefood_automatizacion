@@ -64,6 +64,8 @@ def serializar_ejecucion(sesion: Session, ejecucion: EjecucionAutomatizacion) ->
         "inicio_en": _utc(ejecucion.inicio_en),
         "fin_en": _utc(ejecucion.fin_en),
         "proximo_intento_en": _utc(ejecucion.proximo_intento_en),
+        "despachada_en": _utc(ejecucion.despachada_en),
+        "lease_hasta": _utc(ejecucion.lease_hasta),
         "datos_salida": ejecucion.datos_salida_json,
         "mensaje_error": ejecucion.mensaje_error,
         "intentos": [

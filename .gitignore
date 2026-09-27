@@ -18,6 +18,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+backend/model_artifacts/
 
 # Editores y sistema operativo
 .DS_Store

@@ -19,6 +19,7 @@ function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaH
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
+  const [errorCarga, setErrorCarga] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [filtro, setFiltro] = useState<EstadoEjecucion | "TODAS">("TODAS");
   const [horaReal, setHoraReal] = useState("");
@@ -33,17 +34,25 @@ function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaH
 
   useEffect(() => {
     const control = new AbortController();
-    Promise.all([listarProgramaciones(token, control.signal), listarEjecuciones(token, control.signal)])
-      .then(([programadas, registradas]) => {
+    let temporizador: ReturnType<typeof setTimeout>;
+    async function actualizar() {
+      try {
+        const [programadas, registradas] = await Promise.all([listarProgramaciones(token, control.signal), listarEjecuciones(token, control.signal)]);
+        if (control.signal.aborted) return;
         setProgramaciones(programadas);
         setEjecuciones(registradas);
-        setError("");
-      })
-      .catch((fallo: unknown) => {
-        if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudieron cargar las automatizaciones.");
-      })
-      .finally(() => { if (!control.signal.aborted) setCargando(false); });
-    return () => control.abort();
+        setErrorCarga("");
+      } catch (fallo) {
+        if (!control.signal.aborted) setErrorCarga(fallo instanceof Error ? fallo.message : "No se pudieron actualizar las automatizaciones.");
+      } finally {
+        if (!control.signal.aborted) {
+          setCargando(false);
+          temporizador = setTimeout(actualizar, 5000);
+        }
+      }
+    }
+    void actualizar();
+    return () => { control.abort(); clearTimeout(temporizador); };
   }, [token]);
 
   async function guardar(evento: FormEvent<HTMLFormElement>) {
@@ -68,7 +77,7 @@ function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaH
       const [programadas, registradas] = await Promise.all([listarProgramaciones(token), listarEjecuciones(token)]);
       setProgramaciones(programadas);
       setEjecuciones(registradas);
-      setMensaje(`Programación #${creada.id} guardada. Su ejecución queda pendiente hasta conectar Beat en A03.`);
+      setMensaje(`Programación #${creada.id} guardada. El motor la recogerá al llegar la hora real; el estado se actualiza automáticamente.`);
       setClave(`propuesta-${crypto.randomUUID()}`);
     } catch (fallo) {
       setError(fallo instanceof Error ? fallo.message : "No se pudo guardar la programación.");
@@ -83,14 +92,15 @@ function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaH
   );
 
   return <>
-    <EstadoPanel tono="info" titulo="Programación disponible; despacho pendiente" descripcion="A02 guarda programaciones y ejecuciones pendientes con clave única. Beat y los cálculos de pronóstico, plan y pedidos se conectan en A03 y en los módulos de sus responsables." />
+    <EstadoPanel tono="info" titulo="Motor automático disponible; cálculos pendientes de integración" descripcion="Las programaciones se despachan con los servicios de automatización encendidos. Los cálculos de pronóstico y plan aún requieren conectar sus módulos; mientras tanto, una ejecución informa el servicio faltante." />
+    {errorCarga && <div className="inline-error" role="alert">No se pudo actualizar: {errorCarga}</div>}
     {error && <div className="inline-error" role="alert">{error}</div>}
     {mensaje && <div className="inline-success" role="status">{mensaje}</div>}
     <div className="page-grid section-space">
       <section className="card main-card">
         <div className="section-heading"><div><h2>Programar propuesta demostrativa</h2><p>La hora real fija cuándo se despachará; la hora simulada identifica el escenario histórico.</p></div></div>
         <form className="form-grid" onSubmit={guardar}>
-          <label className="field">Hora real próxima<input type="datetime-local" value={horaReal} onChange={(e) => setHoraReal(e.target.value)} disabled={!administrador || guardando} required /></label>
+          <label className="field">Hora real próxima (zona de este equipo)<input type="datetime-local" value={horaReal} onChange={(e) => setHoraReal(e.target.value)} disabled={!administrador || guardando} required /></label>
           <label className="field">Hora local del escenario<input type="datetime-local" value={horaSimulada} onChange={(e) => setHoraSimulada(e.target.value)} disabled={!administrador || guardando} required /></label>
           <label className="field field-full">IDs de productos<input value={productos} onChange={(e) => setProductos(e.target.value)} placeholder="1, 2, 3" disabled={!administrador || guardando} required /><small>Usa IDs del catálogo cuando Edu lo entregue. La programación todavía no comprueba la existencia del producto.</small></label>
           <label className="field field-full">Clave de la solicitud<input value={clave} onChange={(e) => setClave(e.target.value)} maxLength={128} disabled={!administrador || guardando} required /><small>Repetir esta clave con los mismos datos recupera la programación. Cambiar sus datos produce un conflicto.</small></label>
@@ -98,7 +108,7 @@ function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaH
         </form>
         {!administrador && <p className="helper-text">Solo un administrador puede crear programaciones.</p>}
       </section>
-      <aside className="card aside-card"><h2>Estado de A02</h2><p>Crear una programación reserva una ejecución pendiente. Ningún intento se inicia y no se genera un pronóstico hasta conectar el despachador y las funciones de dominio.</p><div className="fact"><span>Programaciones</span><strong>{programaciones.length}</strong></div><div className="fact"><span>Ejecuciones</span><strong>{ejecuciones.length}</strong></div></aside>
+      <aside className="card aside-card"><h2>Seguimiento automático</h2><p>El motor revisa tareas cada 30 segundos. Un fallo interno temporal permite hasta tres intentos. Consulta el detalle para ver el resultado o el motivo del fallo.</p><p className="helper-text">La vista se actualiza cada 5 segundos y muestra hasta 50 registros recientes. Las horas reales de las tablas se muestran en {zonaHoraria}.</p><div className="fact"><span>Programaciones recientes</span><strong>{programaciones.length}</strong></div><div className="fact"><span>Ejecuciones recientes</span><strong>{ejecuciones.length}</strong></div></aside>
     </div>
     <section className="card section-space">
       <div className="section-heading"><div><h2>Programaciones guardadas</h2><p>Se muestran por separado la hora real y el reloj del escenario.</p></div></div>

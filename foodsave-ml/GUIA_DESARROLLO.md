@@ -21,6 +21,8 @@ Archivos técnicos observados al preparar esta guía: `.gitignore`, `bakery_sale
 
 Kevin coordina la carpeta; normalizar_ventas.py corresponde a Edu por su frontera de importación.
 
+**Infraestructura transversal A04 de Axel:** Compose comparte `MODEL_ARTIFACT_DIR` entre worker (escritura) y API (solo lectura), con el extra `ml` instalado en la imagen backend. El volumen vacío es solo una capacidad de infraestructura; Kevin sigue siendo responsable de producir/verificar CBM y metadatos y de probar su servicio. Ver [contrato del artefacto](CONTRATO_ARTEFACTO_INFERENCIA.md).
+
 ## Trabajo en esta carpeta
 
 1. Extraer funciones de entrenamiento/inferencia y conservar notebook como experimento reproducible.

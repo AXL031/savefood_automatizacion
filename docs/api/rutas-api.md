@@ -15,7 +15,7 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `GET /ejecuciones-automatizacion/{id}` | Bearer |
 | `GET /salud` | Pública, fuera de `/api/v1` |
 
-`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración) y [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) documentan sus cuerpos y errores. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas A02 requieren `0001b_automatizaciones` y solo reservan/consultan ejecuciones; no despachan trabajo.
+`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`: la API reserva/consulta; Beat y worker despachan por dentro. Los servicios de negocio aún no están conectados.
 
 ## Objetivo de la demo
 

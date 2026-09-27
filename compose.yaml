@@ -21,6 +21,15 @@ services:
       timeout: 3s
       retries: 10
 
+  migraciones:
+    build: ./backend
+    command: alembic upgrade head
+    environment:
+      DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api:
     build: ./backend
     environment:
@@ -29,9 +38,14 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       FRONTEND_ORIGIN: http://localhost:3000
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      MODEL_ARTIFACT_DIR: /code/model_artifacts
+    volumes:
+      - model_artifacts:/code/model_artifacts:ro
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
+      migraciones:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -39,15 +53,31 @@ services:
 
   worker:
     build: ./backend
-    command: celery -A app.workers.celery_app:celery_app worker --loglevel=info
+    command: celery -A app.workers.celery_app:celery_app worker --loglevel=info --concurrency=2
     environment:
       DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      MODEL_ARTIFACT_DIR: /code/model_artifacts
+    volumes:
+      - model_artifacts:/code/model_artifacts
     depends_on:
+      migraciones:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    build: ./backend
+    command: celery -A app.workers.celery_app:celery_app beat --loglevel=info --schedule=/tmp/foodsave-celerybeat
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      migraciones:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
 
@@ -63,3 +93,4 @@ services:
 
 volumes:
   postgres_data:
+  model_artifacts:

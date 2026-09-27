@@ -16,7 +16,7 @@
 
 ## Punto de partida
 
-Archivos técnicos observados al preparar esta guía: `__init__.py`, `celery_app.py`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../../docs/equipo/avances/cueva.md) para el último estado.
+**A03 implementado:** `celery_app.py` registra el despacho de Beat cada 30 segundos y la tarea de ejecución; `motor.py` reclama con `SKIP LOCKED`, confirma el token y lease antes de publicar, registra intentos y recupera leases vencidos. El efecto local y la finalización se confirman en una misma transacción. Consultar el resumen vigente de [Axel Cueva](../../../docs/equipo/avances/cueva.md) para el último estado.
 
 ## Trabajo en esta carpeta
 

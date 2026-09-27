@@ -2,6 +2,8 @@
 
 **Corte de revisión: 26-09-2026.** Este documento distingue decisiones de producto ya tomadas, código existente y trabajo necesario para iniciar el desarrollo integrado. La [guía de alcance](guia-inicio-desarrollo.md) y sus contratos enlazados son la fuente normativa del prototipo. El [README extenso](../README.md), el cronograma original y las maquetas describen también una visión posterior. La decisión posterior del usuario [incorporó pedidos y Telegram](arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) al prototipo.
 
+**Actualización de estado (27-09-2026):** la tabla de abajo conserva la foto de la revisión inicial. A01–A03 ya tienen implementación local y A04 prepara imagen con dependencias ML, volumen persistente compartido, migración automática y CI ampliado; ver [avance vigente de Axel](equipo/avances/cueva.md) y [arranque actual](equipo/arranque-modulos.md). Los módulos de dominio y la migración `0002` siguen pendientes de sus responsables.
+
 ## Resultado de la revisión
 
 | Área | Existe hoy | Falta para el recorrido de la demo |

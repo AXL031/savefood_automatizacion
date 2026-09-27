@@ -24,6 +24,8 @@ Archivos técnicos observados al preparar esta guía: `api.ts`, `autenticacion.t
 
 **A02:** `automatizacion.ts` define programación, ejecución e intento con los estados y campos disponibles en API. Una ejecución pendiente tiene `inicio_en = null` e `intentos = []`.
 
+**A03:** `automatizacion.ts` incluye `despachada_en` y `lease_hasta` de la ejecución. El dueño Axel mantiene estos tipos y el contrato HTTP alineados; Edu coordina la carpeta compartida.
+
 1. Cada dueño mantiene request/response de su dominio; Edu coordina organización.
 2. Axel alinea estados de ejecución con esquema de demo y Aguirre los de pedido.
 3. Representar null, decimales, fechas y paginación como en API.

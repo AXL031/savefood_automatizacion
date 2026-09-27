@@ -24,6 +24,10 @@ Archivos técnicos observados al preparar esta guía: `.dockerignore`, `Dockerfi
 
 **A02:** el paso Python de CI incluye `test_programaciones_a02.py`; requiere aplicar `0001b_automatizaciones` para usar las rutas en PostgreSQL.
 
+**A03:** Compose aplica `0001c_motor` antes de levantar API, worker y Beat. `test_motor_a03.py` ejecuta política local en la suite Python y casos reales de PostgreSQL/Redis en un paso Docker separado. Los manejadores de dominio aún no están registrados.
+
+**A04:** `pyproject.toml` publica el extra `ml` de runtime (pandas, NumPy, scikit-learn, CatBoost) y la imagen lo instala. `MODEL_ARTIFACT_DIR` apunta al volumen de modelos que comparten API (solo lectura) y worker (escritura). Kevin entrega lógica de entrenamiento, metadatos y pruebas; Aguirre entrega el adaptador y configuración final de Telegram. No añadir sus handlers sin contrato y prueba de consumo.
+
 1. Mantener pyproject.toml y Dockerfile consistentes y reproducibles.
 2. Incorporar dependencias ML propuestas por Kevin y lector de archivos de Edu.
 3. Acordar configuración y acceso a artefactos entre API y worker.

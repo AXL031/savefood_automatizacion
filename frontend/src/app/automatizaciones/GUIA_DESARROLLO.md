@@ -21,7 +21,7 @@ Archivos técnicos observados al preparar esta guía: `page.tsx`. Su presencia n
 
 ## Trabajo en esta carpeta
 
-**A02 disponible:** `page.tsx` crea y lista programaciones reales y ejecuciones pendientes de la API. Presenta por separado hora real y escenario histórico. No hay despacho ni resultado simulado; A03 conectará Beat y los módulos de dominio.
+**A03 disponible:** `page.tsx` crea y lista programaciones reales y ejecuciones de la API. Consulta periódicamente los estados mientras hay trabajo activo, muestra despacho/reintento y separa la hora real del escenario histórico. Beat despacha automáticamente; las salidas de negocio aparecen solo cuando sus responsables entreguen los handlers.
 
 1. Listar programaciones/ejecuciones con filtros y estados canónicos de demo.
 2. Programar hora real y mostrar escenario histórico por separado.

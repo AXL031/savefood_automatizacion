@@ -2,4 +2,4 @@
 
 > Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**. Tareas, dependencias y avances se detallan en la guía local.
 
-`base-ci.yml` construye el proyecto con Compose, aplica la migración inicial y comprueba API, interfaz y trabajador. Cuando los módulos tengan pruebas propias, se añadirán comprobaciones de servidor e interfaz. El resultado de CI depende de ejecutar el flujo en GitHub; una revisión estática local no lo sustituye.
+`base-ci.yml` se ejecuta en solicitudes de cambio y push de cualquier rama. Instala la suite Python con el extra `ml`, construye Compose, comprueba que Alembic llegó a todas las cabezas, verifica el volumen de artefactos compartido, el motor A03 con PostgreSQL/Redis, API, interfaz y trabajador. Cada dueño incorpora y corrige las pruebas de su módulo. El resultado de CI depende de ejecutar el flujo en GitHub; una revisión local no lo sustituye.

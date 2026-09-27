@@ -24,6 +24,10 @@ Archivos técnicos observados al preparar esta guía: `base-ci.yml`. Su presenci
 
 **A02:** el paso Python incluye `test_programaciones_a02.py` y el upgrade de Compose alcanza `0001b_automatizaciones`. El CI remoto todavía debe ejecutarse al publicar los cambios.
 
+**A03:** el paso Python incluye toda la suite `backend/tests/integration`; el paso Docker aplica `0001c_motor` al iniciar Compose y ejecuta la prueba A03 aislada con PostgreSQL y Redis. La validación remota sigue pendiente hasta publicar estos cambios.
+
+**A04:** el flujo se dispara en push de cualquier rama y PR, instala el extra `ml`, exige `alembic current --check-heads` y prueba que worker puede escribir y API leer el mismo volumen de artefactos. El token Telegram permanece vacío en CI; ningún paso envía mensajes externos. Confirmar la ejecución remota antes de declararla validada.
+
 1. Mantener base-ci.yml con instalación reproducible y validación de Compose.
 2. Integrar pruebas unitarias y de frontera que aporta cada responsable.
 3. Comprobar migraciones, API y cola; incorporar Beat cuando exista su implementación.

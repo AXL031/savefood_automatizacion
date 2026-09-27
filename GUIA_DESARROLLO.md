@@ -20,6 +20,10 @@ Archivos técnicos observados al preparar esta guía: `.env.example`, `.gitignor
 
 Axel coordina la raíz; los seis responden por su propio bloque. La revisión documental no declara implementados los módulos.
 
+**A03:** `compose.yaml` aplica Alembic mediante el servicio de una sola ejecución `migraciones` antes de iniciar API, worker y Beat. Beat es único en esta instalación local; revisa ejecuciones cada 30 segundos. Mantener PostgreSQL y Redis saludables antes de las pruebas del motor. Los adaptadores de negocio aún no están registrados.
+
+**A04:** la imagen backend instala el extra `ml` de ejecución y prepara `/code/model_artifacts`; Compose monta allí un volumen persistente con lectura en API y escritura en worker. El bot usa `TELEGRAM_BOT_TOKEN` opcional; el destino se vinculará en el módulo de Aguirre. CI revisa migración en cabeza, volumen compartido, cola y motor. El modelo y el canal no se declaran integrados hasta recibir las entregas y pruebas de sus dueños.
+
 ## Trabajo en esta carpeta
 
 1. Mantener README como entrada al alcance y reparto vigente; enlazar el mapa de carpetas.

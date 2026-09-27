@@ -1,6 +1,6 @@
 # Flujos automatizados del prototipo
 
-**Estado:** diseño, sin tareas operativas implementadas. El worker actual solo tiene `tarea_prueba`. La [programación](programacion.md) y [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md) fijan disparadores y reloj real/simulado.
+**Estado:** A03 entrega el motor operativo de Beat, Redis, lease, worker e intentos. El recorrido de carga, pronóstico, plan, compra y promoción espera los manejadores de dominio de sus responsables. `tarea_prueba` permanece para comprobar la cola; las pruebas A03 emplean efectos controlados dentro de un esquema PostgreSQL aislado. La [programación](programacion.md) y [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md) fijan disparadores y reloj real/simulado.
 
 ## 1. Primera carga → entrenamiento
 

@@ -100,12 +100,37 @@ def programar_propuesta(
     ):
         raise ValueError("Se requieren entre 1 y 5 productos únicos con IDs positivos")
     parametros = {"fecha_objetivo_demo": fecha_objetivo_demo, "producto_ids": sorted(producto_ids)}
+    return programar_ejecucion(
+        sesion, tipo="GENERAR_PROPUESTA", ejecutar_desde_utc=ejecutar_desde_utc,
+        fecha_hora_simulada_local=fecha_hora_simulada_local, parametros=parametros,
+        clave_idempotencia=clave_idempotencia, creado_por=creado_por,
+    )
+
+
+def programar_ejecucion(
+    sesion: Session,
+    *,
+    tipo: Literal["GENERAR_PROPUESTA", "EVALUAR_PROMOCION"],
+    ejecutar_desde_utc: datetime,
+    fecha_hora_simulada_local: datetime,
+    parametros: dict,
+    clave_idempotencia: str,
+    creado_por: int | None = None,
+) -> ProgramacionDemo:
+    """Agenda un servicio interno en la transacción del evento que lo originó."""
+    if tipo not in ("GENERAR_PROPUESTA", "EVALUAR_PROMOCION"):
+        raise ValueError("Tipo de programación no admitido")
+    if fecha_hora_simulada_local.tzinfo is not None:
+        raise ValueError("La hora simulada debe ser local y no llevar zona")
+    if not clave_idempotencia or len(clave_idempotencia) > 128:
+        raise ValueError("La clave idempotente debe tener entre 1 y 128 caracteres")
+    parametros = _json_normalizado(parametros)
     entrada = {
         "ejecutar_desde_utc": _instante_utc(ejecutar_desde_utc),
         "fecha_hora_simulada_local": fecha_hora_simulada_local.isoformat(),
         "parametros": parametros,
     }
-    huella = _huella({"tipo": "GENERAR_PROPUESTA", **entrada})
+    huella = _huella({"tipo": tipo, **entrada})
     existente = sesion.scalar(select(ProgramacionDemo).where(ProgramacionDemo.clave_idempotencia == clave_idempotencia))
     if existente is not None:
         if existente.huella_entrada != huella:
@@ -116,7 +141,7 @@ def programar_propuesta(
     try:
         with sesion.begin_nested():
             programacion = ProgramacionDemo(
-                tipo="GENERAR_PROPUESTA",
+                tipo=tipo,
                 ejecutar_desde_utc=ejecutar_desde_utc,
                 fecha_hora_simulada_local=fecha_hora_simulada_local,
                 parametros_json=parametros,
@@ -128,7 +153,7 @@ def programar_propuesta(
             sesion.add(programacion)
             sesion.flush()
             crear_o_recuperar_ejecucion(
-                sesion, "GENERAR_PROPUESTA", clave_idempotencia, entrada, programacion.id
+                sesion, tipo, clave_idempotencia, entrada, programacion.id
             )
     except IntegrityError:
         existente = sesion.scalar(select(ProgramacionDemo).where(ProgramacionDemo.clave_idempotencia == clave_idempotencia))

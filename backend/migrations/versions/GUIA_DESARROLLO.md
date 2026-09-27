@@ -20,7 +20,7 @@ Archivos técnicos observados al preparar esta guía: `0001_nucleo.py`. Su prese
 
 Axel coordina integración de revisiones; no asume las tablas de los seis.
 
-**Cadena tras A02:** `0001_nucleo → 0001a_configuracion → 0001b_automatizaciones`; A02 incorpora programación, ejecución e intento, sin tablas de otros dominios. La revisión compartida `0002` de los demás dominios sigue pendiente y debe declarar `down_revision = "0001b_automatizaciones"` después de cerrar tipos, FK y CHECK con sus dueños. No modificar revisiones ya aplicadas.
+**Cadena tras A03:** `0001_nucleo → 0001a_configuracion → 0001b_automatizaciones → 0001c_motor`; A03 añade columnas de despacho y lease, sin tablas de otros dominios. La revisión compartida `0002` de los demás dominios sigue pendiente y debe declarar `down_revision = "0001c_motor"` después de cerrar tipos, FK y CHECK con sus dueños. No modificar revisiones ya aplicadas.
 
 ## Trabajo en esta carpeta
 

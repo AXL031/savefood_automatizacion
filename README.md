@@ -2,17 +2,17 @@
 
 FoodSave permite planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. **El alcance inmediato es un prototipo universitario local** para un comercio y una sucursal. Su [guía de desarrollo](docs/guia-inicio-desarrollo.md), [ADR-005](docs/arquitectura/decisiones/ADR-005-instalacion-local-mvp.md), [ADR-006](docs/arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md) y [ADR-008](docs/arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) prevalecen sobre las referencias históricas de este README a SaaS, varias sucursales, stock en Excel permanente o promoción operativa. La demo sí contempla pedidos derivados del plan y envío real por Telegram a un chat de pruebas, con aprobación configurable. La comercialización es futura.
 
-El núcleo inicial ya incluye una interfaz mínima, API, PostgreSQL, Redis, trabajador y migración de negocio y usuario. Los módulos de ventas, inventario, ML y plan **aún no están implementados**; el [esquema del prototipo](docs/base_de_datos/esquema-objetivo-mvp.md) define la futura migración `0002`. El trabajador actual solo ejecuta una tarea de prueba.
+El núcleo local incluye acceso/configuración, programación durable, Beat, worker, PostgreSQL y Redis. El motor ya despacha ejecuciones y recupera leases; los manejadores de ventas, inventario, ML, plan y pedidos **aún no están integrados**. El [esquema del prototipo](docs/base_de_datos/esquema-objetivo-mvp.md) define la futura migración compartida `0002`.
 
 ## Arranque local de desarrollo
 
-1. Instala Docker con Compose y copia `.env.example` a `.env`. Cambia `POSTGRES_PASSWORD` por una clave alfanumérica larga y `JWT_SECRET` por una cadena aleatoria larga; no subas `.env` a Git. `TELEGRAM_BOT_TOKEN` se completará al implementar la ruta de envío a tu chat de pruebas; hoy ningún módulo lo utiliza.
+1. Instala Docker con Compose y copia `.env.example` a `.env`. Cambia `POSTGRES_PASSWORD` por una clave alfanumérica larga y `JWT_SECRET` por una cadena aleatoria larga; no subas `.env` a Git. `TELEGRAM_BOT_TOKEN` queda vacío hasta que Aguirre entregue y pruebe el canal con un chat propio.
 2. Ejecuta `docker compose up --build -d` desde la raíz del repositorio.
-3. Ejecuta `docker compose exec api alembic upgrade head` para crear el núcleo de datos.
+3. Comprueba `docker compose exec -T api alembic current --check-heads`. El servicio `migraciones` aplica las revisiones antes de iniciar API, worker y Beat; si falla, corrige el error antes de continuar.
 4. Ejecuta `docker compose exec -it api python -m app.core.crear_admin` y escribe el correo y contraseña del administrador.
 5. Abre `http://localhost:3000` para iniciar sesión. La API responde en `http://localhost:8000/salud` y su documentación en `http://localhost:8000/docs`.
 
-Cada PC tiene su propio volumen de PostgreSQL. `docker compose down` detiene los servicios y conserva los datos; evita `down -v` salvo que quieras borrar intencionalmente la base de desarrollo. Para probar el trabajador: `docker compose exec api python -c "from app.workers.celery_app import tarea_prueba; print(tarea_prueba.delay('ok').get(timeout=15))"`.
+Cada PC tiene su propio volumen de PostgreSQL y `model_artifacts` compartido: el worker puede guardar el futuro CBM y sus metadatos, y la API lo monta en solo lectura mediante `MODEL_ARTIFACT_DIR=/code/model_artifacts`. El volumen vacío no representa un modelo disponible. `docker compose down` detiene los servicios y conserva los datos; evita `down -v` salvo que quieras borrar intencionalmente ambos volúmenes. Para probar el trabajador: `docker compose exec api python -c "from app.workers.celery_app import tarea_prueba; print(tarea_prueba.delay('ok').get(timeout=15))"`.
 
 ## Guía rápida
 

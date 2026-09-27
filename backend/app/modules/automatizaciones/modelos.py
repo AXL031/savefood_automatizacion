@@ -48,6 +48,7 @@ class EjecucionAutomatizacion(Base):
             name="ck_ejecucion_automatizacion_estado",
         ),
         Index("ix_ejecucion_automatizacion_estado", "estado"),
+        Index("ix_ejecucion_automatizacion_lease", "estado", "lease_hasta"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -60,6 +61,9 @@ class EjecucionAutomatizacion(Base):
     inicio_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     fin_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     proximo_intento_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    despachada_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lease_hasta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    token_despacho: Mapped[str | None] = mapped_column(String(36))
     datos_salida_json: Mapped[dict | None] = mapped_column(JsonPersistido)
     mensaje_error: Mapped[str | None] = mapped_column(Text)
 

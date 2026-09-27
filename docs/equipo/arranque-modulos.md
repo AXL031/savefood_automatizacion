@@ -1,16 +1,16 @@
 # Puerta de arranque de los módulos del prototipo
 
-Esta guía aplica al [alcance universitario congelado](../guia-inicio-desarrollo.md) y a las [puertas de integración](../base-para-desarrollo.md). El código actual solo contiene el núcleo de acceso y una tarea de prueba: aprobar esta puerta no significa que la demo ya funcione.
+Esta guía aplica al [alcance universitario congelado](../guia-inicio-desarrollo.md) y a las [puertas de integración](../base-para-desarrollo.md). El código actual incluye acceso, configuración y motor A03; los manejadores de dominio siguen pendientes. Aprobar esta puerta no significa que la demo completa ya funcione.
 
 ## Comprobación en cada computadora
 
 1. Clonar el repositorio, copiar `.env.example` a `.env` y elegir claves locales propias.
 2. Levantar los servicios con `docker compose up --build -d`.
-3. Aplicar `docker compose exec api alembic upgrade head` y crear el administrador con `docker compose exec -it api python -m app.core.crear_admin`.
+3. Confirmar que `docker compose exec -T api alembic current --check-heads` termina correctamente; Compose ya aplicó las migraciones. Crear el administrador con `docker compose exec -it api python -m app.core.crear_admin`.
 4. Comprobar `GET http://localhost:8000/salud`, iniciar sesión en `http://localhost:3000` y abrir la configuración del comercio local.
-5. Ejecutar la tarea de prueba de Celery descrita en el README principal.
+5. Ejecutar la tarea de prueba de Celery descrita en el README principal. `docker compose ps` debe mostrar PostgreSQL y Redis saludables, API, worker, Beat y frontend activos. El servicio `migraciones` termina con código cero.
 
-Una segunda persona debe completar esos pasos en su computadora antes de declarar reproducible el núcleo. Registrar sistema operativo, versión de Docker, salida de migración, prueba de worker y fallos encontrados en la solicitud de incorporación.
+Una segunda persona debe completar esos pasos en su computadora antes de declarar reproducible el núcleo. Registrar sistema operativo, versión de Docker, salida de migración, prueba de worker y fallos encontrados en la solicitud de incorporación. El volumen `model_artifacts` comienza vacío y es compartido entre worker (escritura) y API (solo lectura); el CBM y `metadata.json` reales llegarán con Kevin. `TELEGRAM_BOT_TOKEN` puede quedar vacío hasta que Aguirre entregue la integración de un chat propio; no se envía ningún mensaje durante esta comprobación.
 
 ## Primer corte por responsable
 

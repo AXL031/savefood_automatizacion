@@ -21,7 +21,7 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
-**A02 disponible:** `modelos.py`, `esquemas.py`, `servicio.py` y `rutas.py` reservan programación más ejecución pendiente en una transacción, exponen lecturas y permiten iniciar/finalizar intentos con sesión del consumidor sin commit. `0001b_automatizaciones` crea sus tres tablas. El lease, Beat, reintento automático y llamada a servicios de dominio siguen en A03. Ver [contrato A02](../../../../docs/api/contratos.md#contrato-a02-programación-y-trazas-persistidas).
+**A02 y A03 disponibles:** `modelos.py`, `esquemas.py`, `servicio.py` y `rutas.py` reservan programación más ejecución pendiente en una transacción, exponen lecturas y permiten iniciar/finalizar intentos con sesión del consumidor sin commit. `programar_ejecucion` permite a servicios internos reservar `GENERAR_PROPUESTA` o `EVALUAR_PROMOCION` con fecha UTC, fecha simulada, parámetros y clave idempotente. `0001b_automatizaciones` crea las tres tablas y `0001c_motor` agrega token y lease a la ejecución. Beat reclama y recupera trabajos; el cálculo de cada dominio espera su adaptador público. Ver [contratos A02 y A03](../../../../docs/api/contratos.md).
 
 1. Crear consultas/acciones de programación y detalle con clave y huella de entrada.
 2. Reclamar trabajos mediante transición atómica y lease recuperable.
