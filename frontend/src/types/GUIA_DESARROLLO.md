@@ -20,6 +20,10 @@ Archivos técnicos observados al preparar esta guía: `api.ts`, `autenticacion.t
 
 ## Trabajo en esta carpeta
 
+**A01:** `Negocio` incluye `modo_envio_pedidos` como `REQUIERE_APROBACION | AUTOMATICO`; el PATCH acepta un subconjunto de campos. Los consumidores de Compras deben usar estos mismos valores al crear pedidos, sin inventar otros estados.
+
+**A02:** `automatizacion.ts` define programación, ejecución e intento con los estados y campos disponibles en API. Una ejecución pendiente tiene `inicio_en = null` e `intentos = []`.
+
 1. Cada dueño mantiene request/response de su dominio; Edu coordina organización.
 2. Axel alinea estados de ejecución con esquema de demo y Aguirre los de pedido.
 3. Representar null, decimales, fechas y paginación como en API.

@@ -1,75 +1,116 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ProtectedShell } from "@/components/layout/ProtectedShell";
 import { EstadoBadge } from "@/components/ui/EstadoBadge";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
-import { listarAutomatizaciones, listarEjecuciones } from "@/services/automatizaciones";
-import { HttpError } from "@/services/http";
-import type { Automatizacion, EjecucionAutomatizacion, EstadoEjecucion } from "@/types/automatizacion";
-import { formatearDuracion, formatearFechaHora } from "@/utils/fechas";
+import { crearProgramacion, listarEjecuciones, listarProgramaciones } from "@/services/automatizaciones";
+import type { EjecucionAutomatizacion, EstadoEjecucion, ProgramacionDemo } from "@/types/automatizacion";
+import { formatearFechaHora } from "@/utils/fechas";
 
-const pasos = ["Detectar", "Decidir", "Actuar", "Verificar", "Corregir", "Notificar"];
-const reglasPrevistas = [
-  { nombre: "Planificación diaria", detalle: "Ventas históricas e inventario → pronóstico y plan." },
-  { nombre: "Pedido al proveedor", detalle: "Insumos faltantes → pedido y comprobación del envío." },
-  { nombre: "Control de excedentes", detalle: "Producción y ventas → riesgo durante el día." },
-  { nombre: "Promoción preventiva", detalle: "Riesgo alto → promoción y seguimiento del efecto." },
-];
+function fechaLocalParaInput(fecha: Date): string {
+  return new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
 
-function Contenido({ token, zonaHoraria }: { token: string; zonaHoraria: string }) {
-  const [reglas, setReglas] = useState<Automatizacion[]>([]);
+function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaHoraria: string; administrador: boolean }) {
+  const [programaciones, setProgramaciones] = useState<ProgramacionDemo[]>([]);
   const [ejecuciones, setEjecuciones] = useState<EjecucionAutomatizacion[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
-  const [sinApi, setSinApi] = useState(false);
+  const [mensaje, setMensaje] = useState("");
   const [filtro, setFiltro] = useState<EstadoEjecucion | "TODAS">("TODAS");
+  const [horaReal, setHoraReal] = useState("");
+  const [horaSimulada, setHoraSimulada] = useState("2022-08-24T10:00");
+  const [productos, setProductos] = useState("");
+  const [clave, setClave] = useState("");
+
+  useEffect(() => {
+    setHoraReal(fechaLocalParaInput(new Date(Date.now() + 5 * 60_000)));
+    setClave(`propuesta-${crypto.randomUUID()}`);
+  }, []);
 
   useEffect(() => {
     const control = new AbortController();
-    Promise.all([listarAutomatizaciones(token, control.signal), listarEjecuciones(token, control.signal)])
-      .then(([reglasActuales, ejecucionesActuales]) => {
-        setReglas(reglasActuales);
-        setEjecuciones(ejecucionesActuales);
+    Promise.all([listarProgramaciones(token, control.signal), listarEjecuciones(token, control.signal)])
+      .then(([programadas, registradas]) => {
+        setProgramaciones(programadas);
+        setEjecuciones(registradas);
         setError("");
-        setSinApi(false);
       })
       .catch((fallo: unknown) => {
-        if (control.signal.aborted) return;
-        if (fallo instanceof HttpError && (fallo.status === 404 || fallo.status === 501)) setSinApi(true);
-        else setError(fallo instanceof Error ? fallo.message : "No se pudieron cargar las automatizaciones.");
+        if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudieron cargar las automatizaciones.");
       })
       .finally(() => { if (!control.signal.aborted) setCargando(false); });
     return () => control.abort();
   }, [token]);
 
-  const visibles = useMemo(() => filtro === "TODAS" ? ejecuciones : ejecuciones.filter((item) => item.estado === filtro), [ejecuciones, filtro]);
-  const completadas = ejecuciones.filter((item) => item.estado === "COMPLETADO").length;
-  const fallidas = ejecuciones.filter((item) => item.estado === "FALLIDO").length;
-  const enControl = ejecuciones.filter((item) => ["VERIFICANDO", "REINTENTANDO"].includes(item.estado)).length;
+  async function guardar(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    setError("");
+    setMensaje("");
+    const ids = productos.split(",").map((valor) => Number(valor.trim()));
+    if (!horaReal || !horaSimulada || !clave || ids.length < 1 || ids.length > 5 || ids.some((id) => !Number.isInteger(id) || id <= 0)) {
+      setError("Indica hora real, escenario, clave y entre 1 y 5 IDs de producto positivos separados por comas.");
+      return;
+    }
+    setGuardando(true);
+    try {
+      const creada = await crearProgramacion(token, {
+        tipo: "GENERAR_PROPUESTA",
+        ejecutar_desde_utc: new Date(horaReal).toISOString(),
+        fecha_hora_simulada_local: `${horaSimulada}:00`,
+        fecha_objetivo_demo: horaSimulada.slice(0, 10),
+        producto_ids: ids,
+        clave_idempotencia: clave,
+      });
+      const [programadas, registradas] = await Promise.all([listarProgramaciones(token), listarEjecuciones(token)]);
+      setProgramaciones(programadas);
+      setEjecuciones(registradas);
+      setMensaje(`Programación #${creada.id} guardada. Su ejecución queda pendiente hasta conectar Beat en A03.`);
+      setClave(`propuesta-${crypto.randomUUID()}`);
+    } catch (fallo) {
+      setError(fallo instanceof Error ? fallo.message : "No se pudo guardar la programación.");
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  const visibles = useMemo(
+    () => filtro === "TODAS" ? ejecuciones : ejecuciones.filter((item) => item.estado === filtro),
+    [ejecuciones, filtro],
+  );
 
   return <>
-    {sinApi && <EstadoPanel tono="info" titulo="Automatizaciones pendientes de integración" descripcion="La pantalla está preparada, pero la API de automatizaciones y ejecuciones aún no está disponible. Los elementos que aparecen como previstos no son reglas activas." />}
-    {error && <EstadoPanel tono="alerta" titulo="No se pudieron cargar los datos" descripcion={error} accion={<button className="button-secondary" onClick={() => window.location.reload()}>Volver a intentar</button>} />}
-    <div className="stats-grid">
-      <div className="card stat"><span>Ejecuciones recibidas</span><strong>{sinApi ? "—" : ejecuciones.length}</strong><small>En la respuesta actual</small></div>
-      <div className="card stat"><span>Completadas</span><strong>{sinApi ? "—" : completadas}</strong><small>Con resultado verificado</small></div>
-      <div className="card stat"><span>En control</span><strong>{sinApi ? "—" : enControl}</strong><small>Verificando o reintentando</small></div>
-      <div className="card stat"><span>Fallidas</span><strong>{sinApi ? "—" : fallidas}</strong><small>Requieren revisión</small></div>
-    </div>
-    <div className="page-grid">
-      <section className="card main-card"><div className="section-heading"><div><h2>Reglas automáticas</h2><p>Frecuencia, acción y activación de cada regla.</p></div><button className="button-secondary" disabled title="La API de creación aún no está disponible">Nueva automatización</button></div>
-        {cargando ? <p role="status">Cargando reglas…</p> : reglas.length ? <div className="rule-list">{reglas.map((regla) => <div className="rule-row" key={regla.id}><div><strong>{regla.nombre}</strong><small>{regla.programacion || "Sin programación"}</small></div><span className={`badge ${regla.habilitado ? "badge-ok" : "badge-neutral"}`}>{regla.habilitado ? "Activa" : "Desactivada"}</span></div>)}</div> : <div className="planned-list">{reglasPrevistas.map((regla) => <div className="rule-row" key={regla.nombre}><div><strong>{regla.nombre}</strong><small>{regla.detalle}</small></div><span className="badge badge-neutral">Prevista</span></div>)}</div>}
+    <EstadoPanel tono="info" titulo="Programación disponible; despacho pendiente" descripcion="A02 guarda programaciones y ejecuciones pendientes con clave única. Beat y los cálculos de pronóstico, plan y pedidos se conectan en A03 y en los módulos de sus responsables." />
+    {error && <div className="inline-error" role="alert">{error}</div>}
+    {mensaje && <div className="inline-success" role="status">{mensaje}</div>}
+    <div className="page-grid section-space">
+      <section className="card main-card">
+        <div className="section-heading"><div><h2>Programar propuesta demostrativa</h2><p>La hora real fija cuándo se despachará; la hora simulada identifica el escenario histórico.</p></div></div>
+        <form className="form-grid" onSubmit={guardar}>
+          <label className="field">Hora real próxima<input type="datetime-local" value={horaReal} onChange={(e) => setHoraReal(e.target.value)} disabled={!administrador || guardando} required /></label>
+          <label className="field">Hora local del escenario<input type="datetime-local" value={horaSimulada} onChange={(e) => setHoraSimulada(e.target.value)} disabled={!administrador || guardando} required /></label>
+          <label className="field field-full">IDs de productos<input value={productos} onChange={(e) => setProductos(e.target.value)} placeholder="1, 2, 3" disabled={!administrador || guardando} required /><small>Usa IDs del catálogo cuando Edu lo entregue. La programación todavía no comprueba la existencia del producto.</small></label>
+          <label className="field field-full">Clave de la solicitud<input value={clave} onChange={(e) => setClave(e.target.value)} maxLength={128} disabled={!administrador || guardando} required /><small>Repetir esta clave con los mismos datos recupera la programación. Cambiar sus datos produce un conflicto.</small></label>
+          <div className="form-actions field-full"><button className="button-primary" type="submit" disabled={!administrador || guardando}>{guardando ? "Guardando…" : "Guardar programación"}</button></div>
+        </form>
+        {!administrador && <p className="helper-text">Solo un administrador puede crear programaciones.</p>}
       </section>
-      <aside className="card aside-card"><h2>Ciclo de control</h2><p>Cada ejecución debe registrar qué decidió, qué acción realizó y cómo comprobó el resultado.</p><ol className="steps-list">{pasos.map((paso) => <li key={paso}>{paso}</li>)}</ol><p className="helper-text">Un mensaje enviado a Telegram aún requiere confirmación del proveedor.</p></aside>
+      <aside className="card aside-card"><h2>Estado de A02</h2><p>Crear una programación reserva una ejecución pendiente. Ningún intento se inicia y no se genera un pronóstico hasta conectar el despachador y las funciones de dominio.</p><div className="fact"><span>Programaciones</span><strong>{programaciones.length}</strong></div><div className="fact"><span>Ejecuciones</span><strong>{ejecuciones.length}</strong></div></aside>
     </div>
-    <section className="card section-space"><div className="section-heading"><div><h2>Últimas ejecuciones</h2><p>Selecciona una para ver intentos, error y resultado.</p></div><label className="filter-label">Estado<select value={filtro} onChange={(e) => setFiltro(e.target.value as EstadoEjecucion | "TODAS")}><option value="TODAS">Todas</option><option value="PENDIENTE">Pendiente</option><option value="EN_EJECUCION">En ejecución</option><option value="VERIFICANDO">Verificando</option><option value="COMPLETADO">Completado</option><option value="REINTENTANDO">Reintentando</option><option value="FALLIDO">Fallido</option><option value="CANCELADO">Cancelado</option></select></label></div>
-      {cargando ? <p role="status">Cargando ejecuciones…</p> : visibles.length ? <div className="table-wrap"><table><thead><tr><th>Automatización</th><th>Inicio</th><th>Duración</th><th>Estado</th><th></th></tr></thead><tbody>{visibles.map((item) => <tr key={item.id}><td>{item.nombre_automatizacion ?? `Regla #${item.automatizacion_id}`}</td><td>{formatearFechaHora(item.inicio_en, zonaHoraria)}</td><td>{formatearDuracion(item.inicio_en, item.fin_en)}</td><td><EstadoBadge estado={item.estado} /></td><td><Link href={`/automatizaciones/ejecuciones/${item.id}`}>Ver detalle</Link></td></tr>)}</tbody></table></div> : <EstadoPanel titulo={sinApi ? "Sin registros disponibles" : "No hay ejecuciones para este filtro"} descripcion={sinApi ? "El historial aparecerá cuando se implemente la API de ejecuciones." : "Prueba otro estado o espera la siguiente ejecución."} />}
+    <section className="card section-space">
+      <div className="section-heading"><div><h2>Programaciones guardadas</h2><p>Se muestran por separado la hora real y el reloj del escenario.</p></div></div>
+      {cargando ? <p role="status">Cargando programaciones…</p> : programaciones.length ? <div className="table-wrap"><table><thead><tr><th>Tipo</th><th>Hora real</th><th>Escenario local</th><th>Estado</th><th>Ejecución</th></tr></thead><tbody>{programaciones.map((item) => <tr key={item.id}><td>{item.tipo}</td><td>{formatearFechaHora(item.ejecutar_desde_utc, zonaHoraria)}</td><td>{item.fecha_hora_simulada_local.replace("T", " ")}</td><td><span className={`badge badge-${item.estado === "CANCELADA" ? "alerta" : item.estado === "DESPACHADA" ? "info" : "neutral"}`}>{item.estado}</span></td><td>{item.ejecucion_id ? <Link href={`/automatizaciones/ejecuciones/${item.ejecucion_id}`}>Ver #{item.ejecucion_id}</Link> : "—"}</td></tr>)}</tbody></table></div> : <EstadoPanel titulo="Sin programaciones" descripcion="Aún no hay una propuesta guardada." />}
+    </section>
+    <section className="card section-space">
+      <div className="section-heading"><div><h2>Ejecuciones e intentos</h2><p>El resultado aparecerá cuando el servicio de dominio complete la ejecución.</p></div><label className="filter-label">Estado<select value={filtro} onChange={(e) => setFiltro(e.target.value as EstadoEjecucion | "TODAS")}><option value="TODAS">Todas</option><option value="PENDIENTE">Pendiente</option><option value="EN_EJECUCION">En ejecución</option><option value="REINTENTANDO">Reintentando</option><option value="COMPLETADA">Completada</option><option value="FALLIDA">Fallida</option></select></label></div>
+      {cargando ? <p role="status">Cargando ejecuciones…</p> : visibles.length ? <div className="table-wrap"><table><thead><tr><th>ID</th><th>Tipo</th><th>Inicio real</th><th>Estado</th><th>Intentos</th><th></th></tr></thead><tbody>{visibles.map((item) => <tr key={item.id}><td>#{item.id}</td><td>{item.tipo}</td><td>{formatearFechaHora(item.inicio_en, zonaHoraria)}</td><td><EstadoBadge estado={item.estado} /></td><td>{item.intentos.length}/3</td><td><Link href={`/automatizaciones/ejecuciones/${item.id}`}>Ver detalle</Link></td></tr>)}</tbody></table></div> : <EstadoPanel titulo="Sin ejecuciones para este filtro" descripcion="Cambia el filtro o crea una programación." />}
     </section>
   </>;
 }
 
 export default function AutomatizacionesPage() {
-  return <ProtectedShell titulo="Automatizaciones" descripcion="Consulta las reglas, su actividad reciente y las ejecuciones que necesitan atención.">{({ token, negocio }) => <Contenido token={token} zonaHoraria={negocio.zona_horaria} />}</ProtectedShell>;
+  return <ProtectedShell titulo="Automatizaciones" descripcion="Programa propuestas y consulta sus ejecuciones persistidas.">{({ token, negocio, perfil }) => <Contenido token={token} zonaHoraria={negocio.zona_horaria} administrador={perfil.rol === "ADMINISTRADOR"} />}</ProtectedShell>;
 }

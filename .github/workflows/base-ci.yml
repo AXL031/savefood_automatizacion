@@ -20,7 +20,7 @@ jobs:
         run: |
           python -m pip install -e './backend[test]'
           python -m pip install 'pandas>=2.2,<3' 'numpy>=1.26,<3'
-          python -m pytest backend/tests/unit foodsave-ml/tests -q
+          python -m pytest backend/tests/unit backend/tests/integration/test_acceso_configuracion.py backend/tests/integration/test_programaciones_a02.py foodsave-ml/tests -q
       - name: Validar Compose
         run: docker compose config --quiet
       - name: Construir y arrancar

@@ -5,5 +5,5 @@ export type ApiEnvelope<T> = {
 
 export type ApiErrorBody = {
   detail?: string | { msg?: string }[];
-  error?: { codigo?: string; mensaje?: string };
+  error?: { codigo?: string; mensaje?: string; detalles?: { campo: string; mensaje: string }[] };
 };

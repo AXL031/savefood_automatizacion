@@ -31,6 +31,15 @@ export function ProtectedShell({ titulo, descripcion, children }: Props) {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    function sesionVencida() {
+      borrarToken();
+      router.replace("/iniciar-sesion");
+    }
+    window.addEventListener("foodsave:sesion-vencida", sesionVencida);
+    return () => window.removeEventListener("foodsave:sesion-vencida", sesionVencida);
+  }, [router]);
+
+  useEffect(() => {
     const actual = leerToken();
     if (!actual) {
       router.replace("/iniciar-sesion");

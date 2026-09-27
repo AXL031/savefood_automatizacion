@@ -20,6 +20,10 @@ Archivos técnicos observados al preparar esta guía: `base-ci.yml`. Su presenci
 
 ## Trabajo en esta carpeta
 
+**A01:** `base-ci.yml` incluye la prueba de contrato HTTP y configuración de Axel con SQLite aislado. El paso de Compose aplica también `0001a_configuracion` en PostgreSQL. Esta prueba no sustituye las futuras pruebas de Beat, Compras o consumidores.
+
+**A02:** el paso Python incluye `test_programaciones_a02.py` y el upgrade de Compose alcanza `0001b_automatizaciones`. El CI remoto todavía debe ejecutarse al publicar los cambios.
+
 1. Mantener base-ci.yml con instalación reproducible y validación de Compose.
 2. Integrar pruebas unitarias y de frontera que aporta cada responsable.
 3. Comprobar migraciones, API y cola; incorporar Beat cuando exista su implementación.

@@ -3,7 +3,12 @@ import type { ApiEnvelope, ApiErrorBody } from "@/types/api";
 const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
 export class HttpError extends Error {
-  constructor(public readonly status: number, mensaje: string) {
+  constructor(
+    public readonly status: number,
+    mensaje: string,
+    public readonly codigo?: string,
+    public readonly detalles: { campo: string; mensaje: string }[] = [],
+  ) {
     super(mensaje);
     this.name = "HttpError";
   }
@@ -54,7 +59,18 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
       throw new HttpError(respuesta.status, "La API devolvió una respuesta inválida.");
     }
   }
-  if (!respuesta.ok) throw new HttpError(respuesta.status, mensajeError(body as ApiErrorBody | null, respuesta.status));
+  if (!respuesta.ok) {
+    if (respuesta.status === 401 && opciones.token && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("foodsave:sesion-vencida"));
+    }
+    const errorBody = body as ApiErrorBody | null;
+    throw new HttpError(
+      respuesta.status,
+      mensajeError(errorBody, respuesta.status),
+      errorBody?.error?.codigo,
+      errorBody?.error?.detalles ?? [],
+    );
+  }
   if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "La API no devolvió datos.");
   return body.datos;
 }

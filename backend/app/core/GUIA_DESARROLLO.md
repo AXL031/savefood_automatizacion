@@ -20,6 +20,8 @@ Archivos técnicos observados al preparar esta guía: `__init__.py`, `base.py`, 
 
 ## Trabajo en esta carpeta
 
+**A01 disponible:** `identidad_actual` devuelve 401 ante ausencia, invalidez o usuario inactivo; `requiere_administrador` devuelve 403 al Operador. `errores.py` registra el sobre HTTP uniforme y detalles de validación 422. Los módulos nuevos deben lanzar `ErrorAPI` para códigos propios y compartir `obtener_sesion` cuando una operación abarque varios servicios.
+
 1. Mantener Base, motor SQLAlchemy y ciclo de sesión.
 2. Validar configuración requerida al iniciar sin imprimir secretos.
 3. Exponer identidad y requiere_administrador como dependencias públicas.

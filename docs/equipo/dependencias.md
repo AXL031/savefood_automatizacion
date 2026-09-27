@@ -7,7 +7,8 @@ La asignación vigente está en [responsabilidades](responsabilidades.md). Una d
 | Entrega | Responsable | Quién la necesita | Qué puede adelantar el consumidor | Qué bloquea su integración real |
 |---|---|---|---|---|
 | A01: identidad, permisos y error uniforme | Axel | Todos | Modelos, reglas puras y formularios con ejemplos de contrato | Rutas protegidas y manejo de errores consistente |
-| A02/A03: ejecución durable, eventos, Beat y reintentos | Axel | Edu, Kevin, Vera, Max y Aguirre | Funciones de dominio, pruebas e interfaz con ejecuciones de ejemplo | Carga→entrenamiento, plan programado, promoción y envío asíncrono |
+| A02: programación, ejecución durable, contratos y trazas | Axel | Edu, Kevin, Vera, Max y Aguirre | Ya pueden desarrollar y probar con sesión compartida, claves e IDs de fixture | Integrar su propio consumidor y demostrar la transacción de frontera |
+| A03: Beat, lease y reintentos automáticos | Axel | Edu, Kevin, Vera, Max y Aguirre | Conectar servicios a las funciones públicas A02 y preparar tareas idempotentes | Carga→entrenamiento automático, plan programado y promoción tras ajuste |
 | E01: productos/SKU y lectura de ventas | Edu | Max, Vera y Kevin | Recetas/stock con IDs de fixture; ML con CSV histórico normalizado | FK reales de producto e historial de PostgreSQL |
 | M01: ingredientes, recetas y servicio de carga | Max | Edu, Vera y Aguirre | Parser/vista previa, movimientos con fixtures, proveedor/conversiones | Importación completa, lotes de insumo y oferta ligada a ingrediente |
 | V01: apertura de lotes en sesión compartida | Vera | Edu | Validar hoja de stock sin persistirla | Confirmar carga atómica con apertura real |

@@ -20,6 +20,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**A01:** `test_acceso_configuracion.py` comprueba rutas reales de FastAPI, roles y persistencia con SQLite temporal y un `char_length` de prueba. Se ejecuta en CI sin servicios externos; la migración se verifica por separado con PostgreSQL en Compose.
+
 1. Edu prueba rollback total de carga con servicios de Max/Vera.
 2. Vera prueba ajustes concurrentes con PostgreSQL real.
 3. Axel prueba Beat/reentrega/recuperación con Redis; cada dueño valida efecto final.

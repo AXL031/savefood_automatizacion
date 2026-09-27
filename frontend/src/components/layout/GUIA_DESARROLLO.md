@@ -19,6 +19,8 @@ Archivos técnicos observados al preparar esta guía: `ProtectedShell.tsx`. Su p
 
 ## Trabajo en esta carpeta
 
+**A01:** `ProtectedShell` escucha el evento `foodsave:sesion-vencida` del cliente HTTP, limpia el token y vuelve al inicio de sesión ante un 401 de una ruta protegida. Mantener una sola reacción de sesión para las pantallas nuevas.
+
 1. Mantener ProtectedShell, menú y contexto visible del comercio.
 2. Consumir sesión/perfil/configuración definidos por Axel.
 3. Añadir rutas activas de cada dueño sin mostrar futuras como implementadas.

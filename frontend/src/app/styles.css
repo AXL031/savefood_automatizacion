@@ -47,7 +47,7 @@ p { line-height: 1.55; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
 .field { display: grid; gap: 7px; font-size: .78rem; font-weight: 700; color: #374151; }
 .field-full { grid-column: 1 / -1; }
-.field input, .filter-label select, .login-card input { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 11px 12px; color: #111827; background: #fff; font-size: .86rem; }
+.field input, .field select, .filter-label select, .login-card input { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 11px 12px; color: #111827; background: #fff; font-size: .86rem; }
 .field input:disabled { background: #f9fafb; }
 .field small { color: #6b7280; font-size: .69rem; font-weight: 400; }
 .form-actions { display: flex; justify-content: flex-end; margin-top: 3px; }

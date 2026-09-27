@@ -1,6 +1,6 @@
 # Programación de la exposición
 
-**Estado:** contrato de diseño; Beat aún no está configurado. Rige [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md). El administrador puede elegir una hora real **muy próxima**, por ejemplo dentro de un minuto, y ver una cuenta regresiva. No se promete precisión al segundo: Beat inspecciona vencimientos cada 30 segundos y el worker necesita tomar el mensaje de la cola.
+**Estado:** A02 persiste la programación y una ejecución pendiente con trazas consultables; Beat y el despacho recuperable son A03 y aún no están configurados. Rige [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md). El administrador puede elegir una hora real **muy próxima**, por ejemplo dentro de un minuto. A03 inspeccionará vencimientos cada 30 segundos y el worker necesitará tomar el mensaje de la cola.
 
 | Automatización | Disparador de la demo | Efecto |
 |---|---|---|

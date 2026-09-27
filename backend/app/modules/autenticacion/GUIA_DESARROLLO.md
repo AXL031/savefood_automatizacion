@@ -20,6 +20,8 @@ Archivos técnicos observados al preparar esta guía: `__init__.py`, `modelos.py
 
 ## Trabajo en esta carpeta
 
+**Entrega A01:** inicio de sesión y perfil usan el sobre `datos`; credenciales erróneas responden `401 CREDENCIALES_INVALIDAS`. Las dependencias públicas están en `app.core.identidad` y los códigos exactos en [contratos HTTP](../../../../docs/api/contratos.md#contrato-a01-disponible-acceso-y-configuración). El token vence en 30 minutos y no existe renovación. La prueba reproducible es `python -m pytest backend/tests/integration/test_acceso_configuracion.py -q` desde la raíz.
+
 1. Completar validación de credenciales y perfil usando el núcleo existente.
 2. Aplicar identidad pública y permisos Administrador/Operador a las rutas de dominio.
 3. Uniformar errores 401/403 y tratamiento de sesión vencida.

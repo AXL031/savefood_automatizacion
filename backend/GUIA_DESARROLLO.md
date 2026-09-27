@@ -20,6 +20,10 @@ Archivos técnicos observados al preparar esta guía: `.dockerignore`, `Dockerfi
 
 ## Trabajo en esta carpeta
 
+**A01:** `pyproject.toml` incluye `tzdata` para que la validación IANA del negocio funcione también en entornos Windows sin base horaria del sistema. La prueba del contrato HTTP de acceso/configuración está incorporada al paso Python de CI.
+
+**A02:** el paso Python de CI incluye `test_programaciones_a02.py`; requiere aplicar `0001b_automatizaciones` para usar las rutas en PostgreSQL.
+
 1. Mantener pyproject.toml y Dockerfile consistentes y reproducibles.
 2. Incorporar dependencias ML propuestas por Kevin y lector de archivos de Edu.
 3. Acordar configuración y acceso a artefactos entre API y worker.
