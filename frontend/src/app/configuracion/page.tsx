@@ -1,28 +1,37 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { actualizarNegocio } from "@/services/autenticacion";
 import type { CambioNegocio } from "@/types/autenticacion";
+import { HttpError } from "@/services/http";
+import { borrarToken } from "@/services/sesion";
 
 const preferenciasPrevistas = [
   { titulo: "Planificación nocturna", detalle: "Generar demanda y plan al finalizar el día." },
-  { titulo: "Pedidos automáticos", detalle: "Preparar pedidos a partir de los insumos faltantes." },
   { titulo: "Control de excedentes", detalle: "Revisar riesgo durante la jornada." },
   { titulo: "Promociones preventivas", detalle: "Activar una acción dentro del descuento permitido." },
 ];
 
 function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
+  const router = useRouter();
   const { token, negocio, perfil, actualizarNegocioLocal } = contexto;
-  const [formulario, setFormulario] = useState<CambioNegocio>({ nombre: negocio.nombre, zona_horaria: negocio.zona_horaria, moneda: negocio.moneda });
+  const [formulario, setFormulario] = useState<Required<CambioNegocio>>({ nombre: negocio.nombre, zona_horaria: negocio.zona_horaria, moneda: negocio.moneda, modo_envio_pedidos: negocio.modo_envio_pedidos });
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
   const administrador = perfil.rol === "ADMINISTRADOR";
 
-  function cambiar(campo: keyof CambioNegocio, valor: string) {
+  function cambiar(campo: "nombre" | "zona_horaria" | "moneda", valor: string) {
     setFormulario((actual) => ({ ...actual, [campo]: valor }));
+    setMensaje("");
+    setError("");
+  }
+
+  function cambiarModo(valor: Required<CambioNegocio>["modo_envio_pedidos"]) {
+    setFormulario((actual) => ({ ...actual, modo_envio_pedidos: valor }));
     setMensaje("");
     setError("");
   }
@@ -36,6 +45,7 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
       nombre: formulario.nombre.trim(),
       zona_horaria: formulario.zona_horaria.trim(),
       moneda: formulario.moneda.trim().toUpperCase(),
+      modo_envio_pedidos: formulario.modo_envio_pedidos,
     };
     if (!datos.nombre || !datos.zona_horaria || !/^[A-Z]{3}$/.test(datos.moneda)) {
       setError("Completa el nombre y la zona horaria; la moneda debe tener tres letras.");
@@ -51,9 +61,14 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
     try {
       const actualizado = await actualizarNegocio(token, datos);
       actualizarNegocioLocal(actualizado);
-      setFormulario({ nombre: actualizado.nombre, zona_horaria: actualizado.zona_horaria, moneda: actualizado.moneda });
+      setFormulario({ nombre: actualizado.nombre, zona_horaria: actualizado.zona_horaria, moneda: actualizado.moneda, modo_envio_pedidos: actualizado.modo_envio_pedidos });
       setMensaje("Los datos del comercio se guardaron correctamente.");
     } catch (fallo) {
+      if (fallo instanceof HttpError && fallo.status === 401) {
+        borrarToken();
+        router.replace("/iniciar-sesion");
+        return;
+      }
       setError(fallo instanceof Error ? fallo.message : "No se pudieron guardar los cambios.");
     } finally {
       setGuardando(false);
@@ -67,6 +82,13 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
           <label className="field field-full">Nombre del comercio<input value={formulario.nombre} onChange={(e) => cambiar("nombre", e.target.value)} maxLength={160} disabled={!administrador || guardando} required /></label>
           <label className="field">Zona horaria<input value={formulario.zona_horaria} onChange={(e) => cambiar("zona_horaria", e.target.value)} placeholder="America/Lima" disabled={!administrador || guardando} required /><small>Define cómo se muestran las fechas y horas.</small></label>
           <label className="field">Moneda<input value={formulario.moneda} onChange={(e) => cambiar("moneda", e.target.value.toUpperCase())} maxLength={3} minLength={3} disabled={!administrador || guardando} required /><small>Código de tres letras; por ejemplo, PEN.</small></label>
+          <label className="field field-full">Envío de pedidos
+            <select value={formulario.modo_envio_pedidos} onChange={(e) => cambiarModo(e.target.value as Required<CambioNegocio>["modo_envio_pedidos"])} disabled={!administrador || guardando}>
+              <option value="REQUIERE_APROBACION">Requiere aprobación de un administrador</option>
+              <option value="AUTOMATICO">Automático después de validar el pedido</option>
+            </select>
+            <small>El cambio se aplicará solo a pedidos nuevos. El canal de Telegram se habilitará con el módulo de compras.</small>
+          </label>
           {error && <div className="inline-error field-full" role="alert">{error}</div>}
           {mensaje && <div className="inline-success field-full" role="status">{mensaje}</div>}
           <div className="form-actions field-full"><button type="submit" className="button-primary" disabled={!administrador || guardando}>{guardando ? "Guardando…" : "Guardar cambios"}</button></div>

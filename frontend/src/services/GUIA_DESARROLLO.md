@@ -21,6 +21,10 @@ Archivos técnicos observados al preparar esta guía: `autenticacion.ts`, `autom
 
 ## Trabajo en esta carpeta
 
+**Frontera A01:** `http.ts` conserva el sobre `error.codigo/mensaje/detalles` del servidor y emite `foodsave:sesion-vencida` cuando una solicitud protegida devuelve 401. `ProtectedShell` elimina el token de sesión y redirige al acceso. Edu puede consumir este contrato sin crear otro manejo de Bearer para cada pantalla.
+
+**Frontera A02:** `automatizaciones.ts` consume las cinco rutas reales de programación y ejecución; devuelve los `datos` tipados de A02 y no ofrece reintento manual.
+
 1. Mantener http.ts como transporte; Axel acuerda autenticación y errores.
 2. Cada dueño implementa archivo de servicio de sus rutas y trata tipos/estados definidos.
 3. Edu agrega multipart para archivos sin imponer Content-Type JSON; mantener cancelación y errores por campo.

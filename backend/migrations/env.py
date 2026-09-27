@@ -7,6 +7,7 @@ from sqlalchemy import engine_from_config, pool
 from app.core.base import Base
 from app.modules.autenticacion.modelos import Usuario  # noqa: F401
 from app.modules.negocios.modelos import Negocio  # noqa: F401
+from app.modules.automatizaciones.modelos import ProgramacionDemo, EjecucionAutomatizacion, IntentoAutomatizacion  # noqa: F401
 
 config = context.config
 if config.config_file_name and config.get_section(config.config_ini_section, {}).get("loggers"):

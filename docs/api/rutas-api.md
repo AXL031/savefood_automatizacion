@@ -1,6 +1,6 @@
 # Rutas HTTP: existentes y objetivo del prototipo
 
-Base `/api/v1`, salvo `/salud`. **Solo la primera tabla está implementada**; las rutas del prototipo son contratos para desarrollar, no endpoints disponibles hoy. Los contratos de cuerpo, unidades, errores e idempotencia están en [contratos.md](contratos.md) y [primera inicialización](contrato-importaciones.md).
+Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rutas de la segunda son contratos pendientes. Los contratos de cuerpo, unidades, errores e idempotencia están en [contratos.md](contratos.md) y [primera inicialización](contrato-importaciones.md).
 
 | Ruta actual | Autorización |
 |---|---|
@@ -8,9 +8,14 @@ Base `/api/v1`, salvo `/salud`. **Solo la primera tabla está implementada**; la
 | `GET /autenticacion/mi-perfil` | Bearer |
 | `GET /negocios/actual` | Bearer |
 | `PATCH /negocios/actual` | Administrador |
+| `POST /programaciones-demo` | Administrador |
+| `GET /programaciones-demo` | Bearer |
+| `GET /programaciones-demo/{id}` | Bearer |
+| `GET /ejecuciones-automatizacion` | Bearer |
+| `GET /ejecuciones-automatizacion/{id}` | Bearer |
 | `GET /salud` | Pública, fuera de `/api/v1` |
 
-`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales aún responden errores `detail` de FastAPI; deben homologarse al contrato de error antes de añadir las siguientes.
+`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`: la API reserva/consulta; Beat y worker despachan por dentro. Los servicios de negocio aún no están conectados.
 
 ## Objetivo de la demo
 
@@ -25,9 +30,6 @@ Base `/api/v1`, salvo `/salud`. **Solo la primera tabla está implementada**; la
 | `PATCH /ventas-diarias/{id}` | Corrección explícita con motivo; conserva revisión. | Administrador |
 | `GET /inventario` | Saldos por lote y agregado con unidad/caducidad. | Bearer |
 | `POST /inventario/ajustes` | Movimiento explícito con motivo, hora efectiva simulada y clave única; agenda evaluación de promoción. | Administrador |
-| `POST /programaciones-demo` | Agenda `GENERAR_PROPUESTA` para una hora UTC real próxima con fecha histórica explícita. | Administrador |
-| `GET /programaciones-demo/{id}` | Hora elegida, disparo y estado. | Bearer |
-| `GET /ejecuciones-automatizacion/{id}` | Entradas, intentos, error y efectos. | Bearer |
 | `GET /pronosticos/corridas/{id}` | Resultados, versión y cobertura. | Bearer |
 | `GET /pronosticos/evaluacion` | Partición, versión y serie diaria del backtest reservado con MAE, WAPE, ±20% y cobertura. | Bearer |
 | `GET /pronosticos/corridas/{id}/evaluacion` | Comparación por producto del día elegido: previsto, real conocido, error y cobertura. | Bearer |

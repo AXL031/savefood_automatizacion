@@ -16,7 +16,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
+`manejadores.py` define `ContextoEjecucion` y el registro explícito `MANEJADORES`. Actualmente no hay adaptadores de dominio registrados: una ejecución de tipo aún no entregado termina con error visible. Cada dueño registra su función pública `(sesion, contexto) -> dict`, sin commit ni rollback propios. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
 
 Axel mantiene infraestructura; cada dueño implementa la función de su dominio y sus pruebas.
 

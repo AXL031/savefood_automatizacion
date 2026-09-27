@@ -20,6 +20,10 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**A01:** `test_acceso_configuracion.py` comprueba rutas reales de FastAPI, roles y persistencia con SQLite temporal y un `char_length` de prueba. Se ejecuta en CI sin servicios externos; la migración se verifica por separado con PostgreSQL en Compose.
+
+**A03:** `test_motor_a03.py` prueba política local sin servicios y, con `A03_POSTGRES_TEST=1`, usa un esquema PostgreSQL aislado y Redis de pruebas para concurrencia, recuperación, reintentos y Beat real. Ejecutar esa parte dentro de Compose con PostgreSQL y Redis levantados. Los handlers de prueba son efectos locales controlados, no módulos de negocio integrados.
+
 1. Edu prueba rollback total de carga con servicios de Max/Vera.
 2. Vera prueba ajustes concurrentes con PostgreSQL real.
 3. Axel prueba Beat/reentrega/recuperación con Redis; cada dueño valida efecto final.

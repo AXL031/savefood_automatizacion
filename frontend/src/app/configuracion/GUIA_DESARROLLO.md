@@ -21,6 +21,8 @@ Archivos técnicos observados al preparar esta guía: `page.tsx`. Su presencia n
 
 ## Trabajo en esta carpeta
 
+**Entrega A01:** el formulario ya guarda nombre, zona, moneda y modo de envío mediante la API real. Un Operador solo consulta. La selección automática afecta pedidos futuros y no envía nada por sí sola; Compras y Telegram siguen pendientes de Aguirre. Los errores del servidor son visibles y un 401 devuelve al inicio de sesión.
+
 1. Construir formulario de negocio/zona/moneda con errores del servidor.
 2. Mostrar selector de aprobación manual/automática y advertir que el cambio rige para pedidos nuevos.
 

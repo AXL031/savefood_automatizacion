@@ -1,6 +1,6 @@
 # Esquema objetivo del prototipo universitario
 
-**Estado:** contrato para la futura migración `0002`; ninguna tabla de esta página existe aún. `0001_nucleo` solo crea `negocio` y `usuario`. FoodSave guarda ventas diarias y stock en PostgreSQL. Los archivos de primera inicialización son **carga de arranque**, no fuentes externas permanentes. El [alcance](../guia-inicio-desarrollo.md) manda sobre documentos históricos del producto amplio.
+**Estado:** contrato de las tablas de dominio para la futura migración `0002`, salvo `programacion_demo`, `ejecucion_automatizacion` e `intento_automatizacion`, implementadas en `0001b_automatizaciones` y ampliadas con lease de ejecución en `0001c_motor`. `0001_nucleo` crea `negocio` y `usuario`; `0001a_configuracion` agrega `negocio.modo_envio_pedidos`. La futura `0002` debe depender de `0001c_motor`. FoodSave guardará ventas diarias y stock en PostgreSQL tras la primera carga. Los archivos de primera inicialización son **carga de arranque**, no fuentes externas permanentes. El [alcance](../guia-inicio-desarrollo.md) manda sobre documentos históricos del producto amplio.
 
 ## Convenciones
 
@@ -10,7 +10,7 @@
 
 ## Primera inicialización y catálogo
 
-La futura `0002` añade a `negocio` los campos textuales `comercio_externo` y `sucursal_externa`, configurados juntos durante la primera carga, y `modo_envio_pedidos` con valor inicial `REQUIERE_APROBACION` y valores permitidos `REQUIERE_APROBACION`/`AUTOMATICO`. Los identificadores externos son metadatos del archivo/modelo, no IDs de otros registros locales. El dataset `bakery` puede usar `piloto`/`principal`; se rechaza un archivo que declare otro par.
+`0001a_configuracion` añade a `negocio` `modo_envio_pedidos` con valor inicial `REQUIERE_APROBACION` y valores permitidos `REQUIERE_APROBACION`/`AUTOMATICO`. La futura `0002` añade los campos textuales `comercio_externo` y `sucursal_externa`, configurados juntos durante la primera carga. Los identificadores externos son metadatos del archivo/modelo, no IDs de otros registros locales. El dataset `bakery` puede usar `piloto`/`principal`; se rechaza un archivo que declare otro par.
 
 | Tabla | Campos mínimos | Claves y reglas |
 |---|---|---|
@@ -67,9 +67,9 @@ El [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md) fija t
 
 | Tabla | Campos mínimos | Claves y reglas |
 |---|---|---|
-| `programacion_demo` | `id`, `tipo`, `ejecutar_desde_utc`, `fecha_hora_simulada_local`, `parametros_json`, `clave_idempotencia`, `estado`, `despachada_en NULL`, `lease_hasta NULL`, `creado_por FK NULL`, `creado_en`. | `UNIQUE(clave_idempotencia)`; tipos `GENERAR_PROPUESTA`, `EVALUAR_PROMOCION`; estados `PROGRAMADA`, `DESPACHADA`, `CANCELADA`. Un lease vencido permite reenviar la **misma** clave tras caída. Repetición idéntica recupera la programación. |
-| `ejecucion_automatizacion` | `id`, `programacion_id FK NULL`, `tipo`, `clave_idempotencia`, `huella_entrada`, `estado`, `inicio_en NULL`, `fin_en NULL`, `proximo_intento_en NULL`, `datos_salida_json NULL`, `mensaje_error NULL`. | `UNIQUE(clave_idempotencia)` y `UNIQUE(programacion_id)` cuando no es nulo. Estados `PENDIENTE`, `EN_EJECUCION`, `REINTENTANDO`, `COMPLETADA`, `FALLIDA`. Entrenamiento, backtest y evaluación de una propuesta son eventos sin programación. |
-| `intento_automatizacion` | `id`, `ejecucion_id FK`, `numero_intento`, `inicio_en`, `fin_en NULL`, `estado`, `mensaje_error NULL`. | `UNIQUE(ejecucion_id, numero_intento)`; hasta tres intentos totales. Un error de datos no se reintenta como fallo transitorio. |
+| `programacion_demo` | `id`, `tipo`, `ejecutar_desde_utc`, `fecha_hora_simulada_local`, `parametros_json`, `clave_idempotencia`, `huella_entrada`, `estado`, `despachada_en NULL`, `lease_hasta NULL`, `creado_por FK NULL`, `creado_en`. | **Implementada en `0001b`.** `UNIQUE(clave_idempotencia)`; tipos `GENERAR_PROPUESTA`, `EVALUAR_PROMOCION`; estados `PROGRAMADA`, `DESPACHADA`, `CANCELADA`. Repetición idéntica recupera la programación. El lease de A03 refleja el reclamo y se libera al finalizar o reintentar. |
+| `ejecucion_automatizacion` | `id`, `programacion_id FK NULL`, `tipo`, `clave_idempotencia`, `huella_entrada`, `datos_entrada_json`, `estado`, `inicio_en NULL`, `fin_en NULL`, `proximo_intento_en NULL`, `despachada_en NULL`, `lease_hasta NULL`, `token_despacho NULL`, `datos_salida_json NULL`, `mensaje_error NULL`. | **Implementada en `0001b` y ampliada en `0001c`.** `UNIQUE(clave_idempotencia)` y `UNIQUE(programacion_id)` cuando no es nulo. Estados `PENDIENTE`, `EN_EJECUCION`, `REINTENTANDO`, `COMPLETADA`, `FALLIDA`. El token gira al recuperar el lease; los mensajes anteriores no ejecutan. Entrenamiento, backtest y evaluación de una propuesta son eventos sin programación. |
+| `intento_automatizacion` | `id`, `ejecucion_id FK`, `numero_intento`, `inicio_en`, `fin_en NULL`, `estado`, `mensaje_error NULL`. | **Implementada en `0001b`.** `UNIQUE(ejecucion_id, numero_intento)`; hasta tres intentos totales. A03 recupera intentos abiertos y clasifica fallos internos. |
 | `regla_promocion_demo` | `id`, `version`, `hora_revision`, `hora_cierre`, `stock_umbral`, `descuento_pct`, `descuento_maximo_pct`, `antiguedad_maxima_stock_min`, `habilitada`. | `UNIQUE(version)` y una sola regla habilitada. Valores compatibles con `ReglaPromocion` existente; `hora_revision < hora_cierre`, descuento entre `1` y máximo `<= 100`, antigüedad positiva. Cambiar regla crea versión nueva. |
 | `evaluacion_promocion` | `id`, `ejecucion_id FK`, `lote_producto_id FK`, `regla_id FK`, `fecha_hora_simulada_local`, `stock_leido`, `proponer boolean`, `motivo`, `descuento_pct NULL`, `creado_en`. | `UNIQUE(ejecucion_id, lote_producto_id)`; registra propuesta o rechazo explicativo. `descuento_pct` solo existe cuando `proponer=true`. La versión se obtiene de `regla_id`. No cambia precio ni stock. |
 
@@ -91,4 +91,4 @@ El [contrato de pedidos](../api/contrato-pedidos.md) fija fórmula, transiciones
 
 ## No crear en `0002` del prototipo
 
-`recepcion_pedido`, factura, pago, publicación de descuentos, predicción intradía de excedentes y Google Sheets pertenecen a la visión futura. `programacion_demo`, pedidos y evaluación de promoción **sí** están en `0002`. El [ER](diagrama-entidad-relacion.mmd) del prototipo debe reflejar estas tablas junto a las dos existentes de `0001`.
+`recepcion_pedido`, factura, pago, publicación de descuentos, predicción intradía de excedentes y Google Sheets pertenecen a la visión futura. `programacion_demo` ya existe en `0001b`; pedidos y evaluación de promoción siguen previstos para `0002`. El [ER](diagrama-entidad-relacion.mmd) del prototipo debe reflejar estas tablas junto a las dos existentes de `0001`.

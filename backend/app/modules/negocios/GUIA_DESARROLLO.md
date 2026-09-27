@@ -21,6 +21,8 @@ Archivos técnicos observados al preparar esta guía: `__init__.py`, `modelos.py
 
 ## Trabajo en esta carpeta
 
+**Entrega A01:** `GET/PATCH /negocios/actual` expone `modo_envio_pedidos`; la revisión `0001a_configuracion` agrega columna con `CHECK` y valor inicial `REQUIERE_APROBACION`. El servidor valida zona IANA, moneda de tres letras mayúsculas, nombre no vacío y modo enumerado antes de guardar. `servicio.obtener_modo_envio_pedidos(sesion)` es la lectura pública para Compras; no hace commit. Aguirre debe copiar este valor al crear cada pedido. Ver [ejemplo y errores](../../../../docs/api/contratos.md#contrato-a01-disponible-acceso-y-configuración).
+
 1. Mantener el único negocio local y validar zona IANA y moneda.
 2. Persistir modo REQUIERE_APROBACION/AUTOMATICO y exponerlo a Compras.
 3. Acordar los campos de identidad externa con Inicialización y evitar cambios que invaliden los datos importados.

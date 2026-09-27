@@ -20,6 +20,8 @@ Archivos técnicos observados al preparar esta guía: `env.py`, `script.py.mako`
 
 Axel coordina integración de revisiones; no asume las tablas de los seis.
 
+**A03:** la cabeza actual es `0001c_motor`, sucesora de `0001b_automatizaciones`; agrega despacho y lease a la ejecución. La revisión compartida `0002` deberá depender de esta cabeza sin modificar migraciones ya aplicadas.
+
 ## Trabajo en esta carpeta
 
 1. Coordinar una sola cadena de revisiones; cada dueño entrega sus tablas/restricciones.

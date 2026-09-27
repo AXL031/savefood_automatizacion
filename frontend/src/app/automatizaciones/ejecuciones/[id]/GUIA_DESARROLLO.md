@@ -21,6 +21,8 @@ Archivos técnicos observados al preparar esta guía: `page.tsx`. Su presencia n
 
 ## Trabajo en esta carpeta
 
+**A03 disponible:** `page.tsx` consulta el ID real y refresca estados activos, muestra despacho, lease, siguiente intento, horas e intentos registrados. No ofrece reintento manual ni afirma efectos externos; un handler de dominio ausente deja error visible.
+
 1. Obtener ejecución por ID de la URL y distinguir ID inválido, no encontrado y falta de permisos.
 2. Mostrar tipo, estado, horas reales, escenario histórico, intentos y efectos relacionados.
 3. Enlazar corrida, plan, pedido o evaluación sin inventar resultados; acciones de recuperación siguen contrato de Axel/Aguirre.

@@ -6,6 +6,8 @@
 
 Cada instalación conserva juntos `catboost_model.cbm` y `metadata.json` en un directorio local de solo lectura para la API. El entrenamiento es un **paso separado de la primera inicialización**; el botón «Generar» nunca entrena ni descarga un modelo. El archivo de metadatos debe contener:
 
+**Infraestructura disponible en A04:** API y worker reciben `MODEL_ARTIFACT_DIR=/code/model_artifacts`, respaldado por el volumen persistente `model_artifacts` de Compose. El worker puede escribir allí el CBM y sus metadatos; la API monta el mismo directorio en solo lectura. El directorio empieza vacío: Kevin debe implementar la escritura atómica, lectura/verificación de huella y gestión de versiones antes de declarar `listo_demo`. El código del modelo y sus pruebas siguen bajo su responsabilidad.
+
 | Campo | Regla |
 |---|---|
 | `estado` | `experimental_pendiente_de_aceptacion`, `listo_demo` o `aprobado`. `listo_demo` solo permite la simulación histórica local; `aprobado` sería una evaluación futura para uso operativo. |

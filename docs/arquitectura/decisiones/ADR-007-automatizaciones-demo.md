@@ -1,6 +1,6 @@
 # ADR-007: automatizaciones verificables en la demo
 
-**Estado:** aceptada para el diseño del prototipo universitario; sin implementación. Complementa [ADR-006](ADR-006-identidades-lotes-pronosticos.md).
+**Estado:** aceptada; A01–A03 implementan núcleo, programación y motor. Los efectos de cada dominio y el recorrido integral continúan pendientes. Complementa [ADR-006](ADR-006-identidades-lotes-pronosticos.md).
 
 ## Motivo
 

@@ -16,7 +16,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
+`politica.py` clasifica `ErrorTransitorioInterno` y fallos PostgreSQL recuperables para hasta tres intentos totales con esperas de 60–65 y 120–125 segundos. `ErrorDatos` y un timeout genérico son definitivos; el timeout de Telegram requiere conciliación propia, nunca reenvío automático por este motor. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
 
 ## Trabajo en esta carpeta
 

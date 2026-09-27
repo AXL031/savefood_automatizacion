@@ -3,11 +3,9 @@ import type { EstadoEjecucion } from "@/types/automatizacion";
 const etiquetas: Record<EstadoEjecucion, string> = {
   PENDIENTE: "Pendiente",
   EN_EJECUCION: "En ejecución",
-  VERIFICANDO: "Verificando",
-  COMPLETADO: "Completado",
+  COMPLETADA: "Completada",
   REINTENTANDO: "Reintentando",
-  FALLIDO: "Fallido",
-  CANCELADO: "Cancelado",
+  FALLIDA: "Fallida",
 };
 
 export function etiquetaEstado(estado: EstadoEjecucion): string {
@@ -15,8 +13,8 @@ export function etiquetaEstado(estado: EstadoEjecucion): string {
 }
 
 export function tonoEstado(estado: EstadoEjecucion): "neutral" | "info" | "ok" | "alerta" {
-  if (estado === "COMPLETADO") return "ok";
-  if (estado === "FALLIDO" || estado === "CANCELADO") return "alerta";
-  if (estado === "EN_EJECUCION" || estado === "VERIFICANDO" || estado === "REINTENTANDO") return "info";
+  if (estado === "COMPLETADA") return "ok";
+  if (estado === "FALLIDA") return "alerta";
+  if (estado === "EN_EJECUCION" || estado === "REINTENTANDO") return "info";
   return "neutral";
 }

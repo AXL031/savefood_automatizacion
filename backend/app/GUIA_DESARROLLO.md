@@ -20,6 +20,10 @@ Archivos técnicos observados al preparar esta guía: `__init__.py`, `principal.
 
 ## Trabajo en esta carpeta
 
+**A01:** `principal.py` registra `configurar_errores(app)` antes de los routers. Las rutas nuevas reciben el sobre común para errores HTTP, validación 422 y fallos internos; las reglas de dominio permanecen en su módulo.
+
+**A02:** `principal.py` registra las rutas de programaciones y ejecuciones; las reglas de idempotencia y transacción viven en `modules/automatizaciones/servicio.py`.
+
 1. Registrar routers en principal.py con prefijo /api/v1.
 2. Homologar errores, CORS y dependencias compartidas sin mezclar reglas de dominio.
 3. Distinguir salud de infraestructura y disponibilidad funcional de un módulo.
