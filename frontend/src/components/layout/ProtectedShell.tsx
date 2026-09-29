@@ -17,6 +17,7 @@ type Props = {
 };
 
 const enlaces = [
+  { href: "/pronosticos", texto: "Pronósticos" },
   { href: "/configuracion", texto: "Configuración" },
   { href: "/automatizaciones", texto: "Automatizaciones" },
   { href: "/notificaciones", texto: "Notificaciones" },
