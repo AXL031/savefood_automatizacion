@@ -140,4 +140,53 @@ def calcular_dentro_rango(
     return 100.0 * (aciertos / len(pares_evaluables))
 
 
+def calcular_cobertura(total_pronosticados: int, pares_evaluables: int) -> float:
+    """Calcula la cobertura porcentual de observaciones reales conocidas.
+
+    Fórmula: 100 * pares_evaluables / total_pronosticados.
+    Una venta sin registro es DESCONOCIDA (no cero) y no se evalúa en MAE/WAPE,
+    pero reduce la cobertura visible.
+    """
+    if total_pronosticados <= 0:
+        return 0.0
+    return 100.0 * (pares_evaluables / total_pronosticados)
+
+
+def evaluar_pares(pares: Sequence[ParEvaluacion]) -> MetricasResultado:
+    """Evalúa un lote arbitrario de pares (de un solo día o de un tramo completo).
+
+    Aplica rigurosamente la regla del tramo completo:
+    - Filtra los pares con venta real conocida (no None).
+    - Registra cuántos productos quedaron fuera (excluidos por ausencia de venta).
+    - Cómputa MAE, WAPE, ±20%, ±10% y sumas sobre el conjunto filtrado.
+    """
+    total = len(pares)
+    evaluables = [(p.real, p.previsto) for p in pares if p.es_evaluable and p.real is not None]
+    n_eval = len(evaluables)
+    excluidos = total - n_eval
+
+    cobertura = calcular_cobertura(total, n_eval)
+    mae = calcular_mae(evaluables)
+    wape = calcular_wape(evaluables)
+    p20 = calcular_dentro_rango(evaluables, 0.20)
+    p10 = calcular_dentro_rango(evaluables, 0.10)
+
+    suma_abs = sum(abs(r - p) for r, p in evaluables) if evaluables else 0.0
+    suma_reales = sum(r for r, _ in evaluables) if evaluables else 0.0
+
+    return MetricasResultado(
+        total_pronosticados=total,
+        pares_evaluables=n_eval,
+        productos_excluidos=excluidos,
+        cobertura_pct=cobertura,
+        mae=mae,
+        wape_pct=wape,
+        dentro_mas_menos_20_pct=p20,
+        dentro_mas_menos_10_pct=p10,
+        suma_errores_absolutos=suma_abs,
+        suma_reales=suma_reales,
+    )
+
+
+
 
