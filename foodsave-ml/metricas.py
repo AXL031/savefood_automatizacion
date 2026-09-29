@@ -112,3 +112,32 @@ def calcular_wape(pares_evaluables: Sequence[tuple[float, float]]) -> float | No
     return 100.0 * (suma_abs / suma_real)
 
 
+def calcular_dentro_rango(
+    pares_evaluables: Sequence[tuple[float, float]],
+    umbral: float = 0.20,
+) -> float | None:
+    """Calcula el porcentaje de pares cuyo error relativo no supera el umbral.
+
+    Fórmula contractual (POLITICA_EVALUACION.md):
+      aciertos = cantidad de pares donde: |real - previsto| / max(real, 1.0) <= umbral
+      porcentaje = 100 * aciertos / cantidad_de_pares_evaluables
+
+    Nota contractual: cuando la venta real es cero, el denominador es max(0, 1) = 1,
+    por lo que no produce división por cero y evalúa la diferencia absoluta contra el umbral.
+
+    Args:
+        pares_evaluables: Lista de tuplas (real, previsto).
+        umbral: Tolerancia relativa (0.20 para ±20%, 0.10 para ±10%).
+
+    Returns:
+        Porcentaje [0, 100] o None si no hay pares evaluables.
+    """
+    if not pares_evaluables:
+        return None
+    aciertos = sum(
+        1 for r, p in pares_evaluables if (abs(r - p) / max(r, 1.0)) <= umbral
+    )
+    return 100.0 * (aciertos / len(pares_evaluables))
+
+
+
