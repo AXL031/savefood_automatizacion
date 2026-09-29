@@ -70,3 +70,21 @@ class MetricasResultado:
             "suma_errores_absolutos": round(self.suma_errores_absolutos, 4),
             "suma_reales": round(self.suma_reales, 4),
         }
+
+
+def calcular_mae(pares_evaluables: Sequence[tuple[float, float]]) -> float | None:
+    """Calcula el Error Medio Absoluto (MAE) en unidades.
+
+    Fórmula: suma(|real - previsto|) / cantidad de productos evaluables.
+
+    Args:
+        pares_evaluables: Lista de tuplas (real, previsto). Solo pares con venta real conocida.
+
+    Returns:
+        MAE en unidades físicas, o None si no hay pares evaluables.
+    """
+    if not pares_evaluables:
+        return None
+    suma_abs = sum(abs(r - p) for r, p in pares_evaluables)
+    return suma_abs / len(pares_evaluables)
+
