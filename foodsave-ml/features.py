@@ -76,7 +76,7 @@ def _ventana_promedio(serie: pd.Series, dias: int) -> pd.Series:
 
 def _ventana_conteo(serie: pd.Series, dias: int) -> pd.Series:
     """Cuenta de días con observación CONOCIDA en la ventana deslizante."""
-    return serie.notna().rolling(window=dias, min_periods=0).sum().shift(1)
+    return serie.notna().rolling(window=dias, min_periods=0).sum().shift(1).fillna(0).astype(int)
 
 
 def construir_features(

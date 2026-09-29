@@ -80,7 +80,7 @@ def conteo_ventana(serie: pd.Series, dias: int) -> pd.Series:
         serie: Serie reindexada por calendario (NaN para ausencias).
         dias: Tamaño de la ventana en días calendario.
     """
-    return serie.notna().rolling(window=dias, min_periods=0).sum().shift(1).astype(int)
+    return serie.notna().rolling(window=dias, min_periods=0).sum().shift(1).fillna(0).astype(int)
 
 
 def sin_fuga_temporal(
