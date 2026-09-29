@@ -94,3 +94,78 @@ def evaluar_dia(
         metricas=metricas,
         desglose_productos=desglose,
     )
+
+
+@dataclass
+class EvaluacionTramoCompleto:
+    """Evaluación consolidada del tramo histórico completo según POLITICA_EVALUACION.md."""
+
+    version_modelo: str
+    fecha_inicio: str
+    fecha_fin: str
+    fechas_evaluadas: int
+    total_pares_evaluables: int
+    metricas_globales: MetricasResultado
+    evaluaciones_diarias: list[EvaluacionDia] = field(default_factory=list)
+    estado: str = "demostracion_historica"
+
+    def as_dict(self) -> dict:
+        """Serializa el reporte completo del tramo para el dashboard K04."""
+        return {
+            "estado": self.estado,
+            "version_modelo": self.version_modelo,
+            "fecha_inicio": self.fecha_inicio,
+            "fecha_fin": self.fecha_fin,
+            "fechas_evaluadas": self.fechas_evaluadas,
+            "total_pares_evaluables": self.total_pares_evaluables,
+            "metricas_globales": self.metricas_globales.as_dict(),
+            "serie_diaria": [d.as_dict() for d in self.evaluaciones_diarias],
+        }
+
+
+def consolidar_evaluacion_tramo(
+    version_modelo: str,
+    fecha_inicio: str,
+    fecha_fin: str,
+    pares_todos: Sequence[ParEvaluacion],
+) -> EvaluacionTramoCompleto:
+    """Consolida la evaluación del tramo completo sin promediar porcentajes.
+
+    Regla contractual estricta (POLITICA_EVALUACION.md):
+      "Para el tramo completo, calcular MAE con todos los pares producto-día evaluables
+      y WAPE con las sumas de error y venta real de esos pares; no promediar los
+      porcentajes diarios. Mostrar cuántos pares y fechas fueron evaluables."
+
+    Args:
+        version_modelo: Identificador de la versión del artefacto ML.
+        fecha_inicio: Fecha inicial del tramo evaluado (YYYY-MM-DD).
+        fecha_fin: Fecha final del tramo evaluado (YYYY-MM-DD).
+        pares_todos: Todos los pares producto-día del tramo completo.
+
+    Returns:
+        EvaluacionTramoCompleto con métricas globales y desglose diario.
+    """
+    # 1. Agrupar por fecha para la serie temporal del gráfico
+    pares_por_fecha: dict[str, list[ParEvaluacion]] = {}
+    for p in pares_todos:
+        pares_por_fecha.setdefault(p.fecha_local, []).append(p)
+
+    fechas_ordenadas = sorted(pares_por_fecha.keys())
+    evaluaciones_diarias = [
+        evaluar_dia(f, pares_por_fecha[f]) for f in fechas_ordenadas
+    ]
+
+    # 2. Métricas globales evaluando directamente la lista completa de todos los pares
+    # (garantiza sumas totales sin promediar porcentajes diarios)
+    metricas_globales = evaluar_pares(pares_todos)
+
+    return EvaluacionTramoCompleto(
+        version_modelo=version_modelo,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
+        fechas_evaluadas=len(fechas_ordenadas),
+        total_pares_evaluables=metricas_globales.pares_evaluables,
+        metricas_globales=metricas_globales,
+        evaluaciones_diarias=evaluaciones_diarias,
+    )
+
