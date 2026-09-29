@@ -88,3 +88,27 @@ def calcular_mae(pares_evaluables: Sequence[tuple[float, float]]) -> float | Non
     suma_abs = sum(abs(r - p) for r, p in pares_evaluables)
     return suma_abs / len(pares_evaluables)
 
+
+def calcular_wape(pares_evaluables: Sequence[tuple[float, float]]) -> float | None:
+    """Calcula el WAPE porcentual: 100 * sum(|real - previsto|) / sum(real).
+
+    Reglas contractuales:
+      - Si la suma de las ventas reales es 0, el WAPE NO está definido y devuelve None.
+      - WAPE es una métrica de error [0, inf) y puede superar el 100%.
+      - NUNCA se debe calcular (100 - WAPE) ni denominarse 'precisión'.
+
+    Args:
+        pares_evaluables: Lista de tuplas (real, previsto).
+
+    Returns:
+        WAPE en porcentaje o None si no está definido (suma_real == 0 o lista vacía).
+    """
+    if not pares_evaluables:
+        return None
+    suma_real = sum(r for r, _ in pares_evaluables)
+    if suma_real == 0.0:
+        return None
+    suma_abs = sum(abs(r - p) for r, p in pares_evaluables)
+    return 100.0 * (suma_abs / suma_real)
+
+
