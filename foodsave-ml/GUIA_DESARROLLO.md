@@ -15,28 +15,45 @@
 - [foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md](CONTRATO_ARTEFACTO_INFERENCIA.md).
 - [foodsave-ml/POLITICA_EVALUACION.md](POLITICA_EVALUACION.md).
 
-## Punto de partida
+## Punto de partida y herramientas implementadas
 
-Archivos técnicos observados al preparar esta guía: `.gitignore`, `bakery_sales_limpio.csv`, `normalizar_ventas.py`, `requirements.txt`, `verificar_notebook.py`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Kevin Bohorquez](../docs/equipo/avances/bohorquez.md) para el último estado.
+Herramientas disponibles en la carpeta:
+- `entrenar.py`: CLI de entrenamiento CatBoost independiente de Colab. Produce `catboost_model.cbm` y `metadata.json` con escritura atómica.
+- `particion.py`: cálculo de cortes temporales según `POLITICA_EVALUACION.md` (6, 12 o 24 meses).
+- `features.py`: construcción de vector de 13 variables contractuales en orden estricto.
+- `ventanas.py`: lags y agregaciones por días calendario sin imputar ceros en ausencias.
+- `artefacto.py`: entrenamiento con `Quantile:alpha=0.65` y guardado atómico del CBM.
+- `metadata.py`: validación de campos, hash SHA-256, orden de variables y par comercio/sucursal.
+- `verificar_artefacto.py`: CLI para verificar la integridad del artefacto antes de su uso.
+- `metricas.py`: cálculo estricto de MAE, WAPE (None si suma real es cero), ±20%, ±10% y cobertura.
+- `evaluador.py`: evaluación por fecha (totales sumados sobre evaluables) y consolidación del tramo completo sin promediar porcentajes.
+- `ejecutar_backtest.py`: CLI para comprobación histórica un día adelante sobre el tramo de prueba reservado.
 
-Kevin coordina la carpeta; normalizar_ventas.py corresponde a Edu por su frontera de importación.
+Coordinación: Kevin coordina la carpeta y su lógica de pronósticos; `normalizar_ventas.py` corresponde a Edu por su frontera de importación de archivos.
 
-**Infraestructura transversal A04 de Axel:** Compose comparte `MODEL_ARTIFACT_DIR` entre worker (escritura) y API (solo lectura), con el extra `ml` instalado en la imagen backend. El volumen vacío es solo una capacidad de infraestructura; Kevin sigue siendo responsable de producir/verificar CBM y metadatos y de probar su servicio. Ver [contrato del artefacto](CONTRATO_ARTEFACTO_INFERENCIA.md).
+**Infraestructura transversal A04 de Axel:** Compose comparte `MODEL_ARTIFACT_DIR` entre worker (escritura) y API (solo lectura). Las herramientas de Kevin escriben y leen el artefacto CBM y sus metadatos en este volumen.
 
-## Trabajo en esta carpeta
+## Comandos de desarrollo
 
-1. Extraer funciones de entrenamiento/inferencia y conservar notebook como experimento reproducible.
-2. Aplicar política temporal vigente, no copiar automáticamente los cortes experimentales antiguos.
-3. Versionar artefacto y validar features/huella/cobertura antes de integrarlo con backend.
-4. Edu mantiene adaptador de archivos normalizar_ventas.py y sus pruebas coordinando salida con Kevin.
+```bash
+# Ejecutar entrenamiento offline y generar artefacto listo_demo
+python foodsave-ml/entrenar.py --csv ventas_diarias_normalizadas.csv --comercio piloto --sucursal principal --salida model_artifacts
 
-## Límites y coordinación
+# Verificar integridad del artefacto CBM
+python foodsave-ml/verificar_artefacto.py --directorio model_artifacts --comercio piloto --sucursal principal
 
-Esta carpeta ofrece infraestructura o documentación a los módulos. Cada dueño entrega las reglas y pruebas de su bloque; un cambio de contrato compartido se documenta con el consumidor antes de integrarlo. Respetar responsables específicos de las subcarpetas.
+# Ejecutar backtest histórico (un día adelante) sobre el tramo de prueba
+python foodsave-ml/ejecutar_backtest.py --artefacto-dir model_artifacts --csv ventas_diarias_normalizadas.csv --salida reporte_evaluacion.json
+
+# Ejecutar todas las pruebas unitarias del módulo ML (52 tests)
+python -m pytest foodsave-ml/tests/ -v
+```
 
 ## Criterio de entrega
 
-El backend puede usar el contrato ML sin ejecutar Colab; ventas reales objetivo no alimentan características.
+- K01 (LISTO_PARA_INTEGRAR): backend puede entrenar y validar CBM sin ejecutar Colab.
+- K03 (LISTO_PARA_INTEGRAR): evaluación histórica y métricas calculadas sin promediar porcentajes; WAPE indefinido si la suma real es cero.
+
 
 ## Documentar el avance y entregar al siguiente
 
