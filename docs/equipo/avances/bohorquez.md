@@ -6,21 +6,55 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Estado:** K01 y K03 implementados y listos para integración; K02 y K04 en preparación.
-- **Punto de partida alcanzado:** Se completó el pipeline de entrenamiento offline sin Colab (`entrenar.py`), generación y validación de artefactos CBM con SHA-256 (`verificar_artefacto.py`), cálculo estricto de métricas (`metricas.py`) y evaluador histórico de tramo completo con backtest un día adelante (`evaluador.py`, `ejecutar_backtest.py`). 52 pruebas unitarias pasando en `foodsave-ml/tests/`.
-- **Contrato disponible:** [CONTRATO_ARTEFACTO_INFERENCIA.md](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md) y [POLITICA_EVALUACION.md](../../../foodsave-ml/POLITICA_EVALUACION.md).
-- **Entrega a consumidores:** `MODEL_ARTIFACT_DIR` recibe `catboost_model.cbm` y `metadata.json` listos para inferencia local; evaluador produce métricas en formato dict listas para persistencia K02 y dashboard K04.
-- **Bloqueos:** Ninguno para K01/K03. Para K02 se requiere la migración 0002 y ventas en PostgreSQL de Edu (E01), adelantable con fixtures propios.
-- **Siguiente paso:** Implementar servicio de inferencia K02 en el backend con fixtures de prueba.
+- **Estado:** K01, K03 y K04 implementados y listos para integración; K02 en preparación.
+- **Punto de partida alcanzado:** Se completó el pipeline de entrenamiento offline sin Colab (`entrenar.py`), generación y validación de artefactos CBM con SHA-256 (`verificar_artefacto.py`), cálculo estricto de métricas (`metricas.py`), evaluador histórico de tramo completo con backtest un día adelante (`evaluador.py`, `ejecutar_backtest.py`) y el dashboard completo de frontend en `/pronosticos` con serie temporal SVG interactiva, desglose de producto en barras, tabla de auditoría con exclusión por ausencias y tarjetas de métricas globales.
+- **Contrato disponible:** [CONTRATO_ARTEFACTO_INFERENCIA.md](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md), [POLITICA_EVALUACION.md](../../../foodsave-ml/POLITICA_EVALUACION.md) y contratos de API en `/pronosticos/evaluacion`.
+- **Entrega a consumidores:** `/pronosticos` disponible en el frontend dentro de `ProtectedShell`; el servicio `services/pronosticos.ts` consume la API o responde con el escenario de prueba determinista Q3 2022 / caso 2022-08-24.
+- **Bloqueos:** Ninguno para K01, K03 ni K04. Para K02 se requiere la migración 0002 y ventas en PostgreSQL de Edu (E01), adelantable con fixtures propios.
+- **Siguiente paso:** Implementar servicio de inferencia K02 en backend con fixtures de prueba y conectar endpoints REST.
 
 | Tarea | Estado de seguimiento |
 |---|---|
 | K01 · Extraer entrenamiento reutilizable | LISTO_PARA_INTEGRAR |
 | K02 · Implementar inferencia y persistencia | PENDIENTE DE VERIFICAR / COMPLETAR |
 | K03 · Implementar evaluación histórica | LISTO_PARA_INTEGRAR |
-| K04 · Construir dashboard y vistas de pronóstico | PENDIENTE DE VERIFICAR / COMPLETAR |
+| K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR |
 
 ## Bitácora
+
+### K04 · Dashboard y vistas de pronóstico y evaluación histórica
+
+- **Fecha/hora y zona:** 2026-09-29 13:15 (America/Lima)
+- **Autor y responsable del bloque:** Kevin Bohorquez
+- **Tareas:** K04 (Construir dashboard y vistas de pronóstico)
+- **Estado:** LISTO_PARA_INTEGRAR
+- **Qué cambió y qué comportamiento está disponible:**
+  - Creación de tipos TypeScript en `frontend/src/types/pronosticos.ts` alineados con los contratos de métricas y evaluación.
+  - Implementación de `frontend/src/services/pronosticos.ts` con clientes tipados para evaluación histórica y corridas, integrando el escenario demo 2022-08-24 precalculado.
+  - Componente `TarjetasMetricas.tsx` mostrando MAE en unidades, WAPE porcentual (con "No definido" si la suma real es 0; sin restar de 100), cobertura y porcentaje dentro de ±20% / ±10%.
+  - Componente `GraficoSerieHistorica.tsx`: gráfico SVG reactivo que compara total previsto vs total real por fecha (sumados exclusivamente sobre evaluables), con selector interactivo de fecha e indicación de productos excluidos.
+  - Componente `BarrasProductoDia.tsx`: barras horizontales por producto con diferencia absoluta en unidades y badges de tolerancia.
+  - Componente `TablaDesgloseProductos.tsx`: auditoría tabular con motivo de exclusión `VENTA_REAL_DESCONOCIDA` para ausencias.
+  - Integración en `frontend/src/app/pronosticos/page.tsx` dentro de `ProtectedShell`, y adición del enlace "Pronósticos" en la barra lateral de navegación.
+- **Archivos clave:**
+  - `frontend/src/types/pronosticos.ts`
+  - `frontend/src/services/pronosticos.ts`
+  - `frontend/src/components/panel/TarjetasMetricas.tsx`
+  - `frontend/src/components/charts/GraficoSerieHistorica.tsx`
+  - `frontend/src/components/charts/BarrasProductoDia.tsx`
+  - `frontend/src/components/tables/TablaDesgloseProductos.tsx`
+  - `frontend/src/app/pronosticos/page.tsx`
+  - `frontend/src/components/layout/ProtectedShell.tsx`
+- **Contrato/función/ruta y ejemplo de uso:**
+  - Ruta frontend: `/pronosticos`
+  - Servicios: `obtenerEvaluacionHistorica(token)`, `listarCorridasPronostico(token)`
+- **Migración/configuración necesaria:** Ninguna en BD; requiere `npm install` en `frontend/`.
+- **Pruebas:** `npm run typecheck` (0 errores de tipos en TypeScript) y `npm run build` en `frontend` (ruta `/pronosticos` compilada y empaquetada estáticamente con éxito).
+- **Qué necesita el siguiente desarrollador y quién es:**
+  - Todo el equipo puede visualizar el desempeño del modelo y el caso objetivo demo 2022-08-24 directamente desde la interfaz web.
+- **Dependencias/bloqueos:** Ninguno; K04 completamente funcional y validado.
+- **Siguiente paso concreto:** Implementar modelos y servicio de inferencia K02 en el backend.
+- **Commit/PR:** Commits en rama `bohorquez`.
 
 ### K03 · Implementación de métricas y evaluación histórica
 
@@ -47,7 +81,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
   - Max Rojas (M02) y Kevin (K02/K04) reciben la estructura de métricas y evaluación consolidada.
 - **Dependencias/bloqueos:** Ninguno para evaluación offline. Persistencia en DB dependerá de K02.
 - **Siguiente paso concreto:** Conectar la evaluación histórica al servicio de backend K02 y al panel K04.
-- **Commit/PR:** Commits `694b05b` a `85d0fcb` en rama `bohorquez`.
+- **Commit/PR:** Pull Request #5 mergeado en `main` (`34c6b88`).
 
 ### K01 · Entrenador CatBoost independiente de Colab
 

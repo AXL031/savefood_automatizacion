@@ -16,19 +16,20 @@
 - [foodsave-ml/POLITICA_EVALUACION.md](../../../../foodsave-ml/POLITICA_EVALUACION.md).
 - [docs/api/contratos.md](../../../../docs/api/contratos.md).
 
-## Punto de partida
+## Punto de partida y componentes implementados
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para el último estado.
-
-## Trabajo en esta carpeta
-
-1. Mostrar estado del modelo, versión, partición y pronósticos por fecha/producto.
-2. Construir dashboard de evaluación histórica, cobertura, MAE/WAPE y serie temporal.
-3. Mostrar null y métricas indefinidas como desconocidas, con enlace a la corrida.
+Componentes disponibles en la ruta `/pronosticos`:
+- `page.tsx`: vista completa del dashboard dentro de `ProtectedShell`.
+- `TarjetasMetricas.tsx`: tarjetas de resumen consolidado (MAE, WAPE, cobertura, ±20%, ±10%).
+- `GraficoSerieHistorica.tsx`: gráfico SVG reactivo con línea temporal previsto vs real conocido e interactividad por día.
+- `BarrasProductoDia.tsx`: barras horizontales comparativas por producto para el día seleccionado con diferencia absoluta.
+- `TablaDesgloseProductos.tsx`: tabla de auditoría detallada con motivo de exclusión (`VENTA_REAL_DESCONOCIDA`).
+- `services/pronosticos.ts`: cliente HTTP tipado (`obtenerEvaluacionHistorica`, `listarCorridasPronostico`) con respaldo determinista del escenario piloto (Q3 2022 / caso 2022-08-24).
 
 ## Organización de implementación
 
-La ruta compone `page.tsx` y componentes del feature correspondiente. Usar layout protegido y cliente HTTP común. Resolver carga, vacío, error, permisos y sesión vencida. Tener una carpeta y una guía no hace que la página exista: conectarla solo cuando su contrato esté publicado.
+La ruta compone `page.tsx` dentro del layout protegido `ProtectedShell`. Todos los componentes manejan la ausencia de venta como valor desconocido (sin imputar ceros), preservando la cobertura visible y asegurando que las sumas de previsto y real se computen exclusivamente sobre pares evaluables.
+
 
 ## Dependencias y contrato de entrega
 
