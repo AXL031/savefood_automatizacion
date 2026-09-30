@@ -31,6 +31,8 @@ Archivos técnicos observados al preparar esta guía: `api.ts`, `autenticacion.t
 3. Representar null, decimales, fechas y paginación como en API.
 4. Distinguir contratos propuestos de implementados; no agregar campos por lo que muestra una maqueta.
 
+`inicializacion.ts` tipa los conteos y la ejecución devueltos por la carga web parcial del CSV bakery. No representa todavía el estado de la primera inicialización completa.
+
 ## Límites y coordinación
 
 Esta carpeta ofrece infraestructura o documentación a los módulos. Cada dueño entrega las reglas y pruebas de su bloque; un cambio de contrato compartido se documenta con el consumidor antes de integrarlo. Respetar responsables específicos de las subcarpetas.

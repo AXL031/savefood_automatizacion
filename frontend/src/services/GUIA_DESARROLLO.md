@@ -28,6 +28,7 @@ Archivos técnicos observados al preparar esta guía: `autenticacion.ts`, `autom
 1. Mantener http.ts como transporte; Axel acuerda autenticación y errores.
 2. Cada dueño implementa archivo de servicio de sus rutas y trata tipos/estados definidos.
 3. Edu agrega multipart para archivos sin imponer Content-Type JSON; mantener cancelación y errores por campo.
+   `http.ts` acepta `formData` para la carga piloto y deja que el navegador genere el límite multipart. `inicializacion.ts` consume la ruta administrativa real.
 4. No usar un 404 como datos vacíos ni simular persistencia para completar la demo.
 
 ## Límites y coordinación

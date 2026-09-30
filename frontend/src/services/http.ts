@@ -18,6 +18,7 @@ type Opciones = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   token?: string;
   body?: unknown;
+  formData?: FormData;
   signal?: AbortSignal;
 };
 
@@ -38,10 +39,10 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
     respuesta = await fetch(`${baseUrl}/api/v1${ruta}`, {
       method: opciones.method ?? "GET",
       headers: {
-        ...(opciones.body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(opciones.body !== undefined && !opciones.formData ? { "Content-Type": "application/json" } : {}),
         ...(opciones.token ? { Authorization: `Bearer ${opciones.token}` } : {}),
       },
-      body: opciones.body === undefined ? undefined : JSON.stringify(opciones.body),
+      body: opciones.formData ?? (opciones.body === undefined ? undefined : JSON.stringify(opciones.body)),
       signal: opciones.signal,
       cache: "no-store",
     });

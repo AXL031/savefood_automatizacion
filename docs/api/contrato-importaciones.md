@@ -1,6 +1,12 @@
 # Contrato de primera inicialización
 
-**Estado:** diseño del prototipo universitario. El asistente de configuración solicita archivos **solo la primera vez**. Tras aceptar la carga, PostgreSQL es la fuente de ventas y stock; los archivos quedan como evidencia de origen. No existen todavía lector XLSX, endpoint de carga ni entrenamiento en backend.
+**Estado:** el asistente completo de primera inicialización sigue en diseño. Existe una carga web parcial del CSV piloto bakery que guarda catálogo y ventas en PostgreSQL y reserva el entrenamiento; no incluye XLSX, recetas, lotes ni estado `configuracion_inicial`. Para la carga completa, los archivos se solicitan **solo la primera vez** y PostgreSQL queda como fuente de ventas y stock.
+
+## Acceso rápido del piloto implementado
+
+`POST /api/v1/inicializacion/piloto-bakery` requiere Bearer de Administrador y `multipart/form-data` con el campo `archivo` (`.csv`, máximo 25 MB). Acepta las columnas originales `date,article,Quantity`; toma el catálogo de `lista_productos_precios_limpia.md` incluido en la aplicación. Tras validar, carga productos y ventas agregadas en una sola sesión, calcula la huella SHA-256 del archivo y reserva `PREPARAR_MODELO` en el mismo commit. Responde `202` con `datos = {importacion_id, repetida, productos, filas_aceptadas, filas_negativas_excluidas, ventas_diarias_creadas, version_modelo, ejecucion_id, estado_ejecucion}`. Repetir el mismo archivo recupera la importación y la ejecución sin duplicarlas; un error revierte todo. La UI `/inicializacion` muestra la carga, el estado de ejecución y un reintento de preparación si falla, sin volver a subir el CSV.
+
+El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo temporal que se borra al terminar la solicitud. Este acceso es solo para el dataset bakery y no establece el estado de primera inicialización completa.
 
 ## Entrega
 

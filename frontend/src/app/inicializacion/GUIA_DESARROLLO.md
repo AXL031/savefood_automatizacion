@@ -17,7 +17,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+`page.tsx` permite al Administrador subir el CSV bakery, muestra conteos, sigue la ejecución de entrenamiento y ofrece reintento sin volver a importar. Al volver a abrir la página recupera la última ejecución de preparación desde la API. Usa el layout protegido. Es una carga piloto parcial, no el asistente de dos Excel o cinco CSV. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Trabajo en esta carpeta
 

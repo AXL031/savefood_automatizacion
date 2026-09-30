@@ -19,6 +19,7 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `GET /pronosticos/corridas/{id}` | Bearer |
 | `GET /pronosticos/evaluacion` | Bearer; filtro opcional `modelo_id` |
 | `GET /pronosticos/corridas/{id}/evaluacion` | Bearer |
+| `POST /inicializacion/piloto-bakery` | Administrador; recibe un CSV bakery y reserva `PREPARAR_MODELO` |
 | `GET /salud` | Pública, fuera de `/api/v1` |
 
 `POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`. Pronósticos requiere `0002_e01_ventas` y `0003_pronosticos`; PREPARAR_MODELO, EVALUAR_MODELO y EVALUAR_PRONOSTICO están registrados, pero Edu y Max aún deben conectar sus disparadores de carga y plan.
@@ -48,6 +49,8 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `GET /promociones/evaluaciones` | Sugerencia o motivo de rechazo por lote; no activa descuentos. | Bearer |
 
 Actualmente `POST /pronosticos/preparar-modelo` reserva el entrenamiento a demanda y el worker registra el backtest al publicar el artefacto. El estado durable en `configuracion_inicial` y el disparador desde la carga completa pertenecen a E03 y aún no existen. Celery Beat revisa programaciones cada 30 segundos; el primer entrenamiento automático deberá encolarse por evento de carga. La misma clave idempotente recupera la ejecución, y otra entrada con esa clave devuelve conflicto.
+
+El acceso rápido `POST /inicializacion/piloto-bakery` ya recibe el CSV original del piloto desde la web y reserva su preparación en la misma transacción. Es un corte parcial E02/E03; no implementa el asistente completo de XLSX, recetas, stock ni `configuracion_inicial`.
 
 ## Visión futura, fuera de la demo
 

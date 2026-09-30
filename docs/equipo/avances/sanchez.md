@@ -6,21 +6,35 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Estado:** E01 parcial implementado como servicio interno y migración; consumido por K01–K03 en prueba local SQLite con CSV piloto. Pendiente prueba PostgreSQL. E02–E04 siguen pendientes.
-- **Punto de partida alcanzado:** Catálogo bakery desde la lista curada, mapeo de 139 SKU, carga agregada de ventas diarias, revisiones y lectura temporal pública sin inferir ceros ausentes. Hay CLI de carga local; no hay asistente ni API de ventas.
+- **Estado:** E01 verificado con el CSV piloto en PostgreSQL; E02/E03 tienen un corte web parcial que carga el CSV bakery y reserva el entrenamiento en la misma transacción. El asistente completo y E04 siguen pendientes.
+- **Punto de partida alcanzado:** Catálogo bakery desde la lista curada, mapeo de 139 SKU, carga agregada de 27 740 ventas diarias, revisiones y lectura temporal pública sin inferir ceros ausentes. La página `/inicializacion` sube el CSV y muestra ejecución, con reintento ML; no hay XLSX, recetas, stock inicial ni API general de ventas.
 - **Contrato disponible:** [contrato de servicios E01](../../api/contratos.md#inicialización--ventas-y-catálogo) y [esquema objetivo](../../base_de_datos/esquema-objetivo-mvp.md).
-- **Entrega a consumidores:** Kevin usa `listar_skus_bakery`, `nombres_productos`, `limites_historial` y `leer_historial` en K01–K03; prueba integral local con el CSV piloto acreditada en su registro.
-- **Bloqueos:** Docker Desktop está instalado, pero su motor Linux requiere habilitar `Virtual Machine Platform` en Windows y reiniciar; falta verificar `0002_e01_ventas` y la carga en PostgreSQL.
-- **Siguiente paso:** probar migración y carga en PostgreSQL; Edu completa el asistente y las rutas/pantallas de E01–E04.
+- **Entrega a consumidores:** Kevin usa `listar_skus_bakery`, `nombres_productos`, `limites_historial` y `leer_historial`; la carga web en PostgreSQL disparó K01/K03 y produjo 92 corridas y 4 047 evaluaciones. Max y Vera aún deben entregar recetas y apertura de lotes para la primera inicialización completa.
+- **Bloqueos:** el corte web solo acepta CSV bakery; falta validar dos XLSX o cinco CSV, orquestar Max/Vera, guardar `configuracion_inicial` y entregar ventas/productos generales.
+- **Siguiente paso:** Edu completa E02/E03 y las rutas/pantallas de E01/E04 sin sustituir la lectura temporal ya consumida por Kevin.
 
 | Tarea | Estado de seguimiento |
 |---|---|
-| E01 · Definir y cargar productos y ventas | EN_CURSO: corte interno para Kevin, sin API ni prueba PostgreSQL |
-| E02 · Construir asistente XLSX/CSV | PENDIENTE DE VERIFICAR / COMPLETAR |
-| E03 · Preparar primera inicialización | PENDIENTE DE VERIFICAR / COMPLETAR |
+| E01 · Definir y cargar productos y ventas | EN_CURSO: corte bakery verificado en PostgreSQL; faltan API/pantallas generales |
+| E02 · Construir asistente XLSX/CSV | EN_CURSO: subida web del CSV bakery, sin asistente completo |
+| E03 · Preparar primera inicialización | EN_CURSO: reserva ML tras CSV piloto, sin estado ni carga total |
 | E04 · Entregar pantallas y piezas comunes | PENDIENTE DE VERIFICAR / COMPLETAR |
 
 ## Bitácora
+
+### E01–E03 · Carga web del CSV piloto y preparación real en PostgreSQL
+
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
+- **Autor y responsable del bloque:** Codex por solicitud de Axel, trabajando en el bloque de Edu Sanchez; no atribuye estas ediciones a Edu.
+- **Tareas y estado:** E01 verificado en PostgreSQL; E02/E03 parciales, EN_CURSO.
+- **Comportamiento disponible:** `POST /inicializacion/piloto-bakery` recibe multipart de Administrador, limita a 25 MB, carga el catálogo curado y ventas agregadas, y reserva `PREPARAR_MODELO` en un commit. La misma huella recupera importación/ejecución sin duplicar. La página permite subir el archivo, consultar el estado y reintentar preparación fallida sin recargar ventas. El CSV no se copia a la imagen Docker.
+- **Archivos clave:** `backend/app/modules/inicializacion/rutas.py`, `frontend/src/app/inicializacion/page.tsx`, `frontend/src/services/inicializacion.ts`, `backend/tests/integration/test_carga_csv_piloto.py`.
+- **Contrato/ejemplo:** `POST /api/v1/inicializacion/piloto-bakery`, campo `archivo` con el CSV bakery; devuelve `importacion_id`, conteos, `version_modelo` y `ejecucion_id`. Ver [contrato de importaciones](../../api/contrato-importaciones.md#acceso-rápido-del-piloto-implementado).
+- **Configuración/migraciones:** se añadió `python-multipart`; usa `0002_e01_ventas` y `0003_pronosticos` ya existentes. No se alteraron migraciones.
+- **Pruebas ejecutadas:** prueba enfocada `test_carga_csv_piloto.py` y frontera E01: 4 passed; suite backend: 27 passed, 8 skipped, 6 subtests passed. `npm run typecheck` y `npm run build` correctos. Subida real por HTTP a PostgreSQL: 139 productos, 228 936 líneas aceptadas, 1 264 negativas excluidas y 27 740 ventas diarias; repetición mantuvo una importación y la misma ejecución. Worker completó preparación y backtest: 1 modelo, 92 corridas y 4 047 evaluaciones; API de evaluación devolvió 4 047 pares. La suite combinada `backend/tests foodsave-ml/tests` no pudo recolectarse en `.venv` porque allí falta CatBoost; el flujo ML real sí se ejecutó en Docker. No se probó asistente XLSX ni integración con recetas/stock.
+- **Dependencias:** Max entrega recetas, Vera apertura de lotes; Kevin mantiene el modelo y Max aún debe consumir su corrida en el plan.
+- **Siguiente paso concreto:** completar validación/vista previa XLSX y CSV general, estado `configuracion_inicial` y carga atómica con los servicios de Max y Vera.
+- **Commit/PR:** incluido en el commit local de `cueva`; push pendiente por Axel.
 
 ### E01 · Consumo local por Kevin y ampliación de lecturas públicas
 

@@ -7,20 +7,33 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 ## Resumen vigente
 
 - **Estado:** K01–K04 implementados y listos para integrar en el prototipo local; no se declara integración con el plan de Max ni con la inicialización E03.
-- **Punto de partida alcanzado:** Entrenamiento desde historial E01, artefacto CBM versionado y verificado, inferencia persistida con 13 características temporales, backtest por fecha/revisión, API protegida y panel histórico. La prueba integral con el CSV piloto pasó en SQLite: 139 productos, 92 corridas canónicas de prueba y 4047 pares evaluables.
+- **Punto de partida alcanzado:** Entrenamiento desde historial E01, artefacto CBM versionado y verificado, inferencia persistida con 13 características temporales, backtest por fecha/revisión, API protegida y panel histórico. El CSV piloto ya pasó en SQLite y PostgreSQL/Compose: 139 productos, 92 corridas canónicas y 4 047 pares evaluables.
 - **Contrato disponible:** [artefacto ML](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md), [API y servicios](../../api/contratos.md#ventas--pronósticos) y [política de evaluación](../../../foodsave-ml/POLITICA_EVALUACION.md).
 - **Entrega a consumidores:** `generar_corrida`/`obtener_pronosticos` y `solicitar_evaluacion_corrida` reciben la sesión del plan sin confirmarla; API `/pronosticos/*`, páginas `/pronosticos` y `/panel`, y adaptadores A03 para preparación/evaluación.
-- **Bloqueos:** Docker Desktop y Compose están instalados, pero el motor Linux se detiene porque Windows tiene `Virtual Machine Platform` deshabilitada. Falta verificar migraciones, worker y API en PostgreSQL; Edu debe conectar E03 y Max consumir la corrida en su plan.
-- **Siguiente paso:** Probar `0002`/`0003` y worker sobre PostgreSQL; integrar disparador E03 y plan M02 con pruebas de transacción compartida.
+- **Bloqueos:** el CSV piloto ya dispara preparación y evaluación desde la carga web parcial de Edu; falta E03 completo y que Max consuma la corrida en su plan. No se ha probado el flujo plan/pedido.
+- **Siguiente paso:** integrar E03 completo y M02 con prueba de transacción compartida; verificar el recorrido en otra computadora.
 
 | Tarea | Estado de seguimiento |
 |---|---|
-| K01 · Extraer entrenamiento reutilizable | LISTO_PARA_INTEGRAR; entrenó CSV piloto desde E01 en SQLite |
+| K01 · Extraer entrenamiento reutilizable | LISTO_PARA_INTEGRAR; entrenó CSV piloto desde E01 en PostgreSQL |
 | K02 · Implementar inferencia y persistencia | LISTO_PARA_INTEGRAR; Max aún no consume el servicio |
-| K03 · Implementar evaluación histórica | LISTO_PARA_INTEGRAR; backtest completo local verificado |
-| K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; frontend compila, falta ver API con PostgreSQL |
+| K03 · Implementar evaluación histórica | LISTO_PARA_INTEGRAR; backtest PostgreSQL con 4 047 pares |
+| K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; API respondió en PostgreSQL y frontend compiló |
 
 ## Bitácora
+
+### K01/K03/K04 · Verificación del consumidor CSV en PostgreSQL
+
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
+- **Autor y responsable del bloque:** Codex verificando el bloque de Kevin tras la carga parcial de Edu; no atribuye cambios de Kevin a Codex.
+- **Tareas y estado:** K01/K03/K04, LISTO_PARA_INTEGRAR; M02 de Max sigue pendiente.
+- **Comportamiento disponible:** el CSV real enviado por la nueva ruta de Edu reservó `PREPARAR_MODELO`; Beat/worker completaron el entrenamiento y `EVALUAR_MODELO` en PostgreSQL. API de modelos y evaluación respondió con datos reales. No se modificó código de Kevin.
+- **Archivos clave:** [carga de Edu](sanchez.md), `backend/app/modules/pronosticos/entrenamiento.py`, `backend/app/modules/pronosticos/evaluacion.py`.
+- **Contrato/ejemplo:** `POST /inicializacion/piloto-bakery` → ejecución `PREPARAR_MODELO` → `EVALUAR_MODELO` → `GET /pronosticos/evaluacion`.
+- **Configuración/migraciones:** `0002_e01_ventas` y `0003_pronosticos` aplicadas en Compose; volumen de artefactos compartido.
+- **Pruebas:** 1 modelo, 92 corridas y 4 047 evaluaciones persistidas; API de evaluación devolvió 4 047 pares; frontend `/inicializacion` respondió 200. Falta probar consumo M02 y el recorrido en otra PC.
+- **Dependencias y siguiente paso:** Edu completa E03; Max integra `generar_corrida` en M02.
+- **Commit/PR:** verificación incluida en el commit local de `cueva`; push pendiente por Axel.
 
 ### K01–K04 · Intento de arranque en Docker Desktop
 

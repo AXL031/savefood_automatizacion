@@ -17,7 +17,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+`rutas.py` expone `POST /inicializacion/piloto-bakery` para recibir el CSV bakery desde la web, con límite de 25 MB y permisos de Administrador. Coordina catálogo, ventas y reserva `PREPARAR_MODELO` en la misma sesión; confirma una sola vez y borra el archivo temporal. Es un corte parcial E02/E03. El asistente completo con Excel, recetas, stock y `configuracion_inicial` sigue pendiente. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Trabajo en esta carpeta
 
