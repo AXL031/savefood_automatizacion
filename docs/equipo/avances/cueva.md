@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Diagnóstico funcional (2026-09-30):** [estado verificado por bloque y orden de desarrollo](../estado-desarrollo.md). Base real de carga/ML/recetas/inventario; E03→ML incompleto, M02–M04 y L02–L04 pendientes, L01 y V03/V04 parciales. M01/V01 ya conectados; los textos antiguos de espera no son bloqueos vigentes. Sin cambios de lógica ni nuevas pruebas en esta auditoría.
+
 - **Integración y verificación (2026-09-30):** PR [#10](https://github.com/AXL031/savefood_automatizacion/pull/10) incorporado por Axel en `main`, commit `902f0e6`. Las seis ramas remotas publicadas están contenidas en ese commit; su árbol coincide exactamente con `b5d56f0`, la entrega probada. Main local actualizado por avance rápido. Docker: 122 pruebas y 6 subpruebas correctas, sin omisiones; PostgreSQL llega a 0007, permite bajar a 0004 y reaplicar, y `alembic check` no detecta diferencias. Frontend typecheck/build correctos; PR con 2 comprobaciones remotas correctas.
 - **Auditoría vigente:** no quedan commits publicados de los integrantes por incorporar a main en este corte. Esto no incluye trabajo sin commit o sin publicar en otras computadoras. Primera carga consume recetas e inventario reales; proveedores usa infraestructura común. Planificación/pedidos, promociones y adaptador Telegram/UI de proveedores siguen pendientes de sus responsables.
 - **Estado:** A01–A04 implementados localmente y listos para integrar. Ningún bloque se declara integrado hasta que su consumidor pruebe la frontera; el arranque de A04 aún requiere repetición por un compañero en otra PC y ejecución remota de CI.
@@ -23,6 +25,15 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### A04 · Auditoría funcional de avance y pendientes · 30-09-2026
+
+- **Autor/estado:** Codex por solicitud de Axel; revisión completada del corte main 902f0e6, coordinación transversal, sin atribuir nuevas implementaciones a los integrantes.
+- **Resultado y archivos:** [estado-desarrollo.md](../estado-desarrollo.md) contrasta las tareas A01–M04 con código, API, pantallas, migraciones y tests; enlaza los registros de los seis desde las entradas previas. Define la secuencia E03→ML, M02/M03→L02, política de recompra, Telegram y V03/V04 en paralelo.
+- **Contrato/configuración:** no se cambiaron contratos, dependencias de ejecución ni migraciones. El asistente completo carga datos reales pero no agenda ML ni usa sus transiciones; solo tres handlers ML registrados. Plan/compras son documentación; promociones es regla pura y proveedor no tiene adaptador real de Telegram.
+- **Verificación:** inspección de fuentes y referencias Git; main local/remoto 902f0e6. Se cita la prueba previa del mismo árbol funcional (122 passed y 6 subtests Docker; frontend y migraciones correctos), sin declararla ejecutada nuevamente. No se enviaron mensajes ni se tocaron datos de negocio.
+- **Siguiente paso/límites:** cada dueño desarrolla su dominio y actualiza resúmenes antiguos al siguiente corte. La confirmación completa HTTP en PostgreSQL y la demo de extremo a extremo siguen pendientes. Commit de documentación en cueva; seguimiento del PR #11.
+
 
 ### A04 · Verificación del merge y pruebas Docker · 30-09-2026
 
