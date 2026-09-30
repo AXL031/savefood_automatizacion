@@ -4,6 +4,20 @@ Corte funcional: `main` / `origin/main` en `902f0e6` (PR #10). Auditoría de Cod
 
 La base de datos, la carga, ML, recetas e inventario tienen implementación real. La demo completa aún no termina el recorrido carga → modelo → plan → faltantes → pedidos → Telegram y ajuste → promoción. Una carpeta documental o un tipo de ejecución admitido no acredita su implementación.
 
+
+## Estado local después de usuarios y paso 4
+
+A01 amplía cuentas/roles/activación administrativa. Pasos 1–4 implementados en cueva: carga→entrenamiento→pronóstico→plan→faltantes→pedidos borrador, con evaluación y trazas. UI /usuarios, /proveedores y /compras disponibles en código; 159 pruebas y 6 subpruebas Docker correctas, más una verificación adicional de recompra. Migración 0011 y frontend correctos. Sin publicación remota ni envío externo. Siguen pendientes aprobación/Telegram/conciliación L03–L04, promociones V03 y reproducción de la demo final en otra PC. Las tablas y auditorías siguientes describen cortes históricos de main; los resúmenes recientes de los registros personales prevalecen para el avance local.
+## Seguimiento del paso 2 (local, sin publicación)
+
+**Paso 2 local · 30-09-2026:** M02 agrega plan con snapshots de corrida, receta
+y stock, cantidades nullable/motivos, recálculo que conserva el anterior y API/UI
+de trazas. GENERAR_PROPUESTA enlaza inferencia → plan → evaluación histórica en
+la transacción del motor. Docker: 140 pruebas + 6 subpruebas correctas sin
+omisiones; concurrencia, rollback y CatBoost/Beat reales. Migración 0009 y
+frontend correctos. Cambios sin commit ni publicación; remoto no modificado.
+M03 quedó implementado en el paso 3 local; siguiente desarrollo: compras (paso 4), sujeto a autorización.
+
 ## Seguimiento del paso 1 (cueva, pendiente de revisión/merge)
 
 E03→ML queda implementado: carga reserva entrenamiento, ENTRENANDO visible, modelo/backtest enlazados, reintento sin archivos ni duplicados y dashboard. Prueba PostgreSQL/Redis/CatBoost/Beat con recuperación de evaluación fallida y un único modelo. Suite 128 pruebas y 6 subpruebas correctas; frontend y migración 0008 correctos. La tabla siguiente conserva el diagnóstico del corte main 902f0e6; sus pendientes E03→ML quedan resueltos al incorporar este paso 1. Plan, compras/Telegram y promociones siguen pendientes.
@@ -41,3 +55,13 @@ E03→ML queda implementado: carga reserva entrenamiento, ENTRENANDO visible, mo
 6. **Todos:** registrar adaptadores y verificar Beat → pronóstico → plan → necesidades → pedido → aprobación/envío, evaluación posterior/dashboard y ajuste/promoción. Repetir con duplicados, reinicio, errores y otro integrante/PC.
 
 Producción física, pagos, recepción, activación real de descuentos e informes de impacto están fuera del prototipo: su ausencia no cuenta como deuda de esta demo. Ver [criterio de demo completa](../guia-inicio-desarrollo.md#criterio-de-demo-completa).
+
+## Paso 3 local · M03 · 30-09-2026
+
+Necesidades y faltantes implementados en la transacción del plan. API/UI conservan aportes, unidades, lotes y lectura de stock; decimales como cadenas, agregación antes de redondear a tres decimales. Producción o stock ausente deja estado INCOMPLETAS y motivo; no se inventan ceros ni se modifica inventario. Migración aditiva 0010_m03_necesidades sobre 0009; planes antiguos quedan PENDIENTE_M03 y el administrador puede completarlos una vez. Servicio público obtener_necesidades y contrato M03 en docs/api/contratos.md. Compras y Telegram siguen pendientes. Cambios locales por Codex para Axel, sin commit ni cambios remotos.
+
+## Paso 4 local · L01/L02 · 30-09-2026
+
+Codex para Axel implementa compras bajo responsabilidad de Aguirre, consumiendo M03 de Max y modo de negocio de Axel por interfaces públicas. Migración aditiva 0011_l02_compras sobre 0010: propuesta_compra, pedido_compra y linea_pedido. Snapshots de necesidades, proveedor/oferta, factor, mínimo, múltiplo y modo; cálculo Decimal exacto. Una propuesta activa por fecha; cancelación administrativa motivada libera la fecha y conserva historial. Idempotencia por plan y bloqueo global ante datos/proveedor/destino incompletos. Sin faltantes no se crean pedidos ni se reserva fecha. No hay envíos ni cambios de stock.
+
+API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras/propuestas y /compras/propuestas/{id}, POST /compras/propuestas/{id}/cancelar {motivo}. UI /proveedores y /compras, enlace desde /planificacion; Operador consulta, Administrador modifica. GENERAR_PROPUESTA genera pedidos en su transacción y comunica RECOMPRA_FECHA sin perder el nuevo plan ni su evaluación. Servicios sin commit. Contrato actualizado en docs/api/contrato-pedidos.md; pruebas test_compras_l02.py y flujo real test_inicializacion_ml.py. Aprobación/envío siguen pendientes en L03 y nunca se declaran realizados por un borrador.

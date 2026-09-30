@@ -18,6 +18,8 @@
 
 ## Punto de partida
 
+**Paso 2 local · 30-09-2026:** consultar_corrida devuelve CorridaLeida inmutable con fecha/modelo/versión/huella y permite bloqueo para serializar planes M02. El consumidor usa este servicio y obtener_pronosticos; no accede a las tablas privadas de Kevin.
+
 **Paso 1 · 30-09-2026:** El adaptador PREPARAR_MODELO con huella_inicializacion notifica inicio durable, completa estado/modelo en su transacción y devuelve evaluacion_ejecucion_id. preparar_modelo acepta clave_evaluacion opcional: tras fallo de backtest reutiliza el artefacto y agenda otra evaluación sin reentrenar. El piloto/manual conserva su comportamiento.
 
 El corte K01–K04 implementa modelos/migración `0003_pronosticos`, entrenamiento desde ventas PostgreSQL (`entrenamiento.py`), vector sin venta objetivo (`caracteristicas.py`), inferencia idempotente (`servicio.py`), evaluación por revisión (`evaluacion.py`), handlers de Kevin y rutas de consulta (`rutas.py`). Max llama `generar_corrida` y `solicitar_evaluacion_corrida` en su sesión; Edu reserva PREPARAR_MODELO al terminar E03. No llamar `commit` desde esos servicios. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para pruebas y límites de integración.

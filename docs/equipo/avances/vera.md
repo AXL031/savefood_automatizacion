@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Consumidor V02 verificado en paso 2 local (2026-09-30, Codex para Axel):** M02 guarda disponibilidad, lotes, saldo y motivos en snapshots y conserva la lectura anterior tras un ajuste. Caducidad/límite, cero conocido, ausencia y vigencia desconocida probados. [Entrega M02](rojas.md); no cambia código de inventario ni atribuye nueva implementación a Vera.
+
 - **Coordinación verificada (2026-09-30):** entrega V01/V02 de `rojas` integrada localmente por Codex para Axel. Apertura real en sesión de Edu, cero conocido, caducidad, ajuste idempotente y rechazo de saldo negativo verificados por API en SQLite. Misma clave con otro motivo/hora ahora es conflicto. Pruebas PostgreSQL añadidas para CI; no se declara verificada concurrencia en SQLite. V03 y detalle de promociones siguen pendientes.
 
 - **Estado:** V01 y V02 `LISTO_PARA_INTEGRAR`, implementadas por **Max Rojas por encargo** de Leonardo Vera. V03 y V04 (promociones) pendientes.
@@ -61,4 +63,3 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Límite conocido:** `VIDA_UTIL_EXCEDIDA` aparece al confirmar la carga, no en la vista previa; conviene que Edu lo valide también en `validacion.py`.
 - **Siguiente desarrollador:** Leonardo Vera (V03) y Max Rojas (M02).
 - **Commit/PR:** cambios locales, sin commit.
-

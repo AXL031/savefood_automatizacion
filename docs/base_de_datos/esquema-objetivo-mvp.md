@@ -45,17 +45,27 @@ La apertura positiva y cada ajuste bloquean el lote, comprueban saldo final no n
 
 ## Modelo, pronóstico y propuesta
 
+**Paso 2 local (0009_m02_planificacion):** plan_produccion y elemento_plan ya
+tienen implementación. Además de las referencias de la tabla, el plan guarda
+version_calculo y origen_pronostico_json; el elemento guarda receta_json,
+stock_json y avisos_json. receta_id, cantidad_pronosticada, stock_disponible
+y cantidad_producir admiten NULL para los productos impedidos. Su estado es
+CALCULADO, HISTORIAL_INSUFICIENTE, PRODUCTO_NO_CUBIERTO, SIN_RECETA o
+STOCK_DESCONOCIDO; solo CALCULADO exige receta/cantidades y la fórmula exacta.
+Vigencia, lotes excluidos y unidades quedan en stock_json. La lectura no vuelve
+a consultar stock ni receta actuales. M03 local conserva necesidad_ingrediente desde la migración 0010.
+
 | Tabla | Campos mínimos | Claves y reglas |
 |---|---|---|
 | `artefacto_modelo` | `id`, `version_modelo`, `ruta_local`, `sha256`, `huella_datos_entrenamiento`, `fecha_corte_entrenamiento`, `particion_json`, `estado`, `metricas_json`, `entrenado_en`. | `UNIQUE(version_modelo)`; solo `LISTO_DEMO` habilita inferencia en el prototipo. `particion_json` conserva política y límites de entrenamiento, validación y prueba; el modelo no usa la prueba para ajuste. Ruta local controlada, no una URL. |
 | `corrida_pronostico` | `id`, `ejecucion_id FK`, `tipo`, `clave_ejecucion`, `huella_datos_entrada`, `fecha_objetivo`, `modelo_id FK`, `estado`, `creado_en`, `finalizado_en NULL`. | `UNIQUE(clave_ejecucion)`; `tipo = BACKTEST` o `DEMO_PROGRAMADA`. Fecha, modelo y huella iguales para repetición. `version_modelo` se consulta del artefacto y se incluye en API. |
 | `pronostico` | `id`, `corrida_id FK`, `producto_id FK`, `cantidad_pronosticada integer NULL`, `estado`. | `UNIQUE(corrida_id, producto_id)`; cantidad `>= 0` en `DISPONIBLE`; `NULL` en `HISTORIAL_INSUFICIENTE` o `PRODUCTO_NO_CUBIERTO`. |
 | `evaluacion_pronostico` | `id`, `ejecucion_id FK`, `corrida_id FK`, `pronostico_id FK`, `revision_venta_id FK`, `producto_id FK`, `cantidad_pronosticada`, `unidades_reales`, `error_absoluto`, `creado_en`. | `UNIQUE(corrida_id, producto_id, revision_venta_id)`; solo si predicción y venta real son conocidas. La revisión fija exactamente qué valor real se comparó. No alimenta la inferencia ni modifica el pronóstico. |
-| `plan_produccion` | `id`, `corrida_id FK`, `ejecucion_id FK`, `clave_ejecucion`, `huella_stock_recetas`, `fecha_objetivo`, `stock_leido_en`, `estado`, `creado_en`. | `UNIQUE(clave_ejecucion)`; misma clave y huella devuelve el mismo plan, distinta huella es conflicto. Una misma corrida admite otro plan si cambió stock o receta. Solo `PROPUESTO` en demo. No cambia stock. |
+| `plan_produccion` | `id`, `corrida_id FK`, `ejecucion_id FK`, `clave_ejecucion`, `huella_stock_recetas`, `fecha_objetivo`, `stock_leido_en`, `estado`, `version_calculo`, `necesidades_estado`, `necesidades_meta_json`, `creado_en`. | `UNIQUE(clave_ejecucion)`; misma clave y huella devuelve el mismo plan, distinta huella es conflicto. Una misma corrida admite otro plan si cambió stock o receta. Solo `PROPUESTO` en demo. No cambia stock. |
 | `elemento_plan` | `id`, `plan_id FK`, `producto_id FK`, `pronostico_id FK`, `receta_id FK`, `cantidad_pronosticada`, `stock_disponible`, `cantidad_producir`, `vigencia_stock_desconocida`. | `UNIQUE(plan_id, producto_id)`; enteros no negativos. Guarda cifras leídas para reproducibilidad. |
-| `necesidad_ingrediente` | `id`, `plan_id FK`, `ingrediente_id FK`, `cantidad_requerida`, `cantidad_disponible`, `cantidad_faltante`, `unidad`, `vigencia_stock_desconocida`. | `UNIQUE(plan_id, ingrediente_id)`; cantidades no negativas en unidad base. Cuando `cantidad_faltante > 0`, sirve de origen trazable para una línea de pedido si hay proveedor y conversión válidos. |
+| `necesidad_ingrediente` | `id`, `plan_id FK`, `ingrediente_id FK`, `cantidad_necesaria Numeric(14,3)`, `stock_disponible nullable`, `faltante nullable`, `unidad_base`, `estado`, `aportes_json`, `stock_json`. | `UNIQUE(plan_id, ingrediente_id)`; cantidades no negativas en unidad base. Cuando `faltante > 0`, sirve de origen trazable para una línea de pedido si hay proveedor y conversión válidos. |
 
-Para la demo se fija margen de seguridad **cero** y se informa como supuesto. `cantidad_producir = max(0, cantidad_pronosticada - stock_disponible)`. `cantidad_requerida` suma `cantidad_producir × cantidad_por_unidad` por ingrediente usando las recetas versionadas; se redondea hacia arriba a tres decimales **al final**. `cantidad_faltante = max(0, cantidad_requerida - cantidad_disponible)`. Un pronóstico no disponible o receta faltante genera estado explicativo y no un cero ficticio. Un nuevo cálculo con ventas, modelo, receta o stock diferentes usa nueva clave y conserva corridas/planes anteriores.
+Para la demo se fija margen de seguridad **cero** y se informa como supuesto. `cantidad_producir = max(0, cantidad_pronosticada - stock_disponible)`. `cantidad_necesaria` suma `cantidad_producir × cantidad_por_unidad` por ingrediente usando las recetas versionadas; se redondea hacia arriba a tres decimales **al final**. `faltante = max(0, cantidad_necesaria - stock_disponible)`. Un pronóstico no disponible o receta faltante genera estado explicativo y no un cero ficticio. Un nuevo cálculo con ventas, modelo, receta o stock diferentes usa nueva clave y conserva corridas/planes anteriores.
 
 ### Panel de acierto histórico
 
@@ -81,7 +91,7 @@ La decisión de [pedidos desde el plan](../arquitectura/decisiones/ADR-008-pedid
 
 | Tabla | Campos mínimos | Claves y reglas |
 |---|---|---|
-| `proveedor` | `id`, `codigo`, `nombre`, `telegram_chat_id NULL`, `telegram_verificado_en NULL`, `activo`, `creado_en`. | `UNIQUE(codigo)`; chat verificado para envío. El destino de la exposición es un chat propio que simula al proveedor. |
+| `proveedor` | Implementado: `id`, `codigo`, `nombre`, `activo`, `chat_id_pruebas NULL`, `destino_verificado`, `destino_verificado_en timestamptz NULL`, `destino_credencial_huella varchar(64) NULL`. | `UNIQUE(codigo)`; 0012 añade huella SHA-256 para vincular evidencia a credencial, sin almacenar token. Verificación efectiva solo con huella del token actual; destino propio de pruebas. Token cifrado en volumen privado externo a PostgreSQL. |
 | `oferta_ingrediente` | `id`, `proveedor_id FK`, `ingrediente_id FK`, `unidad_compra`, `factor_a_unidad_base`, `multiplo_compra`, `minimo_compra`, `preferida`, `activo`. | Factor y múltiplo positivos, mínimo no negativo; una sola oferta preferida activa por ingrediente en la demo. Todas las conversiones son explícitas. |
 | `pedido_compra` | `id`, `plan_id FK`, `proveedor_id FK`, `clave_idempotencia`, `huella_entrada`, `modo_envio`, `estado`, `aprobado_por FK NULL`, `aprobado_en NULL`, `creado_en`, `actualizado_en`. | `UNIQUE(plan_id, proveedor_id)` y `UNIQUE(clave_idempotencia)`; modo copiado del negocio al crear; estados según el [contrato de pedidos](../api/contrato-pedidos.md). |
 | `linea_pedido` | `id`, `pedido_id FK`, `necesidad_ingrediente_id FK`, `oferta_ingrediente_id FK`, `faltante_base`, `cantidad_compra`, `unidad_compra`, `factor_a_unidad_base`, `multiplo_compra`, `minimo_compra`. | `UNIQUE(necesidad_ingrediente_id)`; cantidades positivas; una necesidad no se asigna a dos proveedores; copia inmutable del cálculo y la oferta usada. |
@@ -100,3 +110,17 @@ Las migraciones `0005_m01_ingredientes_recetas` y `0006_v01_inventario` continú
 ## Paso 1 · Referencias de preparación E03
 
 `0008_e03_preparacion_ml` agrega `configuracion_inicial.preparacion_ejecucion_id` (FK a ejecución, nullable, RESTRICT), `modelo_id` (FK a artefacto, nullable, RESTRICT) y `preparacion_numero` (entero no negativo, default 0). Cargas previas se conservan y pueden reservar ML sin volver a importar. La salida de preparación enlaza evaluacion_ejecucion_id; el estado HTTP muestra sus dos estados por separado.
+
+
+## Paso 3 local · M03 · 30-09-2026
+
+Necesidades y faltantes implementados en la transacción del plan. API/UI conservan aportes, unidades, lotes y lectura de stock; decimales como cadenas, agregación antes de redondear a tres decimales. Producción o stock ausente deja estado INCOMPLETAS y motivo; no se inventan ceros ni se modifica inventario. Migración aditiva 0010_m03_necesidades sobre 0009; planes antiguos quedan PENDIENTE_M03 y el administrador puede completarlos una vez. Servicio público obtener_necesidades y contrato M03 en docs/api/contratos.md. Compras y Telegram siguen pendientes. Cambios locales por Codex para Axel, sin commit ni cambios remotos.
+## Implementación local L02 · 30-09-2026
+
+La revisión 0011 agrega propuesta_compra como cabecera por plan y reserva de fecha (índice único parcial mientras activa), pedido_compra por proveedor y linea_pedido por necesidad. Guarda motivo/actor/hora de cancelación y snapshots inmutables de necesidades y ofertas. Compra en Numeric(20,4), equivalencia base en Numeric(30,8), faltante Numeric(14,3). Solo BLOQUEADO/PENDIENTE_APROBACION/CANCELADO en pedidos; estados de aprobación/envío y envio_pedido de la visión objetivo permanecen pendientes de L03. Cantidades, conversiones y políticas concretas en el contrato de pedidos.
+
+## Paso 6 · decisión y envío (0013)
+
+pedido_compra agrega clave_decision varchar(80) única nullable, decidido_por FK usuario nullable, decidido_en timestamptz nullable y decision_json nullable; CHECK exige los cuatro completos o todos NULL. Snapshot de nombre/acción/motivo, sin credencial. Estados incluyen RECHAZADO/PENDIENTE_ENVIO/ENVIANDO/ENVIADO/FALLIDO/PENDIENTE_VERIFICACION además de los previos.
+
+envio_pedido es outbox y evidencia: UNIQUE(pedido_id), numero_intento=1 en este corte, chat_id varchar(64), credencial_huella SHA-256, texto plano congelado, estado, creado_en/inicio_en/fin_en/fecha_telegram, message_id bigint, código/error saneado, despachado_en/lease_hasta/token_despacho. CHECK ENVIADO requiere message_id>0 y fin; otros estados sin message_id. Índice estado/lease. Huella/token_despacho son internos; token del bot sigue cifrado fuera de PostgreSQL. Creación junto a aprobación; llamada externa después de confirmar ENVIANDO. Nuevos intentos/conciliación pendientes del paso 7; nunca borrar auditoría mediante downgrade con decisiones.

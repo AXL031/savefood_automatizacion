@@ -1,5 +1,6 @@
 # Secretos y configuración local
 .env
+telegram_secrets/
 .env.*
 !.env.example
 

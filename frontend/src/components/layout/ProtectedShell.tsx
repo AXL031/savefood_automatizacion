@@ -17,6 +17,7 @@ type Props = {
 };
 
 const grupos = [
+  { titulo: "Inicio", enlaces: [{ href: "/", texto: "Página principal" }] },
   {
     titulo: "Datos",
     enlaces: [
@@ -32,12 +33,16 @@ const grupos = [
       { href: "/ingredientes", texto: "Ingredientes" },
       { href: "/recetas", texto: "Recetas" },
       { href: "/inventario", texto: "Inventario" },
+      { href: "/planificacion", texto: "Planificación" },
+      { href: "/proveedores", texto: "Proveedores" },
+      { href: "/compras", texto: "Compras" },
     ],
   },
   {
     titulo: "Sistema",
     enlaces: [
       { href: "/configuracion", texto: "Configuración" },
+      { href: "/usuarios", texto: "Usuarios" },
       { href: "/automatizaciones", texto: "Automatizaciones" },
       { href: "/pronosticos", texto: "Pronósticos" },
       { href: "/panel", texto: "Panel histórico" },
@@ -103,12 +108,13 @@ export function ProtectedShell({ titulo, descripcion, children }: Props) {
   return (
     <div className="app-layout">
       <aside className="sidebar" aria-label="Navegación principal">
-        <Link href="/configuracion" className="brand"><span className="brand-mark">F</span><span>FoodSave<small>Operación local</small></span></Link>
+        <Link href="/" className="brand"><span className="brand-mark">F</span><span>FoodSave<small>Operación local</small></span></Link>
+        <div className="sidebar-menu" tabIndex={0} role="region" aria-label="Opciones del menú">
         {grupos.map((grupo) => (
           <div key={grupo.titulo}>
             <div className="nav-group-label">{grupo.titulo}</div>
             <nav aria-label={grupo.titulo}>
-              {grupo.enlaces.map((enlace) => (
+              {grupo.enlaces.filter((enlace) => enlace.href !== "/usuarios" || perfil.rol === "ADMINISTRADOR").map((enlace) => (
                 <Link key={enlace.href} href={enlace.href} className={`nav-link ${ruta === enlace.href ? "active" : ""}`} aria-current={ruta === enlace.href ? "page" : undefined}>
                   {enlace.texto}
                 </Link>
@@ -116,10 +122,11 @@ export function ProtectedShell({ titulo, descripcion, children }: Props) {
             </nav>
           </div>
         ))}
+        </div>
         <div className="sidebar-bottom"><span>{perfil.nombre}</span><small>{perfil.rol === "ADMINISTRADOR" ? "Administrador" : "Operador"}</small><button className="button-link" onClick={cerrarSesion}>Cerrar sesión</button></div>
       </aside>
       <div className="app-main">
-        <header className="topbar"><span>FoodSave / Sistema</span><span className="business-chip">{negocio.nombre}</span></header>
+        <header className="topbar"><span><Link href="/">FoodSave</Link> / {titulo}</span><span className="business-chip">{negocio.nombre}</span></header>
         <main className="page-content">
           <div className="page-heading"><div><div className="eyebrow">Sistema</div><h1>{titulo}</h1><p>{descripcion}</p></div></div>
           {children({ token, perfil, negocio, actualizarNegocioLocal: setNegocio })}

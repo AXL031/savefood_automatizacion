@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**30-09-2026 · Paso 5: Telegram se configura desde Proveedores → Configuración Telegram por Administrador. Token cifrado en volumen telegram_secrets; JWT_SECRET estable (mínimo 32 caracteres). API escribe y worker lee. TELEGRAM_BOT_TOKEN de entorno es fallback opcional. Conservar secreto de instalación/volumen en respaldo privado; rotar JWT_SECRET requiere guardar token de nuevo. Sin aprobación/envío de pedidos en este corte.**
+
 Archivos técnicos observados al preparar esta guía: `.env.example`, `.gitignore`, `compose.yaml`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](docs/equipo/avances/cueva.md) para el último estado.
 
 Axel coordina la raíz; los seis responden por su propio bloque. La revisión documental no declara implementados los módulos.
@@ -24,7 +26,7 @@ Axel coordina la raíz; los seis responden por su propio bloque. La revisión do
 
 **A04:** la imagen backend instala el extra `ml` de ejecución y prepara `/code/model_artifacts`; Compose monta allí un volumen persistente con lectura en API y escritura en worker. El bot usa `TELEGRAM_BOT_TOKEN` opcional; el destino se vinculará en el módulo de Aguirre. CI revisa migración en cabeza, volumen compartido, cola y motor. El modelo y el canal no se declaran integrados hasta recibir las entregas y pruebas de sus dueños.
 
-`iniciar-foodsave.cmd` arranca Compose con las imágenes ya construidas y abre `/inicializacion/piloto` al terminar el arranque; conserva los volúmenes y necesita `.env` configurado una vez. El primer build sigue requiriendo Docker y descarga de dependencias. El asistente completo está en `/inicializacion`.
+`iniciar-foodsave.cmd` delega en `iniciar-foodsave.ps1`: evita dos arranques simultáneos del lanzador por instalación, comprueba Docker y espera hasta 120 segundos por API/web antes de abrir `/inicializacion/piloto`. Conserva los volúmenes y muestra el error real de Compose. Usa imágenes ya construidas; tras cambios de código, ejecutar `iniciar-foodsave.cmd -Build` una vez. `-NoBrowser` permite comprobar el arranque sin abrir una pestaña. El primer build sigue requiriendo Docker y descarga de dependencias. El asistente completo está en `/inicializacion`. No ejecutar otro `docker compose up` en paralelo; ante conflicto de nombres, esperar al arranque en curso y volver a intentar, sin borrar volúmenes.
 
 ## Trabajo en esta carpeta
 

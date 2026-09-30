@@ -65,7 +65,10 @@ FECHAS = {"fecha_objetivo_demo": "2022-08-24", "fecha_referencia_stock": "2022-0
 
 
 @pytest.fixture
-def cliente():
+def cliente(monkeypatch, tmp_path):
+    # Identidad de credencial simulada; nunca consulta Telegram en esta fixture.
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:token-falso-para-pruebas-locales")
+    monkeypatch.setenv("TELEGRAM_CONFIG_DIR", str(tmp_path / "telegram-secrets"))
     admin_db = None
     esquema = None
     if os.getenv("E03_POSTGRES_TEST") == "1":

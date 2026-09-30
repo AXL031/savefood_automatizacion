@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Consumo K02/K03 verificado en paso 2 local (2026-09-30, Codex para Axel):** M02 utiliza consultar_corrida/obtener_pronosticos y GENERAR_PROPUESTA enlaza inferencia CatBoost → plan → evaluación histórica con Beat/PostgreSQL/Redis. [Entrega y límites](rojas.md); 140 pruebas y 6 subpruebas correctas. No es una entrega nueva personal de Kevin; falta M03/pedido y revisión antes de publicar.
+
 - **Paso 1 verificado (2026-09-30, Codex para Axel):** E03 carga completa → preparación automática → estado durable → backtest y dashboard, con reintento sin reimportar. Prueba real CatBoost/Beat/PostgreSQL/Redis y fallo de evaluación recuperado reutilizando modelo; suite 128 pruebas + 6 subpruebas correctas. Código en cueva, revisión del PR #11 antes de main. [Contrato](../../api/contrato-importaciones.md#e03-disponible-carga-completa-y-preparación-automática-de-ml).
 
 - **Estado:** K01–K04 implementados y listos para integrar en el prototipo local; no se declara integración con el plan de Max ni con la inicialización E03.

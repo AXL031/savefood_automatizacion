@@ -39,6 +39,14 @@ def _registrar_pronosticos() -> None:
 _registrar_pronosticos()
 
 
+def _registrar_planificacion() -> None:
+    from app.modules.planificacion.manejadores import generar_propuesta
+    MANEJADORES["GENERAR_PROPUESTA"] = generar_propuesta
+
+
+_registrar_planificacion()
+
+
 def obtener_manejador(tipo: str) -> Manejador:
     try:
         return MANEJADORES[tipo]

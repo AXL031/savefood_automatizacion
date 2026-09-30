@@ -4,6 +4,8 @@ Cada carpeta fuente o documental tiene una GUIA_DESARROLLO.md. Se excluyen Git, 
 
 El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [dependencias](dependencias.md) y [avances](avances/README.md) antes de integrar.
 
+El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../iniciar-foodsave.cmd) usa [iniciar-foodsave.ps1](../../iniciar-foodsave.ps1). Contrato y opciones en la [guía raíz](../../GUIA_DESARROLLO.md).
+
 | Carpeta | Responsable | Alcance | Guía |
 |---|---|---|---|
 | `.` | Axel Cueva | Compartida; coordinación | [Abrir](../../GUIA_DESARROLLO.md) |
@@ -122,3 +124,6 @@ El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [depende
 | `frontend/src/types` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/types/GUIA_DESARROLLO.md) |
 | `frontend/src/utils` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/utils/GUIA_DESARROLLO.md) |
 | `scripts` | Axel Cueva | Compartida; coordinación | [Abrir](../../scripts/GUIA_DESARROLLO.md) |
+## Ampliación local · Gestión de usuarios
+
+- [frontend/src/app/usuarios](../../frontend/src/app/usuarios/GUIA_DESARROLLO.md): A01 de Axel, cuentas/roles/activación, API bajo autenticacion/usuarios.py.

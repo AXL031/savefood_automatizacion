@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Inicio/menú local (30-09-2026, Codex para Axel):** / implementa bienvenida, estado real de carga/modelo, últimos planes y pedidos pendientes de últimas 50 propuestas, con accesos al recorrido y errores parciales. Login/marca regresan al Inicio. Sidebar de escritorio desplaza su menú independientemente y mantiene marca/footer; móvil conserva grupos horizontales. Typecheck/build/Docker correctos y comprobación de navegador con fixtures aislados; datos habituales intactos. Coordinación en [Axel](cueva.md) y paso 6 de [Aguirre](aguirre.md); sin atribuir autoría a Edu, sin remoto.
+
 - **Paso 1 verificado (2026-09-30, Codex para Axel):** E03 carga completa → preparación automática → estado durable → backtest y dashboard, con reintento sin reimportar. Prueba real CatBoost/Beat/PostgreSQL/Redis y fallo de evaluación recuperado reutilizando modelo; suite 128 pruebas + 6 subpruebas correctas. Código en cueva, revisión del PR #11 antes de main. [Contrato](../../api/contrato-importaciones.md#e03-disponible-carga-completa-y-preparación-automática-de-ml).
 
 - **Frontera E02/E03 verificada (2026-09-30):** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo queda implementado y verificado en el paso 1 de cueva.
@@ -25,6 +27,17 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | E04 · Entregar pantallas y piezas comunes | LISTO_PARA_INTEGRAR: primitivos compartidos, navegación y pantallas de carga, productos y ventas |
 
 ## Bitácora
+
+### E04 · Página principal y menú desplazable · 30-09-2026
+
+- **Fecha/zona/autor/tareas:** 2026-09-30, America/Bogota. Codex para Axel; estructura visual E04 de Edu y retorno A01 de Axel. LISTO_PARA_INTEGRAR local.
+- **Disponible:** página protegida / con bienvenida, estado de instalación/modelo, número de planes recientes y pendientes de las últimas 50 propuestas, enlaces a faltantes/Compras/Telegram/Inventario/evaluación/automatizaciones. Consultas reales con Promise.allSettled; error parcial no se muestra como cero. Login y marca FoodSave enlazan a Inicio; panel histórico de Kevin permanece en /panel.
+- **Menú:** sidebar-menu flex/min-height:0/overflow-y:auto en desktop, altura de viewport y navegación por teclado; marca/cierre de sesión fijos dentro de sidebar. Móvil mantiene grupos horizontales y scroll normal. Usuarios visible solo para Administrador.
+- **Archivos/contrato:** [Inicio](../../../frontend/src/app/page.tsx), [shell](../../../frontend/src/components/layout/ProtectedShell.tsx), [estilos](../../../frontend/src/app/styles.css), iniciar-sesion/page.tsx. Consume GET /inicializacion, /planes, /compras/propuestas y los servicios de sesión existentes, sin nuevas APIs de dashboard ni datos simulados en producto.
+- **Pruebas ejecutadas:** npm run typecheck/build correctos; Docker frontend build correcto. Navegador con API SQLite de fixtures en 8001 e interfaz temporal en 3001 comprobó login→Inicio, tarjetas/enlaces y sidebar desktop 538px/contenido 987px con scrollTop 449px hasta Notificaciones, footer visible; móvil observado. QA de Compras comprobó revisión/checkbox/aprobación registrada; permisos/rechazo cubiertos por 67 pruebas PostgreSQL de [Aguirre](aguirre.md). Datos/usuarios habituales no cambiaron. Recorrido visual posterior Operador/rechazo interrumpido por cierre de pestaña, no declarado probado visualmente.
+- **Configuración/migración:** UI sin migración; integración L03 usa 0013 aditiva. Instalación local actualizada, / y /compras responden 200. Entrega real de UI local, envío Telegram probado solo con transporte simulado.
+- **Dependencias/siguiente:** coordinación [Axel](cueva.md), L03 [Aguirre](aguirre.md). Paso 7 queda para conciliación/automático; prueba bot propio pendiente del usuario.
+- **Git:** cambios locales en cueva sin commit/push/PR/merge.
 
 ### Paso 1 · Inicialización completa → preparación y evaluación ML · 30-09-2026
 

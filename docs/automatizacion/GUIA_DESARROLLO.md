@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Paso 2 local · 30-09-2026:** GENERAR_PROPUESTA produce corrida/plan/evaluación posterior en una transacción. La salida identifica necesidades y pedidos pendientes; programación.md distingue ese corte del objetivo completo.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Axel Cueva](../equipo/avances/cueva.md) para el último estado.
 
 ## Trabajo en esta carpeta

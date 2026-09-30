@@ -32,8 +32,8 @@ jobs:
           docker compose exec -T worker python -c "from pathlib import Path; import os; p = Path(os.environ['MODEL_ARTIFACT_DIR']) / '.ci-probe'; p.write_text('ok'); assert p.read_text() == 'ok'"
           docker compose exec -T api python -c "from pathlib import Path; import os; p = Path(os.environ['MODEL_ARTIFACT_DIR']) / '.ci-probe'; assert p.read_text() == 'ok'"
           docker compose exec -T worker python -c "from pathlib import Path; import os; (Path(os.environ['MODEL_ARTIFACT_DIR']) / '.ci-probe').unlink()"
-      - name: Motor A03, inventario V02 e inicialización E03 con PostgreSQL y Redis
-        run: docker compose run --rm --no-deps --user root -e A03_POSTGRES_TEST=1 -e V02_POSTGRES_TEST=1 -e E03_POSTGRES_TEST=1 api sh -c "pip install -q '.[test]' && python -m pytest tests/integration/test_motor_a03.py tests/integration/test_inventario_concurrencia_pg.py tests/integration/test_api_inicializacion_ventas.py tests/integration/test_inicializacion_ml.py -q"
+      - name: Motor A03, inventario V02, inicialización E03 plan M02/M03, usuarios y compras L02 con PostgreSQL y Redis
+        run: docker compose run --rm --no-deps --user root -e A03_POSTGRES_TEST=1 -e V02_POSTGRES_TEST=1 -e E03_POSTGRES_TEST=1 api sh -c "pip install -q '.[test]' && python -m pytest tests/integration/test_motor_a03.py tests/integration/test_inventario_concurrencia_pg.py tests/integration/test_api_inicializacion_ventas.py tests/integration/test_inicializacion_ml.py tests/integration/test_planificacion_m02.py tests/integration/test_necesidades_m03.py tests/integration/test_usuarios.py tests/integration/test_compras_l02.py tests/integration/test_telegram_config_l03.py -q"
       - name: Comprobar servicios
         run: |
           curl --fail --retry 10 --retry-delay 2 --retry-connrefused http://localhost:8000/salud

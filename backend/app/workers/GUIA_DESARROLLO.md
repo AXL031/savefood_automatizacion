@@ -38,3 +38,7 @@ Worker reiniciado retoma trabajo durable y UI conserva intentos.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Despacho L03 del paso 6 · 30-09-2026
+
+celery_app registra foodsave.despachar_envios_pedidos cada 30s y foodsave.enviar_pedido; ambas delegan a compras.envios. Broker lleva solo ID/token de despacho, nunca token Telegram ni mensaje. Publicación después del commit con lease recuperable solo antes de ENVIANDO; envío externo usa transacciones separadas y nunca el retry del motor común. API/worker comparten configuración cifrada; worker lee volumen y conserva evidencia en PostgreSQL. Reiniciar API/worker/Beat tras actualizar imágenes y aplicar 0013. Revisión manual y fallos mínimos disponibles; automático/conciliación pendiente del paso 7. Ver contrato-pedidos y avance de Aguirre.

@@ -7,6 +7,7 @@ from sqlalchemy import text
 from app.core.base_datos import engine
 from app.core.errores import configurar_errores
 from app.modules.autenticacion.rutas import router as autenticacion_router
+from app.modules.autenticacion.usuarios import router as usuarios_router
 from app.modules.negocios.rutas import router as negocios_router
 from app.modules.automatizaciones.rutas import router_programaciones, router_ejecuciones
 from app.modules.inicializacion.rutas import router as inicializacion_router
@@ -18,6 +19,8 @@ from app.modules.pronosticos.rutas import router as pronosticos_router
 from app.modules.recetas.rutas import router as recetas_router
 from app.modules.ventas.rutas import router as ventas_router
 from app.modules.proveedores.rutas import router as proveedores_router
+from app.modules.planificacion.rutas import router as planificacion_router
+from app.modules.compras.rutas import router as compras_router
 
 app = FastAPI(title="FoodSave API", version="0.1.0")
 
@@ -32,6 +35,7 @@ app.add_middleware(
 )
 
 app.include_router(autenticacion_router, prefix="/api/v1")
+app.include_router(usuarios_router, prefix="/api/v1")
 app.include_router(negocios_router, prefix="/api/v1")
 app.include_router(router_programaciones, prefix="/api/v1")
 app.include_router(router_ejecuciones, prefix="/api/v1")
@@ -44,6 +48,8 @@ app.include_router(ingredientes_router, prefix="/api/v1")
 app.include_router(recetas_router, prefix="/api/v1")
 app.include_router(inventario_router, prefix="/api/v1")
 app.include_router(proveedores_router, prefix="/api/v1")
+app.include_router(planificacion_router, prefix="/api/v1")
+app.include_router(compras_router, prefix="/api/v1")
 
 
 @app.get("/salud")

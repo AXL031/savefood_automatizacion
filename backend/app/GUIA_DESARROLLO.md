@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Paso 2 local · 30-09-2026:** principal.py registra /planes (M02) con identidad/error comunes. POST administrativo; consultas con sesión. La generación desde corrida usa snapshots y no mueve stock.
+
 **Integración 30-09-2026:** principal.py registra ingredientes, recetas, inventario y proveedores además del piloto/pronósticos existentes. Proveedores respeta identidad y errores comunes.
 
 Archivos técnicos observados al preparar esta guía: `__init__.py`, `principal.py`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../docs/equipo/avances/cueva.md) para el último estado.
@@ -42,3 +44,7 @@ Una ruta de dominio respeta sobre, permisos y errores documentados; salud reflej
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Gestión de usuarios local · 30-09-2026
+
+A01 ampliado por Codex para Axel: API /usuarios y pantalla administrativa para listado, creación, edición de datos/roles y activación. Contraseñas protegidas y respuestas sin hash; última cuenta administrativa activa protegida con locks ordenados. Sin migración. PostgreSQL: 13 pruebas de usuarios/acceso correctas, incluidas operaciones concurrentes. Typecheck y build correctos. Guía/mapa de /usuarios actualizados; sin publicación remota.

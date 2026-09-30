@@ -1,5 +1,12 @@
 # Programación de la exposición
 
+**Paso 2 local · 30-09-2026:** GENERAR_PROPUESTA ya consume el modelo y produce
+una corrida y un plan M02 con snapshots; reserva EVALUAR_PRONOSTICO después
+de guardar el plan, en la misma transacción. Su salida declara PLAN_M02 y
+necesidades/pedidos pendientes. La tabla de efectos siguientes describe la demo
+objetivo: faltantes, compras, Telegram y promoción todavía no están conectados.
+Ver [contrato M02](../api/contratos.md#m02--paso-2-local-plan-reproducible).
+
 **Estado:** A03 configura un solo Beat cada 30 segundos y un worker que reclama ejecuciones con lease recuperable. La prueba controlada usa PostgreSQL y Redis; los servicios de pronóstico, plan y promoción deben conectar sus manejadores públicos para producir resultados de dominio. Rige [ADR-007](../arquitectura/decisiones/ADR-007-automatizaciones-demo.md). El administrador puede elegir una hora real **muy próxima**, por ejemplo dentro de un minuto; el disparo depende del siguiente ciclo de Beat y de la disponibilidad del worker.
 
 | Automatización | Disparador de la demo | Efecto |
@@ -15,3 +22,9 @@ Un **solo** proceso Beat publica periódicamente `foodsave.despachar_pendientes`
 La **hora real** solo dispara. `fecha_objetivo_demo` y `fecha_hora_simulada_local` determinan los datos históricos calculados y se muestran separados de la hora real. Ejemplo: programar a las 10:31 de hoy una propuesta para el 24-08-2022. Para promoción, ajustar stock con hora efectiva simulada 24-08-2022 17:45 y evaluar con reloj simulado 18:00; la regla de frescura observa quince minutos. No se utiliza la fecha de hoy como si fuera la fecha del dataset.
 
 El cierre diario real a `negocio.hora_cierre` y una evaluación intradía repetida cada 30 minutos son evolución posterior. Requieren ventas operativas actuales; el CatBoost diario no estima ventas restantes del día. Los pedidos del escenario histórico se envían solo al chat de pruebas y se rotulan «DEMOSTRACIÓN — NO SURTIR».
+
+## Paso 4 local · L01/L02 · 30-09-2026
+
+Codex para Axel implementa compras bajo responsabilidad de Aguirre, consumiendo M03 de Max y modo de negocio de Axel por interfaces públicas. Migración aditiva 0011_l02_compras sobre 0010: propuesta_compra, pedido_compra y linea_pedido. Snapshots de necesidades, proveedor/oferta, factor, mínimo, múltiplo y modo; cálculo Decimal exacto. Una propuesta activa por fecha; cancelación administrativa motivada libera la fecha y conserva historial. Idempotencia por plan y bloqueo global ante datos/proveedor/destino incompletos. Sin faltantes no se crean pedidos ni se reserva fecha. No hay envíos ni cambios de stock.
+
+API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras/propuestas y /compras/propuestas/{id}, POST /compras/propuestas/{id}/cancelar {motivo}. UI /proveedores y /compras, enlace desde /planificacion; Operador consulta, Administrador modifica. GENERAR_PROPUESTA genera pedidos en su transacción y comunica RECOMPRA_FECHA sin perder el nuevo plan ni su evaluación. Servicios sin commit. Contrato actualizado en docs/api/contrato-pedidos.md; pruebas test_compras_l02.py y flujo real test_inicializacion_ml.py. Aprobación/envío siguen pendientes en L03 y nunca se declaran realizados por un borrador.

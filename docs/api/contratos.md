@@ -1,8 +1,12 @@
 # Contratos del recorrido demostrable
 
-**Estado:** A01–A03 implementan acceso, programación y motor. El corte K01–K04 de pronósticos tiene rutas y servicios propios; la primera carga completa de Edu ya reserva preparación y evaluación ML; el plan de Max todavía no consume la corrida. Las demás rutas de dominio son especificación de desarrollo. [Alcance del prototipo](../guia-inicio-desarrollo.md). Una instalación local tiene un comercio/sucursal (`negocio.id = 1`); no se envía `negocio_id` en cada solicitud. Las rutas de negocio requieren Bearer y los cambios de carga/stock requieren Administrador. Los servicios de un módulo exponen interfaces públicas; ningún módulo importa modelos privados de otro.
+**Estado:** A01–A03 implementan acceso, programación y motor. El corte K01–K04 de pronósticos tiene rutas y servicios propios; la primera carga completa de Edu ya reserva preparación y evaluación ML; M02/M03 locales consumen corrida, recetas y stock y conservan plan/necesidades; L02 local genera borradores; paso 5 configura bot/chat Telegram sin envíos; aprobación/envío siguen pendientes. Las demás rutas de dominio son especificación de desarrollo. [Alcance del prototipo](../guia-inicio-desarrollo.md). Una instalación local tiene un comercio/sucursal (`negocio.id = 1`); no se envía `negocio_id` en cada solicitud. Las rutas de negocio requieren Bearer y los cambios de carga/stock requieren Administrador. Los servicios de un módulo exponen interfaces públicas; ningún módulo importa modelos privados de otro.
 
 ## Convenciones HTTP
+
+### Gestión de usuarios A01 local · 30-09-2026
+
+`GET /usuarios`, `POST /usuarios` (201) y `PATCH /usuarios/{id}` requieren Administrador. Crear recibe nombre, correo, contraseña inicial (8–128 caracteres) y rol ADMINISTRADOR u OPERADOR. Editar acepta nombre/correo/rol/activo, al menos un campo y sin null. Devuelve id/nombre/correo/rol/activo/creado_en; nunca contraseña ni hash. Correo normalizado y único: 409 CORREO_DUPLICADO. No existe registro público ni borrado físico. 409 ULTIMO_ADMINISTRADOR protege la última cuenta administrativa activa mediante locks ordenados y validación de la identidad tras adquirirlos. La identidad consulta rol/activo vigentes en cada petición: degradación y desactivación se aplican también a tokens emitidos previamente. `/usuarios` ofrece UI administrativa, con enlace oculto para Operador. No necesita migración: usa tabla e índice actuales.
 
 Respuesta exitosa: `{"datos": {...}, "metadatos": {...}}`; `metadatos` puede omitirse. Error implementado: `{"error":{"codigo":"CODIGO_ESTABLE","mensaje":"Texto legible","detalles":[]}}`. `detalles` se omite salvo en errores 422 y cada elemento indica `campo` y `mensaje`. HTTP `400` archivo o parámetro inválido, `401` sin sesión, `403` sin permiso, `404` ID inexistente, `409` duplicado/clave reutilizada, `422` esquema inválido, `503` configuración o artefacto no listo. Las rutas implementadas ya responden con este sobre para errores HTTP y de validación; cada dominio nuevo debe elegir un código estable específico cuando el genérico no baste. Las fechas son `YYYY-MM-DD`, instantes ISO 8601 UTC, unidades de producto enteras y cantidades de ingrediente decimales en unidad base.
 
@@ -135,6 +139,41 @@ Al quedar listo el artefacto se encola `EVALUAR_MODELO`: backtest idempotente de
 `GET /pronosticos/evaluacion` presenta el intervalo reservado, versión, serie por fecha con total previsto y total real conocido, `MAE`, `WAPE`, porcentaje dentro de ±20% y cobertura. `GET /pronosticos/corridas/{id}/evaluacion` detalla valores previsto/real, error absoluto y estado por producto. Solo cuentan filas con pronóstico disponible y venta real conocida; ausente no equivale a cero. `WAPE` queda «no definido» si la suma real es cero. El porcentaje ±20% sigue `|real-previsto| / max(real,1) <= 0,20`. Las métricas y la cobertura se rotulan como comprobación histórica exploratoria, con fecha concreta; no se muestra `100-WAPE` como «acierto».
 
 ## Pronósticos + Inventario → Plan
+
+### M02 · Paso 2 local: plan reproducible
+
+Contrato del corte autorizado: `generar_plan(sesion, *, corrida_id, clave_ejecucion)`
+consume `consultar_corrida`/`obtener_pronosticos` de Kevin, `recetas_activas` de
+Max y `consultar_disponibilidad(tipo="producto", producto_ids=...)` de Vera.
+No confirma la sesión. Guarda todos los productos de la corrida y snapshots
+de pronóstico, versión/composición de receta y lotes/saldos/elegibilidad.
+`cantidad_producir = max(0, cantidad_pronosticada - stock_disponible)` en unidades
+enteras, con margen cero y versión de cálculo `m02-v1`.
+
+Un elemento es `CALCULADO`, `HISTORIAL_INSUFICIENTE`, `PRODUCTO_NO_CUBIERTO`,
+`SIN_RECETA` o `STOCK_DESCONOCIDO`. Todo estado distinto de CALCULADO mantiene
+`cantidad_producir=null` y explica el impedimento. Se conservan avisos adicionales,
+incluida vigencia desconocida. Stock cero explícito sí permite calcular.
+El plan es `PROPUESTO`; cada elemento acredita qué se pudo calcular.
+
+Misma clave/corrida/huella recupera el plan; otra entrada devuelve
+`409 CLAVE_REUTILIZADA`. Otro cálculo usa una nueva clave y conserva el anterior.
+La lectura del plan usa exclusivamente sus snapshots, sin recalcular con stock
+o recetas actuales. La corrida se bloquea para serializar solicitudes repetidas.
+
+`POST /planes` administrativo recibe
+`{"corrida_id":12,"clave_ejecucion":"plan-12-v1"}` y devuelve el detalle en
+`datos` (201). `GET /planes?corrida_id=12` y `GET /planes/{id}` requieren sesión.
+El detalle contiene `id`, `corrida_id`, `ejecucion_id`, `fecha_objetivo`,
+`huella_stock_recetas`, `stock_leido_en`, `version_calculo`, `origen_pronostico`
+y `elementos` con cantidades nullable, estado, avisos, `receta` y `stock`.
+
+`GENERAR_PROPUESTA` conecta inferencia → plan → reserva de evaluación histórica
+en la misma transacción del motor. En el paso 3 su salida declara `alcance="PLAN_PEDIDOS_L02"`,
+`necesidades_estado=CALCULADAS|INCOMPLETAS` y `pedidos_estado` real de la propuesta de compra.
+M03 y L02 implementan necesidades y borradores; aprobación/Telegram quedan pendientes. Este corte
+no mueve inventario ni envía mensajes. Migración aditiva `0009_m02_planificacion`
+sobre `0008_e03_preparacion_ml`; M03 añade la revisión 0010 y su contrato implementado al final.
 
 Entrada interna tras la inferencia: `corrida_id` y `clave_ejecucion`. El plan solo toma pronósticos disponibles con receta activa. Lee lotes para `fecha_objetivo` y guarda cifras de stock y versión de receta en `elemento_plan`/`necesidad_ingrediente`. No modifica saldos. Fórmulas del prototipo:
 
@@ -310,7 +349,7 @@ Lecturas con Bearer: GET `/proveedores`, GET `/proveedores/{id}/ofertas` y GET `
 
 Ejemplo de oferta: `{"ingrediente_id": 1, "descripcion": "Saco", "unidad_compra": "saco", "factor_conversion": "25000", "minimo": "0", "multiplo": "1", "preferida": true}`. Factor/múltiplo positivos y mínimo no negativo, hasta 14 dígitos y 4 decimales; ingrediente debe existir y estar activo. Una preferida activa por ingrediente está protegida por índice único parcial. Los nombres implementados `factor_conversion`, `minimo`, `multiplo`, `activa`, `chat_id_pruebas` corresponden respectivamente a los conceptos de diseño `factor_a_unidad_base`, `minimo_compra`, `multiplo_compra`, `activo`, `telegram_chat_id`; los consumidores usan los nombres del servicio publicado.
 
-Errores: 404 `REFERENCIA_NO_ENCONTRADA`/`OFERTA_NO_ENCONTRADA`, 409 `CONFLICTO_PROVEEDORES`, 422 validación común, 401 sin sesión y 403 Operador en escritura. La respuesta de consulta expone `compra_automatica_habilitada` y `motivo_bloqueo`; no crea ni envía pedidos. Sin adaptador Telegram la verificación retorna `verificado=false` y detalle explícito. L01 sigue parcial por canal/UI; L02–L04 no implementados por esta integración.
+Errores: 404 `REFERENCIA_NO_ENCONTRADA`/`OFERTA_NO_ENCONTRADA`, 409 `CONFLICTO_PROVEEDORES`, 422 validación común, 401 sin sesión y 403 Operador en escritura. La consulta expone `compra_automatica_habilitada` y `motivo_bloqueo`; no crea ni envía pedidos. L02 local consume esta interfaz. El paso 5 añade configuración/bot/chat en el [contrato Telegram](contrato-pedidos.md#paso-5-local--configuración-telegram): token configurable desde UI, cifrado fuera de DB y verificación ligada a credencial con migración 0012. Sin configuración válida devuelve verificado=false con código/detalle propios. Paso 6 implementa aprobación/rechazo, reserva de envío, worker y evidencia; ver [contrato L03](contrato-pedidos.md#paso-6-local--revisión-aprobación-y-envío-manual). Bot real pendiente del usuario; recuperación L04 y automático siguen en paso 7. ServicioProveedores(sesion).consultar_destino(proveedor_id, bloquear=False) ofrece destino vigente público para aprobación/worker sin exponer huella/token.
 
 ## E03 disponible: carga completa y preparación automática de ML
 
@@ -327,3 +366,14 @@ Servicios públicos: `inicializacion.servicio.solicitar_preparacion`, `iniciar_p
 Migración aditiva `0008_e03_preparacion_ml` sobre 0007: preparacion_ejecucion_id y modelo_id nullable con FK RESTRICT, preparacion_numero no negativo con default 0. Conserva cargas previas; una carga completa anterior sin reserva puede usar el endpoint de preparación sin subir archivos. UI `/inicializacion` refresca estado cada tres segundos, muestra ejecución/evaluación, ofrece reintento y enlace al panel, y oculta la carga cuando ya está aceptada.
 
 Prueba real del corte: PostgreSQL/Redis/CatBoost y Beat con seis meses de ventas de fixture; entrenamiento, fallo controlado de evaluación, reintento que conserva un único modelo y dashboard con pares persistidos. No acredita calidad comercial ni implementa plan, pedidos o promociones.
+## M03 · Paso 3 local: necesidades y faltantes conservados
+
+Implementado el 30-09-2026 por Codex para Axel. `generar_plan` calcula M03 en la misma transacción: consume recetas y producción conservadas del plan, agrega aportes con Decimal y redondea hacia arriba a tres decimales una sola vez por ingrediente. Unidad base idéntica a inventario; no hay conversiones implícitas. Cantidades dentro de Numeric(14,3); desbordamiento devuelve 422 y revierte el plan nuevo.
+
+`GET /api/v1/planes/{id}` añade `necesidades_estado`, `necesidades_meta` y `necesidades`. Cada fila conserva ingrediente/unidad, `cantidad_necesaria`, `stock_disponible`, `faltante`, estado, aportes por producto/receta/version y snapshot de lotes. Decimales viajan como cadenas. `faltante = max(0, necesaria-disponible)`; sin stock conocido, disponible/faltante son null. Lotes vencidos se excluyen; vigencia desconocida se advierte. Incluso con necesidad cero se conserva la diferencia entre stock desconocido y cero explícito.
+
+Estados: `CALCULADAS` si todos los productos son calculables y todos los ingredientes tienen stock conocido; `INCOMPLETAS` si falta alguno. En ese caso las necesidades son subtotales y `productos_excluidos` explica la producción ausente. `PENDIENTE_M03` identifica planes anteriores a la migración 0010. Las lecturas nunca recalculan datos históricos.
+
+`POST /api/v1/planes/{id}/necesidades`, solo Administrador y sin cuerpo, completa una vez un plan anterior usando sus recetas/producción guardadas y el stock actual para la fecha objetivo. Devuelve 200 con el detalle; repetir recupera el snapshot sin volver a leer stock. No modifica inventario. `POST /planes` con una clave ya usada compara también los ingredientes: entradas diferentes generan 409 `CLAVE_REUTILIZADA`; otra clave conserva otro plan.
+
+Frontera pública: `obtener_necesidades(sesion, plan_id)` devuelve estado, metadatos y filas guardadas sin commit. La API es consumidor verificado. `GENERAR_PROPUESTA` devuelve `alcance=PLAN_PEDIDOS_L02` y el estado real; conserva inferencia/plan/necesidades/evaluación en la transacción del motor. L02 consume obtener_contexto_compras, con fecha e IDs de necesidades; producción incompleta deja propuesta bloqueada sin líneas. Política: una propuesta activa por fecha, cancelación administrativa explícita antes de sustituir. No existe envío en este corte.

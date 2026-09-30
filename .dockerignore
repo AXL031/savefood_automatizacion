@@ -1,4 +1,10 @@
 .git
+.env
+.env.*
+telegram_secrets
+**/telegram_secrets
+**/.env
+**/.env.*
 .venv
 .venv*
 .tmp

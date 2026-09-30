@@ -20,7 +20,7 @@ export default function IniciarSesion() {
       const sesion = await iniciarSesion(correo.trim().toLowerCase(), contrasena);
       guardarToken(sesion.token_acceso);
       setContrasena("");
-      router.replace("/configuracion");
+      router.replace("/");
     } catch (fallo) {
       setError(fallo instanceof Error ? fallo.message : "No se pudo iniciar sesión.");
     } finally {

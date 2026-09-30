@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 from datetime import date, datetime, timedelta, timezone
+from dataclasses import dataclass
 from pathlib import Path
 
 from sqlalchemy import select
@@ -131,3 +132,29 @@ def obtener_pronosticos(sesion: Session, corrida_id: int) -> list[Pronostico]:
     """Frontera pública para Max: cantidad nullable y motivo por producto."""
     return list(sesion.scalars(select(Pronostico).where(Pronostico.corrida_id == corrida_id)
                                .order_by(Pronostico.producto_id)))
+
+
+@dataclass(frozen=True)
+class CorridaLeida:
+    id: int
+    ejecucion_id: int
+    fecha_objetivo: date
+    modelo_id: int
+    version_modelo: str
+    huella_datos_entrada: str
+    tipo: str
+    estado: str
+
+
+def consultar_corrida(sesion: Session, corrida_id: int, *, bloquear: bool = False) -> CorridaLeida:
+    """Lectura pública M02; bloqueo opcional serializa los planes de la corrida."""
+    consulta = select(CorridaPronostico).where(CorridaPronostico.id == corrida_id)
+    if bloquear:
+        consulta = consulta.with_for_update()
+    corrida = sesion.scalar(consulta)
+    if corrida is None:
+        raise ErrorAPI(404, "CORRIDA_NO_ENCONTRADA", "La corrida no existe.")
+    modelo = sesion.get(ArtefactoModelo, corrida.modelo_id)
+    return CorridaLeida(corrida.id, corrida.ejecucion_id, corrida.fecha_objetivo,
+                       modelo.id, modelo.version_modelo, corrida.huella_datos_entrada,
+                       corrida.tipo, corrida.estado)

@@ -20,6 +20,7 @@ from app.modules.ventas.modelos import VentaDiaria, ImportacionVenta
 from app.modules.inventario.modelos import MovimientoInventario
 from app.modules.pronosticos.modelos import ArtefactoModelo
 from app.modules.pronosticos import manejadores
+from app.modules.planificacion.modelos import PlanProduccion
 from app.workers import motor
 from app.workers.retry.politica import ErrorDatos
 
@@ -146,7 +147,7 @@ def entrega_historial():
             filas.append(f"{fecha},{sku},{10+i+fecha.day%7}")
         fecha += timedelta(days=1)
     entrega = archivos(("\n".join(filas)+"\n").encode())
-    return [(campo, (nombre, crudo.replace(b"2022-08-25", b"2022-06-21").replace(b"2022-08-24", b"2022-06-20")
+    return [(campo, (nombre, crudo.replace(b"2022-08-25", b"2022-06-21").replace(b"2022-08-24", b"2022-06-20").replace(b"12000.500", b"0")
                       if nombre == "stock_inicial.csv" else crudo, tipo)) for campo,(nombre,crudo,tipo) in entrega]
 
 
@@ -173,6 +174,17 @@ def test_beat_entrena_evalua_y_dashboard_real(entorno, monkeypatch, tmp_path):
                          "beat_schedule":{"e03":{"task":"foodsave.despachar_pendientes","schedule":0.5}}}.items():
         monkeypatch.setitem(celery_app.conf, clave, valor)
     inicial = cargar(cliente, admin, entrega_historial(), {"fecha_objetivo_demo":"2022-06-20", "fecha_referencia_stock":"2022-06-19"})
+    # Solo el destino es fixture; plan, necesidades, conversión y pedidos son reales.
+    from app.modules.inventario.modelos import LoteIngrediente
+    from app.modules.proveedores.servicio import ServicioProveedores
+    from app.modules.proveedores.esquemas import ProveedorCrear, OfertaCrear
+    from test_proveedores_l01 import TelegramFalso
+    with sesiones.begin() as sesion:
+        servicio = ServicioProveedores(sesion, TelegramFalso())
+        proveedor = servicio.crear_proveedor(ProveedorCrear(codigo="E03-L02", nombre="Proveedor de prueba", chat_id_pruebas="123"))
+        assert servicio.verificar_destino(proveedor.id).verificado
+        ingrediente_id = sesion.scalar(select(LoteIngrediente.ingrediente_id))
+        servicio.crear_oferta(proveedor.id, OfertaCrear(ingrediente_id=ingrediente_id, descripcion="Bolsa de 1 kg", unidad_compra="bolsa", factor_conversion=1000, minimo=1, multiplo=1, preferida=True))
     antes = conteos(sesiones)
     beat = Service(app=celery_app, max_interval=0.5, scheduler_cls="celery.beat:Scheduler")
     observado = set()
@@ -197,6 +209,48 @@ def test_beat_entrena_evalua_y_dashboard_real(entorno, monkeypatch, tmp_path):
                     elif actual["evaluacion"]["estado"] == "COMPLETADA": break
                 time.sleep(0.1)
             else: pytest.fail(f"ML automático no terminó: {actual}")
+            # M02 consume el modelo real y los puertos de receta/stock; Beat,
+            # Redis y el worker realizan la propuesta sin despacho manual.
+            propuesta = cliente.post("/api/v1/programaciones-demo", headers=admin, json={
+                "tipo":"GENERAR_PROPUESTA", "ejecutar_desde_utc":(datetime.now(timezone.utc)+timedelta(seconds=1)).isoformat(),
+                "fecha_hora_simulada_local":"2022-06-20T10:00:00", "fecha_objetivo_demo":"2022-06-20",
+                "producto_ids":[1,2,3], "clave_idempotencia":"e03-plan-real"})
+            assert propuesta.status_code == 200, propuesta.text
+            ejecucion_id = propuesta.json()["datos"]["ejecucion_id"]
+            limite = time.monotonic()+60
+            while time.monotonic() < limite:
+                with sesiones() as sesion:
+                    tarea = sesion.get(EjecucionAutomatizacion, ejecucion_id)
+                    assert tarea.estado != "FALLIDA", tarea.mensaje_error
+                    salida = tarea.datos_salida_json
+                    if tarea.estado == "COMPLETADA":
+                        evaluacion = sesion.get(EjecucionAutomatizacion, salida["evaluacion_ejecucion_id"])
+                        assert evaluacion.estado != "FALLIDA", evaluacion.mensaje_error
+                        if evaluacion.estado == "COMPLETADA": break
+                time.sleep(0.1)
+            else: pytest.fail("La propuesta real/evaluación no terminó por Beat")
+            assert salida["alcance"] == "PLAN_PEDIDOS_L02" and salida["pedidos_estado"] == "GENERADA"
+            compra = cliente.get(f'/api/v1/compras/propuestas/{salida["propuesta_compra_id"]}', headers=admin)
+            assert compra.status_code == 200, compra.text
+            assert len(compra.json()["datos"]["pedidos"]) == 1
+            pedido = compra.json()["datos"]["pedidos"][0]
+            assert pedido["estado"] == "PENDIENTE_APROBACION" and len(pedido["lineas"]) == 1
+            from decimal import Decimal
+            linea = pedido["lineas"][0]
+            assert Decimal(linea["cantidad_base_pedida"]) >= Decimal(linea["faltante_base"]) > 0
+            plan = cliente.get(f'/api/v1/planes/{salida["plan_id"]}', headers=admin)
+            assert plan.status_code == 200, plan.text
+            detalle = plan.json()["datos"]
+            assert detalle["pedidos_estado"] == "GENERADA"
+            assert detalle["necesidades_estado"] == salida["necesidades_estado"] == "CALCULADAS"
+            assert len(detalle["necesidades"]) == 1
+            assert detalle["necesidades_meta"]["version"] == "m03-v1"
+            assert len(detalle["elementos"]) == 3
+            for elemento in detalle["elementos"]:
+                assert elemento["estado"] == "CALCULADO"
+                assert elemento["cantidad_producir"] == max(0, elemento["cantidad_pronosticada"]-elemento["stock_disponible"])
+                assert elemento["receta"]["version"] == 1
+            assert detalle["origen_pronostico"]["modelo_id"] == actual["modelo_id"]
         finally:
             beat.stop(wait=False); hilo.join(timeout=5)
     assert reintentada and evaluaciones == 2
@@ -210,6 +264,7 @@ def test_beat_entrena_evalua_y_dashboard_real(entorno, monkeypatch, tmp_path):
     assert cliente.post("/api/v1/inicializacion/reintentar-preparacion", headers=admin).json()["datos"]["preparacion"]["id"] == actual["preparacion"]["id"]
     with sesiones() as sesion:
         assert sesion.scalar(select(func.count()).select_from(ArtefactoModelo)) == 1
-        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 4
+        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 6
+        assert sesion.scalar(select(func.count()).select_from(PlanProduccion)) == 1
     with celery_app.connection_for_write() as conexion:
         conexion.default_channel.queue_delete(cola)

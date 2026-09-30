@@ -1,6 +1,7 @@
 """Prueba del delta 0004→0007, reversibilidad y metadatos completos."""
 import importlib.util
 from pathlib import Path
+import pytest
 
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
@@ -20,7 +21,7 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0008_e03_preparacion_ml"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0013_l03_aprobacion_envio"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")
@@ -32,7 +33,7 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
     # datos ni revisiones aplicadas. Se ejecutan las tres nuevas migraciones.
     Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name not in NUEVAS])
     modulos = []
-    for nombre in ("0005_m01_ingredientes_recetas", "0006_v01_inventario", "0007_l01_proveedores"):
+    for nombre in ("0005_m01_ingredientes_recetas", "0006_v01_inventario", "0007_l01_proveedores", "0012_l03_telegram_config"):
         spec = importlib.util.spec_from_file_location(nombre, backend / "migrations" / "versions" / f"{nombre}.py")
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
@@ -49,6 +50,35 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
             assert not NUEVAS.intersection(inspect(conexion).get_table_names())
             for modulo in modulos:
                 modulo.upgrade()
+            assert compare_metadata(contexto, Base.metadata) == []
+    motor.dispose()
+
+
+def test_migracion_0009_reversible_y_coherente_con_modelos():
+    backend = Path(__file__).resolve().parents[2]
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor, "connect")
+    def funciones(c, _):
+        c.create_function("char_length", 1, len)
+        c.execute("PRAGMA foreign_keys=ON")
+    tablas = {"plan_produccion", "elemento_plan", "necesidad_ingrediente"}
+    Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name not in tablas])
+    spec = importlib.util.spec_from_file_location("m02", backend / "migrations/versions/0009_m02_planificacion.py")
+    modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
+    spec_m03 = importlib.util.spec_from_file_location("m03", backend / "migrations/versions/0010_m03_necesidades.py")
+    m03 = importlib.util.module_from_spec(spec_m03); spec_m03.loader.exec_module(m03)
+    with motor.begin() as conexion:
+        contexto = MigrationContext.configure(conexion)
+        with Operations.context(contexto):
+            modulo.upgrade()
+            m03.upgrade()
+            assert tablas <= set(inspect(conexion).get_table_names())
+            assert compare_metadata(contexto, Base.metadata) == []
+            m03.downgrade()
+            modulo.downgrade()
+            assert not tablas.intersection(inspect(conexion).get_table_names())
+            modulo.upgrade()
+            m03.upgrade()
             assert compare_metadata(contexto, Base.metadata) == []
     motor.dispose()
 
@@ -78,4 +108,88 @@ def test_migracion_0008_conserva_carga_y_es_reversible():
             assert conexion.execute(text("SELECT huella_solicitud FROM configuracion_inicial")).scalar() == "previa"
             nueva.upgrade()
             assert compare_metadata(contexto, Base.metadata) == []
+    motor.dispose()
+
+
+def test_migracion_0011_reversible_y_coherente_con_modelos():
+    backend = Path(__file__).resolve().parents[2]
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor, "connect")
+    def funciones(c, _):
+        c.create_function("char_length", 1, len)
+        c.execute("PRAGMA foreign_keys=ON")
+    nuevas = {"propuesta_compra", "pedido_compra", "linea_pedido", "envio_pedido"}
+    Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name not in nuevas])
+    spec = importlib.util.spec_from_file_location("l02", backend / "migrations/versions/0011_l02_compras.py")
+    modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
+    spec_envio = importlib.util.spec_from_file_location("l03", backend / "migrations/versions/0013_l03_aprobacion_envio.py")
+    envio = importlib.util.module_from_spec(spec_envio); spec_envio.loader.exec_module(envio)
+    with motor.begin() as conexion:
+        contexto = MigrationContext.configure(conexion)
+        with Operations.context(contexto):
+            modulo.upgrade()
+            envio.upgrade()
+            assert compare_metadata(contexto, Base.metadata) == []
+            envio.downgrade()
+            modulo.downgrade()
+            assert not nuevas.intersection(inspect(conexion).get_table_names())
+            modulo.upgrade()
+            envio.upgrade()
+            assert compare_metadata(contexto, Base.metadata) == []
+    motor.dispose()
+
+
+def test_migracion_0012_conserva_proveedor_y_revoca_verificacion_heredada():
+    from sqlalchemy import text
+    backend = Path(__file__).resolve().parents[2]
+    motor = create_engine("sqlite://")
+    def cargar(nombre):
+        spec = importlib.util.spec_from_file_location(nombre, backend / "migrations" / "versions" / f"{nombre}.py")
+        modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
+        return modulo
+    anterior = cargar("0007_l01_proveedores")
+    nueva = cargar("0012_l03_telegram_config")
+    with motor.begin() as conexion:
+        contexto = MigrationContext.configure(conexion)
+        with Operations.context(contexto):
+            anterior.upgrade()
+            conexion.execute(text("INSERT INTO proveedor (id,codigo,nombre,activo,chat_id_pruebas,destino_verificado,destino_verificado_en) VALUES (1,'TG','Prueba',true,'789',true,'2026-09-30')"))
+            nueva.upgrade()
+            assert conexion.execute(text("SELECT codigo,chat_id_pruebas,destino_verificado,destino_verificado_en,destino_credencial_huella FROM proveedor")).one() == ("TG", "789", False, None, None)
+            nueva.downgrade()
+            assert "destino_credencial_huella" not in {c["name"] for c in inspect(conexion).get_columns("proveedor")}
+            nueva.upgrade()
+            assert conexion.execute(text("SELECT count(*) FROM proveedor")).scalar() == 1
+    motor.dispose()
+
+
+def test_migracion_0013_conserva_borradores_y_protege_evidencia():
+    from sqlalchemy import text
+    backend = Path(__file__).resolve().parents[2]
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor,"connect")
+    def funciones(c,_): c.create_function("char_length",1,len)
+    nuevas = {"propuesta_compra","pedido_compra","linea_pedido","envio_pedido"}
+    Base.metadata.create_all(motor,tables=[t for t in Base.metadata.sorted_tables if t.name not in nuevas])
+    def cargar(nombre):
+        spec=importlib.util.spec_from_file_location(nombre,backend/"migrations/versions"/f"{nombre}.py")
+        modulo=importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
+        return modulo
+    anterior,nueva=cargar("0011_l02_compras"),cargar("0013_l03_aprobacion_envio")
+    with motor.begin() as conexion:
+        contexto=MigrationContext.configure(conexion)
+        with Operations.context(contexto):
+            anterior.upgrade()
+            conexion.execute(text("INSERT INTO propuesta_compra (id,plan_id,fecha_objetivo,estado,activa,modo_envio,necesidades_json,incidencias_json) VALUES (1,1,'2022-08-24','GENERADA',true,'REQUIERE_APROBACION','{}','[]')"))
+            conexion.execute(text("INSERT INTO pedido_compra (id,propuesta_id,plan_id,proveedor_id,proveedor_json,estado,modo_envio,bloqueos_json) VALUES (1,1,1,1,'{}','PENDIENTE_APROBACION','REQUIERE_APROBACION','[]')"))
+            nueva.upgrade()
+            assert conexion.execute(text("SELECT estado,clave_decision,decidido_por,decision_json FROM pedido_compra")).one()==("PENDIENTE_APROBACION",None,None,None)
+            assert compare_metadata(contexto,Base.metadata)==[]
+            nueva.downgrade()
+            assert conexion.execute(text("SELECT estado FROM pedido_compra")).scalar()=="PENDIENTE_APROBACION"
+            nueva.upgrade()
+            conexion.execute(text("UPDATE pedido_compra SET estado='RECHAZADO',clave_decision='fixture',decidido_por=1,decidido_en='2026-09-30',decision_json='{}'"))
+            with pytest.raises(RuntimeError,match="conservar su evidencia"): nueva.downgrade()
+            assert "envio_pedido" in inspect(conexion).get_table_names()
+            assert conexion.execute(text("SELECT clave_decision FROM pedido_compra")).scalar()=="fixture"
     motor.dispose()
