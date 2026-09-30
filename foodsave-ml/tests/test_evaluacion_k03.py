@@ -15,6 +15,8 @@ import sys
 import unittest
 from pathlib import Path
 
+import pandas as pd
+
 # Añadir foodsave-ml al path para importar módulos
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -28,6 +30,20 @@ from metricas import (
     evaluar_pares,
 )
 from evaluador import evaluar_dia, consolidar_evaluacion_tramo, EvaluacionDia, EvaluacionTramoCompleto
+from ejecutar_backtest import _filtrar_cobertura
+
+
+class TestCoberturaBacktest(unittest.TestCase):
+    def test_excluye_producto_sin_modelo_o_historial_suficiente(self):
+        filas = pd.DataFrame([
+            {"article": "A", "conteo_28_dias": 7, "fecha_objetivo": "2022-07-01"},
+            {"article": "A", "conteo_28_dias": 6, "fecha_objetivo": "2022-07-02"},
+            {"article": "B", "conteo_28_dias": 28, "fecha_objetivo": "2022-07-01"},
+        ])
+        elegibles = _filtrar_cobertura(filas, {
+            "productos_entrenados": ["A"], "min_observaciones_previas_28_dias": 7,
+        })
+        self.assertEqual(elegibles[["article", "fecha_objetivo"]].values.tolist(), [["A", "2022-07-01"]])
 
 
 class TestMae(unittest.TestCase):

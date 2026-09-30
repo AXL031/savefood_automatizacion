@@ -20,7 +20,7 @@ Archivos técnicos observados al preparar esta guía: `0001_nucleo.py`. Su prese
 
 Axel coordina integración de revisiones; no asume las tablas de los seis.
 
-**Cadena tras A03:** `0001_nucleo → 0001a_configuracion → 0001b_automatizaciones → 0001c_motor`; A03 añade columnas de despacho y lease, sin tablas de otros dominios. La revisión compartida `0002` de los demás dominios sigue pendiente y debe declarar `down_revision = "0001c_motor"` después de cerrar tipos, FK y CHECK con sus dueños. No modificar revisiones ya aplicadas.
+**Cadena tras Kevin:** `0001_nucleo → 0001a_configuracion → 0001b_automatizaciones → 0001c_motor → 0002_e01_ventas → 0003_pronosticos`. `0002` agrega catálogo y ventas; `0003` agrega persistencia ML. Las siguientes revisiones de dominio dependen de `0003_pronosticos` o de su sucesora, sin modificar migraciones ya aplicadas. Coordinar tipos, FK y CHECK restantes con sus dueños.
 
 ## Trabajo en esta carpeta
 

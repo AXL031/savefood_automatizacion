@@ -22,7 +22,9 @@ services:
       retries: 10
 
   migraciones:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     command: alembic upgrade head
     environment:
       DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
@@ -31,7 +33,9 @@ services:
         condition: service_healthy
 
   api:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
       REDIS_URL: redis://redis:6379/0
@@ -39,6 +43,8 @@ services:
       FRONTEND_ORIGIN: http://localhost:3000
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       MODEL_ARTIFACT_DIR: /code/model_artifacts
+      ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
+      ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
     volumes:
       - model_artifacts:/code/model_artifacts:ro
     ports:
@@ -52,7 +58,9 @@ services:
         condition: service_healthy
 
   worker:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     command: celery -A app.workers.celery_app:celery_app worker --loglevel=info --concurrency=2
     environment:
       DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
@@ -60,6 +68,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       MODEL_ARTIFACT_DIR: /code/model_artifacts
+      ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
+      ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
     volumes:
       - model_artifacts:/code/model_artifacts
     depends_on:
@@ -71,7 +81,9 @@ services:
         condition: service_healthy
 
   beat:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     command: celery -A app.workers.celery_app:celery_app beat --loglevel=info --schedule=/tmp/foodsave-celerybeat
     environment:
       REDIS_URL: redis://redis:6379/0

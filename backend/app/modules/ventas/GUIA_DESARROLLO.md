@@ -17,7 +17,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+E01 parcial implementa tablas `importacion_venta`, `venta_diaria` y `revision_venta` en `0002_e01_ventas`. `importar_bakery` agrega tickets a día/SKU, exige catálogo previo, excluye y cuenta líneas negativas y conserva revisiones iniciales; `leer_historial` devuelve filas conocidas con revisión vigente para Kevin y usa fin exclusivo, por lo que la fecha objetivo no entra en sus características. `limites_historial` devuelve el rango observado. `corregir_venta` conserva revisiones anteriores. Todas las funciones reciben la sesión del consumidor y no hacen commit. El CLI `python -m app.modules.ventas.cargar_piloto` permite cargar el dataset local explícitamente; no sustituye el asistente de primera inicialización. El consumo por K01–K03 se probó con el CSV piloto en SQLite; API de ventas, pantalla y prueba PostgreSQL siguen pendientes. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Trabajo en esta carpeta
 

@@ -13,9 +13,15 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `GET /programaciones-demo/{id}` | Bearer |
 | `GET /ejecuciones-automatizacion` | Bearer |
 | `GET /ejecuciones-automatizacion/{id}` | Bearer |
+| `GET /pronosticos/modelos` | Bearer |
+| `POST /pronosticos/preparar-modelo` | Administrador; reserva `PREPARAR_MODELO` y responde 202 |
+| `GET /pronosticos/corridas` | Bearer; filtro opcional `modelo_id` |
+| `GET /pronosticos/corridas/{id}` | Bearer |
+| `GET /pronosticos/evaluacion` | Bearer; filtro opcional `modelo_id` |
+| `GET /pronosticos/corridas/{id}/evaluacion` | Bearer |
 | `GET /salud` | Pública, fuera de `/api/v1` |
 
-`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`: la API reserva/consulta; Beat y worker despachan por dentro. Los servicios de negocio aún no están conectados.
+`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`. Pronósticos requiere `0002_e01_ventas` y `0003_pronosticos`; PREPARAR_MODELO, EVALUAR_MODELO y EVALUAR_PRONOSTICO están registrados, pero Edu y Max aún deben conectar sus disparadores de carga y plan.
 
 ## Objetivo de la demo
 
@@ -30,9 +36,6 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `PATCH /ventas-diarias/{id}` | Corrección explícita con motivo; conserva revisión. | Administrador |
 | `GET /inventario` | Saldos por lote y agregado con unidad/caducidad. | Bearer |
 | `POST /inventario/ajustes` | Movimiento explícito con motivo, hora efectiva simulada y clave única; agenda evaluación de promoción. | Administrador |
-| `GET /pronosticos/corridas/{id}` | Resultados, versión y cobertura. | Bearer |
-| `GET /pronosticos/evaluacion` | Partición, versión y serie diaria del backtest reservado con MAE, WAPE, ±20% y cobertura. | Bearer |
-| `GET /pronosticos/corridas/{id}/evaluacion` | Comparación por producto del día elegido: previsto, real conocido, error y cobertura. | Bearer |
 | `GET /planes/{id}` | Elementos y necesidades; faltante positivo es sugerencia. | Bearer |
 | `GET /proveedores` | Proveedores y ofertas de la demo. | Bearer |
 | `POST /proveedores` | Alta de proveedor. | Administrador |
@@ -44,7 +47,7 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `POST /pedidos/{id}/conciliar` | Resolver resultado de envío incierto con evidencia. | Administrador |
 | `GET /promociones/evaluaciones` | Sugerencia o motivo de rechazo por lote; no activa descuentos. | Bearer |
 
-La preparación ML usa el worker existente **solo a demanda** y un estado durable en `configuracion_inicial`. Celery Beat ejecuta cada 30 segundos el despachador de programaciones de pronóstico/plan y promoción; el primer entrenamiento se encola por evento de carga, no por horario. Una segunda solicitud mientras entrena recupera la misma preparación, no inicia otro entrenamiento. Si falla, el estado vuelve a datos cargados con error visible y se permite reintentar.
+Actualmente `POST /pronosticos/preparar-modelo` reserva el entrenamiento a demanda y el worker registra el backtest al publicar el artefacto. El estado durable en `configuracion_inicial` y el disparador desde la carga completa pertenecen a E03 y aún no existen. Celery Beat revisa programaciones cada 30 segundos; el primer entrenamiento automático deberá encolarse por evento de carga. La misma clave idempotente recupera la ejecución, y otra entrada con esa clave devuelve conflicto.
 
 ## Visión futura, fuera de la demo
 

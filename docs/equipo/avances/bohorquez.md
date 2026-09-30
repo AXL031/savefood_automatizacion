@@ -6,21 +6,69 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Estado:** K01 y K03 implementados y listos para integración; K02 y K04 en preparación.
-- **Punto de partida alcanzado:** Se completó el pipeline de entrenamiento offline sin Colab (`entrenar.py`), generación y validación de artefactos CBM con SHA-256 (`verificar_artefacto.py`), cálculo estricto de métricas (`metricas.py`) y evaluador histórico de tramo completo con backtest un día adelante (`evaluador.py`, `ejecutar_backtest.py`). 52 pruebas unitarias pasando en `foodsave-ml/tests/`.
-- **Contrato disponible:** [CONTRATO_ARTEFACTO_INFERENCIA.md](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md) y [POLITICA_EVALUACION.md](../../../foodsave-ml/POLITICA_EVALUACION.md).
-- **Entrega a consumidores:** `MODEL_ARTIFACT_DIR` recibe `catboost_model.cbm` y `metadata.json` listos para inferencia local; evaluador produce métricas en formato dict listas para persistencia K02 y dashboard K04.
-- **Bloqueos:** Ninguno para K01/K03. Para K02 se requiere la migración 0002 y ventas en PostgreSQL de Edu (E01), adelantable con fixtures propios.
-- **Siguiente paso:** Implementar servicio de inferencia K02 en el backend con fixtures de prueba.
+- **Estado:** K01–K04 implementados y listos para integrar en el prototipo local; no se declara integración con el plan de Max ni con la inicialización E03.
+- **Punto de partida alcanzado:** Entrenamiento desde historial E01, artefacto CBM versionado y verificado, inferencia persistida con 13 características temporales, backtest por fecha/revisión, API protegida y panel histórico. La prueba integral con el CSV piloto pasó en SQLite: 139 productos, 92 corridas canónicas de prueba y 4047 pares evaluables.
+- **Contrato disponible:** [artefacto ML](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md), [API y servicios](../../api/contratos.md#ventas--pronósticos) y [política de evaluación](../../../foodsave-ml/POLITICA_EVALUACION.md).
+- **Entrega a consumidores:** `generar_corrida`/`obtener_pronosticos` y `solicitar_evaluacion_corrida` reciben la sesión del plan sin confirmarla; API `/pronosticos/*`, páginas `/pronosticos` y `/panel`, y adaptadores A03 para preparación/evaluación.
+- **Bloqueos:** Docker Desktop y Compose están instalados, pero el motor Linux se detiene porque Windows tiene `Virtual Machine Platform` deshabilitada. Falta verificar migraciones, worker y API en PostgreSQL; Edu debe conectar E03 y Max consumir la corrida en su plan.
+- **Siguiente paso:** Probar `0002`/`0003` y worker sobre PostgreSQL; integrar disparador E03 y plan M02 con pruebas de transacción compartida.
 
 | Tarea | Estado de seguimiento |
 |---|---|
-| K01 · Extraer entrenamiento reutilizable | LISTO_PARA_INTEGRAR |
-| K02 · Implementar inferencia y persistencia | PENDIENTE DE VERIFICAR / COMPLETAR |
-| K03 · Implementar evaluación histórica | LISTO_PARA_INTEGRAR |
-| K04 · Construir dashboard y vistas de pronóstico | PENDIENTE DE VERIFICAR / COMPLETAR |
+| K01 · Extraer entrenamiento reutilizable | LISTO_PARA_INTEGRAR; entrenó CSV piloto desde E01 en SQLite |
+| K02 · Implementar inferencia y persistencia | LISTO_PARA_INTEGRAR; Max aún no consume el servicio |
+| K03 · Implementar evaluación histórica | LISTO_PARA_INTEGRAR; backtest completo local verificado |
+| K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; frontend compila, falta ver API con PostgreSQL |
 
 ## Bitácora
+
+### K01–K04 · Intento de arranque en Docker Desktop
+
+- **Fecha/hora y zona:** 2026-09-29 15:01 (America/Bogota).
+- **Autor y responsable del bloque:** Codex, verificando el bloque de Kevin Bohorquez a pedido del usuario; no atribuye esta prueba a Kevin.
+- **Tareas:** verificación de despliegue de K01–K04 y dependencia A04.
+- **Estado:** EN_CURSO; arranque de Compose bloqueado por configuración del host Windows.
+- **Qué cambió y qué comportamiento está disponible:** se localizó Docker Desktop 4.93.0 y Docker Compose v5.5.1 en la instalación de usuario; se creó `.env` ignorado por Git con claves aleatorias locales y `docker compose config --quiet` pasó. El motor Linux no arranca; los registros indican `Virtual Machine Platform not enabled` y `No virtualization available`. El procesador reporta virtualización de firmware activada.
+- **Archivos clave:** `.env` local ignorado (sin publicar secretos), `compose.yaml`, `backend/Dockerfile`.
+- **Contrato/función/ruta y ejemplo:** el recorrido previsto es migración `0002`/`0003` → carga piloto E01 → `PREPARAR_MODELO` → `EVALUAR_MODELO` → `/panel`; aún no se ejecutó en Compose.
+- **Migración/configuración necesaria:** habilitar `VirtualMachinePlatform` y WSL 2 en Windows con permisos de administrador, reiniciar la PC y comprobar `docker info` antes de `docker compose up --build -d`.
+- **Pruebas:** `docker --version` y `docker compose version` correctos; `docker compose config --quiet` correcto. `docker desktop status` pasó de `starting` a `stopped`; `docker info` devolvió 500. No se ejecutaron migraciones ni carga en PostgreSQL.
+- **Qué necesita el siguiente desarrollador y quién es:** Axel o el usuario con permisos de administrador habilita la característica de Windows; después Codex puede continuar el recorrido de prueba.
+- **Dependencias/bloqueos:** requiere cambio del sistema y reinicio; la sesión actual no tiene elevación administrativa (`DISM` devolvió error 740).
+- **Siguiente paso concreto:** habilitar Virtual Machine Platform y WSL 2 en PowerShell como administrador, reiniciar y volver a comprobar Docker.
+- **Commit/PR:** cambios locales, sin commit.
+
+### K03 · Comandos locales verificados y cobertura consistente
+
+- **Fecha/hora y zona:** 2026-09-29 14:47 (America/Bogota).
+- **Autor y responsable del bloque:** Codex, trabajando por solicitud del usuario en el bloque de Kevin Bohorquez; no atribuye este ajuste a Kevin.
+- **Tareas:** K01/K03, verificación para la demo local.
+- **Estado:** LISTO_PARA_INTEGRAR; CLI local ejecutado, Compose pendiente.
+- **Qué cambió y qué comportamiento está disponible:** se ejecutaron normalización, entrenamiento CatBoost y verificación del artefacto con el CSV real. Se ajustó el backtest CLI para excluir SKU fuera del modelo o con menos de siete observaciones previas, contar fechas con pares evaluables y coincidir con el resumen backend. El panel usa solo corridas canónicas `backtest-{modelo_id}-{fecha}` para no duplicar una fecha por pruebas adicionales.
+- **Archivos clave:** `foodsave-ml/ejecutar_backtest.py`, `foodsave-ml/tests/test_evaluacion_k03.py`, `backend/app/modules/pronosticos/evaluacion.py`.
+- **Contrato/función/ruta y ejemplo:** `python foodsave-ml/normalizar_ventas.py --entrada foodsave-ml/bakery_sales_limpio_final.csv --formato bakery --comercio piloto --sucursal principal --salida .tmp/demo_manual`; después `python foodsave-ml/entrenar.py --csv .tmp/demo_manual/ventas_diarias_normalizadas.csv --comercio piloto --sucursal principal --salida .tmp/demo_manual/modelo --version demo-manual-v1`.
+- **Migración/configuración necesaria:** ninguna para la CLI independiente; usa dependencias ML de `backend[ml]`. Para el panel persiste la necesidad de `0002_e01_ventas` y `0003_pronosticos`.
+- **Pruebas:** los tres comandos locales y `ejecutar_backtest.py` finalizaron correctamente. El reporte CLI y el resumen backend coincidieron en 4047 pares, MAE 6.0168, WAPE 32.73 %, cobertura 79.89 % y 90 fechas evaluables del tramo julio–septiembre 2022. `python -m pytest backend/tests foodsave-ml/tests -q -p no:cacheprovider`: 78 passed, 8 skipped, 6 subtests passed. La CLI no registra el modelo en PostgreSQL ni lo muestra en el panel.
+- **Qué necesita el siguiente desarrollador y quién es:** Axel o quien prepare la demo instala Docker/Compose, carga el CSV en PostgreSQL y comprueba la ruta administrativa de preparación; Edu y Max conservan las dependencias E03/M02 indicadas en el resumen.
+- **Dependencias/bloqueos:** esta PC no tiene Docker ni PostgreSQL; el arranque completo sigue sin validarse.
+- **Siguiente paso concreto:** verificar Compose y el recorrido manual cargar→preparar→evaluar→panel en una máquina con Docker.
+- **Commit/PR:** cambios locales, sin commit.
+
+### K01–K04 · Backend, evaluación persistida y panel del piloto
+
+- **Fecha/hora y zona:** 2026-09-29 14:27 (America/Bogota).
+- **Autor y responsable del bloque:** Codex, trabajando por solicitud del usuario en el bloque de Kevin Bohorquez; no atribuye estos cambios a Kevin.
+- **Tareas:** K01, K02, K03 y K04; coordinación con el corte E01 de Edu.
+- **Estado:** LISTO_PARA_INTEGRAR en entorno local; integración externa parcial.
+- **Qué cambió y qué comportamiento está disponible:** el worker entrena desde ventas persistidas, exporta CBM/metadata con huella y versión, registra la partición y reserva `EVALUAR_MODELO`. La inferencia usa solo los 28 días previos, valida cobertura/artefacto y guarda corrida y cantidad nullable por producto. K03 conserva evaluaciones por revisión de venta y consolida MAE, WAPE, ±20% y cobertura sobre pares conocidos. K04 expone modelos, corridas, evaluaciones y un panel con serie, fecha, producto y enlace directo a la corrida. Se evitó acceder a tablas privadas de Edu desde los servicios de Kevin.
+- **Archivos clave:** `backend/app/modules/pronosticos/{entrenamiento,servicio,evaluacion,rutas,modelos}.py`, `backend/migrations/versions/0003_pronosticos.py`, `backend/app/workers/tasks/manejadores.py`, `frontend/src/app/{pronosticos,panel}/page.tsx`, `frontend/src/components/charts/SerieHistorica.tsx`, `backend/tests/integration/test_pronosticos_k02_k03.py`.
+- **Contrato/función/ruta y ejemplo:** `generar_corrida(sesion, ejecucion_id=1, clave_ejecucion="demo-1", fecha_objetivo=date(2022, 8, 24), producto_ids=[1])` devuelve una corrida; `obtener_pronosticos(sesion, corrida.id)` entrega estado y cantidad nullable. `GET /api/v1/pronosticos/evaluacion?modelo_id=1` entrega serie y métricas; `GET /api/v1/pronosticos/corridas/1` entrega trazas por producto. [Contrato completo](../../api/contratos.md#ventas--pronósticos).
+- **Migración/configuración necesaria:** `0003_pronosticos` depende de `0002_e01_ventas`; `MODEL_ARTIFACT_DIR`, `ML_COMERCIO_ID`, `ML_SUCURSAL_ID`. El contenedor backend copia `foodsave-ml`; worker comparte el volumen de modelos con API.
+- **Pruebas:** `python -m pytest backend/tests foodsave-ml/tests -q -p no:cacheprovider`: **78 passed, 8 skipped, 6 subtests passed**, incluida API protegida. `npm run typecheck` y `npm run build`: correctos. Prueba integral local con CSV real y SQLite temporal: 228936 líneas aceptadas, 1264 negativas excluidas, 27740 ventas diarias, CBM verificado, primera corrida de 139 productos (54 pronósticos disponibles, 38 pares evaluables); backtest canónico del tramo de 92 días: 4047 pares evaluables en 90 fechas, MAE 6.0168 y WAPE 32.73 %. Se excluyó del resumen una corrida exploratoria adicional de la primera fecha, que duplicaba 38 pares; el CLI independiente ahora usa la misma regla de cobertura y arroja iguales métricas. Estos valores son exploratorios de la muestra, no rendimiento comercial. Alembic generó SQL offline PostgreSQL de toda la cadena; no se ejecutó upgrade real ni Compose: Docker y `psql` no están instalados aquí.
+- **Qué necesita el siguiente desarrollador y quién es:** Max (M02) llama `generar_corrida` y `obtener_pronosticos` en su transacción de plan, luego `solicitar_evaluacion_corrida`; Edu (E03) reserva `PREPARAR_MODELO` tras primera carga; Axel verifica despliegue A04 con PostgreSQL/Compose.
+- **Dependencias/bloqueos:** E01 está consumido localmente, pero su carga integrada E03 y la migración PostgreSQL siguen pendientes; no se declara M02 integrado.
+- **Siguiente paso concreto:** aplicar migraciones en PostgreSQL, probar worker/API y enlazar E03 y M02 conservando idempotencia y sesión compartida.
+- **Commit/PR:** cambios locales, sin commit.
 
 ### K03 · Implementación de métricas y evaluación histórica
 

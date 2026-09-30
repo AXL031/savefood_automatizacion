@@ -29,9 +29,11 @@ Herramientas disponibles en la carpeta:
 - `evaluador.py`: evaluación por fecha (totales sumados sobre evaluables) y consolidación del tramo completo sin promediar porcentajes.
 - `ejecutar_backtest.py`: CLI para comprobación histórica un día adelante sobre el tramo de prueba reservado.
 
+El backtest CLI aplica `productos_entrenados` y `min_observaciones_previas_28_dias`, como la inferencia del backend. `fechas_evaluadas` cuenta fechas con al menos un par de pronóstico y venta real conocida; las métricas del reporte CLI y del panel usan la misma cobertura.
+
 Coordinación: Kevin coordina la carpeta y su lógica de pronósticos; `normalizar_ventas.py` corresponde a Edu por su frontera de importación de archivos.
 
-**Infraestructura transversal A04 de Axel:** Compose comparte `MODEL_ARTIFACT_DIR` entre worker (escritura) y API (solo lectura). Las herramientas de Kevin escriben y leen el artefacto CBM y sus metadatos en este volumen.
+**Infraestructura transversal A04 de Axel:** Compose comparte `MODEL_ARTIFACT_DIR` entre worker (escritura) y API (solo lectura). Las herramientas de Kevin escriben y leen el artefacto CBM y sus metadatos en este volumen. El adaptador en `backend/app/modules/pronosticos/entrenamiento.py` exporta desde ventas persistidas el CSV canónico temporal, entrena el modelo versionado y encola el backtest. El flujo E01→K01→K03 se probó localmente con el CSV piloto y SQLite; falta probar PostgreSQL/Compose.
 
 ## Comandos de desarrollo
 
@@ -52,7 +54,9 @@ python -m pytest foodsave-ml/tests/ -v
 ## Criterio de entrega
 
 - K01 (LISTO_PARA_INTEGRAR): backend puede entrenar y validar CBM sin ejecutar Colab.
-- K03 (LISTO_PARA_INTEGRAR): evaluación histórica y métricas calculadas sin promediar porcentajes; WAPE indefinido si la suma real es cero.
+- K02 (LISTO_PARA_INTEGRAR): backend persiste corridas y pronósticos con historia anterior al objetivo.
+- K03 (LISTO_PARA_INTEGRAR): backtest persistido y métricas calculadas sin promediar porcentajes; WAPE indefinido si la suma real es cero.
+- K04 (LISTO_PARA_INTEGRAR): API y panel presentan versión, fechas, cobertura, serie y comparación por producto.
 
 
 ## Documentar el avance y entregar al siguiente

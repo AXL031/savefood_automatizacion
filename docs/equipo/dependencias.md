@@ -10,16 +10,16 @@ La asignación vigente está en [responsabilidades](responsabilidades.md). Una d
 | A02: programación, ejecución durable, contratos y trazas | Axel | Edu, Kevin, Vera, Max y Aguirre | Ya pueden desarrollar y probar con sesión compartida, claves e IDs de fixture | Integrar su propio consumidor y demostrar la transacción de frontera |
 | A03: Beat, lease y reintentos automáticos | Axel | Edu, Kevin, Vera, Max y Aguirre | Conectar servicios a las funciones públicas A02 y preparar tareas idempotentes | Carga→entrenamiento automático, plan programado y promoción tras ajuste |
 | A04: imagen ML, volumen de artefactos, Compose y CI | Axel | Kevin, Aguirre y todo el equipo | Kevin desarrolla entrenamiento/inferencia contra `MODEL_ARTIFACT_DIR`; Aguirre implementa canal con token local opcional; todos prueban arranque | Declarar modelo o Telegram integrados requiere código y pruebas de sus dueños; reproducibilidad en otra PC requiere verificación de un compañero |
-| E01: productos/SKU y lectura de ventas | Edu | Max, Vera y Kevin | Recetas/stock con IDs de fixture; ML con CSV histórico normalizado | FK reales de producto e historial de PostgreSQL |
+| E01: productos/SKU y lectura de ventas | Edu | Max, Vera y Kevin | Corte interno y migración `0002_e01_ventas`; Kevin consumió sus servicios en prueba local con CSV piloto y SQLite | Acreditar upgrade PostgreSQL; faltan rutas/pantallas y primera carga completa |
 | M01: ingredientes, recetas y servicio de carga | Max | Edu, Vera y Aguirre | Parser/vista previa, movimientos con fixtures, proveedor/conversiones | Importación completa, lotes de insumo y oferta ligada a ingrediente |
 | V01: apertura de lotes en sesión compartida | Vera | Edu | Validar hoja de stock sin persistirla | Confirmar carga atómica con apertura real |
 | E02/E03: carga completa e identidad/estado inicial | Edu | Kevin y demo integrada | Entrenador y contrato del artefacto con datos de prueba | Entrenar automáticamente sobre los datos cargados por la aplicación |
-| K02: corrida y pronóstico disponible | Kevin | Max | Fórmula de producción con respuesta fija de contrato | Persistir plan enlazado a una corrida real |
+| K02: corrida y pronóstico disponible | Kevin | Max | `generar_corrida` y `obtener_pronosticos` disponibles; corrida real probada con CSV piloto en SQLite | Max debe persistir plan enlazado a corrida; falta prueba integrada PostgreSQL |
 | V02: disponibilidad de stock por fecha | Vera | Max | Cálculo con cantidades de ejemplo | Plan con stock elegible, lotes y advertencias reales |
 | M03: necesidades agregadas por plan | Max | Aguirre | Oferta, conversión, estados, adaptador falso y pantalla de pedido | Crear pedido trazable desde el pronóstico real |
 | L01: proveedor, oferta y chat verificado | Aguirre | Compras y demo | Probar cálculo y mensajes con cliente falso | Habilitar envío al chat de pruebas real |
 | A01 + L02/L03: modo, aprobación y política de recompra | Axel configura; Aguirre aplica; Max entrega identidad del plan | Envío automático | Estados y pruebas de aprobación con entradas controladas | Enviar sin intervención con control de duplicados entre planes |
-| K03: evaluación y API de métricas | Kevin | Su propia pantalla K04 | Gráficos con ejemplos de cobertura y valores nulos | Dashboard que muestra resultados persistidos |
+| K03: evaluación y API de métricas | Kevin | Su propia pantalla K04 | Backtest de 92 fechas y métricas persistidas probados localmente; API y panel K04 implementados | Falta comprobar API y worker sobre PostgreSQL/Compose y conectar evento de plan de Max |
 | V02 + A03: ajuste/evento y despacho | Vera y Axel | Promociones de Vera | Probar la regla pura ya existente | Evaluación programada tras un ajuste real |
 | E04: layout y componentes comunes | Edu | Todos | Pantallas propias usando las piezas actuales | Apariencia/navegación compartidas; no bloquea reglas de backend |
 

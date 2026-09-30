@@ -1,6 +1,6 @@
 # Esquema objetivo del prototipo universitario
 
-**Estado:** contrato de las tablas de dominio para la futura migración `0002`, salvo `programacion_demo`, `ejecucion_automatizacion` e `intento_automatizacion`, implementadas en `0001b_automatizaciones` y ampliadas con lease de ejecución en `0001c_motor`. `0001_nucleo` crea `negocio` y `usuario`; `0001a_configuracion` agrega `negocio.modo_envio_pedidos`. La futura `0002` debe depender de `0001c_motor`. FoodSave guardará ventas diarias y stock en PostgreSQL tras la primera carga. Los archivos de primera inicialización son **carga de arranque**, no fuentes externas permanentes. El [alcance](../guia-inicio-desarrollo.md) manda sobre documentos históricos del producto amplio.
+**Estado:** `0002_e01_ventas` implementa catálogo y ventas sobre `0001c_motor`; `0003_pronosticos` añade `artefacto_modelo`, `corrida_pronostico`, `pronostico` y `evaluacion_pronostico`. Las demás tablas de este esquema siguen pendientes y deben venir en revisiones posteriores de la misma cadena. `programacion_demo`, `ejecucion_automatizacion` e `intento_automatizacion` ya existen en `0001b_automatizaciones`, ampliadas por `0001c_motor`. `0001_nucleo` crea `negocio` y `usuario`; `0001a_configuracion` agrega `negocio.modo_envio_pedidos`. FoodSave guardará ventas diarias y stock en PostgreSQL tras la primera carga. Los archivos de primera inicialización son **carga de arranque**, no fuentes externas permanentes. El [alcance](../guia-inicio-desarrollo.md) manda sobre documentos históricos del producto amplio.
 
 ## Convenciones
 

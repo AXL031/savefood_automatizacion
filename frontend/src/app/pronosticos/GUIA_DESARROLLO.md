@@ -18,7 +18,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para el último estado.
+`page.tsx` consulta versiones y corridas persistidas, muestra cobertura por producto y permite al Administrador reservar entrenamiento desde ventas locales. La ruta consume `services/pronosticos.ts` y no inventa pronósticos cuando el backend devuelve `null`. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md).
 
 ## Trabajo en esta carpeta
 

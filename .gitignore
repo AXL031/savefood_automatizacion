@@ -15,6 +15,10 @@ frontend/.npm-cache/
 __pycache__/
 *.py[cod]
 .venv/
+.venv*/
+.tmp/
+backend/*.egg-info/
+catboost_info/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

@@ -16,7 +16,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para el último estado.
+`SerieHistorica.tsx` dibuja previsto y real sobre pares evaluables y permite seleccionar una fecha. Una fecha sin pares evaluables no dibuja barras de venta cero. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md).
 
 ## Trabajo en esta carpeta
 

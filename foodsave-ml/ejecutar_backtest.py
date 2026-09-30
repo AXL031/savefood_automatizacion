@@ -59,6 +59,14 @@ def _args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _filtrar_cobertura(df_features: pd.DataFrame, meta: dict) -> pd.DataFrame:
+    """Aplica la misma elegibilidad por SKU e historial que la inferencia del backend."""
+    return df_features.loc[
+        df_features["article"].isin(meta["productos_entrenados"])
+        & df_features["conteo_28_dias"].ge(meta["min_observaciones_previas_28_dias"])
+    ]
+
+
 def ejecutar_backtest(
     artefacto_dir: Path,
     csv_path: Path,
@@ -92,19 +100,19 @@ def ejecutar_backtest(
         fin=fin_prueba,
     )
 
-    # 4. Inferencia con CatBoost
-    X_test = df_features[FEATURES]
-    predicciones_raw = modelo.predict(X_test)
+    # 4. Excluir productos que el backend reporta sin pronóstico disponible.
+    elegibles = _filtrar_cobertura(df_features, meta)
+    X_test = elegibles[FEATURES]
+    predicciones_raw = modelo.predict(X_test) if not elegibles.empty else np.array([])
 
     # Regla contractual: mínimo cero y redondeo con np.rint (empate al par)
     predicciones = np.rint(np.maximum(0.0, predicciones_raw))
 
     # 5. Armar pares de evaluación (conservando ausencias como None)
     pares: list[ParEvaluacion] = []
-    for idx, fila in df_features.iterrows():
+    for pred_val, (_, fila) in zip(predicciones, elegibles.iterrows()):
         p_id = str(fila["article"])
         f_local = pd.to_datetime(fila["fecha_objetivo"]).strftime("%Y-%m-%d")
-        pred_val = float(predicciones[idx])
         real_val = (
             float(fila["unidades_vendidas"])
             if pd.notna(fila["unidades_vendidas"])
@@ -114,7 +122,7 @@ def ejecutar_backtest(
             ParEvaluacion(
                 producto_id=p_id,
                 fecha_local=f_local,
-                previsto=pred_val,
+                previsto=float(pred_val),
                 real=real_val,
             )
         )
@@ -127,7 +135,9 @@ def ejecutar_backtest(
         pares_todos=pares,
     )
 
-    return resultado.as_dict()
+    reporte = resultado.as_dict()
+    reporte["fechas_evaluadas"] = sum(dia["productos_evaluables"] > 0 for dia in reporte["serie_diaria"])
+    return reporte
 
 
 def main() -> None:

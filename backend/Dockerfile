@@ -1,7 +1,8 @@
 FROM python:3.12-slim
 
 WORKDIR /code
-COPY . .
+COPY backend/ .
+COPY foodsave-ml/ /code/foodsave-ml/
 RUN pip install --no-cache-dir '.[ml]'
 RUN groupadd --system foodsave && useradd --system --gid foodsave --home-dir /code foodsave \
     && mkdir -p /code/model_artifacts \

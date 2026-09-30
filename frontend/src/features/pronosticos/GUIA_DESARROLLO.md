@@ -18,7 +18,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para el último estado.
+Las páginas K04 consumen `services/pronosticos.ts` y `types/pronostico.ts`; este directorio queda libre para extraer vistas/hook cuando haya reutilización real. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md).
 
 ## Trabajo en esta carpeta
 

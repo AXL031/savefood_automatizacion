@@ -128,6 +128,20 @@ td a { font-weight: 700; white-space: nowrap; }
 .login-card .button-primary { width: 100%; margin-top: 5px; }
 .login-card .login-note { margin: 24px 0 0; font-size: .72rem; }
 
+.pronostico-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; margin-top: 16px; }
+.pronostico-meta > div { display: grid; gap: 5px; padding: 13px; background: #f8fafc; border-radius: 8px; }
+.pronostico-meta span { color: #6b7280; font-size: .7rem; }
+.pronostico-meta strong { font-size: .86rem; overflow-wrap: anywhere; }
+.mono-corto { font-family: ui-monospace, SFMono-Regular, monospace; }
+.serie-historica { display: flex; align-items: flex-end; gap: 4px; min-height: 190px; overflow-x: auto; padding: 12px 4px; border-bottom: 1px solid #cbd5e1; }
+.serie-dia { flex: 0 0 28px; height: 160px; border: 0; background: transparent; padding: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+.serie-dia.seleccionado { background: #ccfbf1; border-radius: 5px; }
+.serie-barras { height: 132px; width: 22px; display: flex; align-items: flex-end; gap: 2px; }
+.serie-barra { display: block; width: 10px; min-height: 2px; border-radius: 2px 2px 0 0; }
+.serie-barra.previsto { background: #0f766e; }
+.serie-barra.real { background: #2563eb; }
+.serie-fecha { font-size: .56rem; transform: rotate(-45deg); white-space: nowrap; }
+
 @media (max-width: 1000px) { .page-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .app-layout { display: block; } .sidebar { position: static; height: auto; padding: 15px; border-right: 0; border-bottom: 1px solid #e5e7eb; } .sidebar nav { display: flex; overflow-x: auto; } .nav-group-label { margin: 19px 4px 8px; } .nav-link { white-space: nowrap; } .sidebar-bottom { display: none; } .topbar { min-height: 55px; padding: 10px 17px; } .page-content { padding: 24px 16px 45px; } .preference-grid { grid-template-columns: 1fr; } .login-layout { grid-template-columns: 1fr; } .login-intro { padding: 35px 25px; } .brand-login { margin-bottom: 35px; } .login-intro h1 { font-size: 2.25rem; } .login-intro p, .login-step { display: none; } .login-card { margin: 35px 0; } }
 @media (max-width: 480px) { .stats-grid, .form-grid { grid-template-columns: 1fr; } .field-full { grid-column: auto; } .section-heading { flex-direction: column; } .filter-label { width: 100%; justify-content: space-between; } .login-card { padding: 24px; } }

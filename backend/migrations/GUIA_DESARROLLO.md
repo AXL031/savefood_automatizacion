@@ -20,7 +20,7 @@ Archivos técnicos observados al preparar esta guía: `env.py`, `script.py.mako`
 
 Axel coordina integración de revisiones; no asume las tablas de los seis.
 
-**A03:** la cabeza actual es `0001c_motor`, sucesora de `0001b_automatizaciones`; agrega despacho y lease a la ejecución. La revisión compartida `0002` deberá depender de esta cabeza sin modificar migraciones ya aplicadas.
+**E01 y Kevin:** `0002_e01_ventas` sucede a `0001c_motor` y crea catálogo/ventas; `0003_pronosticos` añade persistencia de modelo, corridas y evaluaciones. Los demás dominios agregan sus tablas en revisiones posteriores coordinadas, sin alterar migraciones ya aplicadas.
 
 ## Trabajo en esta carpeta
 
