@@ -17,6 +17,9 @@ dependencies = [
   "email-validator>=2.2,<3",
   "celery[redis]>=5.4,<6",
   "tzdata>=2024.1",
+  # Requisitos de la primera carga (E02): lectura XLSX y subida multipart.
+  "openpyxl>=3.1,<4",
+  "python-multipart>=0.0.6,<1",
 ]
 
 [project.optional-dependencies]

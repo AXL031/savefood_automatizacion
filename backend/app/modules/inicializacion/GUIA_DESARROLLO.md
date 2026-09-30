@@ -17,7 +17,19 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+**E02 y E03 implementados (29-09-2026), verificados en SQLite y sin aplicar en PostgreSQL.** Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+
+| Archivo | Responsabilidad |
+|---|---|
+| `lectores.py` | Lee los dos XLSX o los cinco CSV con encabezados exactos y calcula las huellas. No interpreta tipos. |
+| `adaptador_bakery.py` | Convierte el CSV de tickets del piloto a la forma diaria del contrato, validando contra la lista curada. |
+| `validacion.py` | Reúne todos los errores por archivo y fila. Un error rechaza el lote completo. |
+| `modelos.py` | Fila única `configuracion_inicial` con sus cinco estados. |
+| `puertos.py` | `ServicioRecetas` (Max) y `ServicioInventario` (Vera), invocados con la misma sesión. |
+| `servicio.py` | Vista previa sin escritura, carga atómica y transiciones de estado. |
+| `rutas.py` | `GET /inicializacion/estado`, `POST /inicializacion/vista-previa` y `POST /inicializacion/confirmar`. |
+
+Migración `0004_e03_inicializacion`, sucesora de `0003_pronosticos`. Mientras falten los servicios de Max y Vera, la carga persiste catálogo y ventas y deja el estado en `PENDIENTE`: una carga parcial **no** declara la instalación inicializada.
 
 ## Trabajo en esta carpeta
 

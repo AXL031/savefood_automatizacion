@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 from sqlalchemy import select
@@ -11,6 +12,16 @@ from app.core.errores import ErrorAPI
 from app.modules.productos.modelos import Producto, SkuProducto
 
 ORIGEN_BAKERY = "bakery"
+
+
+@dataclass(frozen=True)
+class EntradaCatalogo:
+    """Un producto de la hoja `productos` del asistente de primera carga."""
+
+    codigo: str
+    nombre: str
+    sku_externo: str
+    demostrar: bool
 
 
 def leer_nombres_bakery(lista: Path) -> list[str]:
@@ -54,6 +65,45 @@ def cargar_catalogo_bakery(sesion: Session, lista: Path) -> int:
         sesion.add(SkuProducto(producto_id=producto.id, origen=ORIGEN_BAKERY, sku_externo=nombre))
     sesion.flush()
     return len(nombres)
+
+
+def registrar_catalogo(
+    sesion: Session, entradas: list[EntradaCatalogo], origen: str = ORIGEN_BAKERY
+) -> dict[str, int]:
+    """Registra el catálogo del asistente y devuelve `codigo -> producto_id`.
+
+    No confirma la sesión. Si el catálogo ya existe con los mismos códigos y SKU,
+    los reutiliza: repetir la primera carga con el mismo archivo no duplica. Un
+    catálogo existente distinto es conflicto, no una fusión silenciosa.
+    """
+    if not entradas:
+        raise ErrorAPI(422, "CATALOGO_INVALIDO", "El catálogo no puede estar vacío.")
+
+    existentes = {
+        codigo: producto_id
+        for codigo, producto_id in sesion.execute(select(Producto.codigo, Producto.id))
+    }
+    if existentes:
+        esperados = {entrada.codigo for entrada in entradas}
+        if set(existentes) != esperados:
+            raise ErrorAPI(
+                409,
+                "CATALOGO_DIFERENTE",
+                "Ya hay un catálogo distinto cargado; reinicializa antes de cargar otro.",
+            )
+        return existentes
+
+    mapa: dict[str, int] = {}
+    for entrada in entradas:
+        producto = Producto(codigo=entrada.codigo, nombre=entrada.nombre, demostrar=entrada.demostrar)
+        sesion.add(producto)
+        sesion.flush()
+        sesion.add(
+            SkuProducto(producto_id=producto.id, origen=origen, sku_externo=entrada.sku_externo)
+        )
+        mapa[entrada.codigo] = producto.id
+    sesion.flush()
+    return mapa
 
 
 def resolver_sku(sesion: Session, origen: str, sku_externo: str) -> int:
