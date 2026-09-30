@@ -16,13 +16,26 @@ type Props = {
   children: (contexto: ContextoSesion) => ReactNode;
 };
 
-const enlaces = [
-  { href: "/inicializacion", texto: "Cargar CSV" },
-  { href: "/configuracion", texto: "Configuración" },
-  { href: "/automatizaciones", texto: "Automatizaciones" },
-  { href: "/pronosticos", texto: "Pronósticos" },
-  { href: "/panel", texto: "Panel histórico" },
-  { href: "/notificaciones", texto: "Notificaciones" },
+const grupos = [
+  {
+    titulo: "Datos",
+    enlaces: [
+      { href: "/inicializacion", texto: "Primera carga" },
+      { href: "/inicializacion/piloto", texto: "CSV piloto" },
+      { href: "/productos", texto: "Productos" },
+      { href: "/ventas", texto: "Ventas" },
+    ],
+  },
+  {
+    titulo: "Sistema",
+    enlaces: [
+      { href: "/configuracion", texto: "Configuración" },
+      { href: "/automatizaciones", texto: "Automatizaciones" },
+      { href: "/pronosticos", texto: "Pronósticos" },
+      { href: "/panel", texto: "Panel histórico" },
+      { href: "/notificaciones", texto: "Notificaciones" },
+    ],
+  },
 ];
 
 export function ProtectedShell({ titulo, descripcion, children }: Props) {
@@ -83,14 +96,18 @@ export function ProtectedShell({ titulo, descripcion, children }: Props) {
     <div className="app-layout">
       <aside className="sidebar" aria-label="Navegación principal">
         <Link href="/configuracion" className="brand"><span className="brand-mark">F</span><span>FoodSave<small>Operación local</small></span></Link>
-        <div className="nav-group-label">Sistema</div>
-        <nav>
-          {enlaces.map((enlace) => (
-            <Link key={enlace.href} href={enlace.href} className={`nav-link ${ruta === enlace.href || ruta.startsWith(`${enlace.href}/`) ? "active" : ""}`} aria-current={ruta === enlace.href ? "page" : undefined}>
-              {enlace.texto}
-            </Link>
-          ))}
-        </nav>
+        {grupos.map((grupo) => (
+          <div key={grupo.titulo}>
+            <div className="nav-group-label">{grupo.titulo}</div>
+            <nav aria-label={grupo.titulo}>
+              {grupo.enlaces.map((enlace) => (
+                <Link key={enlace.href} href={enlace.href} className={`nav-link ${ruta === enlace.href ? "active" : ""}`} aria-current={ruta === enlace.href ? "page" : undefined}>
+                  {enlace.texto}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        ))}
         <div className="sidebar-bottom"><span>{perfil.nombre}</span><small>{perfil.rol === "ADMINISTRADOR" ? "Administrador" : "Operador"}</small><button className="button-link" onClick={cerrarSesion}>Cerrar sesión</button></div>
       </aside>
       <div className="app-main">

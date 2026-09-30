@@ -16,7 +16,7 @@ from app.core.base import Base
 from app.core.base_datos import obtener_sesion
 from app.modules.autenticacion.modelos import Usuario
 from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
-from app.modules.inicializacion import rutas
+from app.modules.inicializacion import piloto as rutas
 from app.modules.negocios.modelos import Negocio
 from app.modules.productos.modelos import Producto
 from app.modules.ventas.modelos import ImportacionVenta, VentaDiaria

@@ -17,7 +17,7 @@
 
 ## Punto de partida
 
-`page.tsx` permite al Administrador subir el CSV bakery, muestra conteos, sigue la ejecución de entrenamiento y ofrece reintento sin volver a importar. Al volver a abrir la página recupera la última ejecución de preparación desde la API. Usa el layout protegido. Es una carga piloto parcial, no el asistente de dos Excel o cinco CSV. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
+`page.tsx` implementa el asistente de primera carga de Sánchez: dos XLSX o cinco CSV, vista previa y confirmación. `piloto/page.tsx` conserva la carga rápida del CSV bakery para la base local existente y reserva la preparación del modelo. Son flujos distintos. La carga completa sigue parcialmente pendiente de los servicios de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Trabajo en esta carpeta
 

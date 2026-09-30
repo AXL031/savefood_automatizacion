@@ -56,7 +56,45 @@ SKU implícitos (`422 SKU_DESCONOCIDO`); una clave de importación repetida con
 otro archivo devuelve `409 CLAVE_REUTILIZADA`. Requiere migración
 `0002_e01_ventas`. Se comprobó el consumo E01→K01–K03 con el CSV piloto en
 SQLite local; el upgrade y la operación en PostgreSQL siguen sin verificar.
-La ruta rápida `POST /api/v1/inicializacion/piloto-bakery` (Administrador) recibe `multipart/form-data` con `archivo` CSV bakery de máximo 25 MB. Carga el catálogo curado, llama `importar_bakery` y reserva `PREPARAR_MODELO` en una sola transacción. Responde `202` con `datos = {importacion_id, repetida, productos, filas_aceptadas, filas_negativas_excluidas, ventas_diarias_creadas, version_modelo, ejecucion_id, estado_ejecucion}`. La misma huella recupera importación y ejecución sin duplicar; un SKU desconocido revierte catálogo y ventas. La carga real y repetición pasaron en PostgreSQL local el 29-09-2026 (America/Lima): 139 productos, 27 740 ventas diarias y una importación. La API general de ventas y la inicialización completa siguen pendientes.
+
+**E02/E03 disponibles (29-09-2026):** el asistente de primera carga lee los dos
+libros XLSX o los cinco CSV. Si el archivo de ventas es el CSV de tickets del
+piloto, el adaptador `bakery` valida cada artículo contra
+`lista_productos_precios_limpia.md`, excluye las líneas negativas informando
+cuántas y agrega por fecha y artículo antes de validar.
+
+- `POST /inicializacion/vista-previa` (Administrador, multipart con `archivos`,
+  `fecha_objetivo_demo` y `fecha_referencia_stock`) **no escribe nada**. Devuelve
+  `aceptable`, `total_errores`, `errores[]` con `campo` en forma
+  `archivo:fila/columna`, `filas_por_hoja`, el resumen de ventas y catálogo, las
+  tres huellas y, si aplicó, `adaptador_bakery`. Se reúnen todos los problemas en
+  una sola respuesta, no solo el primero.
+- `POST /inicializacion/confirmar` añade `clave_importacion` y persiste todo en
+  una transacción: `409 YA_INICIALIZADA` si la instalación ya tiene otra carga
+  aceptada, `422 CARGA_INVALIDA` si la validación falla, y la misma solicitud
+  repetida devuelve `ya_estaba_cargada` sin duplicar. La respuesta trae
+  `estado` y `pendiente_de[]`.
+- `GET /inicializacion/estado` (Bearer) devuelve la fila única
+  `configuracion_inicial` con estado, huellas y fechas del escenario.
+- Transiciones para Kevin y Axel: `hay_datos_cargados(sesion)`,
+  `marcar_entrenando`, `marcar_modelo_listo` y `marcar_fallo_entrenamiento`. Un
+  fallo de entrenamiento vuelve a `DATOS_CARGADOS` y **no** obliga a recargar
+  ventas ni stock.
+- La carga invoca los puertos `ServicioRecetas` (Max, M01) y
+  `ServicioInventario` (Vera, V01) de
+  `backend/app/modules/inicializacion/puertos.py` con la **misma** sesión; los
+  servicios participantes no confirman por separado. Mientras no existan, la
+  carga persiste catálogo y ventas y deja el estado en `PENDIENTE` con
+  `mensaje_error` indicando qué falta: la instalación **no** se declara
+  inicializada por una carga parcial.
+
+**Rutas de catálogo y ventas (E01/E04):** `GET /productos` (con `solo_demo`),
+`GET /ventas` (filtros `producto_id`, `desde`, `hasta`, `limite`; `422
+RANGO_INVALIDO` si la fecha inicial es posterior a la final),
+`GET /ventas/{id}/revisiones` y `PATCH /ventas/{id}` (Administrador, exige
+`motivo`). Una fecha sin fila no se devuelve ni se rellena con cero; un cero
+explícito sí aparece. Requiere `0004_e03_inicializacion`, que sucede a
+`0003_pronosticos`.
 
 
 La primera carga recibe los dos libros Excel o cinco CSV del [contrato de primera inicialización](contrato-importaciones.md). Guarda `venta_diaria`, `producto`, `sku_producto`, `ingrediente`, `receta`, lotes y movimientos `APERTURA`. El archivo de ventas `bakery` transforma `article` textual a `(origen, sku_externo)` y luego `producto.id` interno. La misma `clave_importacion` y huella recupera el resultado; distinto archivo con la misma clave devuelve `409 CLAVE_REUTILIZADA`. SKU no mapeado, dos sucursales, receta rota, stock negativo o unidad incompatible rechazan el lote completo. Una fecha sin venta queda desconocida; cero explícito queda almacenado.
@@ -66,6 +104,8 @@ La venta histórica no descuenta el stock de apertura. Tras la inicialización, 
 El período de evaluación se fija en la primera carga con la [política temporal](../../foodsave-ml/POLITICA_EVALUACION.md): los últimos 6 meses completos de prueba si hay al menos 24 meses, 3 si hay de 12 a menos de 24, o 1 si hay de 6 a menos de 12; se reserva validación anterior de 3, 3 o 1 mes, respectivamente. Menos de 6 meses no habilita métricas de demo. La fecha objetivo demostrativa debe caer en la prueba reservada. `particion` y `version_modelo` quedan en los metadatos del artefacto; el test no se usa para seleccionar ni ajustar el modelo.
 
 ## Ventas → Pronósticos
+
+La carga rápida del piloto se mantiene en `POST /api/v1/inicializacion/piloto-bakery` (Administrador, multipart `archivo` CSV, límite 25 MB). Responde `202` con `datos.importacion_id`, `repetida`, `productos`, `filas_aceptadas`, `filas_negativas_excluidas`, `ventas_diarias_creadas`, `version_modelo`, `ejecucion_id` y `estado_ejecucion`. Repetir el mismo archivo conserva la importación y la ejecución; el catálogo, las ventas y la reserva `PREPARAR_MODELO` se confirman juntos. Este atajo para el piloto existente es independiente del asistente completo y no marca `configuracion_inicial` como completa.
 
 **Servicio K02 implementado:** `generar_corrida(sesion, ejecucion_id=..., clave_ejecucion=..., fecha_objetivo=..., producto_ids=..., tipo="DEMO_PROGRAMADA")` lee la interfaz pública de ventas de Edu con rango `[objetivo-28 días, objetivo)`, verifica el CBM y persiste una corrida y un pronóstico por producto sin confirmar la sesión. `obtener_pronosticos(sesion, corrida_id)` entrega a Max `producto_id`, `estado` y `cantidad_pronosticada` nullable. Producto fuera del artefacto produce `PRODUCTO_NO_CUBIERTO`; menos de siete observaciones conocidas en 28 días produce `HISTORIAL_INSUFICIENTE`. Misma clave con mismo modelo, productos, historial y revisiones recupera la corrida; otra huella devuelve `409 CLAVE_REUTILIZADA`. La fecha debe estar en la prueba reservada y ser posterior al corte del modelo.
 

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 type Props = {
   titulo: string;
   descripcion: string;
-  tono?: "neutral" | "alerta" | "info";
+  tono?: "neutral" | "alerta" | "info" | "ok";
   accion?: ReactNode;
 };
 

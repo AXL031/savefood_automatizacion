@@ -10,7 +10,7 @@ Esta guía aplica al [alcance universitario congelado](../guia-inicio-desarrollo
 4. Comprobar `GET http://localhost:8000/salud`, iniciar sesión en `http://localhost:3000` y abrir la configuración del comercio local.
 5. Ejecutar la tarea de prueba de Celery descrita en el README principal. `docker compose ps` debe mostrar PostgreSQL y Redis saludables, API, worker, Beat y frontend activos. El servicio `migraciones` termina con código cero.
 
-En Windows, después de configurar `.env` y construir imágenes una vez, `iniciar-foodsave.cmd` ejecuta `docker compose up -d` y abre `/inicializacion` cuando la web responde. La carga web del CSV bakery permite probar E01→K01/K03 sin copiar el archivo al contenedor. Su alcance es parcial: no carga recetas ni stock.
+En Windows, después de configurar `.env` y construir imágenes una vez, `iniciar-foodsave.cmd` ejecuta `docker compose up -d` y abre `/inicializacion/piloto` cuando la web responde. La carga web del CSV bakery permite probar E01→K01/K03 sin copiar el archivo al contenedor. El asistente completo está en `/inicializacion`; hasta conectar Max y Vera no cierra recetas ni stock.
 
 Una segunda persona debe completar esos pasos en su computadora antes de declarar reproducible el núcleo. Registrar sistema operativo, versión de Docker, salida de migración, prueba de worker y fallos encontrados en la solicitud de incorporación. El volumen `model_artifacts` comienza vacío y es compartido entre worker (escritura) y API (solo lectura); la carga web piloto puede generar CBM y `metadata.json` reales mediante el código de Kevin. `TELEGRAM_BOT_TOKEN` puede quedar vacío hasta que Aguirre entregue la integración de un chat propio; no se envía ningún mensaje durante esta comprobación.
 

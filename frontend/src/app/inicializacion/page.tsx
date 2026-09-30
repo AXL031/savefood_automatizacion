@@ -1,120 +1,394 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
-import { ProtectedShell } from "@/components/layout/ProtectedShell";
+import { useEffect, useState } from "react";
+import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
-import { listarEjecuciones, obtenerEjecucion } from "@/services/automatizaciones";
-import { cargarCsvPiloto } from "@/services/inicializacion";
-import { prepararModelo } from "@/services/pronosticos";
-import type { EjecucionAutomatizacion } from "@/types/automatizacion";
-import type { ResultadoCargaPiloto } from "@/types/inicializacion";
+import { PasosAsistente } from "@/components/ui/PasosAsistente";
+import { ValorOpcional } from "@/components/ui/ValorOpcional";
+import { CampoArchivo } from "@/components/forms/CampoArchivo";
+import { CampoFecha } from "@/components/forms/CampoFecha";
+import { CampoTexto } from "@/components/forms/CampoTexto";
+import { BotonEnviar } from "@/components/forms/BotonEnviar";
+import { ResumenErrores } from "@/components/forms/ResumenErrores";
+import { confirmarCarga, obtenerEstadoInicial, pedirVistaPrevia } from "@/services/inicializacion";
+import type { ConfiguracionInicial, InformeCarga, VistaPrevia } from "@/types/inicializacion";
+import { formatearFechaHora } from "@/utils/fechas";
 
-const MAX_CSV_BYTES = 25 * 1024 * 1024;
+const PASOS = [
+  { titulo: "Elegir archivos y fechas", detalle: "Dos libros XLSX o los cinco CSV, más las fechas del escenario." },
+  { titulo: "Revisar la vista previa", detalle: "Filas, productos, fechas cubiertas y errores por fila. No se guarda nada." },
+  { titulo: "Aceptar la carga", detalle: "Se persiste todo en una transacción; un fallo no deja datos a medias." },
+];
 
-function CargaPiloto({ token, administrador }: { token: string; administrador: boolean }) {
-  const [archivo, setArchivo] = useState<File | null>(null);
-  const [resultado, setResultado] = useState<ResultadoCargaPiloto | null>(null);
-  const [ejecucionId, setEjecucionId] = useState<number | null>(null);
-  const [ejecucion, setEjecucion] = useState<EjecucionAutomatizacion | null>(null);
-  const [cargando, setCargando] = useState(false);
-  const [reintentando, setReintentando] = useState(false);
+const ETIQUETAS: Record<ConfiguracionInicial["estado"], string> = {
+  PENDIENTE: "Pendiente",
+  DATOS_CARGADOS: "Datos cargados",
+  ENTRENANDO: "Entrenando",
+  MODELO_LISTO: "Modelo listo",
+  FALLIDA: "Fallida",
+};
+
+const TONOS: Record<ConfiguracionInicial["estado"], "neutral" | "info" | "ok" | "alerta"> = {
+  PENDIENTE: "neutral",
+  DATOS_CARGADOS: "info",
+  ENTRENANDO: "info",
+  MODELO_LISTO: "ok",
+  FALLIDA: "alerta",
+};
+
+/** Los cinco CSV del contrato; con XLSX son `ventas.xlsx` y `catalogo.xlsx`. */
+const RANURAS = [
+  { clave: "ventas", etiqueta: "Ventas", ayuda: "ventas.csv o ventas.xlsx. Acepta también el CSV de tickets del piloto." },
+  { clave: "productos", etiqueta: "Productos", ayuda: "productos.csv, o la hoja del catálogo si usas XLSX." },
+  { clave: "ingredientes", etiqueta: "Ingredientes", ayuda: "ingredientes.csv" },
+  { clave: "recetas", etiqueta: "Recetas", ayuda: "recetas.csv" },
+  { clave: "stock", etiqueta: "Stock inicial", ayuda: "stock_inicial.csv" },
+] as const;
+
+function TarjetaEstado({ estado }: { estado: ConfiguracionInicial }) {
+  return (
+    <section className="card">
+      <div className="section-heading">
+        <div>
+          <h2>Estado de la instalación</h2>
+          <p>Una sola instalación, un comercio y una sucursal.</p>
+        </div>
+        <span className={`badge badge-${TONOS[estado.estado]}`}>{ETIQUETAS[estado.estado]}</span>
+      </div>
+      <div className="pronostico-meta">
+        <div>
+          <span>Fecha objetivo de la demo</span>
+          <strong><ValorOpcional valor={estado.fecha_objetivo_demo} textoAusente="Sin definir" /></strong>
+        </div>
+        <div>
+          <span>Referencia de stock</span>
+          <strong><ValorOpcional valor={estado.fecha_referencia_stock} textoAusente="Sin definir" /></strong>
+        </div>
+        <div>
+          <span>Iniciada</span>
+          <strong>{estado.iniciada_en ? formatearFechaHora(estado.iniciada_en) : "Sin iniciar"}</strong>
+        </div>
+        <div>
+          <span>Huella de la solicitud</span>
+          <strong className="mono-corto">
+            <ValorOpcional valor={estado.huella_solicitud?.slice(0, 16)} textoAusente="Sin carga" />
+          </strong>
+        </div>
+      </div>
+      {estado.mensaje_error ? (
+        <EstadoPanel tono="alerta" titulo="Queda trabajo pendiente" descripcion={estado.mensaje_error} />
+      ) : null}
+    </section>
+  );
+}
+
+function ResumenVistaPrevia({ vista }: { vista: VistaPrevia }) {
+  const { ventas, catalogo, adaptador_bakery: bakery } = vista;
+  return (
+    <>
+      <div className="stats-grid">
+        <div className="stat"><span>Ventas diarias</span><strong>{ventas.filas}</strong></div>
+        <div className="stat"><span>SKU con ventas</span><strong>{ventas.skus}</strong></div>
+        <div className="stat"><span>Productos</span><strong>{catalogo.productos}</strong></div>
+        <div className="stat"><span>Líneas de receta</span><strong>{catalogo.lineas_receta}</strong></div>
+        <div className="stat"><span>Filas de stock</span><strong>{catalogo.filas_stock}</strong></div>
+        <div className="stat">
+          <span>Fechas cubiertas</span>
+          <strong>
+            <ValorOpcional valor={ventas.primera_fecha} /> → <ValorOpcional valor={ventas.ultima_fecha} />
+          </strong>
+        </div>
+      </div>
+
+      {bakery ? (
+        <EstadoPanel
+          tono="info"
+          titulo="Se adaptó el CSV de tickets del piloto"
+          descripcion={
+            `${bakery.lineas_leidas} líneas leídas de ${bakery.articulos} artículos; ` +
+            `${bakery.lineas_negativas_excluidas} negativas excluidas y ${bakery.lineas_invalidas} inválidas. ` +
+            `Se agregaron en ${bakery.pares_generados} ventas diarias.`
+          }
+        />
+      ) : null}
+
+      <h3 className="section-space">Productos de la demostración</h3>
+      <p className="helper-text">Solo estos participan en el plan; el resto queda en el historial de ventas.</p>
+      <ul className="rule-list">
+        {catalogo.productos_demo.map((producto) => (
+          <li key={producto.codigo}>
+            <strong>{producto.nombre}</strong> — <span className="mono-corto">{producto.sku_externo}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function InformeFinal({ informe }: { informe: InformeCarga }) {
+  if (informe.ya_estaba_cargada) {
+    return (
+      <EstadoPanel
+        tono="info"
+        titulo="Esta misma solicitud ya estaba aceptada"
+        descripcion="Se recuperó el resultado anterior en lugar de cargar otra vez. No se duplicó nada."
+      />
+    );
+  }
+  return (
+    <>
+      <EstadoPanel
+        tono={informe.pendiente_de.length ? "info" : "ok"}
+        titulo={informe.pendiente_de.length ? "Carga parcial aceptada" : "Primera carga completada"}
+        descripcion={
+          informe.pendiente_de.length
+            ? "Se guardaron catálogo y ventas. La instalación no queda inicializada hasta que lleguen los servicios que faltan."
+            : "Catálogo, ventas, recetas y stock de apertura quedaron persistidos. El modelo ya puede prepararse."
+        }
+      />
+      <div className="stats-grid">
+        <div className="stat"><span>Productos</span><strong>{informe.productos}</strong></div>
+        <div className="stat"><span>Ventas diarias</span><strong>{informe.ventas_diarias}</strong></div>
+        <div className="stat"><span>Ingredientes</span><strong>{informe.ingredientes}</strong></div>
+        <div className="stat"><span>Líneas de receta</span><strong>{informe.lineas_receta}</strong></div>
+        <div className="stat"><span>Movimientos de apertura</span><strong>{informe.movimientos_apertura}</strong></div>
+        <div className="stat"><span>Importación</span><strong>#{informe.importacion_id}</strong></div>
+      </div>
+      {informe.pendiente_de.length ? (
+        <ul className="rule-list">
+          {informe.pendiente_de.map((pendiente) => <li key={pendiente}>Falta: {pendiente}</li>)}
+        </ul>
+      ) : null}
+    </>
+  );
+}
+
+function Contenido({ contexto }: { contexto: ContextoSesion }) {
+  const { token, perfil } = contexto;
+  const administrador = perfil.rol === "ADMINISTRADOR";
+
+  const [estado, setEstado] = useState<ConfiguracionInicial | null>(null);
+  const [archivos, setArchivos] = useState<Record<string, File | null>>({});
+  const [objetivo, setObjetivo] = useState("");
+  const [referencia, setReferencia] = useState("");
+  const [clave, setClave] = useState("");
+  const [vista, setVista] = useState<VistaPrevia | null>(null);
+  const [informe, setInforme] = useState<InformeCarga | null>(null);
+  const [validando, setValidando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const control = new AbortController();
-    listarEjecuciones(token, control.signal).then((datos) => {
-      if (control.signal.aborted) return;
-      const ultima = datos.find((item) => item.tipo === "PREPARAR_MODELO");
-      if (ultima) setEjecucionId(ultima.id);
-    }).catch((fallo: unknown) => {
-      if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudo consultar la preparación.");
-    });
+    obtenerEstadoInicial(token, control.signal)
+      .then(setEstado)
+      .catch((fallo: unknown) => {
+        if (control.signal.aborted) return;
+        setError(fallo instanceof Error ? fallo.message : "No se pudo leer el estado.");
+      });
     return () => control.abort();
   }, [token]);
 
-  useEffect(() => {
-    if (!ejecucionId) return;
-    let activo = true;
-    const consultar = () => {
-      void obtenerEjecucion(token, String(ejecucionId)).then((dato) => {
-        if (activo) { setEjecucion(dato); setError(""); }
-        if (dato.estado === "COMPLETADA" || dato.estado === "FALLIDA") window.clearInterval(intervalo);
-      }).catch((fallo: unknown) => {
-        if (activo) setError(fallo instanceof Error ? fallo.message : "No se pudo consultar el entrenamiento.");
-      });
-    };
-    consultar();
-    const intervalo = window.setInterval(consultar, 5000);
-    return () => { activo = false; window.clearInterval(intervalo); };
-  }, [token, ejecucionId]);
+  const elegidos = Object.values(archivos).filter((archivo): archivo is File => archivo !== null);
+  const paso = informe ? 2 : vista ? 1 : 0;
 
-  async function subir(evento: FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-    if (!archivo) return;
-    if (archivo.size > MAX_CSV_BYTES) {
-      setError("El CSV supera el límite de 25 MB.");
+  function cambiarArchivo(clave: string, archivo: File | null) {
+    setArchivos((actual) => ({ ...actual, [clave]: archivo }));
+    setVista(null);
+    setInforme(null);
+    setError("");
+  }
+
+  function validarFechas(): string {
+    if (!objetivo || !referencia) return "Indica la fecha objetivo y la referencia de stock.";
+    if (referencia >= objetivo) return "La referencia de stock debe ser anterior a la fecha objetivo.";
+    return "";
+  }
+
+  async function pedirPrevia() {
+    const fallaFechas = validarFechas();
+    if (fallaFechas) {
+      setError(fallaFechas);
       return;
     }
-    setCargando(true); setError(""); setResultado(null); setEjecucion(null);
+    if (!elegidos.length) {
+      setError("Adjunta los archivos de la entrega.");
+      return;
+    }
+    setValidando(true);
+    setError("");
+    setInforme(null);
     try {
-      const dato = await cargarCsvPiloto(token, archivo);
-      setResultado(dato);
-      setEjecucionId(dato.ejecucion_id);
+      setVista(await pedirVistaPrevia(token, elegidos, objetivo, referencia));
     } catch (fallo) {
-      setError(fallo instanceof Error ? fallo.message : "No se pudo cargar el CSV.");
-    } finally { setCargando(false); }
+      setVista(null);
+      setError(fallo instanceof Error ? fallo.message : "No se pudo validar la entrega.");
+    } finally {
+      setValidando(false);
+    }
   }
 
-  async function reintentar() {
-    const version = resultado?.version_modelo ?? (typeof ejecucion?.datos_entrada.version_modelo === "string" ? ejecucion.datos_entrada.version_modelo : null);
-    if (!version) return;
-    setReintentando(true); setError("");
+  async function aceptar() {
+    if (!vista?.aceptable) return;
+    if (clave.trim().length < 3) {
+      setError("Escribe una clave de importación estable, por ejemplo primera-carga-1.");
+      return;
+    }
+    setConfirmando(true);
+    setError("");
     try {
-      const dato = await prepararModelo(token, version, `reintento-${version}-${crypto.randomUUID()}`);
-      setEjecucion(null);
-      setEjecucionId(dato.ejecucion_id);
+      const resultado = await confirmarCarga(token, elegidos, objetivo, referencia, clave.trim());
+      setInforme(resultado);
+      setEstado(await obtenerEstadoInicial(token));
     } catch (fallo) {
-      setError(fallo instanceof Error ? fallo.message : "No se pudo reintentar el entrenamiento.");
-    } finally { setReintentando(false); }
+      setError(fallo instanceof Error ? fallo.message : "No se pudo aceptar la carga.");
+    } finally {
+      setConfirmando(false);
+    }
   }
 
-  return <>
-    {!administrador && <EstadoPanel titulo="Solo para administradores" descripcion="La carga de ventas requiere una cuenta de Administrador." />}
-    {administrador && <section className="card">
-      <div className="section-heading"><div><h2>Cargar ventas del piloto bakery</h2><p>Selecciona el CSV original con columnas date, article y Quantity. El catálogo curado se agrega automáticamente.</p></div></div>
-      <form className="form-grid" onSubmit={(evento) => void subir(evento)}>
-        <label className="field field-full">Archivo CSV
-          <input type="file" accept=".csv,text/csv" required onChange={(evento) => { setArchivo(evento.target.files?.[0] ?? null); setError(""); }} />
-          <small>Máximo 25 MB. Repetir el mismo archivo no duplica ventas.</small>
-        </label>
-        <div className="form-actions field-full"><button className="button-primary" disabled={!archivo || cargando}>{cargando ? "Validando y cargando…" : "Cargar CSV y preparar modelo"}</button></div>
-      </form>
-    </section>}
-    {error && <div className="inline-error section-space" role="alert">{error}</div>}
-    {resultado && <section className="card section-space" aria-live="polite">
-      <h2>{resultado.repetida ? "Archivo ya cargado" : "Carga confirmada"}</h2>
-      <div className="fact"><span>Productos del catálogo</span><strong>{resultado.productos}</strong></div>
-      <div className="fact"><span>Líneas aceptadas</span><strong>{resultado.filas_aceptadas}</strong></div>
-      <div className="fact"><span>Ventas diarias nuevas</span><strong>{resultado.ventas_diarias_creadas}</strong></div>
-      <div className="fact"><span>Líneas negativas excluidas en esta carga</span><strong>{resultado.filas_negativas_excluidas}</strong></div>
-      <div className="fact"><span>Versión del modelo</span><strong>{resultado.version_modelo}</strong></div>
-      <div className="fact"><span>Preparación</span><strong>{ejecucion?.estado ?? resultado.estado_ejecucion}</strong></div>
-      {ejecucion?.mensaje_error && <p className="error-text">{ejecucion.mensaje_error}</p>}
-      <p className="helper-text"><Link href={`/automatizaciones/ejecuciones/${ejecucionId}`}>Ver ejecución #{ejecucionId}</Link> · <Link href="/pronosticos">Ver modelos</Link> · <Link href="/panel">Ver panel histórico</Link></p>
-      {ejecucion?.estado === "FALLIDA" && <button className="button-secondary" disabled={reintentando} onClick={() => void reintentar()}>{reintentando ? "Solicitando…" : "Reintentar preparación sin subir el CSV"}</button>}
-    </section>}
-    {!resultado && ejecucion && <section className="card section-space" aria-live="polite">
-      <h2>Preparación anterior</h2>
-      <p>Estado: <strong>{ejecucion.estado}</strong>. Puedes consultar el modelo sin volver a subir el archivo.</p>
-      {ejecucion.mensaje_error && <p className="error-text">{ejecucion.mensaje_error}</p>}
-      <p className="helper-text"><Link href={`/automatizaciones/ejecuciones/${ejecucion.id}`}>Ver ejecución #{ejecucion.id}</Link> · <Link href="/pronosticos">Ver modelos</Link> · <Link href="/panel">Ver panel histórico</Link></p>
-      {ejecucion.estado === "FALLIDA" && <button className="button-secondary" disabled={reintentando} onClick={() => void reintentar()}>{reintentando ? "Solicitando…" : "Reintentar preparación sin subir el CSV"}</button>}
-    </section>}
-    <section className="card section-space"><h2>Alcance de esta carga</h2><p>Este acceso carga el CSV del piloto y solicita el modelo. La primera inicialización completa con recetas, lotes y archivos Excel sigue en desarrollo.</p></section>
-  </>;
+  return (
+    <>
+      {estado ? <TarjetaEstado estado={estado} /> : null}
+
+      <section className="card main-card">
+        <div className="section-heading">
+          <div>
+            <h2>Asistente de primera carga</h2>
+            <p>
+              Los archivos se piden una sola vez. Después, PostgreSQL es la fuente de ventas y stock.
+            </p>
+          </div>
+        </div>
+
+        <PasosAsistente pasos={PASOS} actual={paso} />
+
+        {!administrador ? (
+          <EstadoPanel
+            tono="info"
+            titulo="Solo un administrador puede cargar"
+            descripcion="Puedes revisar el estado, pero la carga requiere rol de administrador."
+          />
+        ) : null}
+
+        <h3 className="section-space">Archivos</h3>
+        <div className="form-grid">
+          {RANURAS.map((ranura) => (
+            <CampoArchivo
+              key={ranura.clave}
+              id={`archivo-${ranura.clave}`}
+              etiqueta={ranura.etiqueta}
+              acepta=".csv,.xlsx"
+              ayuda={ranura.ayuda}
+              archivo={archivos[ranura.clave] ?? null}
+              onCambio={(archivo) => cambiarArchivo(ranura.clave, archivo)}
+              deshabilitado={!administrador}
+            />
+          ))}
+        </div>
+
+        <h3 className="section-space">Fechas del escenario</h3>
+        <div className="form-grid">
+          <CampoFecha
+            id="fecha-objetivo"
+            etiqueta="Fecha objetivo de la demo"
+            valor={objetivo}
+            onCambio={(valor) => { setObjetivo(valor); setVista(null); }}
+            ayuda="Debe caer en el tramo de prueba reservado. Para el piloto se propone 2022-08-24."
+            deshabilitado={!administrador}
+          />
+          <CampoFecha
+            id="fecha-referencia"
+            etiqueta="Referencia de stock"
+            valor={referencia}
+            onCambio={(valor) => { setReferencia(valor); setVista(null); }}
+            max={objetivo || undefined}
+            ayuda="Cierre simulado anterior al objetivo, por ejemplo 2022-08-23."
+            deshabilitado={!administrador}
+          />
+        </div>
+
+        {error ? <EstadoPanel tono="alerta" titulo="Revisa la entrega" descripcion={error} /> : null}
+
+        <div className="form-actions">
+          <BotonEnviar
+            type="button"
+            enviando={validando}
+            textoEnviando="Validando…"
+            deshabilitado={!administrador}
+            onClick={pedirPrevia}
+          >
+            Validar y ver vista previa
+          </BotonEnviar>
+        </div>
+      </section>
+
+      {vista ? (
+        <section className="card">
+          <div className="section-heading">
+            <div>
+              <h2>Vista previa</h2>
+              <p>Nada se ha guardado todavía.</p>
+            </div>
+            <span className={`badge badge-${vista.aceptable ? "ok" : "alerta"}`}>
+              {vista.aceptable ? "Lista para aceptar" : `${vista.total_errores} problemas`}
+            </span>
+          </div>
+
+          {vista.aceptable ? <ResumenVistaPrevia vista={vista} /> : null}
+          <ResumenErrores titulo="La entrega no se puede aceptar" errores={vista.errores} />
+
+          {vista.aceptable && !informe ? (
+            <>
+              <h3 className="section-space">Aceptar la carga</h3>
+              <div className="form-grid">
+                <CampoTexto
+                  id="clave-importacion"
+                  etiqueta="Clave de importación"
+                  valor={clave}
+                  onCambio={setClave}
+                  ayuda="Estable: repetirla con los mismos archivos no vuelve a cargar."
+                  ancho="completo"
+                />
+              </div>
+              <div className="form-actions">
+                <BotonEnviar
+                  type="button"
+                  enviando={confirmando}
+                  textoEnviando="Cargando…"
+                  deshabilitado={!administrador}
+                  onClick={aceptar}
+                >
+                  Aceptar y cargar
+                </BotonEnviar>
+              </div>
+            </>
+          ) : null}
+        </section>
+      ) : null}
+
+      {informe ? (
+        <section className="card">
+          <div className="section-heading">
+            <div>
+              <h2>Resultado de la carga</h2>
+              <p>Huella de la solicitud registrada para reconocer un reintento idéntico.</p>
+            </div>
+          </div>
+          <InformeFinal informe={informe} />
+        </section>
+      ) : null}
+    </>
+  );
 }
 
-export default function InicializacionPage() {
-  return <ProtectedShell titulo="Cargar CSV piloto" descripcion="Carga las ventas históricas y prepara el modelo desde FoodSave.">{({ token, perfil }) => <CargaPiloto token={token} administrador={perfil.rol === "ADMINISTRADOR"} />}</ProtectedShell>;
+export default function PaginaInicializacion() {
+  return (
+    <ProtectedShell
+      titulo="Primera carga"
+      descripcion="Asistente de inicialización: valida los archivos, muestra la vista previa y acepta la carga."
+    >
+      {(contexto) => <Contenido contexto={contexto} />}
+    </ProtectedShell>
+  );
 }

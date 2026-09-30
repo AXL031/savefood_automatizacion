@@ -12,5 +12,5 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-start "" "http://localhost:3000/inicializacion"
+start "" "http://localhost:3000/inicializacion/piloto"
 echo FoodSave esta abierto. Puedes cerrar esta ventana.

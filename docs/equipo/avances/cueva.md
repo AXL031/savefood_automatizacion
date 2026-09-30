@@ -7,10 +7,10 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 ## Resumen vigente
 
 - **Estado:** A01–A04 implementados localmente y listos para integrar. Ningún bloque se declara integrado hasta que su consumidor pruebe la frontera; el arranque de A04 aún requiere repetición por un compañero en otra PC y ejecución remota de CI.
-- **Comportamiento disponible:** A01 ofrece identidad, roles, error uniforme y configuración del modo de pedidos. A02 guarda programaciones y ejecuciones idempotentes. A03 agrega Beat cada 30 segundos, despacho durable con token/lease, ejecución transaccional de efectos locales y reintentos internos. A04 deja Compose con migración automática, imagen backend con dependencias ML, volumen persistente compartido entre worker y API, token Telegram opcional, CI ampliado e `iniciar-foodsave.cmd` para arranques posteriores sin recompilar. La cadena hasta `0003_pronosticos` está aplicada en PostgreSQL local.
+- **Comportamiento disponible:** A01 ofrece identidad, roles, error uniforme y configuración del modo de pedidos. A02 guarda programaciones y ejecuciones idempotentes. A03 agrega Beat cada 30 segundos, despacho durable con token/lease, ejecución transaccional de efectos locales y reintentos internos. A04 deja Compose con migración automática, imagen backend con dependencias ML, volumen persistente compartido entre worker y API, token Telegram opcional, CI ampliado e `iniciar-foodsave.cmd` para arranques posteriores sin recompilar. La cadena hasta `0004_e03_inicializacion` está aplicada en PostgreSQL local.
 - **Contrato disponible:** [A01–A03 en contratos HTTP e internos](../../api/contratos.md), [rutas disponibles](../../api/rutas-api.md), [arranque A04](../arranque-modulos.md), `obtener_modo_envio_pedidos(sesion)`, `automatizaciones.servicio` (`crear_o_recuperar_ejecucion`, `programar_ejecucion`, `iniciar_intento`, `finalizar_intento`), `workers.tasks.manejadores` (`ContextoEjecucion`, `MANEJADORES`) y `MODEL_ARTIFACT_DIR=/code/model_artifacts`.
 - **Entrega a consumidores:** Edu puede reservar preparación en su transacción de carga; Kevin recibe runtime CatBoost y volumen para escribir/verificar el modelo; Vera puede programar evaluación tras un ajuste; Max y Aguirre pueden usar claves/trazas y registrar manejadores al entregar servicios públicos. Aguirre recibe `TELEGRAM_BOT_TOKEN` opcional en API/worker, pero es dueño del canal, destino, estados y pruebas. Todos pueden continuar; cada consumidor prueba su frontera antes de declarar integración.
-- **Bloqueos:** Docker/Compose, migraciones, carga E01 parcial y tareas ML ya pasaron en esta PC. Faltan E03 completo de Edu, consumo M02 de Max, Telegram de Aguirre, CI remoto y repetición del arranque por otro integrante.
+- **Bloqueos:** Docker/Compose, migraciones, carga E01 y tareas ML ya pasaron en esta PC. Faltan los servicios M01/V01 para completar E03, consumo M02 de Max, Telegram de Aguirre, CI remoto y repetición del arranque por otro integrante.
 - **Siguiente paso:** probar la frontera E03/M02 con los responsables y repetir [la guía de arranque](../arranque-modulos.md) en otra computadora.
 
 | Tarea | Estado de seguimiento |
@@ -21,6 +21,15 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### A04 · Integración local de primera carga y CSV piloto
+
+- **Fecha y autor:** 2026-09-29 (America/Lima), Codex a solicitud de Axel Cueva; coordinación de integración, sin atribuir el código de Edu o Kevin a Axel.
+- **Estado y tareas:** integración local de A04 con E02–E04 y K01; verificada la migración y conservación de datos en PostgreSQL/Docker.
+- **Comportamiento:** se conserva el asistente completo de Sánchez en `/inicializacion` y la carga rápida del CSV bakery en `/inicializacion/piloto`. El iniciador abre la ruta piloto. La carga rápida conserva la importación idempotente y la reserva de `PREPARAR_MODELO` con política `q65v2`; el asistente completo deja `PENDIENTE` mientras no existan las integraciones de Max y Vera.
+- **Archivos y contrato:** `backend/app/principal.py`, `backend/app/modules/inicializacion/piloto.py`, `frontend/src/app/inicializacion/piloto/page.tsx`, `iniciar-foodsave.cmd`; [contratos](../../api/contratos.md), [avance de Edu](sanchez.md) y [avance de Kevin](bohorquez.md).
+- **Migración/configuración:** `0004_e03_inicializacion` se añade sin reescribir migraciones existentes; los volúmenes Docker y `.env` se conservan.
+- **Pruebas:** 79 correctas, 8 omitidas y 6 subpruebas correctas en Python local (evaluación que requiere CatBoost local excluida); `npm run typecheck` y `npm run build` correctos. Docker aplicó `0004_e03_inicializacion`; 139 productos, 27 740 ventas y 2 modelos se conservaron. Catálogo de 139 SKU hallado en `/code`, rutas API presentes y páginas `/inicializacion` y `/inicializacion/piloto` respondieron 200. **Siguiente paso:** Max y Vera conectan sus servicios; Axel hará el push. Todavía no hay PR de este merge.
 
 ### A04 · Inicio rápido local y comprobación de Compose
 

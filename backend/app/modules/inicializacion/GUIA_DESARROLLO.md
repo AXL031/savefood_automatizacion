@@ -17,9 +17,20 @@
 
 ## Punto de partida
 
-`rutas.py` expone `POST /inicializacion/piloto-bakery` para recibir el CSV bakery desde la web, con límite de 25 MB y permisos de Administrador. Coordina catálogo, ventas y reserva `PREPARAR_MODELO` en la misma sesión; confirma una sola vez y borra el archivo temporal. Es un corte parcial E02/E03. El asistente completo con Excel, recetas, stock y `configuracion_inicial` sigue pendiente. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
+**E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa sigue sin prueba final por depender de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
 
-La versión de entrenamiento del piloto incluye `q65v2`. Repetir el mismo CSV no duplica ventas; al pasar de la versión anterior a `q65v2`, reserva una preparación nueva con otra clave y conserva las corridas anteriores.
+| Archivo | Responsabilidad |
+|---|---|
+| `lectores.py` | Lee los dos XLSX o los cinco CSV con encabezados exactos y calcula las huellas. No interpreta tipos. |
+| `adaptador_bakery.py` | Convierte el CSV de tickets del piloto a la forma diaria del contrato, validando contra la lista curada. |
+| `validacion.py` | Reúne todos los errores por archivo y fila. Un error rechaza el lote completo. |
+| `modelos.py` | Fila única `configuracion_inicial` con sus cinco estados. |
+| `puertos.py` | `ServicioRecetas` (Max) y `ServicioInventario` (Vera), invocados con la misma sesión. |
+| `servicio.py` | Vista previa sin escritura, carga atómica y transiciones de estado. |
+| `rutas.py` | `GET /inicializacion/estado`, `POST /inicializacion/vista-previa` y `POST /inicializacion/confirmar`. |
+| `piloto.py` | Carga rápida del CSV bakery en `POST /inicializacion/piloto-bakery` y reserva `PREPARAR_MODELO`; flujo separado del asistente completo. |
+
+Migración `0004_e03_inicializacion`, sucesora de `0003_pronosticos`. Mientras falten los servicios de Max y Vera, la carga persiste catálogo y ventas y deja el estado en `PENDIENTE`: una carga parcial **no** declara la instalación inicializada. El CSV piloto usa su propio contrato y no altera esta fila. La lista curada se localiza desde el repositorio o `/code` en Docker.
 
 ## Trabajo en esta carpeta
 

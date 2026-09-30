@@ -75,3 +75,53 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
   if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "La API no devolvió datos.");
   return body.datos;
 }
+
+/**
+ * Envía un formulario multipart, para subir los archivos de la primera carga.
+ *
+ * No se fija `Content-Type`: el navegador lo completa con el `boundary`. Se
+ * comparte el mismo manejo de sobre y de error que `solicitar`.
+ */
+export async function enviarFormulario<T>(
+  ruta: string,
+  formulario: FormData,
+  opciones: { token?: string; signal?: AbortSignal } = {},
+): Promise<T> {
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(`${baseUrl}/api/v1${ruta}`, {
+      method: "POST",
+      headers: opciones.token ? { Authorization: `Bearer ${opciones.token}` } : undefined,
+      body: formulario,
+      signal: opciones.signal,
+      cache: "no-store",
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") throw error;
+    throw new HttpError(0, "No se pudo conectar con la API local.");
+  }
+
+  const texto = await respuesta.text();
+  let body: ApiEnvelope<T> | ApiErrorBody | null = null;
+  if (texto) {
+    try {
+      body = JSON.parse(texto) as ApiEnvelope<T> | ApiErrorBody;
+    } catch {
+      throw new HttpError(respuesta.status, "La API devolvió una respuesta inválida.");
+    }
+  }
+  if (!respuesta.ok) {
+    if (respuesta.status === 401 && opciones.token && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("foodsave:sesion-vencida"));
+    }
+    const errorBody = body as ApiErrorBody | null;
+    throw new HttpError(
+      respuesta.status,
+      mensajeError(errorBody, respuesta.status),
+      errorBody?.error?.codigo,
+      errorBody?.error?.detalles ?? [],
+    );
+  }
+  if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "La API no devolvió datos.");
+  return body.datos;
+}

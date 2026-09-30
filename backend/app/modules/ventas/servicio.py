@@ -97,10 +97,50 @@ def importar_bakery(sesion: Session, csv_path: Path, clave_importacion: str) -> 
             diarios[(skus[sku], fecha)] += int(cantidad)
             aceptadas += 1
 
+    resultado = registrar_ventas_diarias(
+        sesion,
+        diarios,
+        clave_importacion=clave_importacion,
+        huella_contenido=huella,
+        filas_aceptadas=aceptadas,
+        motivo="Carga inicial bakery",
+    )
+    return ResultadoImportacion(
+        resultado.importacion_id, aceptadas, negativas, resultado.ventas_diarias
+    )
+
+
+def registrar_ventas_diarias(
+    sesion: Session,
+    diarios: dict[tuple[int, date], int],
+    clave_importacion: str,
+    huella_contenido: str,
+    filas_aceptadas: int,
+    motivo: str,
+    origen: str = ORIGEN_BAKERY,
+) -> ResultadoImportacion:
+    """Persiste ventas ya agregadas por producto y fecha, sin hacer commit.
+
+    `diarios` llega agregado: esta función no interpreta archivos. La usa tanto la
+    carga del piloto como el asistente de primera carga, para que ambos caminos
+    compartan una sola escritura y las mismas reglas de idempotencia.
+    """
+    if not clave_importacion or len(clave_importacion) > 128:
+        raise ErrorAPI(422, "CLAVE_INVALIDA", "La clave de importación debe tener entre 1 y 128 caracteres.")
     if not diarios:
         raise ErrorAPI(422, "VENTAS_VACIAS", "No hay ventas aceptadas.")
     if any(unidades > 2_147_483_647 for unidades in diarios.values()):
         raise ErrorAPI(422, "VENTA_INVALIDA", "Una suma diaria excede el límite de unidades.")
+
+    anterior = sesion.scalar(select(ImportacionVenta).where(
+        ImportacionVenta.origen == origen,
+        ImportacionVenta.clave_importacion == clave_importacion,
+    ))
+    if anterior is not None:
+        if anterior.huella_contenido != huella_contenido:
+            raise ErrorAPI(409, "CLAVE_REUTILIZADA", "La clave ya corresponde a otro archivo de ventas.")
+        return ResultadoImportacion(anterior.id, anterior.filas_aceptadas, 0, 0)
+
     ids = {producto_id for producto_id, _ in diarios}
     fechas = [fecha for _, fecha in diarios]
     duplicada = sesion.scalar(select(VentaDiaria.id).where(
@@ -111,8 +151,8 @@ def importar_bakery(sesion: Session, csv_path: Path, clave_importacion: str) -> 
         raise ErrorAPI(409, "VENTA_DUPLICADA", "Ya existen ventas en el periodo de esta importación.")
 
     registro = ImportacionVenta(
-        origen=ORIGEN_BAKERY, clave_importacion=clave_importacion,
-        huella_contenido=huella, filas_aceptadas=aceptadas, estado="COMPLETADA",
+        origen=origen, clave_importacion=clave_importacion,
+        huella_contenido=huella_contenido, filas_aceptadas=filas_aceptadas, estado="COMPLETADA",
     )
     sesion.add(registro)
     sesion.flush()
@@ -127,11 +167,11 @@ def importar_bakery(sesion: Session, csv_path: Path, clave_importacion: str) -> 
         ventas = sesion.execute(insert(VentaDiaria).returning(VentaDiaria.id, VentaDiaria.unidades_vendidas), valores)
         revisiones = [
             {"venta_id": venta_id, "numero_revision": 1, "unidades_vendidas": unidades,
-             "origen_cambio": "IMPORTACION", "motivo": "Carga inicial bakery", "importacion_id": registro.id}
+             "origen_cambio": "IMPORTACION", "motivo": motivo, "importacion_id": registro.id}
             for venta_id, unidades in ventas
         ]
         sesion.execute(insert(RevisionVenta), revisiones)
-    return ResultadoImportacion(registro.id, aceptadas, negativas, len(diarios))
+    return ResultadoImportacion(registro.id, filas_aceptadas, 0, len(diarios))
 
 
 def leer_historial(sesion: Session, producto_ids: list[int], inicio: date, fin_exclusivo: date) -> list[VentaHistorica]:
