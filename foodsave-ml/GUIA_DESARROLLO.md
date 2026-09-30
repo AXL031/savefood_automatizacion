@@ -22,7 +22,7 @@ Herramientas disponibles en la carpeta:
 - `particion.py`: cálculo de cortes temporales según `POLITICA_EVALUACION.md` (6, 12 o 24 meses).
 - `features.py`: construcción de vector de 13 variables contractuales en orden estricto.
 - `ventanas.py`: lags y agregaciones por días calendario sin imputar ceros en ausencias.
-- `artefacto.py`: entrenamiento con `Quantile:alpha=0.65` y guardado atómico del CBM.
+- `artefacto.py`: entrenamiento y selección de la mejor iteración con `Quantile:alpha=0.65`, más guardado atómico del CBM. El MAE sigue como métrica descriptiva, no como criterio de parada para este objetivo asimétrico.
 - `metadata.py`: validación de campos, hash SHA-256, orden de variables y par comercio/sucursal.
 - `verificar_artefacto.py`: CLI para verificar la integridad del artefacto antes de su uso.
 - `metricas.py`: cálculo estricto de MAE, WAPE (None si suma real es cero), ±20%, ±10% y cobertura.
@@ -33,7 +33,7 @@ El backtest CLI aplica `productos_entrenados` y `min_observaciones_previas_28_di
 
 Coordinación: Kevin coordina la carpeta y su lógica de pronósticos; `normalizar_ventas.py` corresponde a Edu por su frontera de importación de archivos.
 
-**Infraestructura transversal A04 de Axel:** Compose comparte `MODEL_ARTIFACT_DIR` entre worker (escritura) y API (solo lectura). Las herramientas de Kevin escriben y leen el artefacto CBM y sus metadatos en este volumen. El adaptador en `backend/app/modules/pronosticos/entrenamiento.py` exporta desde ventas persistidas el CSV canónico temporal, entrena el modelo versionado y encola el backtest. El flujo E01→K01→K03 se probó localmente con el CSV piloto y SQLite; falta probar PostgreSQL/Compose.
+**Infraestructura transversal A04 de Axel:** Compose comparte `MODEL_ARTIFACT_DIR` entre worker (escritura) y API (solo lectura). Las herramientas de Kevin escriben y leen el artefacto CBM y sus metadatos en este volumen. El adaptador en `backend/app/modules/pronosticos/entrenamiento.py` exporta desde ventas persistidas el CSV canónico temporal, entrena el modelo versionado y encola el backtest. El flujo E01→K01→K03 se probó con el CSV piloto en SQLite y PostgreSQL/Compose; la carga E03 completa y el consumo M02 siguen pendientes.
 
 ## Comandos de desarrollo
 

@@ -19,6 +19,8 @@
 
 `rutas.py` expone `POST /inicializacion/piloto-bakery` para recibir el CSV bakery desde la web, con límite de 25 MB y permisos de Administrador. Coordina catálogo, ventas y reserva `PREPARAR_MODELO` en la misma sesión; confirma una sola vez y borra el archivo temporal. Es un corte parcial E02/E03. El asistente completo con Excel, recetas, stock y `configuracion_inicial` sigue pendiente. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
+La versión de entrenamiento del piloto incluye `q65v2`. Repetir el mismo CSV no duplica ventas; al pasar de la versión anterior a `q65v2`, reserva una preparación nueva con otra clave y conserva las corridas anteriores.
+
 ## Trabajo en esta carpeta
 
 1. Validar dos XLSX o cinco CSV con errores por archivo/hoja/fila y vista previa.

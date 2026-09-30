@@ -7,7 +7,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 ## Resumen vigente
 
 - **Estado:** E01 verificado con el CSV piloto en PostgreSQL; E02/E03 tienen un corte web parcial que carga el CSV bakery y reserva el entrenamiento en la misma transacción. El asistente completo y E04 siguen pendientes.
-- **Punto de partida alcanzado:** Catálogo bakery desde la lista curada, mapeo de 139 SKU, carga agregada de 27 740 ventas diarias, revisiones y lectura temporal pública sin inferir ceros ausentes. La página `/inicializacion` sube el CSV y muestra ejecución, con reintento ML; no hay XLSX, recetas, stock inicial ni API general de ventas.
+- **Punto de partida alcanzado:** Catálogo bakery desde la lista curada, mapeo de 139 SKU, carga agregada de 27 740 ventas diarias, revisiones y lectura temporal pública sin inferir ceros ausentes. La página `/inicializacion` sube el CSV y muestra ejecución, con reintento ML; la versión nueva `q65v2` permite entrenar el modelo corregido sin duplicar ventas. No hay XLSX, recetas, stock inicial ni API general de ventas.
 - **Contrato disponible:** [contrato de servicios E01](../../api/contratos.md#inicialización--ventas-y-catálogo) y [esquema objetivo](../../base_de_datos/esquema-objetivo-mvp.md).
 - **Entrega a consumidores:** Kevin usa `listar_skus_bakery`, `nombres_productos`, `limites_historial` y `leer_historial`; la carga web en PostgreSQL disparó K01/K03 y produjo 92 corridas y 4 047 evaluaciones. Max y Vera aún deben entregar recetas y apertura de lotes para la primera inicialización completa.
 - **Bloqueos:** el corte web solo acepta CSV bakery; falta validar dos XLSX o cinco CSV, orquestar Max/Vera, guardar `configuracion_inicial` y entregar ventas/productos generales.
@@ -21,6 +21,19 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | E04 · Entregar pantallas y piezas comunes | PENDIENTE DE VERIFICAR / COMPLETAR |
 
 ## Bitácora
+
+### E03 parcial · Versión nueva del entrenamiento del CSV piloto
+
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
+- **Autor y responsable del bloque:** Codex por solicitud de Axel, editando la frontera de Edu Sanchez con el modelo de Kevin; no atribuye el cambio a Edu.
+- **Tareas y estado:** E03 parcial, EN_CURSO; primera inicialización completa pendiente.
+- **Comportamiento disponible:** la ruta del CSV genera `piloto-q65v2-<huella>` y otra clave de `PREPARAR_MODELO` para aplicar la corrección de Kevin. La misma importación de ventas se recupera; versiones y evaluaciones anteriores permanecen. El sistema ya entrenó y evaluó esa nueva versión en PostgreSQL sin volver a cargar ventas.
+- **Archivos clave:** `backend/app/modules/inicializacion/rutas.py`, `backend/tests/integration/test_carga_csv_piloto.py`, [cambio de Kevin](bohorquez.md).
+- **Contrato/ejemplo:** repetir el CSV anterior devuelve `repetida=true`, sin crear ventas nuevas, y usa la ejecución de `piloto-q65v2-*` dentro de la política actual; ver [contrato](../../api/contrato-importaciones.md#acceso-rápido-del-piloto-implementado).
+- **Configuración/migraciones:** ninguna nueva; no se reescribieron las migraciones ni se borraron datos.
+- **Pruebas ejecutadas:** test de carga web 2 passed; suite backend 27 passed, 8 skipped, 6 subtests passed. La preparación y el backtest de la nueva versión terminaron en Compose con 4 047 pares evaluables; falta el recorrido E03 completo.
+- **Dependencias y siguiente paso:** Edu completa asistente XLSX/CSV, estado de inicialización y servicios de Max/Vera; Kevin mantiene la política y sus versiones.
+- **Commit/PR:** commit local de `cueva`; push pendiente por Axel.
 
 ### E01–E03 · Carga web del CSV piloto y preparación real en PostgreSQL
 

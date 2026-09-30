@@ -18,6 +18,8 @@ from app.modules.ventas.servicio import importar_bakery
 router = APIRouter(prefix="/inicializacion", tags=["inicializacion"])
 MAX_CSV_BYTES = 25 * 1024 * 1024
 CATALOGO = "lista_productos_precios_limpia.md"
+# Incrementar al cambiar el entrenamiento en foodsave-ml/artefacto.py.
+VERSION_POLITICA_MODELO = "q65v2"
 
 
 def _catalogo_piloto() -> Path:
@@ -56,9 +58,9 @@ def cargar_piloto_bakery(
         huella = digest.hexdigest()
         productos = cargar_catalogo_bakery(sesion, _catalogo_piloto())
         resultado = importar_bakery(sesion, temporal, f"piloto-bakery-{huella[:24]}")
-        version = f"piloto-{huella[:12]}"
+        version = f"piloto-{VERSION_POLITICA_MODELO}-{huella[:12]}"
         ejecucion = crear_o_recuperar_ejecucion(
-            sesion, "PREPARAR_MODELO", f"modelo-piloto-{huella[:24]}",
+            sesion, "PREPARAR_MODELO", f"modelo-{version}",
             {"version_modelo": version},
         )
         sesion.commit()

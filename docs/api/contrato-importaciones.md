@@ -8,6 +8,8 @@
 
 El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo temporal que se borra al terminar la solicitud. Este acceso es solo para el dataset bakery y no establece el estado de primera inicialización completa.
 
+`version_modelo` incorpora la política de entrenamiento (`piloto-q65v2-<huella>`). Una nueva política puede reservar otra preparación para el mismo archivo sin repetir las ventas; la idempotencia de ejecución aplica dentro de cada versión. Las versiones y evaluaciones anteriores se conservan.
+
 ## Entrega
 
 - Preferida: `ventas.xlsx` con hoja `ventas` y `catalogo.xlsx` con hojas `productos`, `ingredientes`, `recetas`, `stock_inicial`.

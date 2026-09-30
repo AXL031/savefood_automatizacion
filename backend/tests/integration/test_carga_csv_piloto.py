@@ -68,7 +68,7 @@ def _subir(cliente, cabecera, contenido):
                         files={"archivo": ("ventas.csv", contenido, "text/csv")})
 
 
-def test_carga_web_idempotente_y_entrenamiento_reservado(entorno):
+def test_carga_web_idempotente_y_entrenamiento_reservado(entorno, monkeypatch):
     cliente, motor = entorno
     contenido = b"date,article,Quantity\n2022-08-21,BAGUETTE,2.0\n2022-08-21,BAGUETTE,3.0\n"
     assert _subir(cliente, {}, contenido).status_code == 401
@@ -80,14 +80,21 @@ def test_carga_web_idempotente_y_entrenamiento_reservado(entorno):
     datos = primera.json()["datos"]
     assert (datos["productos"], datos["filas_aceptadas"], datos["ventas_diarias_creadas"]) == (1, 2, 1)
     assert datos["repetida"] is False
+    assert datos["version_modelo"].startswith("piloto-q65v2-")
     segunda = _subir(cliente, admin, contenido)
     assert segunda.status_code == 202
     assert segunda.json()["datos"]["repetida"] is True
     assert segunda.json()["datos"]["ejecucion_id"] == datos["ejecucion_id"]
+    monkeypatch.setattr(rutas, "VERSION_POLITICA_MODELO", "q65v3")
+    nueva_politica = _subir(cliente, admin, contenido)
+    assert nueva_politica.status_code == 202
+    assert nueva_politica.json()["datos"]["repetida"] is True
+    assert nueva_politica.json()["datos"]["importacion_id"] == datos["importacion_id"]
+    assert nueva_politica.json()["datos"]["ejecucion_id"] != datos["ejecucion_id"]
     with Session(motor) as sesion:
         assert sesion.scalar(select(func.count()).select_from(Producto)) == 1
         assert sesion.scalar(select(func.count()).select_from(VentaDiaria)) == 1
-        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 1
+        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 2
 
 
 def test_error_csv_no_confirma_catalogo_ni_ventas(entorno):

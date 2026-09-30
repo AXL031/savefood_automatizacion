@@ -7,7 +7,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 ## Resumen vigente
 
 - **Estado:** K01–K04 implementados y listos para integrar en el prototipo local; no se declara integración con el plan de Max ni con la inicialización E03.
-- **Punto de partida alcanzado:** Entrenamiento desde historial E01, artefacto CBM versionado y verificado, inferencia persistida con 13 características temporales, backtest por fecha/revisión, API protegida y panel histórico. El CSV piloto ya pasó en SQLite y PostgreSQL/Compose: 139 productos, 92 corridas canónicas y 4 047 pares evaluables.
+- **Punto de partida alcanzado:** Entrenamiento desde historial E01, artefacto CBM versionado y verificado, inferencia persistida con 13 características temporales, backtest por fecha/revisión, API protegida y panel histórico. El piloto tiene una versión nueva `piloto-q65v2-*` que selecciona iteración con el mismo cuantil 0.65 usado para entrenar. En PostgreSQL/Compose, 4 047 pares evaluables dieron 66 de 90 días con total pronosticado superior al real; la versión anterior se conserva para comparación.
 - **Contrato disponible:** [artefacto ML](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md), [API y servicios](../../api/contratos.md#ventas--pronósticos) y [política de evaluación](../../../foodsave-ml/POLITICA_EVALUACION.md).
 - **Entrega a consumidores:** `generar_corrida`/`obtener_pronosticos` y `solicitar_evaluacion_corrida` reciben la sesión del plan sin confirmarla; API `/pronosticos/*`, páginas `/pronosticos` y `/panel`, y adaptadores A03 para preparación/evaluación.
 - **Bloqueos:** el CSV piloto ya dispara preparación y evaluación desde la carga web parcial de Edu; falta E03 completo y que Max consuma la corrida en su plan. No se ha probado el flujo plan/pedido.
@@ -21,6 +21,19 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; API respondió en PostgreSQL y frontend compiló |
 
 ## Bitácora
+
+### K01/K03 · Preferencia moderada por pronóstico superior
+
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
+- **Autor y responsable del bloque:** Codex por solicitud de Axel, trabajando en el bloque de Kevin Bohorquez; no atribuye esta corrección a Kevin.
+- **Tareas y estado:** K01/K03, LISTO_PARA_INTEGRAR para el piloto histórico; calidad futura sin validar.
+- **Comportamiento disponible:** `artefacto.py` conserva `Quantile:alpha=0.65` y usa la misma pérdida como `eval_metric` para escoger la iteración. Antes usaba MAE para esa selección. Se entrenó la nueva versión `piloto-q65v2-554d4ae35f90`, se evaluó automáticamente y se conservó `piloto-554d4ae35f90` con sus corridas originales. La inferencia sigue redondeando, limitando a cero y excluyendo historial insuficiente/ventas ausentes como antes.
+- **Archivos clave:** `foodsave-ml/artefacto.py`, [experimento](../../../foodsave-ml/EXPERIMENTOS_CATBOOST.md), [contrato](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md), [versión desde la carga](sanchez.md).
+- **Contrato/ejemplo:** `PREPARAR_MODELO` con `version_modelo="piloto-q65v2-554d4ae35f90"` guarda otro CBM; `EVALUAR_MODELO` produce backtest de esa versión. El consumidor toma el último modelo `LISTO_DEMO` salvo que pida un `modelo_id` concreto.
+- **Configuración/migraciones:** sin migración; imágenes locales de API y worker reconstruidas, volumen y modelos anteriores conservados.
+- **Pruebas ejecutadas:** comparación de cuantiles 0.65, 0.7, 0.72, 0.75, 0.8, 0.85 y 0.9 con selección cuantílica en validación. La nueva versión real en PostgreSQL completó `PREPARAR_MODELO` y `EVALUAR_MODELO`: 92 corridas, 4 047 pares evaluables, MAE 4.448 y WAPE 24.20%. En los 90 días evaluables, el total quedó por debajo 24 veces y por encima 66, frente a 52/38 en la versión anterior; faltantes 6 840 frente a 14 940 y sobrantes 11 161 frente a 9 410. Suite backend: 27 passed, 8 skipped, 6 subtests passed. La prueba julio–septiembre 2022 ya estaba inspeccionada y esta comparación es exploratoria, no una validación independiente.
+- **Dependencias y siguiente paso:** Max debe consumir una corrida de la versión elegida; Kevin debe comprobar días posteriores no usados para ajuste antes de afirmar calidad fuera del piloto y acordar el costo real entre faltantes y sobrantes con el negocio.
+- **Commit/PR:** commit local de `cueva`; push pendiente por Axel.
 
 ### K01/K03/K04 · Verificación del consumidor CSV en PostgreSQL
 
