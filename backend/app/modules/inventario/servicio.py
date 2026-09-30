@@ -150,12 +150,14 @@ def _aplicar(
             and lote_existente == lote.id
             and existente.tipo == tipo_movimiento
             and Decimal(existente.delta) == delta
+            and existente.motivo == motivo
+            and existente.efectivo_en_demo == efectivo_en_demo
         )
         if not mismo:
             raise ErrorAPI(
                 409,
                 "CLAVE_REUTILIZADA",
-                "La clave de operación ya se usó con otro lote, cantidad o tipo de movimiento.",
+                "La clave de operación ya se usó con otros parámetros del movimiento.",
             )
         return _resultado(existente, repetido=True)
 

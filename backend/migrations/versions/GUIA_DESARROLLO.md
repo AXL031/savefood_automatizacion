@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** Nuevas revisiones 0005_m01_ingredientes_recetas → 0006_v01_inventario → 0007_l01_proveedores sobre 0004. Las revisiones previamente aplicadas no se reescriben. Delta reversible probado en SQLite; cadena completa PostgreSQL se verifica en CI.
+
 Archivos técnicos observados al preparar esta guía: `0001_nucleo.py`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../../docs/equipo/avances/cueva.md) para el último estado.
 
 Axel coordina integración de revisiones; no asume las tablas de los seis.

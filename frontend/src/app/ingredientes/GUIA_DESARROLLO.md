@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** Pantalla /ingredientes disponible desde rojas; consulta y edición administrativas sobre API real, con unidad bloqueada cuando está en uso. Typecheck y build verificados en integración.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Max Rojas](../../../../docs/equipo/avances/rojas.md) para el último estado.
 
 ## Trabajo en esta carpeta

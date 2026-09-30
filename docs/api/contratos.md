@@ -301,3 +301,13 @@ Errores propios: `404 LOTE_NO_ENCONTRADO`, `409 SALDO_INSUFICIENTE`, `409 CLAVE_
 Migración `0006_v01_inventario`.
 
 Pendiente de V03: agendar `EVALUAR_PROMOCION` después de un ajuste de producto.
+
+## L01 integrado: proveedores y ofertas (30-09-2026)
+
+Migración `0007_l01_proveedores` sobre `0006_v01_inventario`. Código recibido de Aguirre y adaptado por coordinación de Axel: Base/sesión comunes, FK a ingrediente, permisos y sobre `datos`. `ServicioProveedores` hace flush, nunca commit; el llamador controla rollback/commit. `oferta_preferida_para_compras` es la consulta pública para Compras (consumidor L02 todavía pendiente).
+
+Lecturas con Bearer: GET `/proveedores`, GET `/proveedores/{id}/ofertas` y GET `/proveedores/ofertas/preferida/{ingrediente_id}`. Administrador: POST `/proveedores`, PATCH `/{id}/estado?activo=false`, PUT `/{id}/chat?chat_id=...`, POST `/{id}/verificar-destino`, POST `/{id}/ofertas`, POST `/ofertas/{id}/preferida` y PATCH `/ofertas/{id}/desactivar`, todas bajo `/proveedores` y `/api/v1`.
+
+Ejemplo de oferta: `{"ingrediente_id": 1, "descripcion": "Saco", "unidad_compra": "saco", "factor_conversion": "25000", "minimo": "0", "multiplo": "1", "preferida": true}`. Factor/múltiplo positivos y mínimo no negativo, hasta 14 dígitos y 4 decimales; ingrediente debe existir y estar activo. Una preferida activa por ingrediente está protegida por índice único parcial. Los nombres implementados `factor_conversion`, `minimo`, `multiplo`, `activa`, `chat_id_pruebas` corresponden respectivamente a los conceptos de diseño `factor_a_unidad_base`, `minimo_compra`, `multiplo_compra`, `activo`, `telegram_chat_id`; los consumidores usan los nombres del servicio publicado.
+
+Errores: 404 `REFERENCIA_NO_ENCONTRADA`/`OFERTA_NO_ENCONTRADA`, 409 `CONFLICTO_PROVEEDORES`, 422 validación común, 401 sin sesión y 403 Operador en escritura. La respuesta de consulta expone `compra_automatica_habilitada` y `motivo_bloqueo`; no crea ni envía pedidos. Sin adaptador Telegram la verificación retorna `verificado=false` y detalle explícito. L01 sigue parcial por canal/UI; L02–L04 no implementados por esta integración.

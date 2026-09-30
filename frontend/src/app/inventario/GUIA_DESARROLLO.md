@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** Pantalla /inventario disponible desde rojas; muestra disponibilidad por fecha, lotes, movimientos y ajuste explícito. Typecheck y build verificados. Promociones V03 siguen pendientes.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Leonardo Vera](../../../../docs/equipo/avances/vera.md) para el último estado.
 
 ## Trabajo en esta carpeta

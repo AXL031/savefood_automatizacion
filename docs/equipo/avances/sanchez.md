@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Frontera E02/E03 verificada (2026-09-30):** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo sigue pendiente.
+
 - **Estado:** E01 amplía API HTTP; E02 y E03 implementados con pruebas en SQLite; E04 entrega los primitivos compartidos y las tres pantallas propias. `0004_e03_inicializacion` ya se aplicó en PostgreSQL local; la carga completa depende de Max (M01) y Vera (V01).
 - **Punto de partida alcanzado:** lectores XLSX y CSV con encabezados exactos, adaptador del CSV de tickets del piloto, validación que reúne todos los errores por archivo y fila, vista previa que no escribe, carga atómica, estado durable `configuracion_inicial` con sus transiciones, y API de inicialización, productos y ventas.
 - **Contrato disponible:** [contrato de servicios E01–E03](../../api/contratos.md#inicialización--ventas-y-catálogo), [contrato de primera carga](../../api/contrato-importaciones.md) y [esquema objetivo](../../base_de_datos/esquema-objetivo-mvp.md).
@@ -21,6 +23,19 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | E04 · Entregar pantallas y piezas comunes | LISTO_PARA_INTEGRAR: primitivos compartidos, navegación y pantallas de carga, productos y ventas |
 
 ## Bitácora
+
+### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
+
+- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
+- **Comportamiento:** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo sigue pendiente.
+- **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).
+- **Ejemplo público:** POST autenticado `/api/v1/inicializacion/confirmar` con los cinco CSV y fechas válidas devuelve DATOS_CARGADOS; POST administrativo `/api/v1/proveedores/{id}/ofertas` exige ingrediente existente y conversión explícita. Servicios participantes hacen flush, el llamador confirma.
+- **Migraciones/configuración:** continuar desde 0004 con 0005→0006→0007; registrar todos los modelos, incluido ConfiguracionInicial. Revisiones previas conservadas. Para concurrencia activar V02_POSTGRES_TEST=1 sobre esquema de pruebas aislado; no habilitar Telegram ni cambiar modo automático.
+- **Pruebas realmente ejecutadas:** `.venv/Scripts/python.exe -m pytest backend/tests foodsave-ml/tests -q` → 112 passed, 10 skipped (8 A03 y 2 V02 por PostgreSQL/Redis), 6 subtests passed. `npm run typecheck` y `npm run build` correctos. Delta 0004→0007 arriba/abajo/arriba y comparación de metadatos en SQLite correctos; el índice de expresión del núcleo no se puede reflejar en SQLite. Docker Desktop no logró arrancar; CI incorpora alembic check y concurrencia V02. No se ejecutaron envíos externos.
+- **Dependencias y siguiente paso:** revisión de la entrega conjunta y CI PostgreSQL; después integrar a main. Max continúa M02/M03; Aguirre completa adaptador/UI L01 y L02–L04; Vera V03; Edu/Kevin/Axel conectan ML desde asistente completo.
+- **Commit/PR:** cambios locales en cueva; publicación de PR de integración pendiente.
+
 
 ### E03 parcial · Versión nueva del entrenamiento del CSV piloto
 

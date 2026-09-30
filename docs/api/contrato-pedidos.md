@@ -1,6 +1,6 @@
 # Contrato de pedidos derivados del pronóstico
 
-**Estado:** diseño para implementar, sin rutas ni tablas existentes. Rige [ADR-008](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md). El canal de la demo es Telegram real dirigido a un chat de pruebas propio; el mensaje se rotula «demostración, no surtir» porque la fecha de pronóstico es histórica.
+**Estado:** proveedores/ofertas L01 tienen tablas y API parcial (ver [contrato implementado](contratos.md#l01-integrado-proveedores-y-ofertas-30-09-2026)); pedidos, aprobación y adaptador Telegram real siguen como diseño pendiente. Rige [ADR-008](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md). El canal de la demo es Telegram real dirigido a un chat de pruebas propio; el mensaje se rotula «demostración, no surtir» porque la fecha de pronóstico es histórica.
 
 ## Origen y cálculo
 

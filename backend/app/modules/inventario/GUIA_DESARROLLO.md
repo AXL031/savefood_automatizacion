@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** V01/V02 disponibles desde entrega delegada de Rojas: apertura, lectura, caducidad, cero conocido y ajustes. Migración 0006; misma clave compara lote, delta, tipo, motivo y hora. SQLite no acredita bloqueo concurrente; V02_POSTGRES_TEST=1 verifica PostgreSQL en esquema aislado. V03 pendiente.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Leonardo Vera](../../../../docs/equipo/avances/vera.md) para el último estado.
 
 ## Trabajo en esta carpeta

@@ -17,6 +17,7 @@ from app.modules.productos.rutas import router as productos_router
 from app.modules.pronosticos.rutas import router as pronosticos_router
 from app.modules.recetas.rutas import router as recetas_router
 from app.modules.ventas.rutas import router as ventas_router
+from app.modules.proveedores.rutas import router as proveedores_router
 
 app = FastAPI(title="FoodSave API", version="0.1.0")
 
@@ -42,6 +43,7 @@ app.include_router(pronosticos_router, prefix="/api/v1")
 app.include_router(ingredientes_router, prefix="/api/v1")
 app.include_router(recetas_router, prefix="/api/v1")
 app.include_router(inventario_router, prefix="/api/v1")
+app.include_router(proveedores_router, prefix="/api/v1")
 
 
 @app.get("/salud")

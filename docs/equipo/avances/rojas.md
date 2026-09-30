@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Coordinación verificada (2026-09-30):** Codex para Axel concilió M01 y la entrega delegada V01/V02 con main en `cueva`. Reconstruyó las migraciones 0005/0006 a partir de los modelos publicados (no estaban en origin/rojas). Carga completa real, rollback de stock, versiones y migraciones delta verificadas en SQLite; PostgreSQL pendiente de CI. M02–M04 siguen pendientes; no se atribuye este trabajo de coordinación a Max.
+
 - **Estado:** M01 `LISTO_PARA_INTEGRAR`. M02–M04 pendientes. Además se implementaron V01 y V02 por encargo de Leonardo Vera (ver [vera.md](vera.md)).
 - **Disponible:** catálogo de ingredientes con unidad base, recetas versionadas, servicio de primera carga conectado al asistente de Edu y lectura versionada para el plan. Pantallas `/ingredientes` y `/recetas`.
 - **Contrato:** [M01 en contratos.md](../../api/contratos.md#m01-disponible-ingredientes-y-recetas-versionadas-30-09-2026).
@@ -21,6 +23,19 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | M04 · Entregar pantalla y contrato del plan | PENDIENTE |
 
 ## Bitácora
+
+### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
+
+- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
+- **Comportamiento:** Codex para Axel concilió M01 y la entrega delegada V01/V02 con main en `cueva`. Reconstruyó las migraciones 0005/0006 a partir de los modelos publicados (no estaban en origin/rojas). Carga completa real, rollback de stock, versiones y migraciones delta verificadas en SQLite; PostgreSQL pendiente de CI. M02–M04 siguen pendientes; no se atribuye este trabajo de coordinación a Max.
+- **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).
+- **Ejemplo público:** POST autenticado `/api/v1/inicializacion/confirmar` con los cinco CSV y fechas válidas devuelve DATOS_CARGADOS; POST administrativo `/api/v1/proveedores/{id}/ofertas` exige ingrediente existente y conversión explícita. Servicios participantes hacen flush, el llamador confirma.
+- **Migraciones/configuración:** continuar desde 0004 con 0005→0006→0007; registrar todos los modelos, incluido ConfiguracionInicial. Revisiones previas conservadas. Para concurrencia activar V02_POSTGRES_TEST=1 sobre esquema de pruebas aislado; no habilitar Telegram ni cambiar modo automático.
+- **Pruebas realmente ejecutadas:** `.venv/Scripts/python.exe -m pytest backend/tests foodsave-ml/tests -q` → 112 passed, 10 skipped (8 A03 y 2 V02 por PostgreSQL/Redis), 6 subtests passed. `npm run typecheck` y `npm run build` correctos. Delta 0004→0007 arriba/abajo/arriba y comparación de metadatos en SQLite correctos; el índice de expresión del núcleo no se puede reflejar en SQLite. Docker Desktop no logró arrancar; CI incorpora alembic check y concurrencia V02. No se ejecutaron envíos externos.
+- **Dependencias y siguiente paso:** revisión de la entrega conjunta y CI PostgreSQL; después integrar a main. Max continúa M02/M03; Aguirre completa adaptador/UI L01 y L02–L04; Vera V03; Edu/Kevin/Axel conectan ML desde asistente completo.
+- **Commit/PR:** cambios locales en cueva; publicación de PR de integración pendiente.
+
 
 ### Preparación del registro
 

@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** M01 disponible: catálogo, unidad y funciones públicas de lectura/carga sin commit. Migración 0005; proveedor/oferta de Aguirre consume obtener_ingredientes y exige un ingrediente activo. Verificación local en SQLite; PostgreSQL en CI.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Max Rojas](../../../../docs/equipo/avances/rojas.md) para el último estado.
 
 ## Trabajo en esta carpeta

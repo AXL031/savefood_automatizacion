@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** La ruta completa ya pasa ServicioRecetasM01 y ServicioInventarioV01 en una sola sesión: DATOS_CARGADOS sin pendientes de esos puertos. Rollback de stock verificado. El piloto se conserva separado. Automatizar entrenamiento desde el asistente completo sigue pendiente.
+
 **E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa sigue sin prueba final por depender de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 | Archivo | Responsabilidad |

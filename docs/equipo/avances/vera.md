@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Coordinación verificada (2026-09-30):** entrega V01/V02 de `rojas` integrada localmente por Codex para Axel. Apertura real en sesión de Edu, cero conocido, caducidad, ajuste idempotente y rechazo de saldo negativo verificados por API en SQLite. Misma clave con otro motivo/hora ahora es conflicto. Pruebas PostgreSQL añadidas para CI; no se declara verificada concurrencia en SQLite. V03 y detalle de promociones siguen pendientes.
+
 - **Estado:** V01 y V02 `LISTO_PARA_INTEGRAR`, implementadas por **Max Rojas por encargo** de Leonardo Vera. V03 y V04 (promociones) pendientes.
 - **Disponible:** lotes de producto e ingrediente, apertura en la sesión de la primera carga, ajustes con bloqueo y clave idempotente, disponibilidad por fecha con la regla de vida útil de pastelería. Pantalla `/inventario` con disponibilidad, lotes, ajuste y movimientos.
 - **Contrato:** [V01/V02 en contratos.md](../../api/contratos.md#v01v02-disponibles-apertura-ajustes-y-stock-por-fecha-30-09-2026).
@@ -21,6 +23,19 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | V04 · Entregar inventario y promoción en UI | PARCIAL: inventario hecho; falta detalle de promoción |
 
 ## Bitácora
+
+### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
+
+- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
+- **Comportamiento:** entrega V01/V02 de `rojas` integrada localmente por Codex para Axel. Apertura real en sesión de Edu, cero conocido, caducidad, ajuste idempotente y rechazo de saldo negativo verificados por API en SQLite. Misma clave con otro motivo/hora ahora es conflicto. Pruebas PostgreSQL añadidas para CI; no se declara verificada concurrencia en SQLite. V03 y detalle de promociones siguen pendientes.
+- **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).
+- **Ejemplo público:** POST autenticado `/api/v1/inicializacion/confirmar` con los cinco CSV y fechas válidas devuelve DATOS_CARGADOS; POST administrativo `/api/v1/proveedores/{id}/ofertas` exige ingrediente existente y conversión explícita. Servicios participantes hacen flush, el llamador confirma.
+- **Migraciones/configuración:** continuar desde 0004 con 0005→0006→0007; registrar todos los modelos, incluido ConfiguracionInicial. Revisiones previas conservadas. Para concurrencia activar V02_POSTGRES_TEST=1 sobre esquema de pruebas aislado; no habilitar Telegram ni cambiar modo automático.
+- **Pruebas realmente ejecutadas:** `.venv/Scripts/python.exe -m pytest backend/tests foodsave-ml/tests -q` → 112 passed, 10 skipped (8 A03 y 2 V02 por PostgreSQL/Redis), 6 subtests passed. `npm run typecheck` y `npm run build` correctos. Delta 0004→0007 arriba/abajo/arriba y comparación de metadatos en SQLite correctos; el índice de expresión del núcleo no se puede reflejar en SQLite. Docker Desktop no logró arrancar; CI incorpora alembic check y concurrencia V02. No se ejecutaron envíos externos.
+- **Dependencias y siguiente paso:** revisión de la entrega conjunta y CI PostgreSQL; después integrar a main. Max continúa M02/M03; Aguirre completa adaptador/UI L01 y L02–L04; Vera V03; Edu/Kevin/Axel conectan ML desde asistente completo.
+- **Commit/PR:** cambios locales en cueva; publicación de PR de integración pendiente.
+
 
 ### Preparación del registro
 

@@ -11,6 +11,11 @@ from app.modules.automatizaciones.modelos import ProgramacionDemo, EjecucionAuto
 from app.modules.productos.modelos import Producto, SkuProducto  # noqa: F401
 from app.modules.ventas.modelos import ImportacionVenta, VentaDiaria, RevisionVenta  # noqa: F401
 from app.modules.pronosticos.modelos import ArtefactoModelo, CorridaPronostico, Pronostico, EvaluacionPronostico  # noqa: F401
+from app.modules.inicializacion.modelos import ConfiguracionInicial  # noqa: F401
+from app.modules.ingredientes.modelos import Ingrediente  # noqa: F401
+from app.modules.recetas.modelos import Receta, RecetaIngrediente  # noqa: F401
+from app.modules.inventario.modelos import LoteProducto, LoteIngrediente, MovimientoInventario  # noqa: F401
+from app.modules.proveedores.modelos import Proveedor, OfertaIngrediente  # noqa: F401
 
 config = context.config
 if config.config_file_name and config.get_section(config.config_ini_section, {}).get("loggers"):

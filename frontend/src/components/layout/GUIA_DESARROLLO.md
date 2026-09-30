@@ -15,6 +15,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** El menú conserva piloto, pronósticos y panel; añade ingredientes, recetas e inventario publicados por Rojas. No se añadió una pantalla ficticia de proveedores.
+
 Archivos técnicos observados al preparar esta guía: `ProtectedShell.tsx`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 ## Trabajo en esta carpeta

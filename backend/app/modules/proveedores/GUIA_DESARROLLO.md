@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** L01 parcial integrado: Base y sesión comunes, autenticación/Administrador, sobre datos, FK de ingrediente y conversión restringida. Los servicios no hacen commit; HTTP coordina. Migración 0007. test_proveedores_l01.py forma parte de CI. Verificación Telegram devuelve false y explica adaptador ausente; no existe envío real ni UI nueva.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Leonardo Aguirre](../../../../docs/equipo/avances/aguirre.md) para el último estado.
 
 ## Trabajo en esta carpeta

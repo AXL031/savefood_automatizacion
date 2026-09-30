@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Integración de entregas (2026-09-30):** `rojas` y `aguirre` reunidas en `cueva`, conflictos resueltos y cadena 0004→0005→0006→0007 preparada. Primera carga consume recetas y stock reales. Proveedores usa Base/sesión comunes, permisos, sobre de errores y transacción del llamador. Pruebas locales: 112 correctas, 10 omitidas y 6 subpruebas correctas; frontend typecheck/build correctos. PostgreSQL/Redis pendientes de CI porque Docker Desktop no arrancó. Publicación en main pendiente de revisión de esta entrega.
+
 - **Auditoría de ramas (2026-09-30):** referencias actualizadas con `git fetch origin --prune`; `origin/main` en `b3041ea`. Pendientes: `aguirre` (1 commit L01) y `rojas` (2 commits M01/V01/V02 y UI). `bohorquez`, `cueva`, `sanchez` y `vera` están contenidas en main. Rojas presenta 8 archivos en conflicto y no publica las migraciones 0005/0006 mencionadas en su registro; Aguirre no presenta conflictos de Git, pero conserva adaptadores pendientes de Base/sesión. Auditoría real del historial, sin acreditar integración funcional ni ejecutar merges.
 - **Estado:** A01–A04 implementados localmente y listos para integrar. Ningún bloque se declara integrado hasta que su consumidor pruebe la frontera; el arranque de A04 aún requiere repetición por un compañero en otra PC y ejecución remota de CI.
 - **Comportamiento disponible:** A01 ofrece identidad, roles, error uniforme y configuración del modo de pedidos. A02 guarda programaciones y ejecuciones idempotentes. A03 agrega Beat cada 30 segundos, despacho durable con token/lease, ejecución transaccional de efectos locales y reintentos internos. A04 deja Compose con migración automática, imagen backend con dependencias ML, volumen persistente compartido entre worker y API, token Telegram opcional, CI ampliado e `iniciar-foodsave.cmd` para arranques posteriores sin recompilar. La cadena hasta `0004_e03_inicializacion` está aplicada en PostgreSQL local.
@@ -22,6 +24,19 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
+
+- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
+- **Comportamiento:** `rojas` y `aguirre` reunidas en `cueva`, conflictos resueltos y cadena 0004→0005→0006→0007 preparada. Primera carga consume recetas y stock reales. Proveedores usa Base/sesión comunes, permisos, sobre de errores y transacción del llamador. Pruebas locales: 112 correctas, 10 omitidas y 6 subpruebas correctas; frontend typecheck/build correctos. PostgreSQL/Redis pendientes de CI porque Docker Desktop no arrancó. Publicación en main pendiente de revisión de esta entrega.
+- **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).
+- **Ejemplo público:** POST autenticado `/api/v1/inicializacion/confirmar` con los cinco CSV y fechas válidas devuelve DATOS_CARGADOS; POST administrativo `/api/v1/proveedores/{id}/ofertas` exige ingrediente existente y conversión explícita. Servicios participantes hacen flush, el llamador confirma.
+- **Migraciones/configuración:** continuar desde 0004 con 0005→0006→0007; registrar todos los modelos, incluido ConfiguracionInicial. Revisiones previas conservadas. Para concurrencia activar V02_POSTGRES_TEST=1 sobre esquema de pruebas aislado; no habilitar Telegram ni cambiar modo automático.
+- **Pruebas realmente ejecutadas:** `.venv/Scripts/python.exe -m pytest backend/tests foodsave-ml/tests -q` → 112 passed, 10 skipped (8 A03 y 2 V02 por PostgreSQL/Redis), 6 subtests passed. `npm run typecheck` y `npm run build` correctos. Delta 0004→0007 arriba/abajo/arriba y comparación de metadatos en SQLite correctos; el índice de expresión del núcleo no se puede reflejar en SQLite. Docker Desktop no logró arrancar; CI incorpora alembic check y concurrencia V02. No se ejecutaron envíos externos.
+- **Dependencias y siguiente paso:** revisión de la entrega conjunta y CI PostgreSQL; después integrar a main. Max continúa M02/M03; Aguirre completa adaptador/UI L01 y L02–L04; Vera V03; Edu/Kevin/Axel conectan ML desde asistente completo.
+- **Commit/PR:** cambios locales en cueva; publicación de PR de integración pendiente.
+
 
 ### A04 · Auditoría de ramas pendientes de integrar
 
