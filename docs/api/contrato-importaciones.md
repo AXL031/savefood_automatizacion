@@ -1,14 +1,30 @@
 # Contrato de primera inicialización
 
-**Estado:** el asistente completo de primera inicialización sigue en diseño. Existe una carga web parcial del CSV piloto bakery que guarda catálogo y ventas en PostgreSQL y reserva el entrenamiento; no incluye XLSX, recetas, lotes ni estado `configuracion_inicial`. Para la carga completa, los archivos se solicitan **solo la primera vez** y PostgreSQL queda como fuente de ventas y stock.
+**Estado:** asistente completo implementado: XLSX/CSV, vista previa, carga atómica de catálogos/ventas/recetas/lotes y preparación ML automática. PostgreSQL es la fuente después de aceptar. Ver contrato E03 de este corte y registros de Edu/Kevin/Axel; plan/pedidos/promociones no se declaran completos.
 
 ## Acceso rápido del piloto implementado
 
-`POST /api/v1/inicializacion/piloto-bakery` requiere Bearer de Administrador y `multipart/form-data` con el campo `archivo` (`.csv`, máximo 25 MB). Acepta las columnas originales `date,article,Quantity`; toma el catálogo de `lista_productos_precios_limpia.md` incluido en la aplicación. Tras validar, carga productos y ventas agregadas en una sola sesión, calcula la huella SHA-256 del archivo y reserva `PREPARAR_MODELO` en el mismo commit. Responde `202` con `datos = {importacion_id, repetida, productos, filas_aceptadas, filas_negativas_excluidas, ventas_diarias_creadas, version_modelo, ejecucion_id, estado_ejecucion}`. Repetir el mismo archivo recupera la importación y la ejecución sin duplicarlas; un error revierte todo. La UI `/inicializacion` muestra la carga, el estado de ejecución y un reintento de preparación si falla, sin volver a subir el CSV.
+`POST /api/v1/inicializacion/piloto-bakery` requiere Bearer de Administrador y `multipart/form-data` con el campo `archivo` (`.csv`, máximo 25 MB). Acepta las columnas originales `date,article,Quantity`; toma el catálogo de `lista_productos_precios_limpia.md` incluido en la aplicación. Tras validar, carga productos y ventas agregadas en una sola sesión, calcula la huella SHA-256 del archivo y reserva `PREPARAR_MODELO` en el mismo commit. Responde `202` con `datos = {importacion_id, repetida, productos, filas_aceptadas, filas_negativas_excluidas, ventas_diarias_creadas, version_modelo, ejecucion_id, estado_ejecucion}`. Repetir el mismo archivo recupera la importación y la ejecución sin duplicarlas; un error revierte todo. La UI `/inicializacion/piloto` muestra la carga, el estado de ejecución y un reintento de preparación si falla, sin volver a subir el CSV.
 
 El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo temporal que se borra al terminar la solicitud. Este acceso es solo para el dataset bakery y no establece el estado de primera inicialización completa.
 
 `version_modelo` incorpora la política de entrenamiento (`piloto-q65v2-<huella>`). Una nueva política puede reservar otra preparación para el mismo archivo sin repetir las ventas; la idempotencia de ejecución aplica dentro de cada versión. Las versiones y evaluaciones anteriores se conservan.
+
+## E03 disponible: carga completa y preparación automática de ML
+
+La confirmación completa reserva PREPARAR_MODELO en la misma sesión que catálogo, ventas, recetas, apertura y estado DATOS_CARGADOS. No publica a Redis antes del commit: Beat reclama la ejecución durable. Repetir los mismos archivos recupera la carga y no crea otra preparación. El piloto mantiene su contrato separado y no modifica la fila de inicialización.
+
+`GET /api/v1/inicializacion/estado` (Bearer) añade `preparacion_numero`, `modelo_id`, `preparacion` y `evaluacion`. Los dos últimos son null o `{id, estado, mensaje_error}`; sus estados son PENDIENTE, EN_EJECUCION, REINTENTANDO, COMPLETADA o FALLIDA. `modelo_id` referencia el artefacto persistido; MODELO_LISTO significa artefacto disponible, no evaluación terminada. El dashboard debe consultar ese modelo y comprobar `evaluacion.estado`.
+
+`POST /api/v1/inicializacion/reintentar-preparacion` requiere Administrador, no recibe archivos ni cuerpo y responde 202 con el mismo estado ampliado. Sin carga completa devuelve 409 DATOS_NO_CARGADOS. Si la preparación/evaluación está activa o completada correctamente, recupera la reserva actual. Tras fallo definitivo reserva una generación nueva bajo bloqueo de la fila única; dos solicitudes simultáneas recuperan la misma nueva ejecución. Un backtest fallido reutiliza el modelo ya entrenado y reserva otra evaluación, sin importar ni entrenar nuevamente.
+
+La versión del modelo es `inicial-q65v2-<24 caracteres de huella_solicitud>`; cada generación conserva su ejecución anterior e intentos. El motor confirma ENTRENANDO junto con el inicio durable del intento, antes del cálculo largo. El handler confirma MODELO_LISTO, modelo y reserva del backtest junto con su resultado; fallo o recuperación por lease conserva la carga y vuelve a DATOS_CARGADOS con mensaje. Los reintentos automáticos permanecen visibles en REINTENTANDO. Error por menos de seis meses completos se explica sin marcar un modelo listo.
+
+Servicios públicos: `inicializacion.servicio.solicitar_preparacion`, `iniciar_preparacion`, `completar_preparacion` y `fallar_preparacion`; `automatizaciones.servicio.consultar_ejecucion`/`consultar_ejecucion_por_clave`. No hacen commit/rollback. Los callbacks AL_INICIAR y AL_FALLAR reciben `(sesion, contexto)` y `(sesion, contexto, mensaje)`; el motor los invoca en sus transacciones de inicio/fallo y recuperación. Solo el adaptador PREPARAR_MODELO con huella_inicializacion enlaza el estado E03; preparaciones manuales/piloto mantienen su comportamiento.
+
+Migración aditiva `0008_e03_preparacion_ml` sobre 0007: preparacion_ejecucion_id y modelo_id nullable con FK RESTRICT, preparacion_numero no negativo con default 0. Conserva cargas previas; una carga completa anterior sin reserva puede usar el endpoint de preparación sin subir archivos. UI `/inicializacion` refresca estado cada tres segundos, muestra ejecución/evaluación, ofrece reintento y enlace al panel, y oculta la carga cuando ya está aceptada.
+
+Prueba real del corte: PostgreSQL/Redis/CatBoost y Beat con seis meses de ventas de fixture; entrenamiento, fallo controlado de evaluación, reintento que conserva un único modelo y dashboard con pares persistidos. No acredita calidad comercial ni implementa plan, pedidos o promociones.
 
 ## Entrega
 
@@ -16,7 +32,7 @@ El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo 
 - Equivalente CSV UTF-8: `ventas.csv`, `productos.csv`, `ingredientes.csv`, `recetas.csv`, `stock_inicial.csv`. Un CSV no puede contener varias hojas. Encabezados exactos y fechas `YYYY-MM-DD`.
 - El sistema muestra vista previa, cantidad de filas, productos mapeados, fechas cubiertas, errores por archivo/hoja/fila y huellas. Solo una aceptación explícita inicia la carga. Si falla una validación, no se marca inicializado ni se entrena.
 - El asistente pide `fecha_objetivo_demo` y `fecha_referencia_stock` local. Para el caso del dataset se propone `2022-08-24` y stock simulado al cierre de `2022-08-23`. Se rechaza una referencia de stock igual o posterior al objetivo. Son supuestos visibles, no una fotografía histórica real del comercio.
-- `clave_importacion` estable y SHA-256 canónico evitan duplicar la carga al reintentar. Los dos archivos se conservan como referencia de auditoría; ninguna ruta absoluta de la computadora del usuario entra en las tablas de negocio. `configuracion_inicial` pasa por `PENDIENTE → DATOS_CARGADOS → MODELO_LISTO`.
+- `clave_importacion` estable y SHA-256 canónico evitan duplicar la carga al reintentar. Los dos archivos se conservan como referencia de auditoría; ninguna ruta absoluta de la computadora del usuario entra en las tablas de negocio. `configuracion_inicial` pasa por `PENDIENTE → DATOS_CARGADOS → ENTRENANDO → MODELO_LISTO`.
 
 ## Ventas históricas
 

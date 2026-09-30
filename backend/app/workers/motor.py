@@ -15,7 +15,7 @@ from app.modules.negocios.modelos import Negocio  # noqa: F401
 from app.modules.automatizaciones.modelos import EjecucionAutomatizacion, IntentoAutomatizacion, ProgramacionDemo
 from app.modules.automatizaciones.servicio import finalizar_intento, iniciar_intento
 from app.workers.retry.politica import ErrorDatos, es_transitorio, siguiente_intento
-from app.workers.tasks.manejadores import ContextoEjecucion, obtener_manejador
+from app.workers.tasks.manejadores import ContextoEjecucion, obtener_manejador, notificar_inicio, notificar_fallo
 
 logger = logging.getLogger(__name__)
 LEASE_SEGUNDOS = 120
@@ -32,12 +32,17 @@ def _liberar(sesion, ejecucion):
         sesion.get(ProgramacionDemo, ejecucion.programacion_id).lease_hasta = None
 
 
+def _contexto(ejecucion):
+    return ContextoEjecucion(ejecucion.id, ejecucion.tipo, ejecucion.clave_idempotencia, ejecucion.datos_entrada_json)
+
+
 def _cerrar_fallo(sesion, intento, mensaje: str, transitorio: bool, ahora: datetime):
     proximo = siguiente_intento(intento.numero_intento, ahora) if transitorio else None
     ejecucion = finalizar_intento(
         sesion, intento.id, "REINTENTANDO" if proximo else "FALLIDA",
         mensaje_error=mensaje, proximo_intento_en=proximo,
     )
+    notificar_fallo(sesion, _contexto(ejecucion), mensaje)
     _liberar(sesion, ejecucion)
 
 
@@ -73,6 +78,7 @@ def despachar_pendientes(publicar: Callable[[int, str], None], *, ahora: datetim
                     ejecucion.estado = "FALLIDA"
                     ejecucion.fin_en = ahora
                     ejecucion.mensaje_error = "Ejecución inconsistente: no existe intento activo."
+                    notificar_fallo(sesion, _contexto(ejecucion), ejecucion.mensaje_error)
                     _liberar(sesion, ejecucion)
                 else:
                     _cerrar_fallo(sesion, intento, "El worker se interrumpió antes de confirmar el resultado.", True, ahora)
@@ -120,6 +126,13 @@ def ejecutar(ejecucion_id: int, token: str) -> dict:
                 return {"resultado": "NO_VENCIDA"}
         intento = iniciar_intento(sesion, ejecucion_id)
         intento_id = intento.id
+        try:
+            with sesion.begin_nested():
+                notificar_inicio(sesion, _contexto(ejecucion))
+        except Exception as error:
+            mensaje = str(error) if isinstance(error, ErrorDatos) else "No se pudo iniciar la preparación del servicio."
+            _cerrar_fallo(sesion, intento, mensaje, es_transitorio(error), ahora)
+            return {"resultado": ejecucion.estado, "ejecucion_id": ejecucion_id}
         ejecucion.lease_hasta = ahora + timedelta(seconds=LEASE_SEGUNDOS)
         if ejecucion.programacion_id is not None:
             programacion.lease_hasta = ejecucion.lease_hasta

@@ -20,7 +20,7 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0007_l01_proveedores"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0008_e03_preparacion_ml"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")
@@ -49,5 +49,33 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
             assert not NUEVAS.intersection(inspect(conexion).get_table_names())
             for modulo in modulos:
                 modulo.upgrade()
+            assert compare_metadata(contexto, Base.metadata) == []
+    motor.dispose()
+
+
+def test_migracion_0008_conserva_carga_y_es_reversible():
+    backend = Path(__file__).resolve().parents[2]
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor, "connect")
+    def funciones(c, _):
+        c.create_function("char_length", 1, len)
+    Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name != "configuracion_inicial"])
+    def cargar(nombre):
+        spec = importlib.util.spec_from_file_location(nombre, backend / "migrations" / "versions" / f"{nombre}.py")
+        modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
+        return modulo
+    anterior, nueva = cargar("0004_e03_inicializacion"), cargar("0008_e03_preparacion_ml")
+    from sqlalchemy import text
+    with motor.begin() as conexion:
+        contexto = MigrationContext.configure(conexion)
+        with Operations.context(contexto):
+            anterior.upgrade()
+            conexion.execute(text("UPDATE configuracion_inicial SET estado='DATOS_CARGADOS', huella_solicitud='previa'"))
+            nueva.upgrade()
+            assert conexion.execute(text("SELECT estado,huella_solicitud,preparacion_numero FROM configuracion_inicial")).one() == ("DATOS_CARGADOS", "previa", 0)
+            assert compare_metadata(contexto, Base.metadata) == []
+            nueva.downgrade()
+            assert conexion.execute(text("SELECT huella_solicitud FROM configuracion_inicial")).scalar() == "previa"
+            nueva.upgrade()
             assert compare_metadata(contexto, Base.metadata) == []
     motor.dispose()

@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Paso 1 · 30-09-2026:** inicializacion.ts añade reintentarPreparacion sin archivos ni cuerpo; devuelve ConfiguracionInicial ampliada y mantiene cliente HTTP/autenticación comunes.
+
 Archivos técnicos observados al preparar esta guía: `autenticacion.ts`, `automatizaciones.ts`, `http.ts`, `notificaciones.ts`, `sesion.ts`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Edu Sanchez](../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 ## Trabajo en esta carpeta

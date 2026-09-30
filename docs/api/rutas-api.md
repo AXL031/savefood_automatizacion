@@ -22,6 +22,7 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `POST /inicializacion/piloto-bakery` | Administrador; recibe un CSV bakery y reserva `PREPARAR_MODELO` |
 | `GET /inicializacion/estado` | Bearer; estado durable de primera carga |
 | `POST /inicializacion/vista-previa` | Administrador; valida dos XLSX o cinco CSV sin escribir |
+| `POST /inicializacion/reintentar-preparacion` | Administrador; 202, sin archivos, preparación/evaluación idempotente |
 | `POST /inicializacion/confirmar` | Administrador; carga completa con recetas e inventario reales |
 | `GET /productos` | Bearer; consulta el catálogo |
 | `GET /ventas` | Bearer; consulta ventas diarias |
@@ -42,7 +43,7 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `POST /proveedores/ofertas/{id}/preferida`, `PATCH /proveedores/ofertas/{id}/desactivar` | Administrador |
 | `GET /salud` | Pública, fuera de `/api/v1` |
 
-`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`. Pronósticos requiere `0002_e01_ventas` y `0003_pronosticos`; PREPARAR_MODELO, EVALUAR_MODELO y EVALUAR_PRONOSTICO están registrados, pero Edu y Max aún deben conectar sus disparadores de carga y plan.
+`POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`. Pronósticos requiere `0002_e01_ventas` y `0003_pronosticos`; PREPARAR_MODELO, EVALUAR_MODELO y EVALUAR_PRONOSTICO están registrados, la carga completa ya reserva preparación; falta el disparador de plan de Max.
 
 ## Objetivo de la demo
 
@@ -58,7 +59,7 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `POST /pedidos/{id}/conciliar` | Resolver resultado de envío incierto con evidencia. | Administrador |
 | `GET /promociones/evaluaciones` | Sugerencia o motivo de rechazo por lote; no activa descuentos. | Bearer |
 
-Actualmente `POST /pronosticos/preparar-modelo` reserva el entrenamiento a demanda y el worker registra el backtest al publicar el artefacto. El estado durable `configuracion_inicial` ya existe y el asistente consume recetas/inventario reales; conectar su disparador de entrenamiento sigue pendiente. Celery Beat revisa programaciones cada 30 segundos. La misma clave idempotente recupera la ejecución, y otra entrada con esa clave devuelve conflicto.
+Actualmente `POST /pronosticos/preparar-modelo` reserva el entrenamiento a demanda y el worker registra el backtest al publicar el artefacto. El estado durable `configuracion_inicial` ya existe y el asistente consume recetas/inventario reales; la confirmación ya reserva su entrenamiento y el reintento no vuelve a importar. Aplicar 0008; el estado expone preparación, modelo y evaluación. Celery Beat revisa programaciones cada 30 segundos. La misma clave idempotente recupera la ejecución, y otra entrada con esa clave devuelve conflicto.
 
 El acceso rápido `POST /inicializacion/piloto-bakery` recibe el CSV original del piloto desde la web y reserva su preparación en la misma transacción. Es independiente del asistente completo y no cambia `configuracion_inicial`.
 

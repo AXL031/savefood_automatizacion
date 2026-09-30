@@ -20,11 +20,15 @@ Manejador = Callable[[Session, ContextoEjecucion], dict]
 # Añadir aquí únicamente adaptadores entregados y probados por su responsable.
 # Usan la sesión recibida, sin commit/rollback y sin envío externo de Telegram.
 MANEJADORES: dict[str, Manejador] = {}
+AL_INICIAR: dict[str, Callable[[Session, ContextoEjecucion], None]] = {}
+AL_FALLAR: dict[str, Callable[[Session, ContextoEjecucion, str], None]] = {}
 
 
 def _registrar_pronosticos() -> None:
-    from app.modules.pronosticos.manejadores import preparar, backtest, evaluacion_programada
+    from app.modules.pronosticos.manejadores import preparar, backtest, evaluacion_programada, iniciar, fallar
 
+    AL_INICIAR["PREPARAR_MODELO"] = iniciar
+    AL_FALLAR["PREPARAR_MODELO"] = fallar
     MANEJADORES.update({
         "PREPARAR_MODELO": preparar,
         "EVALUAR_MODELO": backtest,
@@ -40,3 +44,13 @@ def obtener_manejador(tipo: str) -> Manejador:
         return MANEJADORES[tipo]
     except KeyError:
         raise ErrorDatos(f"El servicio {tipo} está pendiente de integración.") from None
+
+
+def notificar_inicio(sesion: Session, contexto: ContextoEjecucion) -> None:
+    if callback := AL_INICIAR.get(contexto.tipo):
+        callback(sesion, contexto)
+
+
+def notificar_fallo(sesion: Session, contexto: ContextoEjecucion, mensaje: str) -> None:
+    if callback := AL_FALLAR.get(contexto.tipo):
+        callback(sesion, contexto, mensaje)

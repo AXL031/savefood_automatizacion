@@ -6,12 +6,14 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Paso 1 verificado (2026-09-30, Codex para Axel):** E03 carga completa → preparación automática → estado durable → backtest y dashboard, con reintento sin reimportar. Prueba real CatBoost/Beat/PostgreSQL/Redis y fallo de evaluación recuperado reutilizando modelo; suite 128 pruebas + 6 subpruebas correctas. Código en cueva, revisión del PR #11 antes de main. [Contrato](../../api/contrato-importaciones.md#e03-disponible-carga-completa-y-preparación-automática-de-ml).
+
 - **Estado:** K01–K04 implementados y listos para integrar en el prototipo local; no se declara integración con el plan de Max ni con la inicialización E03.
 - **Punto de partida alcanzado:** Entrenamiento desde historial E01, artefacto CBM versionado y verificado, inferencia persistida con 13 características temporales, backtest por fecha/revisión, API protegida y panel histórico. El piloto tiene una versión nueva `piloto-q65v2-*` que selecciona iteración con el mismo cuantil 0.65 usado para entrenar. En PostgreSQL/Compose, 4 047 pares evaluables dieron 66 de 90 días con total pronosticado superior al real; la versión anterior se conserva para comparación.
 - **Contrato disponible:** [artefacto ML](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md), [API y servicios](../../api/contratos.md#ventas--pronósticos) y [política de evaluación](../../../foodsave-ml/POLITICA_EVALUACION.md).
 - **Entrega a consumidores:** `generar_corrida`/`obtener_pronosticos` y `solicitar_evaluacion_corrida` reciben la sesión del plan sin confirmarla; API `/pronosticos/*`, páginas `/pronosticos` y `/panel`, y adaptadores A03 para preparación/evaluación.
-- **Bloqueos:** el CSV piloto ya dispara preparación y evaluación desde la carga web parcial de Edu; falta E03 completo y que Max consuma la corrida en su plan. No se ha probado el flujo plan/pedido.
-- **Siguiente paso:** integrar E03 completo y M02 con prueba de transacción compartida; verificar el recorrido en otra computadora.
+- **Bloqueos:** el CSV piloto ya dispara preparación y evaluación desde la carga web parcial de Edu; E03 completo queda conectado en el paso 1 de cueva; falta que Max consuma la corrida en su plan. No se ha probado el flujo plan/pedido.
+- **Siguiente paso:** revisar el corte E03→ML y entregar K02 al consumidor M02; verificar el recorrido en otra computadora.
 
 | Tarea | Estado de seguimiento |
 |---|---|
@@ -21,6 +23,17 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; API respondió en PostgreSQL y frontend compiló |
 
 ## Bitácora
+
+### Paso 1 · Inicialización completa → preparación y evaluación ML · 30-09-2026
+
+- **Autor y tareas:** Codex por autorización de Axel, coordinación A04 con E03 y K01/K03. Implementación y prueba de frontera real; no se atribuyen estos cambios a nuevas entregas personales de Edu o Kevin. Plan, compras y promociones siguen pendientes.
+- **Comportamiento:** confirmación reserva una única PREPARAR_MODELO en la transacción de la carga. Inicio durable publica ENTRENANDO antes del cálculo; éxito enlaza modelo y backtest; fallo vuelve a DATOS_CARGADOS conservando ventas/recetas/lotes. POST reintentar-preparacion sin archivos reutiliza trabajo activo o reserva generación nueva tras fallo, también cuando falló la evaluación. En ese último caso reutiliza el único modelo ya entrenado. UI refresca estado, muestra trazas y enlace al panel y oculta carga aceptada.
+- **Archivos clave/contrato:** [contrato E03](../../api/contrato-importaciones.md#e03-disponible-carga-completa-y-preparación-automática-de-ml), inicializacion/{modelos,servicio,rutas}, pronosticos/{entrenamiento,manejadores}, workers/{motor,tasks/manejadores}, frontend/src/app/inicializacion/page.tsx, tipos/servicios de inicialización, tests/integration/test_inicializacion_ml.py. Coordinación: [Edu](sanchez.md), [Kevin](bohorquez.md), [Axel](cueva.md).
+- **Configuración/migración:** nueva 0008_e03_preparacion_ml sobre 0007, sin reescribir previas. Referencias nullable a ejecución/modelo y contador no negativo. CI incorpora E03_POSTGRES_TEST=1 junto a A03/V02; cada prueba PostgreSQL crea su esquema y solo lo elimina al terminar. Cargas previas sin reserva pueden solicitar preparación sin archivos.
+- **Pruebas ejecutadas:** suite Docker PostgreSQL/Redis con A03_POSTGRES_TEST=1, V02_POSTGRES_TEST=1, E03_POSTGRES_TEST=1: **128 passed, 6 subtests passed**, sin omisiones, 16 advertencias de dependencias/reflexión SQLite. Caso real: seis meses de ventas de fixture, CatBoost, Beat, backtest fallido controlado, reintento con un único artefacto, dashboard con pares evaluables y conteos de carga invariables. Permisos, reserva/repetición, rollback sin tarea pendiente, reintento simultáneo y recuperación de caída correctos. Upgrade head, downgrade 0007, reaplicación, current --check-heads y alembic check correctos. Frontend npm run typecheck y npm run build correctos (17 rutas). No hubo envíos externos ni cambios en volúmenes de negocio habituales.
+- **Límites y siguiente paso:** modelo y evaluación usan estado separado; el test no acredita precisión comercial. Interfaz compilada, sin prueba manual de navegador en este corte. CI remoto pendiente para el commit de entrega. Sigue paso 2 M02 de Max, consumiendo contrato público de Kevin/Vera/M01; revisión antes de main.
+- **Commit/PR:** entrega en cueva y seguimiento [PR #11](https://github.com/AXL031/savefood_automatizacion/pull/11), actualizado al alcance del paso 1; hash se consulta en el historial de la rama.
+
 
 ### K01/K03 · Preferencia moderada por pronóstico superior
 

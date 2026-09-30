@@ -16,6 +16,8 @@ from app.modules.inicializacion.servicio import (
     VistaPrevia,
     confirmar_carga,
     leer_estado,
+    detalle_preparacion,
+    solicitar_preparacion,
     preparar_vista_previa,
     skus_curados,
 )
@@ -27,8 +29,9 @@ router = APIRouter(prefix="/inicializacion", tags=["inicializacion"])
 LIMITE_BYTES = 64 * 1024 * 1024
 
 
-def _estado(fila: ConfiguracionInicial) -> dict:
+def _estado(fila: ConfiguracionInicial, sesion: Session) -> dict:
     return {
+        **detalle_preparacion(sesion, fila),
         "estado": fila.estado,
         "huella_ventas": fila.huella_ventas,
         "huella_catalogo": fila.huella_catalogo,
@@ -107,7 +110,7 @@ def consultar_estado(
     _usuario: Usuario = Depends(identidad_actual),
     sesion: Session = Depends(obtener_sesion),
 ):
-    return {"datos": _estado(leer_estado(sesion))}
+    return {"datos": _estado(leer_estado(sesion), sesion)}
 
 
 @router.post("/vista-previa")
@@ -160,3 +163,13 @@ async def confirmar(
             "pendiente_de": informe.pendiente_de,
         }
     }
+
+
+@router.post("/reintentar-preparacion", status_code=202)
+def reintentar_preparacion(
+    _admin: Usuario = Depends(requiere_administrador),
+    sesion: Session = Depends(obtener_sesion),
+):
+    estado = solicitar_preparacion(sesion)
+    sesion.commit()
+    return {"datos": _estado(estado, sesion)}

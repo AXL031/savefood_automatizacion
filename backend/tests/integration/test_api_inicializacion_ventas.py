@@ -8,9 +8,10 @@ os.environ.setdefault("JWT_SECRET", "clave-local-para-pruebas-de-inicializacion"
 import pytest
 from fastapi.testclient import TestClient
 from pwdlib import PasswordHash
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
+from uuid import uuid4
 
 from app.core.base import Base
 from app.core.base_datos import obtener_sesion
@@ -65,17 +66,27 @@ FECHAS = {"fecha_objetivo_demo": "2022-08-24", "fecha_referencia_stock": "2022-0
 
 @pytest.fixture
 def cliente():
-    motor = create_engine(
-        "sqlite+pysqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-
-    @event.listens_for(motor, "connect")
-    def registrar_char_length(conexion, _registro):
-        conexion.create_function("char_length", 1, len)
+    admin_db = None
+    esquema = None
+    if os.getenv("E03_POSTGRES_TEST") == "1":
+        url = os.environ["DATABASE_URL"]
+        assert url.startswith("postgresql")
+        esquema = "e03_test_" + uuid4().hex
+        admin_db = create_engine(url)
+        with admin_db.begin() as conexion:
+            conexion.execute(text(f'CREATE SCHEMA "{esquema}"'))
+        motor = create_engine(url, connect_args={"options": f"-csearch_path={esquema}"})
+    else:
+        motor = create_engine("sqlite+pysqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+        @event.listens_for(motor, "connect")
+        def registrar_char_length(conexion, _registro):
+            conexion.create_function("char_length", 1, len)
 
     Base.metadata.create_all(motor)
+    from app.modules.inicializacion.modelos import ConfiguracionInicial
+    with Session(motor) as inicial:
+        inicial.add(ConfiguracionInicial(id=1, estado="PENDIENTE"))
+        inicial.commit()
     cifrador = PasswordHash.recommended()
     with Session(motor) as sesion:
         sesion.add(Negocio(id=1, nombre="Prueba", zona_horaria="America/Lima", moneda="PEN"))
@@ -98,6 +109,10 @@ def cliente():
         yield prueba
     app.dependency_overrides.clear()
     motor.dispose()
+    if admin_db is not None:
+        with admin_db.begin() as conexion:
+            conexion.execute(text(f'DROP SCHEMA "{esquema}" CASCADE'))
+        admin_db.dispose()
 
 
 def test_frontera_carga_recetas_stock_y_versiones(cliente):
@@ -135,6 +150,7 @@ def test_frontera_stock_invalido_revierte_carga_completa(cliente):
     assert cliente.get("/api/v1/productos", headers=admin).json()["datos"] == []
     assert cliente.get("/api/v1/ingredientes", headers=admin).json()["datos"] == []
     assert cliente.get("/api/v1/recetas", headers=admin).json()["datos"] == []
+    assert cliente.get("/api/v1/inicializacion/estado", headers=admin).json()["datos"]["preparacion"] is None
 
 
 def test_proveedores_api_permisos_referencia_y_oferta(cliente):

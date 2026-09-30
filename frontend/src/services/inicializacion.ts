@@ -56,3 +56,9 @@ export function cargarCsvPiloto(token: string, archivo: File): Promise<Resultado
   datos.append("archivo", archivo, archivo.name);
   return enviarFormulario<ResultadoCargaPiloto>("/inicializacion/piloto-bakery", datos, { token });
 }
+
+
+/** Reutiliza una tarea activa o reserva otro intento tras fallo, sin archivos. */
+export function reintentarPreparacion(token: string): Promise<ConfiguracionInicial> {
+  return solicitar<ConfiguracionInicial>("/inicializacion/reintentar-preparacion", { token, method: "POST" });
+}

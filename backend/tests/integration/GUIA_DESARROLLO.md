@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Paso 1 · 30-09-2026:** test_inicializacion_ml.py verifica reservas, permisos, rollback, reintento concurrente y recuperación. E03_POSTGRES_TEST=1 habilita la fixture API en esquemas e03_test_<uuid> y el recorrido real CatBoost/Beat/Redis: fallo de backtest y recuperación sin reentrenar. Solo limpia su esquema, cola y artefactos temporales.
+
 **Integración 30-09-2026:** Pruebas reales de frontera: test_api_inicializacion_ventas.py cubre carga completa/rollback/versiones/stock/API L01; test_proveedores_l01.py incorpora la entrega de Aguirre y rollback del consumidor; test_migraciones_entregas.py ejecuta delta reversible. test_inventario_concurrencia_pg.py requiere V02_POSTGRES_TEST=1 y usa únicamente esquema v02_test_<uuid>.
 
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Axel Cueva](../../../docs/equipo/avances/cueva.md) para el último estado.

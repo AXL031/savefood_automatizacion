@@ -240,3 +240,13 @@ def finalizar_intento(
     ejecucion.mensaje_error = None if estado == "COMPLETADA" else mensaje_error
     sesion.flush()
     return ejecucion
+
+
+def consultar_ejecucion(sesion: Session, ejecucion_id: int | None) -> EjecucionAutomatizacion | None:
+    """Lectura pública del sobre durable, sin bloquear ni confirmar al consumidor."""
+    return sesion.get(EjecucionAutomatizacion, ejecucion_id) if ejecucion_id is not None else None
+
+
+def consultar_ejecucion_por_clave(sesion: Session, clave: str) -> EjecucionAutomatizacion | None:
+    """Localiza la reserva idempotente de otro servicio por su clave pública."""
+    return sesion.scalar(select(EjecucionAutomatizacion).where(EjecucionAutomatizacion.clave_idempotencia == clave))

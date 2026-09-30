@@ -4,6 +4,10 @@ Corte funcional: `main` / `origin/main` en `902f0e6` (PR #10). Auditoría de Cod
 
 La base de datos, la carga, ML, recetas e inventario tienen implementación real. La demo completa aún no termina el recorrido carga → modelo → plan → faltantes → pedidos → Telegram y ajuste → promoción. Una carpeta documental o un tipo de ejecución admitido no acredita su implementación.
 
+## Seguimiento del paso 1 (cueva, pendiente de revisión/merge)
+
+E03→ML queda implementado: carga reserva entrenamiento, ENTRENANDO visible, modelo/backtest enlazados, reintento sin archivos ni duplicados y dashboard. Prueba PostgreSQL/Redis/CatBoost/Beat con recuperación de evaluación fallida y un único modelo. Suite 128 pruebas y 6 subpruebas correctas; frontend y migración 0008 correctos. La tabla siguiente conserva el diagnóstico del corte main 902f0e6; sus pendientes E03→ML quedan resueltos al incorporar este paso 1. Plan, compras/Telegram y promociones siguen pendientes.
+
 ## Qué existe y qué falta
 
 «Disponible» identifica código utilizable y evidencia del corte; no declara cumplidos todos los criterios de demo o el consumo por módulos todavía ausentes.

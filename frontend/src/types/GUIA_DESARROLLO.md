@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Paso 1 · 30-09-2026:** ConfiguracionInicial incluye modelo_id, preparacion_numero y resumen nullable de preparación/evaluación con estado e ID durable. La carga y el estado de ML no se confunden.
+
 Archivos técnicos observados al preparar esta guía: `api.ts`, `autenticacion.ts`, `automatizacion.ts`, `notificacion.ts`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Edu Sanchez](../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 ## Trabajo en esta carpeta

@@ -5,7 +5,17 @@ export type EstadoInicializacion =
   | "MODELO_LISTO"
   | "FALLIDA";
 
+export type EstadoTareaInicial = {
+  id: number;
+  estado: "PENDIENTE" | "EN_EJECUCION" | "REINTENTANDO" | "COMPLETADA" | "FALLIDA";
+  mensaje_error: string | null;
+};
+
 export type ConfiguracionInicial = {
+  modelo_id: number | null;
+  preparacion_numero: number;
+  preparacion: EstadoTareaInicial | null;
+  evaluacion: EstadoTareaInicial | null;
   estado: EstadoInicializacion;
   huella_ventas: string | null;
   huella_catalogo: string | null;

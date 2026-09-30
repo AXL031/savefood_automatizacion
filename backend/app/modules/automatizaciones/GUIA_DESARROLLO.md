@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Paso 1 · 30-09-2026:** consultar_ejecucion y consultar_ejecucion_por_clave son fronteras públicas de lectura para E03/ML; no confirman sesiones.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
 
 ## Trabajo en esta carpeta

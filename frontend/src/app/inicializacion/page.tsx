@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { PasosAsistente } from "@/components/ui/PasosAsistente";
@@ -10,7 +11,7 @@ import { CampoFecha } from "@/components/forms/CampoFecha";
 import { CampoTexto } from "@/components/forms/CampoTexto";
 import { BotonEnviar } from "@/components/forms/BotonEnviar";
 import { ResumenErrores } from "@/components/forms/ResumenErrores";
-import { confirmarCarga, obtenerEstadoInicial, pedirVistaPrevia } from "@/services/inicializacion";
+import { confirmarCarga, obtenerEstadoInicial, pedirVistaPrevia, reintentarPreparacion } from "@/services/inicializacion";
 import type { ConfiguracionInicial, InformeCarga, VistaPrevia } from "@/types/inicializacion";
 import { formatearFechaHora } from "@/utils/fechas";
 
@@ -45,7 +46,17 @@ const RANURAS = [
   { clave: "stock", etiqueta: "Stock inicial", ayuda: "stock_inicial.csv" },
 ] as const;
 
-function TarjetaEstado({ estado }: { estado: ConfiguracionInicial }) {
+const ESTADOS_TAREA = {
+  PENDIENTE: "En espera", EN_EJECUCION: "En curso", REINTENTANDO: "Reintento automático pendiente",
+  COMPLETADA: "Completada", FALLIDA: "Fallida",
+};
+
+function TarjetaEstado({ estado, administrador, reintentando, alReintentar }: {
+  estado: ConfiguracionInicial; administrador: boolean; reintentando: boolean; alReintentar: () => void;
+}) {
+  const puedeReintentar = estado.preparacion?.estado === "FALLIDA"
+    || estado.evaluacion?.estado === "FALLIDA"
+    || (estado.estado === "DATOS_CARGADOS" && !estado.preparacion);
   return (
     <section className="card">
       <div className="section-heading">
@@ -76,8 +87,13 @@ function TarjetaEstado({ estado }: { estado: ConfiguracionInicial }) {
         </div>
       </div>
       {estado.mensaje_error ? (
-        <EstadoPanel tono="alerta" titulo="Queda trabajo pendiente" descripcion={estado.mensaje_error} />
+        <EstadoPanel tono="alerta" titulo="Preparación pendiente" descripcion={estado.mensaje_error} />
       ) : null}
+      {estado.preparacion && <p role="status">Preparación del modelo: {ESTADOS_TAREA[estado.preparacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.preparacion.id}`}>Ver ejecución #{estado.preparacion.id}</Link></p>}
+      {estado.evaluacion && <p role="status">Evaluación histórica: {ESTADOS_TAREA[estado.evaluacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.evaluacion.id}`}>Ver ejecución #{estado.evaluacion.id}</Link></p>}
+      {estado.evaluacion?.mensaje_error && <EstadoPanel tono="alerta" titulo="La evaluación necesita revisión" descripcion={estado.evaluacion.mensaje_error} />}
+      {estado.modelo_id && estado.estado === "MODELO_LISTO" && <p><Link href={`/panel?modelo_id=${estado.modelo_id}`}>Consultar el dashboard del modelo #{estado.modelo_id}</Link></p>}
+      {puedeReintentar && administrador && <div className="form-actions"><BotonEnviar type="button" enviando={reintentando} textoEnviando="Solicitando…" onClick={alReintentar}>Preparar modelo sin volver a cargar</BotonEnviar></div>}
     </section>
   );
 }
@@ -177,6 +193,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [validando, setValidando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState("");
+  const [reintentando, setReintentando] = useState(false);
 
   useEffect(() => {
     const control = new AbortController();
@@ -189,6 +206,32 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     return () => control.abort();
   }, [token]);
 
+  useEffect(() => {
+    if (!estado?.huella_solicitud) return;
+    const control = new AbortController();
+    let temporizador: ReturnType<typeof setTimeout>;
+    async function refrescar() {
+      try {
+        const actual = await obtenerEstadoInicial(token, control.signal);
+        if (!control.signal.aborted) setEstado(actual);
+      } catch (fallo) {
+        if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudo actualizar el estado.");
+      } finally {
+        if (!control.signal.aborted) temporizador = setTimeout(refrescar, 3000);
+      }
+    }
+    temporizador = setTimeout(refrescar, 3000);
+    return () => { control.abort(); clearTimeout(temporizador); };
+  }, [token, estado?.huella_solicitud]);
+
+  async function reintentar() {
+    setReintentando(true); setError("");
+    try { setEstado(await reintentarPreparacion(token)); }
+    catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo solicitar la preparación."); }
+    finally { setReintentando(false); }
+  }
+
+  const cargada = Boolean(estado?.huella_solicitud && estado.estado !== "PENDIENTE");
   const elegidos = Object.values(archivos).filter((archivo): archivo is File => archivo !== null);
   const paso = informe ? 2 : vista ? 1 : 0;
 
@@ -249,7 +292,10 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 
   return (
     <>
-      {estado ? <TarjetaEstado estado={estado} /> : null}
+      {estado ? <TarjetaEstado estado={estado} administrador={administrador} reintentando={reintentando} alReintentar={reintentar} /> : null}
+      {cargada && <EstadoPanel tono="info" titulo="La carga ya está guardada" descripcion="Ventas, recetas y lotes permanecen en la base. La preparación y evaluación continúan automáticamente; si fallan puedes reintentar sin adjuntar archivos." />}
+      {cargada && error && <EstadoPanel tono="alerta" titulo="No se pudo completar la solicitud" descripcion={error} />}
+      {!cargada && <>
 
       <section className="card main-card">
         <div className="section-heading">
@@ -367,6 +413,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         </section>
       ) : null}
 
+      </>}
       {informe ? (
         <section className="card">
           <div className="section-heading">

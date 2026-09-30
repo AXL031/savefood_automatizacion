@@ -13,3 +13,4 @@ scripts
 foodsave-ml/*.csv
 foodsave-ml/notebooks
 model_artifacts
+backend/build/

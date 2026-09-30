@@ -29,3 +29,4 @@ backend/model_artifacts/
 Thumbs.db
 .idea/
 .vscode/
+backend/build/

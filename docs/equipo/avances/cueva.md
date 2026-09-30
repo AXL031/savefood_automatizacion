@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Paso 1 verificado (2026-09-30, Codex para Axel):** E03 carga completa → preparación automática → estado durable → backtest y dashboard, con reintento sin reimportar. Prueba real CatBoost/Beat/PostgreSQL/Redis y fallo de evaluación recuperado reutilizando modelo; suite 128 pruebas + 6 subpruebas correctas. Código en cueva, revisión del PR #11 antes de main. [Contrato](../../api/contrato-importaciones.md#e03-disponible-carga-completa-y-preparación-automática-de-ml).
+
 - **Diagnóstico funcional (2026-09-30):** [estado verificado por bloque y orden de desarrollo](../estado-desarrollo.md). Base real de carga/ML/recetas/inventario; E03→ML incompleto, M02–M04 y L02–L04 pendientes, L01 y V03/V04 parciales. M01/V01 ya conectados; los textos antiguos de espera no son bloqueos vigentes. Sin cambios de lógica ni nuevas pruebas en esta auditoría.
 
 - **Integración y verificación (2026-09-30):** PR [#10](https://github.com/AXL031/savefood_automatizacion/pull/10) incorporado por Axel en `main`, commit `902f0e6`. Las seis ramas remotas publicadas están contenidas en ese commit; su árbol coincide exactamente con `b5d56f0`, la entrega probada. Main local actualizado por avance rápido. Docker: 122 pruebas y 6 subpruebas correctas, sin omisiones; PostgreSQL llega a 0007, permite bajar a 0004 y reaplicar, y `alembic check` no detecta diferencias. Frontend typecheck/build correctos; PR con 2 comprobaciones remotas correctas.
@@ -25,6 +27,17 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### Paso 1 · Inicialización completa → preparación y evaluación ML · 30-09-2026
+
+- **Autor y tareas:** Codex por autorización de Axel, coordinación A04 con E03 y K01/K03. Implementación y prueba de frontera real; no se atribuyen estos cambios a nuevas entregas personales de Edu o Kevin. Plan, compras y promociones siguen pendientes.
+- **Comportamiento:** confirmación reserva una única PREPARAR_MODELO en la transacción de la carga. Inicio durable publica ENTRENANDO antes del cálculo; éxito enlaza modelo y backtest; fallo vuelve a DATOS_CARGADOS conservando ventas/recetas/lotes. POST reintentar-preparacion sin archivos reutiliza trabajo activo o reserva generación nueva tras fallo, también cuando falló la evaluación. En ese último caso reutiliza el único modelo ya entrenado. UI refresca estado, muestra trazas y enlace al panel y oculta carga aceptada.
+- **Archivos clave/contrato:** [contrato E03](../../api/contrato-importaciones.md#e03-disponible-carga-completa-y-preparación-automática-de-ml), inicializacion/{modelos,servicio,rutas}, pronosticos/{entrenamiento,manejadores}, workers/{motor,tasks/manejadores}, frontend/src/app/inicializacion/page.tsx, tipos/servicios de inicialización, tests/integration/test_inicializacion_ml.py. Coordinación: [Edu](sanchez.md), [Kevin](bohorquez.md), [Axel](cueva.md).
+- **Configuración/migración:** nueva 0008_e03_preparacion_ml sobre 0007, sin reescribir previas. Referencias nullable a ejecución/modelo y contador no negativo. CI incorpora E03_POSTGRES_TEST=1 junto a A03/V02; cada prueba PostgreSQL crea su esquema y solo lo elimina al terminar. Cargas previas sin reserva pueden solicitar preparación sin archivos.
+- **Pruebas ejecutadas:** suite Docker PostgreSQL/Redis con A03_POSTGRES_TEST=1, V02_POSTGRES_TEST=1, E03_POSTGRES_TEST=1: **128 passed, 6 subtests passed**, sin omisiones, 16 advertencias de dependencias/reflexión SQLite. Caso real: seis meses de ventas de fixture, CatBoost, Beat, backtest fallido controlado, reintento con un único artefacto, dashboard con pares evaluables y conteos de carga invariables. Permisos, reserva/repetición, rollback sin tarea pendiente, reintento simultáneo y recuperación de caída correctos. Upgrade head, downgrade 0007, reaplicación, current --check-heads y alembic check correctos. Frontend npm run typecheck y npm run build correctos (17 rutas). No hubo envíos externos ni cambios en volúmenes de negocio habituales.
+- **Límites y siguiente paso:** modelo y evaluación usan estado separado; el test no acredita precisión comercial. Interfaz compilada, sin prueba manual de navegador en este corte. CI remoto pendiente para el commit de entrega. Sigue paso 2 M02 de Max, consumiendo contrato público de Kevin/Vera/M01; revisión antes de main.
+- **Commit/PR:** entrega en cueva y seguimiento [PR #11](https://github.com/AXL031/savefood_automatizacion/pull/11), actualizado al alcance del paso 1; hash se consulta en el historial de la rama.
+
 
 ### A04 · Auditoría funcional de avance y pendientes · 30-09-2026
 
@@ -170,4 +183,3 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Cambio:** se definieron las tareas y el lugar de documentación; no se implementó lógica de este bloque en esta entrega documental.
 - **Pruebas:** la revisión de documentación comprueba enlaces, cobertura de carpetas y coherencia del reparto; no acredita funcionamiento del módulo.
 - **Próximo autor:** registrar el primer avance con la [plantilla](README.md) y actualizar el resumen vigente.
-

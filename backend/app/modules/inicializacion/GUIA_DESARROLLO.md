@@ -17,9 +17,11 @@
 
 ## Punto de partida
 
-**Integración 30-09-2026:** La ruta completa ya pasa ServicioRecetasM01 y ServicioInventarioV01 en una sola sesión: DATOS_CARGADOS sin pendientes de esos puertos. Rollback de stock verificado. El piloto se conserva separado. Automatizar entrenamiento desde el asistente completo sigue pendiente.
+**Paso 1 · 30-09-2026:** E03→ML disponible en este corte: confirmación reserva preparación automática, estado enlaza ejecución/modelo/evaluación y POST reintentar-preparacion reutiliza una reserva activa o crea otra tras fallo sin importar. ENTRENANDO se confirma al iniciar el intento; ver contrato E03 en docs/api/contrato-importaciones.md. PostgreSQL/Redis/CatBoost y Beat real verificados.
 
-**E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa sigue sin prueba final por depender de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+**Integración 30-09-2026:** La ruta completa ya pasa ServicioRecetasM01 y ServicioInventarioV01 en una sola sesión: DATOS_CARGADOS sin pendientes de esos puertos. Rollback de stock verificado. El piloto se conserva separado. Entrenamiento automático integrado en el paso 1.
+
+**E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa y su preparación ML pasaron PostgreSQL/Redis en el paso 1 de cueva. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 | Archivo | Responsabilidad |
 |---|---|
@@ -32,7 +34,7 @@
 | `rutas.py` | `GET /inicializacion/estado`, `POST /inicializacion/vista-previa` y `POST /inicializacion/confirmar`. |
 | `piloto.py` | Carga rápida del CSV bakery en `POST /inicializacion/piloto-bakery` y reserva `PREPARAR_MODELO`; flujo separado del asistente completo. |
 
-Migración `0004_e03_inicializacion`, sucesora de `0003_pronosticos`. Mientras falten los servicios de Max y Vera, la carga persiste catálogo y ventas y deja el estado en `PENDIENTE`: una carga parcial **no** declara la instalación inicializada. El CSV piloto usa su propio contrato y no altera esta fila. La lista curada se localiza desde el repositorio o `/code` en Docker.
+Migración `0004_e03_inicializacion`, sucesora de `0003_pronosticos`. La ruta completa consume los puertos reales de Max/Vera; compatibilidad sin puertos queda solo para pruebas parciales y nunca agenda ML. El CSV piloto usa su propio contrato y no altera esta fila. La lista curada se localiza desde el repositorio o `/code` en Docker.
 
 ## Trabajo en esta carpeta
 

@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Paso 1 · 30-09-2026:** CI añade E03_POSTGRES_TEST=1 a las pruebas Docker e incluye test_api_inicializacion_ventas.py y test_inicializacion_ml.py junto con A03/V02. El flujo real usa seis meses de datos de prueba, no archivos de negocio ni Telegram.
+
 **Integración 30-09-2026:** CI comprueba alembic check después del upgrade y ejecuta A03/V02 en PostgreSQL/Redis con flags explícitos. Las pruebas V02 crean y eliminan solo sus esquemas aislados.
 
 Archivos técnicos observados al preparar esta guía: `base-ci.yml`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../docs/equipo/avances/cueva.md) para el último estado.

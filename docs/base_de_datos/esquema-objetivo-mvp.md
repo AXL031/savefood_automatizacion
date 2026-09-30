@@ -96,3 +96,7 @@ El [contrato de pedidos](../api/contrato-pedidos.md) fija fórmula, transiciones
 ## Corte M01 y V01/V02 (30-09-2026)
 
 Las migraciones `0005_m01_ingredientes_recetas` y `0006_v01_inventario` continúan desde `0004_e03_inicializacion`. Agregan ingredientes, recetas versionadas, lotes y movimientos con `saldo_resultante`. Las reglas de vida útil y funciones públicas están en [M01 y V01/V02](../api/contratos.md#entrega-m01-y-v01v02-integrada-desde-rojas). No implementan planificación ni pedidos.
+
+## Paso 1 · Referencias de preparación E03
+
+`0008_e03_preparacion_ml` agrega `configuracion_inicial.preparacion_ejecucion_id` (FK a ejecución, nullable, RESTRICT), `modelo_id` (FK a artefacto, nullable, RESTRICT) y `preparacion_numero` (entero no negativo, default 0). Cargas previas se conservan y pueden reservar ML sin volver a importar. La salida de preparación enlaza evaluacion_ejecucion_id; el estado HTTP muestra sus dos estados por separado.
