@@ -1,4 +1,4 @@
-# Secretos y configuración local
+# Secretos y configuraciÃ³n local
 .env
 .env.*
 !.env.example
@@ -29,3 +29,6 @@ backend/model_artifacts/
 Thumbs.db
 .idea/
 .vscode/
+
+# TypeScript
+*.tsbuildinfo

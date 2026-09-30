@@ -189,3 +189,115 @@ Una evaluación negativa se persiste con `proponer=false`, `descuento_pct=null` 
 ## Evolución posterior
 
 Recepción física, pago, **activación** de promociones, cierre diario real y conectores Excel/Google Sheets quedan fuera del primer recorrido. Proveedor mínimo, pedido y Telegram forman parte de este prototipo según [contrato-pedidos.md](contrato-pedidos.md). Las rutas de [rutas-api.md](rutas-api.md) están clasificadas como existentes o propuestas.
+
+## Entrega M01 y V01/V02 integrada desde rojas
+
+### M01 disponible: ingredientes y recetas versionadas (30-09-2026)
+
+Funciones públicas; reciben la `Session` del llamador, hacen `flush` y **no** confirman:
+
+* `app.modules.recetas.servicio.ServicioRecetasM01` implementa el puerto `ServicioRecetas` de la primera carga. Ya está conectado en `POST /inicializacion/confirmar`.
+
+* `obtener_receta(sesion, receta_id) -> RecetaLeida` lee una versión concreta, activa o no; es la que el plan guarda para ser reproducible.
+
+* `recetas_activas(sesion, producto_ids) -> dict[producto_id, RecetaLeida]` y `obtener_receta_activa(sesion, producto_id)`. Un producto sin receta no aparece en el diccionario (no es receta vacía).
+
+* `RecetaLeida(receta_id, producto_id, version, activo, motivo, creado_en, lineas)`; cada línea trae `ingrediente_id`, `codigo`, `nombre`, `unidad_base` y `cantidad_por_unidad: Decimal` con 3 decimales, en la unidad base.
+
+* `crear_version(sesion, producto_id, lineas, motivo, usuario_id)` es el único camino para cambiar una receta: crea la versión siguiente y desactiva la anterior. La misma composición que la activa no crea versión (`creada=False`).
+
+* `app.modules.ingredientes.servicio.obtener_ingredientes(sesion, ids)` entrega el catálogo a inventario y compras.
+
+Rutas: `GET /ingredientes`, `POST /ingredientes` y `PATCH /ingredientes/{id}` (Administrador); `GET /recetas` (productos activos con su receta activa o `null`), `GET /recetas/{receta_id}`, `GET /recetas/productos/{producto_id}/versiones` y `POST /recetas/productos/{producto_id}/versiones` (Administrador; 201 si crea, 200 si la composición no cambió).
+
+Las cantidades viajan como texto con tres decimales.
+
+```json
+POST /recetas/productos/3/versiones
+
+{
+  "motivo": "Ajuste de hidratación",
+  "lineas": [
+    {
+      "ingrediente_id": 1,
+      "cantidad_por_unidad": "260"
+    }
+  ]
+}
+
+→ 201 {
+  "datos": {
+    "receta_id": 9,
+    "version": 2,
+    "activo": true,
+    "creada": true,
+    "lineas": [
+      {
+        "ingrediente_id": 1,
+        "codigo": "harina",
+        "unidad_base": "g",
+        "cantidad_por_unidad": "260.000"
+      }
+    ]
+  }
+}
+```
+
+Errores propios: `422 UNIDAD_NO_PERMITIDA`, `409 CODIGO_DUPLICADO`, `409 UNIDAD_EN_USO` (una receta o un lote usa la unidad), `409 INGREDIENTE_EN_RECETA_ACTIVA` (al desactivar), `422 CANTIDAD_INVALIDA` (≤ 0 o más de 3 decimales), `422 PAREJA_DUPLICADA`, `422 REFERENCIA_ROTA`, `409 RECETA_DIFERENTE` (primera carga repetida con otra receta).
+
+Migración `0005_m01_ingredientes_recetas`.
+
+### V01/V02 disponibles: apertura, ajustes y stock por fecha (30-09-2026)
+
+Implementado por Max Rojas por encargo de las tareas de Leonardo Vera.
+
+* `app.modules.inventario.servicio.ServicioInventarioV01` implementa el puerto `ServicioInventario`, ya conectado en la primera carga. Cantidad `0` crea el lote con saldo cero y sin movimiento; cantidad positiva crea un único `APERTURA` con `efectivo_en_demo = fecha_referencia_stock 23:59` y clave derivada de `clave_operacion_base`, ítem y lote. Un lote no informado recibe código técnico estable `SIN-LOTE-…` y `lote_informado=false`.
+
+* `registrar_ajuste(sesion, SolicitudAjuste(tipo_item, lote_id, delta, motivo, clave_operacion, efectivo_en_demo), usuario_id)` bloquea el lote con `SELECT … FOR UPDATE`, valida saldo final `>= 0` y guarda movimiento y saldo juntos. Producto: delta entero; ingrediente: hasta 3 decimales. `efectivo_en_demo` es hora local sin zona.
+
+* `consultar_disponibilidad(sesion, fecha, tipo=None, producto_ids=None, ingrediente_ids=None) -> Disponibilidad` solo lee. Cada ítem trae `unidad`, `stock_conocido`, `cantidad_disponible` (`None` si no hay ningún lote: desconocido, no cero), `cantidad_prioridad`, `cantidad_excluida`, `vigencia_desconocida` y el detalle de lotes. `Disponibilidad.huella` resume lotes, saldos y fechas para que el plan detecte si el stock cambió; `leido_en` es el instante UTC de la lectura.
+
+**Vida útil (acuerdo del equipo).** Producto de pastelería: máximo 5 días y `fecha_caducidad` es el día 5. Día de vida en la fecha consultada = `5 - (fecha_caducidad - fecha)`.
+
+Días 1–3 `OPTIMO` (cuenta), 4–5 `PRIORIDAD` (cuenta y se vende primero), 6 en adelante `MERMA` (no cuenta); pasar `fecha_limite_venta` también es `MERMA`.
+
+Ingrediente: `VIGENTE` hasta su caducidad inclusive, luego `VENCIDO`.
+
+Sin caducidad: `DESCONOCIDO`, cuenta y activa `vigencia_desconocida`.
+
+En la apertura, un producto con caducidad o límite de venta posterior a `fecha_referencia_stock + 4 días` se rechaza con `422 VIDA_UTIL_EXCEDIDA` (hoy aparece al confirmar, no en la vista previa).
+
+Rutas:
+
+* `GET /inventario/disponibilidad?fecha=YYYY-MM-DD[&tipo=producto|ingrediente]`
+* `GET /inventario/movimientos?[tipo][&lote_id][&limite]`
+* `POST /inventario/ajustes` (Administrador; 201 si es nuevo, 200 con `repetido=true` si la clave ya se aplicó igual).
+
+```json
+POST /inventario/ajustes
+
+{
+  "tipo": "producto",
+  "lote_id": 1,
+  "delta": "-1",
+  "motivo": "Una baguette quemada",
+  "clave_operacion": "ajuste-3f2a…",
+  "efectivo_en_demo": "2022-08-24T17:45:00"
+}
+
+→ 201 {
+  "datos": {
+    "movimiento_id": 6,
+    "tipo_movimiento": "AJUSTE",
+    "delta": "-1",
+    "saldo_resultante": "3",
+    "repetido": false
+  }
+}
+```
+
+Errores propios: `404 LOTE_NO_ENCONTRADO`, `409 SALDO_INSUFICIENTE`, `409 CLAVE_REUTILIZADA`, `409 LOTE_EXISTENTE` (apertura repetida con otros datos), `422 VIDA_UTIL_EXCEDIDA`, `422 CANTIDAD_INVALIDA`, `422 MOTIVO_OBLIGATORIO`.
+
+Migración `0006_v01_inventario`.
+
+Pendiente de V03: agendar `EVALUAR_PROMOCION` después de un ajuste de producto.

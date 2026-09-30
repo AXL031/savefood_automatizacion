@@ -10,6 +10,8 @@ from app.core.errores import ErrorAPI
 from app.core.identidad import identidad_actual, requiere_administrador
 from app.modules.autenticacion.modelos import Usuario
 from app.modules.inicializacion.modelos import ConfiguracionInicial
+from app.modules.inventario.servicio import ServicioInventarioV01
+from app.modules.recetas.servicio import ServicioRecetasM01
 from app.modules.inicializacion.servicio import (
     VistaPrevia,
     confirmar_carga,
@@ -141,6 +143,8 @@ async def confirmar(
         fecha_referencia_stock,
         clave_importacion.strip(),
         skus_curados(),
+        puerto_recetas=ServicioRecetasM01(),
+        puerto_inventario=ServicioInventarioV01(),
     )
     sesion.commit()
     return {

@@ -92,3 +92,7 @@ El [contrato de pedidos](../api/contrato-pedidos.md) fija fórmula, transiciones
 ## No crear en `0002` del prototipo
 
 `recepcion_pedido`, factura, pago, publicación de descuentos, predicción intradía de excedentes y Google Sheets pertenecen a la visión futura. `programacion_demo` ya existe en `0001b`; pedidos y evaluación de promoción siguen previstos para `0002`. El [ER](diagrama-entidad-relacion.mmd) del prototipo debe reflejar estas tablas junto a las dos existentes de `0001`.
+
+## Corte M01 y V01/V02 (30-09-2026)
+
+Las migraciones `0005_m01_ingredientes_recetas` y `0006_v01_inventario` continúan desde `0004_e03_inicializacion`. Agregan ingredientes, recetas versionadas, lotes y movimientos con `saldo_resultante`. Las reglas de vida útil y funciones públicas están en [M01 y V01/V02](../api/contratos.md#entrega-m01-y-v01v02-integrada-desde-rojas). No implementan planificación ni pedidos.
