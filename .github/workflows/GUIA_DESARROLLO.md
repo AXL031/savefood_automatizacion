@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** CI comprueba alembic check después del upgrade y ejecuta A03/V02 en PostgreSQL/Redis con flags explícitos. Las pruebas V02 crean y eliminan solo sus esquemas aislados.
+
 Archivos técnicos observados al preparar esta guía: `base-ci.yml`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../docs/equipo/avances/cueva.md) para el último estado.
 
 ## Trabajo en esta carpeta

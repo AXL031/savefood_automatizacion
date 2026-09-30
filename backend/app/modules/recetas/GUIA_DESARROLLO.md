@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** M01 disponible: ServicioRecetasM01 conecta la primera carga; cambios crean versión y conservan la anterior. Migración 0005. API y frontera de carga/versionado verificadas en SQLite.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Max Rojas](../../../../docs/equipo/avances/rojas.md) para el último estado.
 
 ## Trabajo en esta carpeta

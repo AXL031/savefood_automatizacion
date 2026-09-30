@@ -146,3 +146,8 @@ td a { font-weight: 700; white-space: nowrap; }
 @media (max-width: 1000px) { .page-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .app-layout { display: block; } .sidebar { position: static; height: auto; padding: 15px; border-right: 0; border-bottom: 1px solid #e5e7eb; } .sidebar nav { display: flex; overflow-x: auto; } .nav-group-label { margin: 19px 4px 8px; } .nav-link { white-space: nowrap; } .sidebar-bottom { display: none; } .topbar { min-height: 55px; padding: 10px 17px; } .page-content { padding: 24px 16px 45px; } .preference-grid { grid-template-columns: 1fr; } .login-layout { grid-template-columns: 1fr; } .login-intro { padding: 35px 25px; } .brand-login { margin-bottom: 35px; } .login-intro h1 { font-size: 2.25rem; } .login-intro p, .login-step { display: none; } .login-card { margin: 35px 0; } }
 @media (max-width: 480px) { .stats-grid, .form-grid { grid-template-columns: 1fr; } .field-full { grid-column: auto; } .section-heading { flex-direction: column; } .filter-label { width: 100%; justify-content: space-between; } .login-card { padding: 24px; } }
+
+/* Inventario y recetas: estados aportados por rojas. */
+.badge-prioridad { background: #fef3c7; color: #92400e; }
+.error { color: #991b1b; }
+.meta { color: #6b7280; }

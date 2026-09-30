@@ -100,6 +100,95 @@ def cliente():
     motor.dispose()
 
 
+def test_frontera_carga_recetas_stock_y_versiones(cliente):
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    carga = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "frontera-1"},
+                         files=archivos(), headers=admin)
+    assert carga.status_code == 201, carga.text
+    assert carga.json()["datos"]["estado"] == "DATOS_CARGADOS"
+    assert carga.json()["datos"]["pendiente_de"] == []
+    recetas = cliente.get("/api/v1/recetas", headers=admin).json()["datos"]
+    assert len(recetas) == 3
+    original = recetas[0]["receta"]
+    nueva = cliente.post(f'/api/v1/recetas/productos/{original["producto_id"]}/versiones', headers=admin,
+                          json={"motivo": "Ajuste de receta", "lineas": [
+                              {"ingrediente_id": original["lineas"][0]["ingrediente_id"], "cantidad_por_unidad": "321.500"}]})
+    assert nueva.status_code == 201, nueva.text
+    anterior = cliente.get(f'/api/v1/recetas/{original["receta_id"]}', headers=admin).json()["datos"]
+    assert anterior["lineas"] == original["lineas"]
+    assert nueva.json()["datos"]["version"] == original["version"] + 1
+    repetida = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "frontera-1"},
+                           files=archivos(), headers=admin)
+    assert repetida.status_code == 201
+    assert repetida.json()["datos"]["ya_estaba_cargada"] is True
+
+
+def test_frontera_stock_invalido_revierte_carga_completa(cliente):
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    entrega = archivos()
+    entrega = [(campo, (nombre, crudo.replace(b"2022-08-25", b"2022-09-25") if nombre == "stock_inicial.csv" else crudo, tipo))
+               for campo, (nombre, crudo, tipo) in entrega]
+    respuesta = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "rollback-stock"},
+                             files=entrega, headers=admin)
+    assert respuesta.status_code == 422, respuesta.text
+    assert respuesta.json()["error"]["codigo"] == "VIDA_UTIL_EXCEDIDA"
+    assert cliente.get("/api/v1/productos", headers=admin).json()["datos"] == []
+    assert cliente.get("/api/v1/ingredientes", headers=admin).json()["datos"] == []
+    assert cliente.get("/api/v1/recetas", headers=admin).json()["datos"] == []
+
+
+def test_proveedores_api_permisos_referencia_y_oferta(cliente):
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    operador = cabecera(token(cliente, "operador@example.com", "clave-segura-operador"))
+    assert cliente.get("/api/v1/proveedores").status_code == 401
+    assert cliente.post("/api/v1/proveedores", headers=operador, json={"codigo": "P1", "nombre": "Prueba"}).status_code == 403
+    p = cliente.post("/api/v1/proveedores", headers=admin, json={"codigo": "P1", "nombre": "Prueba", "chat_id_pruebas": "123"})
+    assert p.status_code == 201, p.text
+    pid = p.json()["datos"]["id"]
+    oferta = {"ingrediente_id": 999, "descripcion": "Saco", "unidad_compra": "saco",
+              "factor_conversion": "25000", "multiplo": "1", "minimo": "0", "preferida": True}
+    assert cliente.post(f"/api/v1/proveedores/{pid}/ofertas", headers=admin, json=oferta).status_code == 404
+    ingrediente = cliente.post("/api/v1/ingredientes", headers=admin, json={"codigo": "HAR", "nombre": "Harina", "unidad_base": "g"})
+    oferta["ingrediente_id"] = ingrediente.json()["datos"]["id"]
+    creada = cliente.post(f"/api/v1/proveedores/{pid}/ofertas", headers=admin, json=oferta)
+    assert creada.status_code == 201, creada.text
+    assert cliente.get(f"/api/v1/proveedores/{pid}/ofertas", headers=operador).json()["datos"][0]["id"] == creada.json()["datos"]["id"]
+    preferida = cliente.get(f'/api/v1/proveedores/ofertas/preferida/{oferta["ingrediente_id"]}', headers=admin).json()["datos"]
+    assert preferida["compra_automatica_habilitada"] is False
+    verificacion = cliente.post(f"/api/v1/proveedores/{pid}/verificar-destino", headers=admin)
+    assert verificacion.json()["datos"]["verificado"] is False
+    assert "no configurado" in verificacion.json()["datos"]["detalle"]
+
+
+def test_stock_cero_caducidad_ajuste_idempotente_y_saldo(cliente):
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "stock-1"},
+                 files=archivos(), headers=admin).raise_for_status()
+    filas = cliente.get("/api/v1/inventario/disponibilidad?fecha=2022-08-24", headers=admin).json()["datos"]
+    productos = {fila["codigo"]: fila for fila in filas if fila["tipo"] == "producto"}
+    assert productos["croissant"]["cantidad_disponible"] == "0"
+    assert productos["croissant"]["stock_conocido"] is True
+    assert productos["baguette"]["cantidad_disponible"] == "4"
+    movimientos = cliente.get("/api/v1/inventario/movimientos", headers=admin).json()["datos"]
+    lote = next(m for m in movimientos if m["codigo_lote"] == "PT-001")["lote_id"]
+    ajuste = {"tipo": "producto", "lote_id": lote, "delta": "-3", "motivo": "Merma de prueba",
+              "clave_operacion": "ajuste-1", "efectivo_en_demo": "2022-08-24T10:00:00"}
+    primero = cliente.post("/api/v1/inventario/ajustes", headers=admin, json=ajuste)
+    assert primero.status_code == 201, primero.text
+    assert primero.json()["datos"]["saldo_resultante"] == "1"
+    repetido = cliente.post("/api/v1/inventario/ajustes", headers=admin, json=ajuste)
+    assert repetido.status_code == 200
+    assert repetido.json()["datos"]["movimiento_id"] == primero.json()["datos"]["movimiento_id"]
+    otro_motivo = cliente.post("/api/v1/inventario/ajustes", headers=admin, json={**ajuste, "motivo": "Otro motivo"})
+    assert otro_motivo.status_code == 409
+    distinto = cliente.post("/api/v1/inventario/ajustes", headers=admin, json={**ajuste, "delta": "-2"})
+    assert distinto.status_code == 409
+    negativo = cliente.post("/api/v1/inventario/ajustes", headers=admin, json={**ajuste, "clave_operacion": "otra", "delta": "-2"})
+    assert negativo.status_code == 409
+    vencidos = cliente.get("/api/v1/inventario/disponibilidad?fecha=2022-08-26", headers=admin).json()["datos"]
+    assert next(f for f in vencidos if f["codigo"] == "baguette")["cantidad_disponible"] == "0"
+
+
 def token(cliente: TestClient, correo: str, contrasena: str) -> str:
     respuesta = cliente.post(
         "/api/v1/autenticacion/iniciar-sesion", json={"correo": correo, "contrasena": contrasena}
@@ -173,9 +262,9 @@ def test_confirmar_persiste_y_expone_lo_pendiente(cliente: TestClient):
     datos = respuesta.json()["datos"]
     assert datos["productos"] == 3
     assert datos["ventas_diarias"] == 4
-    # Sin los servicios de Max y Vera la instalación no se declara inicializada.
-    assert datos["estado"] == "PENDIENTE"
-    assert len(datos["pendiente_de"]) == 2
+    # Los puertos reales de Max y Vera completan la transacción de la carga.
+    assert datos["estado"] == "DATOS_CARGADOS"
+    assert datos["pendiente_de"] == []
 
     productos = cliente.get("/api/v1/productos", headers=admin).json()["datos"]
     assert {fila["sku_externo"] for fila in productos} == {"BAGUETTE", "CROISSANT", "BANETTE"}

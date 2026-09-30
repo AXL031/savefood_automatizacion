@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** principal.py registra ingredientes, recetas, inventario y proveedores además del piloto/pronósticos existentes. Proveedores respeta identidad y errores comunes.
+
 Archivos técnicos observados al preparar esta guía: `__init__.py`, `principal.py`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../docs/equipo/avances/cueva.md) para el último estado.
 
 ## Trabajo en esta carpeta

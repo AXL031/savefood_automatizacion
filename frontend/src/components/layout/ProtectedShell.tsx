@@ -27,6 +27,14 @@ const grupos = [
     ],
   },
   {
+    titulo: "Producción",
+    enlaces: [
+      { href: "/ingredientes", texto: "Ingredientes" },
+      { href: "/recetas", texto: "Recetas" },
+      { href: "/inventario", texto: "Inventario" },
+    ],
+  },
+  {
     titulo: "Sistema",
     enlaces: [
       { href: "/configuracion", texto: "Configuración" },

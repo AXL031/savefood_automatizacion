@@ -55,3 +55,8 @@ El stock positivo se inserta mediante movimientos `APERTURA` idempotentes y sald
 ## Entrenamiento y disponibilidad
 
 Tras aceptar datos, la preparación separa entrenamiento, validación y prueba por la [regla de duración y meses completos](../../foodsave-ml/POLITICA_EVALUACION.md), entrena CatBoost **una vez** sin usar la prueba para ajustar/seleccionar y guarda `.cbm` y metadatos (`version_modelo`, SHA-256, variables ordenadas, productos cubiertos y partición). Para el CSV piloto, validación es abril–junio de 2022 y prueba julio–septiembre de 2022; `2022-08-24` cae en prueba. La fecha elegida para demo debe estar en la prueba reservada. Tras preparar el modelo, `EVALUAR_MODELO` realiza un backtest cronológico sobre esa prueba. Puede tardar; un fallo de entrenamiento deja el sistema en `DATOS_CARGADOS` y permite reintentar sin recargar ventas o stock. La acción programada solo carga el artefacto listo y hace inferencia; las ventas reales del objetivo solo aparecen después como comparación. Las métricas históricas no certifican uso comercial.
+
+
+## Integración de puertos M01/V01 (30-09-2026)
+
+La ruta de confirmación usa `ServicioRecetasM01` y `ServicioInventarioV01` con la sesión compartida. Una carga completa devuelve DATOS_CARGADOS y pendiente_de vacío. Cero de stock crea lote sin movimiento; caducidad de pastelería mayor que referencia+4 días provoca 422 VIDA_UTIL_EXCEDIDA en confirmación y revierte toda la transacción. La comprobación de esa regla en vista previa sigue pendiente. El entrenamiento automático desde el asistente completo no se declara conectado.

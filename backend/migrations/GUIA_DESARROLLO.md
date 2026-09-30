@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Integración 30-09-2026:** env.py registra ConfiguracionInicial y todos los modelos nuevos. Cadena única hasta 0007_l01_proveedores. CI ejecuta alembic check sobre PostgreSQL.
+
 Archivos técnicos observados al preparar esta guía: `env.py`, `script.py.mako`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../docs/equipo/avances/cueva.md) para el último estado.
 
 Axel coordina integración de revisiones; no asume las tablas de los seis.
