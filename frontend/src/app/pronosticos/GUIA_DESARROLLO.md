@@ -18,12 +18,12 @@
 
 ## Punto de partida
 
-`page.tsx` consulta versiones y corridas persistidas, muestra cobertura por producto y permite al Administrador reservar entrenamiento desde ventas locales. La ruta consume `services/pronosticos.ts` y no inventa pronósticos cuando el backend devuelve `null`. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md).
+`page.tsx` consulta versiones y corridas persistidas, muestra cobertura por producto y permite al Administrador reservar entrenamiento desde ventas locales. El panel histórico activo está en `../panel/page.tsx`. Ambas rutas consumen `services/pronosticos.ts` y no inventan pronósticos cuando el backend devuelve `null` o falla. Los componentes del dashboard demostrativo de K04 permanecen en el árbol, pero no alimentan estas rutas activas. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md).
 
 ## Trabajo en esta carpeta
 
 1. Mostrar estado del modelo, versión, partición y pronósticos por fecha/producto.
-2. Construir dashboard de evaluación histórica, cobertura, MAE/WAPE y serie temporal.
+2. Mantener el dashboard de evaluación histórica, cobertura, MAE/WAPE y serie temporal conectado a las corridas persistidas.
 3. Mostrar null y métricas indefinidas como desconocidas, con enlace a la corrida.
 
 ## Organización de implementación

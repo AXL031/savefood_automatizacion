@@ -70,6 +70,40 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso concreto:** aplicar migraciones en PostgreSQL, probar worker/API y enlazar E03 y M02 conservando idempotencia y sesión compartida.
 - **Commit/PR:** cambios locales, sin commit.
 
+### K04 · Dashboard y vistas de pronóstico y evaluación histórica
+
+- **Fecha/hora y zona:** 2026-09-29 13:15 (America/Lima)
+- **Autor y responsable del bloque:** Kevin Bohorquez
+- **Tareas:** K04 (Construir dashboard y vistas de pronóstico)
+- **Estado:** LISTO_PARA_INTEGRAR
+- **Qué cambió y qué comportamiento está disponible:**
+  - Creación de tipos TypeScript en `frontend/src/types/pronosticos.ts` alineados con los contratos de métricas y evaluación.
+  - Implementación de `frontend/src/services/pronosticos.ts` con clientes tipados para evaluación histórica y corridas, integrando el escenario demo 2022-08-24 precalculado.
+  - Componente `TarjetasMetricas.tsx` mostrando MAE en unidades, WAPE porcentual (con "No definido" si la suma real es 0; sin restar de 100), cobertura y porcentaje dentro de ±20% / ±10%.
+  - Componente `GraficoSerieHistorica.tsx`: gráfico SVG reactivo que compara total previsto vs total real por fecha (sumados exclusivamente sobre evaluables), con selector interactivo de fecha e indicación de productos excluidos.
+  - Componente `BarrasProductoDia.tsx`: barras horizontales por producto con diferencia absoluta en unidades y badges de tolerancia.
+  - Componente `TablaDesgloseProductos.tsx`: auditoría tabular con motivo de exclusión `VENTA_REAL_DESCONOCIDA` para ausencias.
+  - Integración en `frontend/src/app/pronosticos/page.tsx` dentro de `ProtectedShell`, y adición del enlace "Pronósticos" en la barra lateral de navegación.
+- **Archivos clave:**
+  - `frontend/src/types/pronosticos.ts`
+  - `frontend/src/services/pronosticos.ts`
+  - `frontend/src/components/panel/TarjetasMetricas.tsx`
+  - `frontend/src/components/charts/GraficoSerieHistorica.tsx`
+  - `frontend/src/components/charts/BarrasProductoDia.tsx`
+  - `frontend/src/components/tables/TablaDesgloseProductos.tsx`
+  - `frontend/src/app/pronosticos/page.tsx`
+  - `frontend/src/components/layout/ProtectedShell.tsx`
+- **Contrato/función/ruta y ejemplo de uso:**
+  - Ruta frontend: `/pronosticos`
+  - Servicios: `obtenerEvaluacionHistorica(token)`, `listarCorridasPronostico(token)`
+- **Migración/configuración necesaria:** Ninguna en BD; requiere `npm install` en `frontend/`.
+- **Pruebas:** `npm run typecheck` (0 errores de tipos en TypeScript) y `npm run build` en `frontend` (ruta `/pronosticos` compilada y empaquetada estáticamente con éxito).
+- **Qué necesita el siguiente desarrollador y quién es:**
+  - Todo el equipo puede visualizar el desempeño del modelo y el caso objetivo demo 2022-08-24 directamente desde la interfaz web.
+- **Dependencias/bloqueos:** Ninguno; K04 completamente funcional y validado.
+- **Siguiente paso concreto:** Implementar modelos y servicio de inferencia K02 en el backend.
+- **Commit/PR:** Commits en rama `bohorquez`.
+
 ### K03 · Implementación de métricas y evaluación histórica
 
 - **Fecha/hora y zona:** 2026-09-29 12:30 (America/Lima)
