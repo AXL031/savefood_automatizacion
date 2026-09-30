@@ -17,7 +17,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+E01 parcial implementa `producto` y `sku_producto` en `0002_e01_ventas`. `cargar_catalogo_bakery(sesion, lista)` lee la lista curada de nombres y crea mapeos explícitos; `resolver_sku(sesion, origen, sku_externo)` devuelve el ID local o falla con `SKU_DESCONOCIDO`. `listar_skus_bakery(sesion)` y `nombres_productos(sesion, ids)` son lecturas públicas para Kevin y otros consumidores. Ninguna función confirma la transacción. Los precios de la lista son referencia del dataset y no forman parte del catálogo operativo de la demo. API y pantalla de productos siguen pendientes. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Trabajo en esta carpeta
 

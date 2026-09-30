@@ -10,8 +10,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Comportamiento disponible:** A01 ofrece identidad, roles, error uniforme y configuración del modo de pedidos. A02 guarda programaciones y ejecuciones idempotentes. A03 agrega Beat cada 30 segundos, despacho durable con token/lease, ejecución transaccional de efectos locales y reintentos internos. A04 deja Compose con migración automática, imagen backend con dependencias ML, volumen persistente compartido entre worker y API, token Telegram opcional y CI ampliado. `0001a_configuracion`, `0001b_automatizaciones` y `0001c_motor` están aplicadas en PostgreSQL local.
 - **Contrato disponible:** [A01–A03 en contratos HTTP e internos](../../api/contratos.md), [rutas disponibles](../../api/rutas-api.md), [arranque A04](../arranque-modulos.md), `obtener_modo_envio_pedidos(sesion)`, `automatizaciones.servicio` (`crear_o_recuperar_ejecucion`, `programar_ejecucion`, `iniciar_intento`, `finalizar_intento`), `workers.tasks.manejadores` (`ContextoEjecucion`, `MANEJADORES`) y `MODEL_ARTIFACT_DIR=/code/model_artifacts`.
 - **Entrega a consumidores:** Edu puede reservar preparación en su transacción de carga; Kevin recibe runtime CatBoost y volumen para escribir/verificar el modelo; Vera puede programar evaluación tras un ajuste; Max y Aguirre pueden usar claves/trazas y registrar manejadores al entregar servicios públicos. Aguirre recibe `TELEGRAM_BOT_TOKEN` opcional en API/worker, pero es dueño del canal, destino, estados y pruebas. Todos pueden continuar; cada consumidor prueba su frontera antes de declarar integración.
-- **Bloqueos:** el registro de manejadores está vacío hasta las entregas de dominio; el CBM real, la migración compartida `0002`, el recorrido completo y Telegram real siguen pendientes. No se ha ejecutado CI remoto ni un arranque por otro integrante para estos cambios locales.
-- **Siguiente paso:** integrar entregas de dominio en cortes pequeños y exigir prueba de efecto real de cada dueño. La futura `0002` debe depender de `0001c_motor`; repetir [la guía de arranque](../arranque-modulos.md) en otra computadora.
+- **Bloqueos:** los manejadores de Kevin y las migraciones `0002_e01_ventas`/`0003_pronosticos` están disponibles en la rama `cueva`, pero falta aplicarlas y probar el flujo nuevo en PostgreSQL/Compose. El motor Docker de esta PC está bloqueado por `Virtual Machine Platform`; faltan E03 de Edu, el consumo M02 de Max, Telegram de Aguirre, CI remoto y repetición del arranque por otro integrante.
+- **Siguiente paso:** habilitar el motor Docker, verificar migraciones y worker con PostgreSQL, y probar las fronteras E03/K02/M02 con los responsables. Repetir [la guía de arranque](../arranque-modulos.md) en otra computadora.
 
 | Tarea | Estado de seguimiento |
 |---|---|
@@ -21,6 +21,18 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### 2026-09-29 19:24 America/Bogota — coordinación A04 de la integración Edu–Kevin
+
+- **Autor y responsable del bloque:** Codex por solicitud de Axel Cueva; coordinación A04, sin atribuir implementación de E01 o K01–K04 a Axel.
+- **Tareas y estado:** A04, LISTO_PARA_INTEGRAR en Git; la ejecución del nuevo flujo en PostgreSQL sigue pendiente.
+- **Qué cambió y qué comportamiento está disponible:** se trasladó el corte local E01/K01–K04 a la rama personal `cueva` y se integró `origin/main`. En los conflictos de página, servicio y guía de pronósticos se conservó la versión local conectada a API persistida; la navegación quedó con un solo enlace a Pronósticos y otro a Panel histórico. Se conservó la entrada K04 de Kevin en su bitácora, además del resumen local más reciente. Los componentes visuales del remoto quedaron en el árbol para adaptación posterior; el escenario simulado no reemplaza los resultados de la API.
+- **Archivos clave:** [avance de Kevin](bohorquez.md), [avance de Edu](sanchez.md), [ruta de pronósticos](../../../frontend/src/app/pronosticos/page.tsx), [servicio HTTP](../../../frontend/src/services/pronosticos.ts), [navegación](../../../frontend/src/components/layout/ProtectedShell.tsx) y [panel](../../../frontend/src/app/panel/page.tsx).
+- **Contrato/ejemplo:** `GET /api/v1/pronosticos/modelos`, `GET /api/v1/pronosticos/corridas?modelo_id=1` y `GET /api/v1/pronosticos/evaluacion?modelo_id=1` requieren Bearer real y devuelven `datos`; un error permanece visible, sin devolver cifras de respaldo. El contrato de dominio está en [contratos.md](../../api/contratos.md#ventas--pronósticos).
+- **Configuración/migraciones:** `0002_e01_ventas` y `0003_pronosticos` forman parte del corte local; no se reescribieron migraciones previas. `.env` sigue ignorado y no se incluyó en Git. La integración tomó `frontend/package-lock.json` del remoto.
+- **Pruebas ejecutadas:** `npm run typecheck` correcto; `npm run build` correcto, incluidas `/pronosticos` y `/panel`; `.\\.venv\\Scripts\\python.exe -m pytest backend/tests foodsave-ml/tests -q -p no:cacheprovider --tb=line`: 78 passed, 8 skipped, 6 subtests passed. Las ejecuciones iniciales de pytest y build en el entorno restringido fallaron por permisos de carpeta temporal y `spawn EPERM`; la repetición con acceso normal pasó. `git diff --check` sin errores. No se verificó PostgreSQL/Compose ni CI remoto en este merge.
+- **Dependencias y siguiente paso:** Edu debe enlazar E03, Max consumir K02, y Axel verificar A04 con Docker habilitado; Kevin mantiene su contrato y la bitácora del dominio. Revisar el resultado de la integración antes de incorporar a `main`.
+- **Commit/PR:** corte local `94e037d`; merge de `origin/main` en la rama `cueva`; sin PR.
 
 ### 2026-09-27 16:56 America/Lima — corte 4: infraestructura común reproducible
 

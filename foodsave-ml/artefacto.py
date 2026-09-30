@@ -150,7 +150,7 @@ def entrenar_y_exportar(
         ruta_tmp_cbm.unlink(missing_ok=True)
         raise
 
-    print(f"[INFO] CBM exportado → {ruta_cbm_final}")
+    print(f"[INFO] CBM exportado -> {ruta_cbm_final}")
 
     # Calcular huella SHA-256
     sha256 = _sha256(ruta_cbm_final)
@@ -196,7 +196,7 @@ def entrenar_y_exportar(
         ruta_tmp_meta.unlink(missing_ok=True)
         raise
 
-    print(f"[INFO] Metadata exportada → {ruta_meta_final}")
+    print(f"[INFO] Metadata exportada -> {ruta_meta_final}")
     print(f"[INFO] SHA-256: {sha256}")
     print(f"[INFO] Productos entrenados: {len(productos_entrenados)}")
 

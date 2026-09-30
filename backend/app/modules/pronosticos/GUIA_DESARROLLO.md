@@ -18,7 +18,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para el último estado.
+El corte K01–K04 implementa modelos/migración `0003_pronosticos`, entrenamiento desde ventas PostgreSQL (`entrenamiento.py`), vector sin venta objetivo (`caracteristicas.py`), inferencia idempotente (`servicio.py`), evaluación por revisión (`evaluacion.py`), handlers de Kevin y rutas de consulta (`rutas.py`). Max llama `generar_corrida` y `solicitar_evaluacion_corrida` en su sesión; Edu reserva PREPARAR_MODELO al terminar E03. No llamar `commit` desde esos servicios. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para pruebas y límites de integración.
 
 ## Trabajo en esta carpeta
 

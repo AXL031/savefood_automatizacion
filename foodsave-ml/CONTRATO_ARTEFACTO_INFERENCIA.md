@@ -1,12 +1,12 @@
 # Contrato del artefacto CatBoost para inferencia local
 
-**Estado:** especificación para desarrollar la integración; el repositorio aún no incluye un CBM cargado por el backend. En el prototipo universitario, la primera inicialización entrena una vez con las ventas históricas importadas y guarda un artefacto `listo_demo` para inferencia local sobre fechas históricas. Esto no equivale a aprobación comercial. El notebook actual exporta un artefacto experimental que debe ampliarse con versión y huella antes de usarlo en el prototipo.
+**Estado:** el backend incluye carga/verificación del CBM versionado y entrenamiento desde ventas guardadas en PostgreSQL. La integración automática con la primera inicialización de Edu está pendiente. La primera inicialización deberá reservar `PREPARAR_MODELO` una vez y guardar un artefacto `listo_demo` para inferencia local sobre fechas históricas. Esto no equivale a aprobación comercial. El notebook sigue siendo experimental; el backend usa el entrenador CLI reutilizable.
 
 ## Entrega offline
 
 Cada instalación conserva juntos `catboost_model.cbm` y `metadata.json` en un directorio local de solo lectura para la API. El entrenamiento es un **paso separado de la primera inicialización**; el botón «Generar» nunca entrena ni descarga un modelo. El archivo de metadatos debe contener:
 
-**Infraestructura disponible en A04:** API y worker reciben `MODEL_ARTIFACT_DIR=/code/model_artifacts`, respaldado por el volumen persistente `model_artifacts` de Compose. El worker puede escribir allí el CBM y sus metadatos; la API monta el mismo directorio en solo lectura. El directorio empieza vacío: Kevin debe implementar la escritura atómica, lectura/verificación de huella y gestión de versiones antes de declarar `listo_demo`. El código del modelo y sus pruebas siguen bajo su responsabilidad.
+**Infraestructura A04/K01:** API y worker reciben `MODEL_ARTIFACT_DIR=/code/model_artifacts`, respaldado por el volumen persistente `model_artifacts` de Compose. El worker escribe cada versión en un directorio `version-huella` y lo publica al terminar CBM y metadata; la API monta el volumen en solo lectura. La identidad externa del piloto se configura explícitamente con `ML_COMERCIO_ID`/`ML_SUCURSAL_ID` y se valida al cargar. La primera carga automática aún requiere E03.
 
 | Campo | Regla |
 |---|---|

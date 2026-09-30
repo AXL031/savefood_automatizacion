@@ -16,7 +16,7 @@
 
 ## Punto de partida
 
-`manejadores.py` define `ContextoEjecucion` y el registro explícito `MANEJADORES`. Actualmente no hay adaptadores de dominio registrados: una ejecución de tipo aún no entregado termina con error visible. Cada dueño registra su función pública `(sesion, contexto) -> dict`, sin commit ni rollback propios. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
+`manejadores.py` define `ContextoEjecucion` y el registro explícito `MANEJADORES`. Los adaptadores de Kevin para `PREPARAR_MODELO`, `EVALUAR_MODELO` y `EVALUAR_PRONOSTICO` están registrados; plan y promoción continúan sin manejador y terminan con error visible. Cada dueño registra su función pública `(sesion, contexto) -> dict`, sin commit ni rollback propios. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) y [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md).
 
 Axel mantiene infraestructura; cada dueño implementa la función de su dominio y sus pruebas.
 

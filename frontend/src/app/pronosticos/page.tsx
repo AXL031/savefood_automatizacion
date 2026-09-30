@@ -1,165 +1,110 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { ProtectedShell } from "@/components/layout/ProtectedShell";
-import { TarjetasMetricas } from "@/components/panel/TarjetasMetricas";
-import { GraficoSerieHistorica } from "@/components/charts/GraficoSerieHistorica";
-import { BarrasProductoDia } from "@/components/charts/BarrasProductoDia";
-import { TablaDesgloseProductos } from "@/components/tables/TablaDesgloseProductos";
-import {
-  obtenerEvaluacionHistorica,
-  listarCorridasPronostico,
-  ESCENARIO_DEMO_EVALUACION,
-} from "@/services/pronosticos";
-import type { EvaluacionTramoCompleto, CorridaPronostico } from "@/types/pronosticos";
+import { EstadoPanel } from "@/components/ui/EstadoPanel";
+import { listarCorridas, listarModelos, obtenerCorrida, prepararModelo } from "@/services/pronosticos";
+import type { Corrida, Modelo } from "@/types/pronostico";
 
-export default function PaginaPronosticos() {
-  const [evaluacion, setEvaluacion] = useState<EvaluacionTramoCompleto>(ESCENARIO_DEMO_EVALUACION);
-  const [corridas, setCorridas] = useState<CorridaPronostico[]>([]);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState<string>("2022-08-24");
+function Contenido({ token, administrador }: { token: string; administrador: boolean }) {
+  const parametros = useSearchParams();
+  const corridaSolicitada = Number(parametros.get("corrida_id"));
+  const [modelos, setModelos] = useState<Modelo[]>([]);
+  const [corridas, setCorridas] = useState<Corrida[]>([]);
+  const [modeloId, setModeloId] = useState<number | undefined>();
+  const [detalle, setDetalle] = useState<Corrida | null>(null);
   const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+  const [mensaje, setMensaje] = useState("");
+  const [version, setVersion] = useState("");
+  const [preparando, setPreparando] = useState(false);
 
   useEffect(() => {
-    const controller = new AbortController();
+    const control = new AbortController();
+    listarModelos(token, control.signal).then((datos) => {
+      if (control.signal.aborted) return;
+      setModelos(datos);
+      setModeloId((actual) => actual ?? datos[0]?.id);
+      setCargando(false);
+    }).catch((fallo: unknown) => { if (!control.signal.aborted) { setError(fallo instanceof Error ? fallo.message : "No se pudo consultar el modelo."); setCargando(false); } });
+    return () => control.abort();
+  }, [token]);
 
-    async function cargarDatos() {
-      try {
-        const [evalRes, corridasRes] = await Promise.all([
-          obtenerEvaluacionHistorica("token", controller.signal),
-          listarCorridasPronostico("token", controller.signal),
-        ]);
-        setEvaluacion(evalRes);
-        setCorridas(corridasRes);
-        if (evalRes.serie_diaria.length > 0) {
-          // Si 2022-08-24 está en la serie, seleccionarla por defecto; si no, la última
-          const tieneObj = evalRes.serie_diaria.some((d) => d.fecha_local === "2022-08-24");
-          setFechaSeleccionada(
-            tieneObj ? "2022-08-24" : evalRes.serie_diaria[evalRes.serie_diaria.length - 1].fecha_local
-          );
-        }
-      } catch {
-        // Fallback al escenario precalculado
-        setEvaluacion(ESCENARIO_DEMO_EVALUACION);
-      } finally {
-        setCargando(false);
-      }
-    }
+  useEffect(() => {
+    if (!modeloId) { setCorridas([]); return; }
+    const control = new AbortController();
+    listarCorridas(token, modeloId, control.signal).then((datos) => {
+      if (!control.signal.aborted) { setCorridas(datos); setError(""); }
+    }).catch((fallo: unknown) => { if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudieron consultar las corridas."); });
+    return () => control.abort();
+  }, [token, modeloId]);
 
-    cargarDatos();
-    return () => controller.abort();
-  }, []);
+  useEffect(() => {
+    if (!Number.isSafeInteger(corridaSolicitada) || corridaSolicitada <= 0) return;
+    const control = new AbortController();
+    obtenerCorrida(token, corridaSolicitada, control.signal).then((corrida) => {
+      if (!control.signal.aborted) { setDetalle(corrida); setModeloId(corrida.modelo_id); }
+    }).catch((fallo: unknown) => {
+      if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudo abrir la corrida.");
+    });
+    return () => control.abort();
+  }, [token, corridaSolicitada]);
 
-  const diaActual =
-    evaluacion.serie_diaria.find((d) => d.fecha_local === fechaSeleccionada) ??
-    evaluacion.serie_diaria[0];
+  async function seleccionar(corrida: Corrida) {
+    setError("");
+    try { setDetalle(await obtenerCorrida(token, corrida.id)); }
+    catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo abrir la corrida."); }
+  }
 
-  return (
-    <ProtectedShell
-      titulo="Pronósticos y Evaluación Histórica"
-      descripcion="Monitoreo del desempeño del modelo CatBoost, cobertura de ventas observadas y backtest un día adelante según la política temporal."
-    >
-      {() => (
-        <div style={{ display: "grid", gap: "24px" }}>
-          {/* Ficha técnica del modelo y partición */}
-          <div className="card">
-            <div className="section-heading">
-              <div>
-                <h2>Ficha técnica del artefacto</h2>
-                <p>Configuración de inferencia local y límites del escenario de prueba.</p>
-              </div>
-              <span className="badge badge-info">Estado: {evaluacion.estado}</span>
-            </div>
+  async function entrenar(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    setError(""); setMensaje(""); setPreparando(true);
+    try {
+      const resultado = await prepararModelo(token, version, `modelo-${version}`);
+      setMensaje(`Preparación encolada como ejecución #${resultado.ejecucion_id}. Consulta su estado en Automatizaciones.`);
+    } catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo solicitar el entrenamiento."); }
+    finally { setPreparando(false); }
+  }
 
-            <div className="preference-grid">
-              <div className="preference">
-                <div>
-                  <strong>Modelo CatBoost</strong>
-                  <p>Versión: <code>{evaluacion.version_modelo}</code></p>
-                  <small style={{ color: "#6b7280" }}>Objetivo: Quantile (alpha=0.65) | 13 variables contractuales</small>
-                </div>
-              </div>
-              <div className="preference">
-                <div>
-                  <strong>Partición temporal</strong>
-                  <p>
-                    {evaluacion.particion
-                      ? `${evaluacion.particion.inicio_prueba} a ${evaluacion.particion.fin_prueba} (Prueba reservada)`
-                      : "Julio a Septiembre 2022"}
-                  </p>
-                  <small style={{ color: "#6b7280" }}>
-                    Entrenamiento previo: {evaluacion.particion?.inicio_entrenamiento ?? "2021-01-01"} a{" "}
-                    {evaluacion.particion?.fin_validacion ?? "2022-06-30"}
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
+  const modelo = modelos.find((item) => item.id === modeloId);
+  return <>
+    {error && <div className="inline-error" role="alert">{error}</div>}
+    {mensaje && <div className="inline-success" role="status">{mensaje}</div>}
+    {cargando ? <p role="status">Cargando modelos…</p> : modelos.length === 0 ?
+      <EstadoPanel titulo="Sin modelo preparado" descripcion="Carga ventas y solicita el entrenamiento para crear la primera versión demostrativa." /> : <>
+      <section className="card">
+        <div className="section-heading"><div><h2>Modelo y partición</h2><p>Comprobación histórica exploratoria; no acredita rendimiento comercial.</p></div>
+          <label className="filter-label">Versión<select value={modeloId ?? ""} onChange={(e) => { setModeloId(Number(e.target.value)); setDetalle(null); }}>
+            {modelos.map((item) => <option key={item.id} value={item.id}>{item.version_modelo}</option>)}
+          </select></label></div>
+        {modelo && <div className="pronostico-meta">
+          <div><span>Estado</span><strong>{modelo.estado}</strong></div>
+          <div><span>Corte de entrenamiento</span><strong>{modelo.fecha_corte_entrenamiento}</strong></div>
+          <div><span>Entrenamiento</span><strong>{modelo.particion.inicio_entrenamiento} a {modelo.particion.fin_entrenamiento}</strong></div>
+          <div><span>Validación</span><strong>{modelo.particion.inicio_validacion} a {modelo.particion.fin_validacion}</strong></div>
+          <div><span>Prueba reservada</span><strong>{modelo.particion.inicio_prueba} a {modelo.particion.fin_prueba}</strong></div>
+          <div><span>Huella CBM</span><strong className="mono-corto" title={modelo.sha256}>{modelo.sha256.slice(0, 16)}…</strong></div>
+        </div>}
+        {modelo && <p className="helper-text"><Link href={`/panel?modelo_id=${modelo.id}`}>Ver evaluación histórica de esta versión →</Link></p>}
+      </section>
+      <section className="card section-space">
+        <h2>Corridas persistidas</h2>
+        {corridas.length ? <div className="table-wrap"><table><thead><tr><th>Fecha histórica</th><th>Tipo</th><th>Estado</th><th>Versión</th><th>Ejecución</th><th></th></tr></thead><tbody>
+          {corridas.map((item) => <tr key={item.id}><td>{item.fecha_objetivo}</td><td>{item.tipo}</td><td>{item.estado}</td><td>{item.version_modelo}</td><td><Link href={`/automatizaciones/ejecuciones/${item.ejecucion_id}`}>#{item.ejecucion_id}</Link></td><td><button className="button-secondary" onClick={() => void seleccionar(item)}>Ver #{item.id}</button></td></tr>)}
+        </tbody></table></div> : <EstadoPanel titulo="Sin corridas" descripcion="Aún no se ha persistido una inferencia para este modelo." />}
+      </section>
+      {detalle && <section className="card section-space"><div className="section-heading"><div><h2>Corrida #{detalle.id} · {detalle.fecha_objetivo}</h2><p>Los valores no disponibles permanecen sin cantidad.</p></div><Link href={`/automatizaciones/ejecuciones/${detalle.ejecucion_id}`}>Ver ejecución</Link></div>
+        <div className="table-wrap"><table><thead><tr><th>Producto</th><th>Pronóstico</th><th>Estado</th></tr></thead><tbody>{detalle.pronosticos?.map((item) => <tr key={item.id}><td>{item.producto}</td><td>{item.cantidad_pronosticada ?? "Desconocido"}</td><td>{item.estado}</td></tr>)}</tbody></table></div>
+      </section>}
+    </>}
+    {administrador && <section className="card section-space"><h2>Preparar otra versión</h2><p>El worker entrena con ventas ya guardadas en PostgreSQL. La solicitud no vuelve a importar archivos.</p>
+      <form className="form-grid" onSubmit={(evento) => void entrenar(evento)}><label className="field">Versión del modelo<input value={version} onChange={(e) => setVersion(e.target.value)} placeholder="demo-catboost-1" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" maxLength={80} required /></label><div className="form-actions"><button className="button-primary" disabled={preparando}>{preparando ? "Solicitando…" : "Solicitar entrenamiento"}</button></div></form>
+    </section>}
+  </>;
+}
 
-          {/* Tarjetas de Métricas Globales Consolidadas */}
-          <TarjetasMetricas
-            metricas={evaluacion.metricas_globales}
-            titulo="Métricas acumuladas del tramo de prueba"
-            subtitulo={`Evaluación sobre ${evaluacion.fechas_evaluadas} fechas y ${evaluacion.total_pares_evaluables} pares producto-día sin promediar porcentajes.`}
-          />
-
-          {/* Gráfico interactivo de serie temporal */}
-          <GraficoSerieHistorica
-            serie={evaluacion.serie_diaria}
-            fechaSeleccionada={fechaSeleccionada}
-            onSeleccionarFecha={setFechaSeleccionada}
-          />
-
-          {/* Desglose visual en barras por producto para el día seleccionado */}
-          {diaActual && <BarrasProductoDia evaluacionDia={diaActual} />}
-
-          {/* Tabla accesible de auditoría detallada */}
-          {diaActual && (
-            <TablaDesgloseProductos
-              desglose={diaActual.desglose_productos}
-              fecha={diaActual.fecha_local}
-            />
-          )}
-
-          {/* Trazabilidad de corridas recientes (K02 / Celery) */}
-          <div className="card">
-            <div className="section-heading">
-              <div>
-                <h2>Trazabilidad de corridas de inferencia</h2>
-                <p>Historial de corridas de pronósticos generadas por el motor o disparadores manuales.</p>
-              </div>
-            </div>
-
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Identificador de corrida</th>
-                    <th>Fecha objetivo demo</th>
-                    <th>Versión del modelo</th>
-                    <th>Estado de ejecución</th>
-                    <th>Productos pronosticados</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {corridas.map((c) => (
-                    <tr key={c.id}>
-                      <td><code>{c.id}</code></td>
-                      <td><strong>{c.fecha_objetivo_demo}</strong></td>
-                      <td>{c.version_modelo}</td>
-                      <td>
-                        <span className="badge badge-ok">{c.estado}</span>
-                      </td>
-                      <td>
-                        {c.pronosticos.filter((p) => p.unidades_pronosticadas !== null).length} productos cubiertos
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-    </ProtectedShell>
-  );
+export default function PronosticosPage() {
+  return <ProtectedShell titulo="Pronósticos" descripcion="Versiones del modelo y corridas guardadas para fechas históricas.">{({ token, perfil }) => <Suspense fallback={<p role="status">Cargando pronósticos…</p>}><Contenido token={token} administrador={perfil.rol === "ADMINISTRADOR"} /></Suspense>}</ProtectedShell>;
 }

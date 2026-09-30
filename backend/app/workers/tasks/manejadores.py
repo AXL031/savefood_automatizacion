@@ -22,6 +22,19 @@ Manejador = Callable[[Session, ContextoEjecucion], dict]
 MANEJADORES: dict[str, Manejador] = {}
 
 
+def _registrar_pronosticos() -> None:
+    from app.modules.pronosticos.manejadores import preparar, backtest, evaluacion_programada
+
+    MANEJADORES.update({
+        "PREPARAR_MODELO": preparar,
+        "EVALUAR_MODELO": backtest,
+        "EVALUAR_PRONOSTICO": evaluacion_programada,
+    })
+
+
+_registrar_pronosticos()
+
+
 def obtener_manejador(tipo: str) -> Manejador:
     try:
         return MANEJADORES[tipo]

@@ -1,6 +1,6 @@
 # Contratos del recorrido demostrable
 
-**Estado:** A01–A03 implementan acceso, programación y motor; las demás rutas de dominio son especificación de desarrollo. [Alcance del prototipo](../guia-inicio-desarrollo.md). Una instalación local tiene un comercio/sucursal (`negocio.id = 1`); no se envía `negocio_id` en cada solicitud. Las rutas de negocio requieren Bearer y los cambios de carga/stock requieren Administrador. Los servicios de un módulo exponen interfaces públicas; ningún módulo importa modelos privados de otro.
+**Estado:** A01–A03 implementan acceso, programación y motor. El corte K01–K04 de pronósticos tiene rutas y servicios propios; la primera carga de Edu y el plan de Max todavía no lo consumen de extremo a extremo. Las demás rutas de dominio son especificación de desarrollo. [Alcance del prototipo](../guia-inicio-desarrollo.md). Una instalación local tiene un comercio/sucursal (`negocio.id = 1`); no se envía `negocio_id` en cada solicitud. Las rutas de negocio requieren Bearer y los cambios de carga/stock requieren Administrador. Los servicios de un módulo exponen interfaces públicas; ningún módulo importa modelos privados de otro.
 
 ## Convenciones HTTP
 
@@ -30,11 +30,33 @@ La API A02 conserva las mismas rutas y agrega `despachada_en` y `lease_hasta` a 
 
 El servicio `programar_ejecucion(sesion, *, tipo, ejecutar_desde_utc, fecha_hora_simulada_local, parametros, clave_idempotencia, creado_por=None)` admite `GENERAR_PROPUESTA` y `EVALUAR_PROMOCION`; crea programación y ejecución pendiente en la **sesión del consumidor, sin commit**. Ejemplo de Vera tras un ajuste confirmado en la misma transacción: `programar_ejecucion(sesion, tipo="EVALUAR_PROMOCION", ejecutar_desde_utc=hora_real_utc, fecha_hora_simulada_local=reloj_local, parametros={"lote_producto_id": lote_id}, clave_idempotencia=f"promocion-ajuste-{movimiento_id}")`. Edu puede llamar `crear_o_recuperar_ejecucion` desde la primera carga con su misma sesión. El despachador lee ambas clases de ejecución **después** del commit, por lo que el productor no publica un mensaje antes de persistir.
 
-Cada dueño aporta un manejador `Callable[[Session, ContextoEjecucion], dict]` en `app.workers.tasks.manejadores.MANEJADORES`, enlazando su servicio público mediante una importación explícita y probada. `ContextoEjecucion` lleva `id`, `tipo`, `clave_idempotencia` y `datos_entrada`. El manejador recibe la sesión ya bloqueada, **no hace commit/rollback**, guarda su efecto local idempotente con esa clave y devuelve un objeto JSON con IDs reales. El motor confirma el efecto y `finalizar_intento` juntos. Un `ErrorDatos` registra fallo definitivo legible; `ErrorTransitorioInterno` permite hasta tres intentos totales. Un timeout genérico y cualquier efecto externo incierto no se reintentan automáticamente. Envío y conciliación de Telegram quedan bajo el contrato de Aguirre. La conexión de un manejador requiere que el dueño entregue contrato, idempotencia y prueba de su efecto; el registro base está vacío mientras esos servicios no existen.
+Cada dueño aporta un manejador `Callable[[Session, ContextoEjecucion], dict]` en `app.workers.tasks.manejadores.MANEJADORES`, enlazando su servicio público mediante una importación explícita y probada. `ContextoEjecucion` lleva `id`, `tipo`, `clave_idempotencia` y `datos_entrada`. El manejador recibe la sesión ya bloqueada, **no hace commit/rollback**, guarda su efecto local idempotente con esa clave y devuelve un objeto JSON con IDs reales. El motor confirma el efecto y `finalizar_intento` juntos. Un `ErrorDatos` registra fallo definitivo legible; `ErrorTransitorioInterno` permite hasta tres intentos totales. Un timeout genérico y cualquier efecto externo incierto no se reintentan automáticamente. Envío y conciliación de Telegram quedan bajo el contrato de Aguirre. El registro contiene los tres adaptadores de Kevin (`PREPARAR_MODELO`, `EVALUAR_MODELO`, `EVALUAR_PRONOSTICO`); plan y promoción siguen sin manejador.
 
 Beat revisa cada 30 segundos. El motor confirma un lease y token en PostgreSQL antes de publicar en Redis; el vencimiento permite reenviar la **misma ejecución**, girando el token para descartar mensajes anteriores. Un worker que ya ejecuta mantiene bloqueo de fila durante su efecto local. Una interrupción posterior al inicio deja el intento visible y, al vencer su lease, el motor registra fallo transitorio y agenda el siguiente intento. Las esperas son 60–65 y 120–125 segundos. La demostración con un manejador de prueba se realiza en un esquema PostgreSQL aislado y una cola Redis separada; no acredita todavía los cálculos del resto del equipo.
 
 ## Inicialización → Ventas y catálogo
+
+**E01 parcial disponible para K02/K03 (29-09-2026):** las funciones públicas
+`app.modules.productos.servicio.cargar_catalogo_bakery(sesion, lista)` y
+`resolver_sku(sesion, origen, sku_externo)` registran/resuelven el catálogo
+explícito. `app.modules.ventas.servicio.importar_bakery(sesion, csv_path,
+clave_importacion)` agrega las líneas del CSV piloto por SKU y fecha, conserva
+una revisión inicial y devuelve cantidades de líneas aceptadas y negativas
+excluidas. `leer_historial(sesion, producto_ids, inicio, fin_exclusivo)` devuelve
+una lista de `VentaHistorica(producto_id, sku_externo, fecha_local,
+unidades_vendidas, revision_venta_id)`. Un día ausente no produce objeto; un
+cero explícito sí. `corregir_venta` crea revisión nueva sin borrar la anterior.
+`listar_skus_bakery(sesion)` entrega el mapa de productos activos a SKU externo;
+`nombres_productos(sesion, ids)` entrega nombres para las vistas, y
+`limites_historial(sesion, ids)` devuelve primera y última fecha observada.
+Todas reciben la misma `Session`, hacen `flush` cuando necesitan IDs y **no
+hacen commit**. Ejemplo: `leer_historial(sesion, [1], date(2022, 8, 1),
+date(2022, 8, 24))` excluye la venta objetivo del 24. El proveedor no crea
+SKU implícitos (`422 SKU_DESCONOCIDO`); una clave de importación repetida con
+otro archivo devuelve `409 CLAVE_REUTILIZADA`. Requiere migración
+`0002_e01_ventas`. Se comprobó el consumo E01→K01–K03 con el CSV piloto en
+SQLite local; el upgrade y la operación en PostgreSQL siguen sin verificar.
+Las rutas HTTP de ventas y la inicialización completa siguen pendientes.
 
 
 La primera carga recibe los dos libros Excel o cinco CSV del [contrato de primera inicialización](contrato-importaciones.md). Guarda `venta_diaria`, `producto`, `sku_producto`, `ingrediente`, `receta`, lotes y movimientos `APERTURA`. El archivo de ventas `bakery` transforma `article` textual a `(origen, sku_externo)` y luego `producto.id` interno. La misma `clave_importacion` y huella recupera el resultado; distinto archivo con la misma clave devuelve `409 CLAVE_REUTILIZADA`. SKU no mapeado, dos sucursales, receta rota, stock negativo o unidad incompatible rechazan el lote completo. Una fecha sin venta queda desconocida; cero explícito queda almacenado.
@@ -44,6 +66,14 @@ La venta histórica no descuenta el stock de apertura. Tras la inicialización, 
 El período de evaluación se fija en la primera carga con la [política temporal](../../foodsave-ml/POLITICA_EVALUACION.md): los últimos 6 meses completos de prueba si hay al menos 24 meses, 3 si hay de 12 a menos de 24, o 1 si hay de 6 a menos de 12; se reserva validación anterior de 3, 3 o 1 mes, respectivamente. Menos de 6 meses no habilita métricas de demo. La fecha objetivo demostrativa debe caer en la prueba reservada. `particion` y `version_modelo` quedan en los metadatos del artefacto; el test no se usa para seleccionar ni ajustar el modelo.
 
 ## Ventas → Pronósticos
+
+**Servicio K02 implementado:** `generar_corrida(sesion, ejecucion_id=..., clave_ejecucion=..., fecha_objetivo=..., producto_ids=..., tipo="DEMO_PROGRAMADA")` lee la interfaz pública de ventas de Edu con rango `[objetivo-28 días, objetivo)`, verifica el CBM y persiste una corrida y un pronóstico por producto sin confirmar la sesión. `obtener_pronosticos(sesion, corrida_id)` entrega a Max `producto_id`, `estado` y `cantidad_pronosticada` nullable. Producto fuera del artefacto produce `PRODUCTO_NO_CUBIERTO`; menos de siete observaciones conocidas en 28 días produce `HISTORIAL_INSUFICIENTE`. Misma clave con mismo modelo, productos, historial y revisiones recupera la corrida; otra huella devuelve `409 CLAVE_REUTILIZADA`. La fecha debe estar en la prueba reservada y ser posterior al corte del modelo.
+
+**Preparación K01:** `POST /pronosticos/preparar-modelo` (Administrador) recibe `{"version_modelo":"demo-catboost-1","clave_idempotencia":"modelo-demo-catboost-1"}`, reserva una ejecución y responde `202` con `ejecucion_id`. El worker lee ventas confirmadas en PostgreSQL, entrena sin Colab, publica un directorio versionado bajo `MODEL_ARTIFACT_DIR`, registra huella/partición en `artefacto_modelo` y reserva `EVALUAR_MODELO`. La identidad externa del piloto se configura mediante `ML_COMERCIO_ID`/`ML_SUCURSAL_ID` (valores de demo `piloto`/`principal`) hasta que Edu entregue el estado de primera inicialización. El disparador automático desde E03 sigue pendiente.
+
+**Evaluación K03:** `solicitar_evaluacion_corrida(sesion, corrida_id)` reserva `EVALUAR_PRONOSTICO` con las revisiones actuales y puede llamarse desde el plan de Max. `evaluar_corrida` conserva cada evaluación por `corrida_id`, producto y `revision_venta_id`; una corrección crea otra comparación sin borrar la anterior. `EVALUAR_MODELO` crea corridas `BACKTEST` por fecha de la prueba con clave `backtest-{modelo_id}-{fecha}` y calcula métricas únicamente sobre pronósticos disponibles y ventas conocidas. El resumen usa esas corridas canónicas, los mismos pares para ambos totales y no promedia WAPE diario.
+
+**Lecturas K04:** `GET /pronosticos/modelos` devuelve hasta 50 versiones; `GET /pronosticos/corridas?modelo_id=...` lista hasta 50 corridas; `GET /pronosticos/corridas/{id}` agrega pronósticos y motivos. `GET /pronosticos/evaluacion?modelo_id=...` devuelve versión, partición, métricas globales, serie diaria y `corrida_id` por fecha. `GET /pronosticos/corridas/{id}/evaluacion` devuelve comparación por producto (ID y nombre) usando solo la revisión de venta vigente. Todas requieren Bearer y el sobre `datos`. `0003_pronosticos` depende de `0002_e01_ventas`.
 
 La inferencia de la demo la inicia `GENERAR_PROPUESTA` a la hora programada. Su entrada interna es `fecha_objetivo` local, lista de `producto_id` seleccionados y `clave_ejecucion` derivada de la programación. Solo se leen `venta_diaria` con `fecha_local < fecha_objetivo`. Se valida el vector y la huella del `.cbm` según [contrato ML](../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md). Resultado durable por producto:
 
