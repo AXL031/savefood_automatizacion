@@ -6,6 +6,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Auditoría de ramas (2026-09-30):** referencias actualizadas con `git fetch origin --prune`; `origin/main` en `b3041ea`. Pendientes: `aguirre` (1 commit L01) y `rojas` (2 commits M01/V01/V02 y UI). `bohorquez`, `cueva`, `sanchez` y `vera` están contenidas en main. Rojas presenta 8 archivos en conflicto y no publica las migraciones 0005/0006 mencionadas en su registro; Aguirre no presenta conflictos de Git, pero conserva adaptadores pendientes de Base/sesión. Auditoría real del historial, sin acreditar integración funcional ni ejecutar merges.
 - **Estado:** A01–A04 implementados localmente y listos para integrar. Ningún bloque se declara integrado hasta que su consumidor pruebe la frontera; el arranque de A04 aún requiere repetición por un compañero en otra PC y ejecución remota de CI.
 - **Comportamiento disponible:** A01 ofrece identidad, roles, error uniforme y configuración del modo de pedidos. A02 guarda programaciones y ejecuciones idempotentes. A03 agrega Beat cada 30 segundos, despacho durable con token/lease, ejecución transaccional de efectos locales y reintentos internos. A04 deja Compose con migración automática, imagen backend con dependencias ML, volumen persistente compartido entre worker y API, token Telegram opcional, CI ampliado e `iniciar-foodsave.cmd` para arranques posteriores sin recompilar. La cadena hasta `0004_e03_inicializacion` está aplicada en PostgreSQL local.
 - **Contrato disponible:** [A01–A03 en contratos HTTP e internos](../../api/contratos.md), [rutas disponibles](../../api/rutas-api.md), [arranque A04](../arranque-modulos.md), `obtener_modo_envio_pedidos(sesion)`, `automatizaciones.servicio` (`crear_o_recuperar_ejecucion`, `programar_ejecucion`, `iniciar_intento`, `finalizar_intento`), `workers.tasks.manejadores` (`ContextoEjecucion`, `MANEJADORES`) y `MODEL_ARTIFACT_DIR=/code/model_artifacts`.
@@ -21,6 +22,18 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### A04 · Auditoría de ramas pendientes de integrar
+
+- **Fecha y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación A04; autoría de los módulos permanece con sus responsables.
+- **Estado:** revisión de Git completada; integración funcional pendiente de los responsables.
+- **Resultado:** contra `origin/main` (`b3041ea`), commits exclusivos / commits de main ausentes: aguirre 1/41, rojas 2/48, bohorquez 0/10, cueva 0/1, sanchez 0/5, vera 0/48. `main` local está 9 commits detrás; `cueva` local coincide con su remoto. El árbol de trabajo estaba limpio antes del registro.
+- **Archivos y dependencias:** [Aguirre](aguirre.md), [Rojas](rojas.md), [Vera](vera.md), [flujo Git](../flujo-git.md). Cambios de Rojas incluyen ingredientes, recetas, inventario, primera carga y UI compartida; requerir revisión de Edu y coordinación con Vera.
+- **Contrato/ejemplo de comprobación:** `git rev-list --left-right --count origin/main...origin/rojas` devuelve `48 2`; `git cherry origin/main origin/rojas` marca ambos commits como cambios no equivalentes a parches de main.
+- **Comprobaciones ejecutadas:** `git fetch origin --prune`, estado, historial, comparación de commits, parches y árboles; `git merge-tree --write-tree --messages` simuló ambas integraciones sin cambiar ramas, índice ni archivos de trabajo. Aguirre sin conflictos; Rojas con conflictos en `backend/app/modules/inicializacion/rutas.py`, `backend/app/principal.py`, `docs/api/contratos.md`, `docs/base_de_datos/esquema-objetivo-mvp.md`, registros de Rojas/Vera, `frontend/src/app/styles.css` y `frontend/src/components/layout/ProtectedShell.tsx`. No se ejecutaron pruebas funcionales.
+- **Migraciones/configuración y bloqueos:** `origin/rojas` solo contiene `0001_nucleo.py` en versions; faltan 0005/0006 declaradas en su bitácora y las pruebas nuevas allí mencionadas. Aguirre usa imports pendientes de `app.db.base`/`app.db.session`, Base alternativa y `get_db` que falla si no se conecta; no incluye migración ni registro del router en principal. Ausencia de conflictos no acredita funcionamiento. GitHub CLI no tiene autenticación, por lo que no se pudo verificar el estado de PR, revisiones o CI.
+- **Siguiente paso:** Rojas actualiza desde main, concilia conflictos y publica migraciones/pruebas; Aguirre conecta infraestructura pública, registra rutas/modelos y entrega migración, pruebas y avance vigente. Después revisar las fronteras con sus consumidores antes de integrar.
+- **Commit/PR:** auditoría documentada en cambios locales, sin commit ni PR; no se hizo merge, push ni cambio de rama.
 
 ### A04 · Integración local de primera carga y CSV piloto
 
