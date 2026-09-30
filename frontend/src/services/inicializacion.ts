@@ -1,5 +1,5 @@
 import { enviarFormulario, solicitar } from "@/services/http";
-import type { ConfiguracionInicial, InformeCarga, VistaPrevia } from "@/types/inicializacion";
+import type { ConfiguracionInicial, InformeCarga, ResultadoCargaPiloto, VistaPrevia } from "@/types/inicializacion";
 
 export function obtenerEstadoInicial(token: string, signal?: AbortSignal): Promise<ConfiguracionInicial> {
   return solicitar<ConfiguracionInicial>("/inicializacion/estado", { token, signal });
@@ -48,4 +48,11 @@ export function confirmarCarga(
     formulario(archivos, fechaObjetivo, fechaReferenciaStock, claveImportacion),
     { token, signal },
   );
+}
+
+/** Carga rápida del CSV de tickets del piloto existente. */
+export function cargarCsvPiloto(token: string, archivo: File): Promise<ResultadoCargaPiloto> {
+  const datos = new FormData();
+  datos.append("archivo", archivo, archivo.name);
+  return enviarFormulario<ResultadoCargaPiloto>("/inicializacion/piloto-bakery", datos, { token });
 }

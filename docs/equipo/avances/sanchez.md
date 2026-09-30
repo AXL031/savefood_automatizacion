@@ -6,21 +6,57 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Estado:** E01 amplía API HTTP; E02 y E03 implementados con pruebas en SQLite; E04 entrega los primitivos compartidos y las tres pantallas propias. Falta aplicar la cadena de migraciones en PostgreSQL, y la carga completa depende de Max (M01) y Vera (V01).
+- **Estado:** E01 amplía API HTTP; E02 y E03 implementados con pruebas en SQLite; E04 entrega los primitivos compartidos y las tres pantallas propias. `0004_e03_inicializacion` ya se aplicó en PostgreSQL local; la carga completa depende de Max (M01) y Vera (V01).
 - **Punto de partida alcanzado:** lectores XLSX y CSV con encabezados exactos, adaptador del CSV de tickets del piloto, validación que reúne todos los errores por archivo y fila, vista previa que no escribe, carga atómica, estado durable `configuracion_inicial` con sus transiciones, y API de inicialización, productos y ventas.
 - **Contrato disponible:** [contrato de servicios E01–E03](../../api/contratos.md#inicialización--ventas-y-catálogo), [contrato de primera carga](../../api/contrato-importaciones.md) y [esquema objetivo](../../base_de_datos/esquema-objetivo-mvp.md).
 - **Entrega a consumidores:** Kevin sigue usando `leer_historial`, `listar_skus_bakery`, `nombres_productos` y `limites_historial`, y ahora puede leer el estado con `hay_datos_cargados(sesion)` y mover la transición con `marcar_entrenando` / `marcar_modelo_listo` / `marcar_fallo_entrenamiento`. Max y Vera tienen los puertos `ServicioRecetas` y `ServicioInventario`, que la carga invoca dentro de la misma sesión. Todos pueden reutilizar `components/forms`, `components/tables/TablaDatos` y `components/ui`.
-- **Bloqueos:** Docker Desktop requiere habilitar `Virtual Machine Platform` en Windows y reiniciar; `0002_e01_ventas` y `0004_e03_inicializacion` no se han aplicado en PostgreSQL. La carga completa necesita los servicios de Max y Vera; sin ellos la instalación queda en `PENDIENTE` con constancia de qué falta.
-- **Siguiente paso:** aplicar la cadena de migraciones en PostgreSQL y conectar los servicios de Max y Vera para cerrar la puerta 2.
+- **Bloqueos:** La carga completa necesita los servicios de Max y Vera; sin ellos la instalación queda en `PENDIENTE` con constancia de qué falta. Falta una prueba de confirmación completa en PostgreSQL con esos servicios.
+- **Siguiente paso:** conectar los servicios de Max y Vera y comprobar la confirmación completa en PostgreSQL.
 
 | Tarea | Estado de seguimiento |
 |---|---|
-| E01 · Definir y cargar productos y ventas | LISTO_PARA_INTEGRAR: servicio, API y pruebas; sin verificar en PostgreSQL |
+| E01 · Definir y cargar productos y ventas | LISTO_PARA_INTEGRAR: CSV piloto verificado en PostgreSQL; rutas generales probadas en SQLite y expuestas en Docker |
 | E02 · Construir asistente XLSX/CSV | LISTO_PARA_INTEGRAR: lectores, adaptador bakery, validación, vista previa y carga atómica |
 | E03 · Preparar primera inicialización | LISTO_PARA_INTEGRAR: `configuracion_inicial`, migración `0004` y transiciones |
 | E04 · Entregar pantallas y piezas comunes | LISTO_PARA_INTEGRAR: primitivos compartidos, navegación y pantallas de carga, productos y ventas |
 
 ## Bitácora
+
+### E03 parcial · Versión nueva del entrenamiento del CSV piloto
+
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
+- **Autor y responsable del bloque:** Codex por solicitud de Axel, editando la frontera de Edu Sanchez con el modelo de Kevin; no atribuye el cambio a Edu.
+- **Tareas y estado:** E03 parcial, EN_CURSO; primera inicialización completa pendiente.
+- **Comportamiento disponible:** la ruta del CSV genera `piloto-q65v2-<huella>` y otra clave de `PREPARAR_MODELO` para aplicar la corrección de Kevin. La misma importación de ventas se recupera; versiones y evaluaciones anteriores permanecen. El sistema ya entrenó y evaluó esa nueva versión en PostgreSQL sin volver a cargar ventas.
+- **Archivos clave:** `backend/app/modules/inicializacion/rutas.py`, `backend/tests/integration/test_carga_csv_piloto.py`, [cambio de Kevin](bohorquez.md).
+- **Contrato/ejemplo:** repetir el CSV anterior devuelve `repetida=true`, sin crear ventas nuevas, y usa la ejecución de `piloto-q65v2-*` dentro de la política actual; ver [contrato](../../api/contrato-importaciones.md#acceso-rápido-del-piloto-implementado).
+- **Configuración/migraciones:** ninguna nueva; no se reescribieron las migraciones ni se borraron datos.
+- **Pruebas ejecutadas:** test de carga web 2 passed; suite backend 27 passed, 8 skipped, 6 subtests passed. La preparación y el backtest de la nueva versión terminaron en Compose con 4 047 pares evaluables; falta el recorrido E03 completo.
+- **Dependencias y siguiente paso:** Edu completa asistente XLSX/CSV, estado de inicialización y servicios de Max/Vera; Kevin mantiene la política y sus versiones.
+- **Commit/PR:** commit local de `cueva`; push pendiente por Axel.
+
+### E01–E03 · Carga web del CSV piloto y preparación real en PostgreSQL
+
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
+- **Autor y responsable del bloque:** Codex por solicitud de Axel, trabajando en el bloque de Edu Sanchez; no atribuye estas ediciones a Edu.
+- **Tareas y estado:** E01 verificado en PostgreSQL; E02/E03 parciales, EN_CURSO.
+- **Comportamiento disponible:** `POST /inicializacion/piloto-bakery` recibe multipart de Administrador, limita a 25 MB, carga el catálogo curado y ventas agregadas, y reserva `PREPARAR_MODELO` en un commit. La misma huella recupera importación/ejecución sin duplicar. La página permite subir el archivo, consultar el estado y reintentar preparación fallida sin recargar ventas. El CSV no se copia a la imagen Docker.
+- **Archivos clave:** `backend/app/modules/inicializacion/rutas.py`, `frontend/src/app/inicializacion/page.tsx`, `frontend/src/services/inicializacion.ts`, `backend/tests/integration/test_carga_csv_piloto.py`.
+- **Contrato/ejemplo:** `POST /api/v1/inicializacion/piloto-bakery`, campo `archivo` con el CSV bakery; devuelve `importacion_id`, conteos, `version_modelo` y `ejecucion_id`. Ver [contrato de importaciones](../../api/contrato-importaciones.md#acceso-rápido-del-piloto-implementado).
+- **Configuración/migraciones:** se añadió `python-multipart`; usa `0002_e01_ventas` y `0003_pronosticos` ya existentes. No se alteraron migraciones.
+- **Pruebas ejecutadas:** prueba enfocada `test_carga_csv_piloto.py` y frontera E01: 4 passed; suite backend: 27 passed, 8 skipped, 6 subtests passed. `npm run typecheck` y `npm run build` correctos. Subida real por HTTP a PostgreSQL: 139 productos, 228 936 líneas aceptadas, 1 264 negativas excluidas y 27 740 ventas diarias; repetición mantuvo una importación y la misma ejecución. Worker completó preparación y backtest: 1 modelo, 92 corridas y 4 047 evaluaciones; API de evaluación devolvió 4 047 pares. La suite combinada `backend/tests foodsave-ml/tests` no pudo recolectarse en `.venv` porque allí falta CatBoost; el flujo ML real sí se ejecutó en Docker. No se probó asistente XLSX ni integración con recetas/stock.
+- **Dependencias:** Max entrega recetas, Vera apertura de lotes; Kevin mantiene el modelo y Max aún debe consumir su corrida en el plan.
+- **Siguiente paso concreto:** completar validación/vista previa XLSX y CSV general, estado `configuracion_inicial` y carga atómica con los servicios de Max y Vera.
+- **Commit/PR:** incluido en el commit local de `cueva`; push pendiente por Axel.
+
+### Coordinación de integración del asistente y piloto en `cueva`
+
+- **Fecha y autor:** 2026-09-29 (America/Lima), Codex a solicitud de Axel Cueva; esta entrada no atribuye la edición a Edu Sanchez.
+- **Tareas y estado:** E02–E04 conservados desde `origin/main`; piloto bakery preservado como ruta separada. La integración de Max y Vera sigue pendiente.
+- **Comportamiento disponible:** el asistente completo mantiene vista previa, confirmación, productos y ventas. `piloto.py` conserva la carga rápida e idempotente del CSV existente y la reserva `PREPARAR_MODELO`; la página `/inicializacion/piloto` la consume. El catálogo curado se encuentra también dentro de Docker.
+- **Archivos y contrato:** `backend/app/modules/inicializacion/{rutas,servicio,piloto}.py`, `frontend/src/app/inicializacion/{page,piloto/page}.tsx`; [contratos](../../api/contratos.md) y [guía local](../../../backend/app/modules/inicializacion/GUIA_DESARROLLO.md).
+- **Configuración/migración:** `0004_e03_inicializacion` sucede a `0003_pronosticos`. La carga rápida no cambia el estado de `configuracion_inicial`.
+- **Pruebas y siguiente paso:** 79 pruebas correctas, 8 omitidas y 6 subpruebas correctas en el entorno Python local (se excluyó la evaluación que requiere CatBoost local); `npm run typecheck` y `npm run build` correctos. Docker aplicó `0004_e03_inicializacion`; antes y después conservó 139 productos, 27 740 ventas y 2 modelos. El catálogo curado en `/code` devolvió 139 SKU; OpenAPI expone asistente y piloto, y ambas páginas respondieron 200. Conectar los puertos de Max y Vera sin alterar el flujo piloto. Commit/PR aún pendientes en el momento de esta entrada.
 
 ### E02, E03 y E04 · Asistente de primera carga, estado durable y piezas visuales
 

@@ -17,7 +17,7 @@
 
 ## Punto de partida
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+`page.tsx` implementa el asistente de primera carga de Sánchez: dos XLSX o cinco CSV, vista previa y confirmación. `piloto/page.tsx` conserva la carga rápida del CSV bakery para la base local existente y reserva la preparación del modelo. Son flujos distintos. La carga completa sigue parcialmente pendiente de los servicios de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Trabajo en esta carpeta
 

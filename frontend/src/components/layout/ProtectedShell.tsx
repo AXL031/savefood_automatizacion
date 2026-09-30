@@ -21,6 +21,7 @@ const grupos = [
     titulo: "Datos",
     enlaces: [
       { href: "/inicializacion", texto: "Primera carga" },
+      { href: "/inicializacion/piloto", texto: "CSV piloto" },
       { href: "/productos", texto: "Productos" },
       { href: "/ventas", texto: "Ventas" },
     ],
@@ -100,7 +101,7 @@ export function ProtectedShell({ titulo, descripcion, children }: Props) {
             <div className="nav-group-label">{grupo.titulo}</div>
             <nav aria-label={grupo.titulo}>
               {grupo.enlaces.map((enlace) => (
-                <Link key={enlace.href} href={enlace.href} className={`nav-link ${ruta === enlace.href || ruta.startsWith(`${enlace.href}/`) ? "active" : ""}`} aria-current={ruta === enlace.href ? "page" : undefined}>
+                <Link key={enlace.href} href={enlace.href} className={`nav-link ${ruta === enlace.href ? "active" : ""}`} aria-current={ruta === enlace.href ? "page" : undefined}>
                   {enlace.texto}
                 </Link>
               ))}

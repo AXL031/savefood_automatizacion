@@ -1,6 +1,6 @@
 # Contrato del artefacto CatBoost para inferencia local
 
-**Estado:** el backend incluye carga/verificación del CBM versionado y entrenamiento desde ventas guardadas en PostgreSQL. La integración automática con la primera inicialización de Edu está pendiente. La primera inicialización deberá reservar `PREPARAR_MODELO` una vez y guardar un artefacto `listo_demo` para inferencia local sobre fechas históricas. Esto no equivale a aprobación comercial. El notebook sigue siendo experimental; el backend usa el entrenador CLI reutilizable.
+**Estado:** el backend incluye carga/verificación del CBM versionado y entrenamiento desde ventas guardadas en PostgreSQL. La carga web parcial del CSV bakery ya reserva `PREPARAR_MODELO`; la primera inicialización completa de Edu sigue pendiente. Esa carga completa deberá reservar la preparación y guardar un artefacto `listo_demo` para inferencia local sobre fechas históricas. Esto no equivale a aprobación comercial. El notebook sigue siendo experimental; el backend usa el entrenador CLI reutilizable.
 
 ## Entrega offline
 
@@ -22,8 +22,11 @@ Cada instalación conserva juntos `catboost_model.cbm` y `metadata.json` en un d
 | `min_observaciones_previas_28_dias` | Entero positivo; inicialmente `7`, según el contrato de datos. |
 | `horizonte` | `un_dia_con_historial_real`. El modelo estima el día local siguiente tras el cierre. |
 | `politica_ausencias` | `desconocido`; no se completan fechas sin fila con cero. |
+| `objetivo_entrenamiento` | `Quantile:alpha=0.65` en los nuevos artefactos de la demo. La validación selecciona la mejor iteración con la misma pérdida cuantílica; MAE y WAPE se reportan aparte. |
 
 `version_modelo`, `sha256_artefacto`, `fecha_corte_entrenamiento` y `particion` son ampliaciones exigidas al exportador del notebook antes de marcar `listo_demo`. El `metadata.json` experimental actual no los garantiza. `fecha_corte_entrenamiento` coincide con el último día de validación si esta intervino en seleccionar el modelo; no puede alcanzar la prueba.
+
+Cambiar el criterio de selección requiere una nueva `version_modelo` y un CBM nuevo. La carga piloto usa el prefijo `piloto-q65v2-` para distinguirlo del modelo anterior `piloto-`; las corridas y evaluaciones antiguas permanecen asociadas a su versión.
 
 ## Vector de características
 

@@ -2,7 +2,7 @@
 
 FoodSave permite planificar producción y abastecimiento y prevenir desperdicio de alimentos perecibles. **El alcance inmediato es un prototipo universitario local** para un comercio y una sucursal. Su [guía de desarrollo](docs/guia-inicio-desarrollo.md), [ADR-005](docs/arquitectura/decisiones/ADR-005-instalacion-local-mvp.md), [ADR-006](docs/arquitectura/decisiones/ADR-006-identidades-lotes-pronosticos.md) y [ADR-008](docs/arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) prevalecen sobre las referencias históricas de este README a SaaS, varias sucursales, stock en Excel permanente o promoción operativa. La demo sí contempla pedidos derivados del plan y envío real por Telegram a un chat de pruebas, con aprobación configurable. La comercialización es futura.
 
-El núcleo local incluye acceso/configuración, programación durable, Beat, worker, PostgreSQL y Redis. El motor ya despacha ejecuciones y recupera leases; los manejadores de ventas, inventario, ML, plan y pedidos **aún no están integrados**. El [esquema del prototipo](docs/base_de_datos/esquema-objetivo-mvp.md) define la futura migración compartida `0002`.
+El núcleo local incluye acceso/configuración, programación durable, Beat, worker, PostgreSQL y Redis. Los manejadores de preparación y evaluación ML están registrados; plan, inventario, promociones y pedidos siguen pendientes. El CSV bakery puede subirse desde `/inicializacion/piloto` para cargar ventas y reservar el modelo sin copiar archivos al contenedor. El asistente de dos XLSX o cinco CSV está en `/inicializacion`; su confirmación deja la instalación pendiente hasta conectar recetas de Max y apertura de lotes de Vera.
 
 ## Arranque local de desarrollo
 
@@ -11,6 +11,8 @@ El núcleo local incluye acceso/configuración, programación durable, Beat, wor
 3. Comprueba `docker compose exec -T api alembic current --check-heads`. El servicio `migraciones` aplica las revisiones antes de iniciar API, worker y Beat; si falla, corrige el error antes de continuar.
 4. Ejecuta `docker compose exec -it api python -m app.core.crear_admin` y escribe el correo y contraseña del administrador.
 5. Abre `http://localhost:3000` para iniciar sesión. La API responde en `http://localhost:8000/salud` y su documentación en `http://localhost:8000/docs`.
+
+Para los siguientes arranques en Windows, abre `iniciar-foodsave.cmd` con doble clic: ejecuta `docker compose up -d`, espera a la web y abre la pantalla de carga. El primer build y la creación del administrador siguen siendo tareas de configuración únicas. Desde la pantalla **Cargar CSV**, selecciona `foodsave-ml/bakery_sales_limpio_final.csv`; el catálogo curado se carga automáticamente y el worker prepara el modelo. La pantalla muestra la ejecución y permite reintentar el entrenamiento si falla, sin subir otra vez el archivo.
 
 Cada PC tiene su propio volumen de PostgreSQL y `model_artifacts` compartido: el worker puede guardar el futuro CBM y sus metadatos, y la API lo monta en solo lectura mediante `MODEL_ARTIFACT_DIR=/code/model_artifacts`. El volumen vacío no representa un modelo disponible. `docker compose down` detiene los servicios y conserva los datos; evita `down -v` salvo que quieras borrar intencionalmente ambos volúmenes. Para probar el trabajador: `docker compose exec api python -c "from app.workers.celery_app import tarea_prueba; print(tarea_prueba.delay('ok').get(timeout=15))"`.
 

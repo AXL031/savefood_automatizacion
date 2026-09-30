@@ -79,6 +79,7 @@ El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [depende
 | `frontend/src/app/informes` | Kevin Bohorquez | Futuro; custodia | [Abrir](../../frontend/src/app/informes/GUIA_DESARROLLO.md) |
 | `frontend/src/app/ingredientes` | Max Rojas | Demo · Ingredientes y unidades | [Abrir](../../frontend/src/app/ingredientes/GUIA_DESARROLLO.md) |
 | `frontend/src/app/inicializacion` | Edu Sanchez | Demo · Asistente y primera carga | [Abrir](../../frontend/src/app/inicializacion/GUIA_DESARROLLO.md) |
+| `frontend/src/app/inicializacion/piloto` | Edu Sanchez, coordinación de Axel | Demo · Carga rápida del CSV bakery | [Abrir](../../frontend/src/app/inicializacion/piloto/GUIA_DESARROLLO.md) |
 | `frontend/src/app/iniciar-sesion` | Axel Cueva | Demo · Autenticación y sesión | [Abrir](../../frontend/src/app/iniciar-sesion/GUIA_DESARROLLO.md) |
 | `frontend/src/app/inventario` | Leonardo Vera | Demo · Inventario por lotes y movimientos | [Abrir](../../frontend/src/app/inventario/GUIA_DESARROLLO.md) |
 | `frontend/src/app/notificaciones` | Axel Cueva | Futuro; custodia | [Abrir](../../frontend/src/app/notificaciones/GUIA_DESARROLLO.md) |

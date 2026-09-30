@@ -38,7 +38,17 @@ from app.modules.inicializacion.validacion import ResultadoValidacion, validar_e
 from app.modules.productos.servicio import EntradaCatalogo, registrar_catalogo
 from app.modules.ventas.servicio import registrar_ventas_diarias
 
-LISTA_CURADA = Path(__file__).resolve().parents[4] / "foodsave-ml" / "lista_productos_precios_limpia.md"
+def _ruta_lista_curada() -> Path:
+    """Encuentra el catálogo tanto en el repositorio como dentro de Docker."""
+    nombre = Path("foodsave-ml/lista_productos_precios_limpia.md")
+    for carpeta in Path(__file__).resolve().parents:
+        candidata = carpeta / nombre
+        if candidata.is_file():
+            return candidata
+    return Path(__file__).resolve().parents[3] / nombre
+
+
+LISTA_CURADA = _ruta_lista_curada()
 
 
 @dataclass

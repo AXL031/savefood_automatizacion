@@ -20,6 +20,8 @@
 
 El corte K01–K04 implementa modelos/migración `0003_pronosticos`, entrenamiento desde ventas PostgreSQL (`entrenamiento.py`), vector sin venta objetivo (`caracteristicas.py`), inferencia idempotente (`servicio.py`), evaluación por revisión (`evaluacion.py`), handlers de Kevin y rutas de consulta (`rutas.py`). Max llama `generar_corrida` y `solicitar_evaluacion_corrida` en su sesión; Edu reserva PREPARAR_MODELO al terminar E03. No llamar `commit` desde esos servicios. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para pruebas y límites de integración.
 
+Desde `piloto-q65v2-*`, el entrenador conserva el cuantil 0.65 y usa esa misma pérdida para elegir la iteración en validación. Es una nueva versión del artefacto; los modelos y backtests anteriores siguen disponibles para trazabilidad. La prueba histórica de julio–septiembre de 2022 es exploratoria porque se consultó durante el desarrollo.
+
 ## Trabajo en esta carpeta
 
 1. Integrar entrenamiento reutilizable y artefacto verificado con versión/huella/partición.

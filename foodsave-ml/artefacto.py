@@ -28,7 +28,7 @@ from particion import Particion
 # Mínimo de observaciones en los 28 días anteriores para incluir una fila en entrenamiento
 MIN_OBSERVACIONES_28_DIAS = 7
 
-# Objetivo de entrenamiento (Quantile:alpha=0.65 según EXPERIMENTOS_CATBOOST.md)
+# Objetivo y selección de la mejor iteración: el mismo costo asimétrico.
 OBJETIVO = "Quantile:alpha=0.65"
 
 
@@ -115,7 +115,7 @@ def entrenar_y_exportar(
 
     modelo = CatBoostRegressor(
         loss_function=OBJETIVO,
-        eval_metric="MAE",
+        eval_metric=OBJETIVO,
         iterations=1000,
         learning_rate=0.05,
         depth=6,

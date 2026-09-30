@@ -19,6 +19,14 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `GET /pronosticos/corridas/{id}` | Bearer |
 | `GET /pronosticos/evaluacion` | Bearer; filtro opcional `modelo_id` |
 | `GET /pronosticos/corridas/{id}/evaluacion` | Bearer |
+| `POST /inicializacion/piloto-bakery` | Administrador; recibe un CSV bakery y reserva `PREPARAR_MODELO` |
+| `GET /inicializacion/estado` | Administrador; estado durable de primera carga |
+| `POST /inicializacion/vista-previa` | Administrador; valida dos XLSX o cinco CSV sin escribir |
+| `POST /inicializacion/confirmar` | Administrador; confirma la carga y reporta dominios pendientes |
+| `GET /productos` | Bearer; consulta el catálogo |
+| `GET /ventas` | Bearer; consulta ventas diarias |
+| `GET /ventas/{id}/revisiones` | Bearer; historial de correcciones |
+| `PATCH /ventas/{id}` | Administrador; corrige con revisión |
 | `GET /salud` | Pública, fuera de `/api/v1` |
 
 `POST /autenticacion/renovar` **no existe**. El JWT actual expira en 30 minutos; el cliente solicita nuevo inicio de sesión. Las rutas actuales responden el sobre `error.codigo/mensaje` y los 422 incluyen `detalles`; [A01](contratos.md#contrato-a01-disponible-acceso-y-configuración), [A02](contratos.md#contrato-a02-programación-y-trazas-persistidas) y [A03](contratos.md#contrato-a03-despacho-recuperable-y-servicios-consumidores) documentan sus cuerpos y estados. `GET/PATCH /negocios/actual` incluyen `modo_envio_pedidos` tras aplicar `0001a_configuracion`. Las rutas de programación requieren `0001b_automatizaciones` y el motor A03 requiere `0001c_motor`. Pronósticos requiere `0002_e01_ventas` y `0003_pronosticos`; PREPARAR_MODELO, EVALUAR_MODELO y EVALUAR_PRONOSTICO están registrados, pero Edu y Max aún deben conectar sus disparadores de carga y plan.
@@ -27,13 +35,6 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 
 | Ruta propuesta | Propósito | Autorización |
 |---|---|---|
-| `GET /inicializacion/estado` | Estado de carga y modelo. | Administrador |
-| `POST /inicializacion/validar` | Recibe dos XLSX o cinco CSV, devuelve vista previa y errores **sin persistir**. | Administrador |
-| `POST /inicializacion/cargar` | Revalida los archivos, guarda datos iniciales y devuelve conteos/huellas. | Administrador |
-| `POST /inicializacion/entrenar` | Reintenta preparación ML si falló; la primera carga aceptada la encola automáticamente. Devuelve `202` y se consulta estado. | Administrador |
-| `GET /productos` | Catálogo y productos seleccionados para demo. | Bearer |
-| `GET /ventas-diarias` | Historial agregado, con fecha/producto y paginación. | Bearer |
-| `PATCH /ventas-diarias/{id}` | Corrección explícita con motivo; conserva revisión. | Administrador |
 | `GET /inventario` | Saldos por lote y agregado con unidad/caducidad. | Bearer |
 | `POST /inventario/ajustes` | Movimiento explícito con motivo, hora efectiva simulada y clave única; agenda evaluación de promoción. | Administrador |
 | `GET /planes/{id}` | Elementos y necesidades; faltante positivo es sugerencia. | Bearer |
@@ -47,7 +48,9 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `POST /pedidos/{id}/conciliar` | Resolver resultado de envío incierto con evidencia. | Administrador |
 | `GET /promociones/evaluaciones` | Sugerencia o motivo de rechazo por lote; no activa descuentos. | Bearer |
 
-Actualmente `POST /pronosticos/preparar-modelo` reserva el entrenamiento a demanda y el worker registra el backtest al publicar el artefacto. El estado durable en `configuracion_inicial` y el disparador desde la carga completa pertenecen a E03 y aún no existen. Celery Beat revisa programaciones cada 30 segundos; el primer entrenamiento automático deberá encolarse por evento de carga. La misma clave idempotente recupera la ejecución, y otra entrada con esa clave devuelve conflicto.
+Actualmente `POST /pronosticos/preparar-modelo` reserva el entrenamiento a demanda y el worker registra el backtest al publicar el artefacto. El estado durable `configuracion_inicial` ya existe; el disparador desde la confirmación del asistente completo espera los servicios de Max y Vera. Celery Beat revisa programaciones cada 30 segundos. La misma clave idempotente recupera la ejecución, y otra entrada con esa clave devuelve conflicto.
+
+El acceso rápido `POST /inicializacion/piloto-bakery` recibe el CSV original del piloto desde la web y reserva su preparación en la misma transacción. Es independiente del asistente completo y no cambia `configuracion_inicial`.
 
 ## Visión futura, fuera de la demo
 

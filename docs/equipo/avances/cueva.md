@@ -7,11 +7,11 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 ## Resumen vigente
 
 - **Estado:** A01–A04 implementados localmente y listos para integrar. Ningún bloque se declara integrado hasta que su consumidor pruebe la frontera; el arranque de A04 aún requiere repetición por un compañero en otra PC y ejecución remota de CI.
-- **Comportamiento disponible:** A01 ofrece identidad, roles, error uniforme y configuración del modo de pedidos. A02 guarda programaciones y ejecuciones idempotentes. A03 agrega Beat cada 30 segundos, despacho durable con token/lease, ejecución transaccional de efectos locales y reintentos internos. A04 deja Compose con migración automática, imagen backend con dependencias ML, volumen persistente compartido entre worker y API, token Telegram opcional y CI ampliado. `0001a_configuracion`, `0001b_automatizaciones` y `0001c_motor` están aplicadas en PostgreSQL local.
+- **Comportamiento disponible:** A01 ofrece identidad, roles, error uniforme y configuración del modo de pedidos. A02 guarda programaciones y ejecuciones idempotentes. A03 agrega Beat cada 30 segundos, despacho durable con token/lease, ejecución transaccional de efectos locales y reintentos internos. A04 deja Compose con migración automática, imagen backend con dependencias ML, volumen persistente compartido entre worker y API, token Telegram opcional, CI ampliado e `iniciar-foodsave.cmd` para arranques posteriores sin recompilar. La cadena hasta `0004_e03_inicializacion` está aplicada en PostgreSQL local.
 - **Contrato disponible:** [A01–A03 en contratos HTTP e internos](../../api/contratos.md), [rutas disponibles](../../api/rutas-api.md), [arranque A04](../arranque-modulos.md), `obtener_modo_envio_pedidos(sesion)`, `automatizaciones.servicio` (`crear_o_recuperar_ejecucion`, `programar_ejecucion`, `iniciar_intento`, `finalizar_intento`), `workers.tasks.manejadores` (`ContextoEjecucion`, `MANEJADORES`) y `MODEL_ARTIFACT_DIR=/code/model_artifacts`.
 - **Entrega a consumidores:** Edu puede reservar preparación en su transacción de carga; Kevin recibe runtime CatBoost y volumen para escribir/verificar el modelo; Vera puede programar evaluación tras un ajuste; Max y Aguirre pueden usar claves/trazas y registrar manejadores al entregar servicios públicos. Aguirre recibe `TELEGRAM_BOT_TOKEN` opcional en API/worker, pero es dueño del canal, destino, estados y pruebas. Todos pueden continuar; cada consumidor prueba su frontera antes de declarar integración.
-- **Bloqueos:** los manejadores de Kevin y las migraciones `0002_e01_ventas`/`0003_pronosticos` están disponibles en la rama `cueva`, pero falta aplicarlas y probar el flujo nuevo en PostgreSQL/Compose. El motor Docker de esta PC está bloqueado por `Virtual Machine Platform`; faltan E03 de Edu, el consumo M02 de Max, Telegram de Aguirre, CI remoto y repetición del arranque por otro integrante.
-- **Siguiente paso:** habilitar el motor Docker, verificar migraciones y worker con PostgreSQL, y probar las fronteras E03/K02/M02 con los responsables. Repetir [la guía de arranque](../arranque-modulos.md) en otra computadora.
+- **Bloqueos:** Docker/Compose, migraciones, carga E01 y tareas ML ya pasaron en esta PC. Faltan los servicios M01/V01 para completar E03, consumo M02 de Max, Telegram de Aguirre, CI remoto y repetición del arranque por otro integrante.
+- **Siguiente paso:** probar la frontera E03/M02 con los responsables y repetir [la guía de arranque](../arranque-modulos.md) en otra computadora.
 
 | Tarea | Estado de seguimiento |
 |---|---|
@@ -21,6 +21,29 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### A04 · Integración local de primera carga y CSV piloto
+
+- **Fecha y autor:** 2026-09-29 (America/Lima), Codex a solicitud de Axel Cueva; coordinación de integración, sin atribuir el código de Edu o Kevin a Axel.
+- **Estado y tareas:** integración local de A04 con E02–E04 y K01; verificada la migración y conservación de datos en PostgreSQL/Docker.
+- **Comportamiento:** se conserva el asistente completo de Sánchez en `/inicializacion` y la carga rápida del CSV bakery en `/inicializacion/piloto`. El iniciador abre la ruta piloto. La carga rápida conserva la importación idempotente y la reserva de `PREPARAR_MODELO` con política `q65v2`; el asistente completo deja `PENDIENTE` mientras no existan las integraciones de Max y Vera.
+- **Archivos y contrato:** `backend/app/principal.py`, `backend/app/modules/inicializacion/piloto.py`, `frontend/src/app/inicializacion/piloto/page.tsx`, `iniciar-foodsave.cmd`; [contratos](../../api/contratos.md), [avance de Edu](sanchez.md) y [avance de Kevin](bohorquez.md).
+- **Migración/configuración:** `0004_e03_inicializacion` se añade sin reescribir migraciones existentes; los volúmenes Docker y `.env` se conservan.
+- **Pruebas:** 79 correctas, 8 omitidas y 6 subpruebas correctas en Python local (evaluación que requiere CatBoost local excluida); `npm run typecheck` y `npm run build` correctos. Docker aplicó `0004_e03_inicializacion`; 139 productos, 27 740 ventas y 2 modelos se conservaron. Catálogo de 139 SKU hallado en `/code`, rutas API presentes y páginas `/inicializacion` y `/inicializacion/piloto` respondieron 200. **Siguiente paso:** Max y Vera conectan sus servicios; Axel hará el push. Todavía no hay PR de este merge.
+
+### A04 · Inicio rápido local y comprobación de Compose
+
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
+- **Autor y responsable del bloque:** Codex por solicitud de Axel Cueva, coordinación A04; la carga CSV se registra en [Edu](sanchez.md) y el modelo en [Kevin](bohorquez.md).
+- **Tareas y estado:** A04, LISTO_PARA_INTEGRAR; arranque en otra PC y CI remoto pendientes.
+- **Comportamiento disponible:** `iniciar-foodsave.cmd` ejecuta `docker compose up -d` sin reconstruir imágenes en cada arranque y abre `/inicializacion`. No borra volúmenes ni secretos. Compose ya levantó PostgreSQL, Redis, API, worker, Beat y frontend; Alembic llegó a `0003_pronosticos`.
+- **Archivos clave:** `iniciar-foodsave.cmd`, `README.md`, `GUIA_DESARROLLO.md`.
+- **Contrato/ejemplo:** doble clic en `iniciar-foodsave.cmd` tras configurar `.env` una vez; abre `http://localhost:3000/inicializacion`.
+- **Configuración/migraciones:** no hay migración nueva; conserva `.env` y volúmenes existentes. La construcción inicial sigue usando `docker compose up --build -d`.
+- **Acceso local de la demo:** se creó `demo@example.com` como Administrador para entrar a la nueva pantalla; la contraseña aleatoria se entregó al usuario en el chat y no se guardó en el repositorio.
+- **Pruebas:** build Docker de backend/frontend correcto; `docker compose ps` mostró servicios activos y saludables, migraciones Exited (0), `alembic current --check-heads` devolvió `0003_pronosticos`, `/salud` y `/inicializacion` respondieron 200, tarea Celery de prueba devolvió `{'resultado': 'ok'}`. El archivo `.cmd` se ejecutó con CMD y terminó con código 0; la primera espera falló en ejecución no interactiva y fue retirada antes de repetirlo. Falta probar el doble clic en otra PC.
+- **Dependencias y siguiente paso:** otro integrante prueba el iniciador en su PC; Edu continúa E02/E03 completo.
+- **Commit/PR:** incluido en el commit local de `cueva`; push pendiente por Axel.
 
 ### 2026-09-29 19:24 America/Bogota — coordinación A04 de la integración Edu–Kevin
 
