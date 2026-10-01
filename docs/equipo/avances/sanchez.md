@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Completar piloto con cinco CSV (30-09-2026, Codex para Axel):** E01/E03 admiten la primera carga compatible del mismo catálogo bakery conservando IDs, ventas/revisiones y modelos previos. Códigos legibles/selección se adoptan en la sesión de carga; solo pares nuevos explícitos se insertan. Conflictos o fallo de stock revierten todo. 32 pruebas PostgreSQL correctas y carga/repetición de los cinco CSV del usuario verificada en base temporal; instalación habitual conservada y apagada. Sin migración, entrega local, coordinación detallada en [Axel](cueva.md#e03a04--completar-los-cinco-csv-sobre-el-piloto-existente--30-09-2026).
+
 - **Inicio/menú local (30-09-2026, Codex para Axel):** / implementa bienvenida, estado real de carga/modelo, últimos planes y pedidos pendientes de últimas 50 propuestas, con accesos al recorrido y errores parciales. Login/marca regresan al Inicio. Sidebar de escritorio desplaza su menú independientemente y mantiene marca/footer; móvil conserva grupos horizontales. Typecheck/build/Docker correctos y comprobación de navegador con fixtures aislados; datos habituales intactos. Coordinación en [Axel](cueva.md) y paso 6 de [Aguirre](aguirre.md); sin atribuir autoría a Edu, sin remoto.
 
 - **Paso 1 verificado (2026-09-30, Codex para Axel):** E03 carga completa → preparación automática → estado durable → backtest y dashboard, con reintento sin reimportar. Prueba real CatBoost/Beat/PostgreSQL/Redis y fallo de evaluación recuperado reutilizando modelo; suite 128 pruebas + 6 subpruebas correctas. Código en cueva, revisión del PR #11 antes de main. [Contrato](../../api/contrato-importaciones.md#e03-disponible-carga-completa-y-preparación-automática-de-ml).
@@ -27,6 +29,14 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | E04 · Entregar pantallas y piezas comunes | LISTO_PARA_INTEGRAR: primitivos compartidos, navegación y pantallas de carga, productos y ventas |
 
 ## Bitácora
+
+### E01–E03 · Primera carga compatible después del piloto · 30-09-2026
+
+- **Fecha/zona/autor/tareas/estado:** 2026-09-30, America/Bogota. Codex para Axel coordinó E01–E03 de Edu y puertos M01/V01; LISTO_PARA_INTEGRAR local, sin atribuir autoría a Edu.
+- **Disponible/archivos:** registrar_catalogo valida código→SKU y opcionalmente completa el catálogo técnico bakery; registrar_ventas_diarias reutiliza filas idénticas bajo opción explícita de E03. IDs, revisiones/importaciones existentes se conservan; recetas y apertura reciben el mapa de los códigos CSV. [Contrato](../../api/contrato-importaciones.md#completar-una-instalación-que-ya-cargó-el-piloto-30-09-2026) y guías de Productos/Ventas/Inicialización actualizados.
+- **Pruebas/configuración:** 32 passed PostgreSQL para API/carga piloto/E02/E03; 36 passed/1 skipped SQLite incluyendo preparación ML. Cinco CSV reales verificados en PostgreSQL efímero: carga completa, 60.803 filas explícitas nuevas y repetición sin duplicados; error de stock y conflictos revierten selección/códigos/ventas. Detalles y límites en [coordinación de Axel](cueva.md#e03a04--completar-los-cinco-csv-sobre-el-piloto-existente--30-09-2026). Ninguna migración; imágenes backend preparadas para próximo arranque. Datos habituales intactos; servicios apagados y sin prueba real de entrenamiento/Telegram en este corte.
+- **Dependencias/siguiente:** usuario reintenta los mismos cinco archivos con las fechas del escenario; la preparación se reserva automáticamente. Mantener contratos de Edu y consumidores Max/Vera con IDs estables.
+- **Git:** cambios locales en cueva sin commit/push/PR/merge.
 
 ### E04 · Página principal y menú desplazable · 30-09-2026
 

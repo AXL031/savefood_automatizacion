@@ -12,6 +12,14 @@ El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo 
 
 ## E03 disponible: carga completa y preparación automática de ML
 
+### Completar una instalación que ya cargó el piloto (30-09-2026)
+
+Mientras la primera carga siga `PENDIENTE` y sin huella aceptada, confirmar los cinco archivos puede completar el piloto existente sin reinicializar. Deben contener exactamente los mismos SKU bakery, activos y con correspondencia uno a uno. Se reconocen los códigos técnicos `bakery-<hash del SKU>` del piloto; se adoptan los códigos legibles, nombres y selección `demostrar` de `productos.csv`, conservando `producto.id` y `sku_producto`. Un catálogo ordinario debe coincidir también en código→SKU; no se intercambian identidades ni se fusionan catálogos distintos.
+
+Las ventas ya cargadas del periodo entregado deben aparecer con el mismo valor. Se conservan su ID, importación y revisiones; solo se insertan los pares nuevos explícitos del archivo y su revisión inicial. Cambiar u omitir un par conocido devuelve `409 HISTORIAL_DIFERENTE`; catálogo incompatible devuelve `409 CATALOGO_DIFERENTE`. No se generan ceros por ausencia: un cero nuevo solo se acepta cuando el archivo lo declara. La nueva importación conserva su propia clave/huella; `ventas_diarias` cuenta filas creadas, no las reutilizadas. La carga rápida del piloto sigue rechazando periodos superpuestos bajo otra clave.
+
+Los servicios públicos `registrar_catalogo(..., completar_piloto=True)` y `registrar_ventas_diarias(..., reutilizar_identicas=True)` son opciones explícitas del coordinador de primera carga. Ninguno confirma la sesión. Catálogo, filas nuevas, recetas, apertura y reserva ML siguen en una sola transacción: un conflicto o fallo de stock revierte también el cambio de códigos y selección. No se eliminan modelos/evaluaciones anteriores ni se modifica una inicialización completa aceptada; la carga completa reserva su propia versión ML. Repetir la misma entrega aceptada no duplica importaciones, movimientos ni preparación.
+
 La confirmación completa reserva PREPARAR_MODELO en la misma sesión que catálogo, ventas, recetas, apertura y estado DATOS_CARGADOS. No publica a Redis antes del commit: Beat reclama la ejecución durable. Repetir los mismos archivos recupera la carga y no crea otra preparación. El piloto mantiene su contrato separado y no modifica la fila de inicialización.
 
 `GET /api/v1/inicializacion/estado` (Bearer) añade `preparacion_numero`, `modelo_id`, `preparacion` y `evaluacion`. Los dos últimos son null o `{id, estado, mensaje_error}`; sus estados son PENDIENTE, EN_EJECUCION, REINTENTANDO, COMPLETADA o FALLIDA. `modelo_id` referencia el artefacto persistido; MODELO_LISTO significa artefacto disponible, no evaluación terminada. El dashboard debe consultar ese modelo y comprobar `evaluacion.estado`.

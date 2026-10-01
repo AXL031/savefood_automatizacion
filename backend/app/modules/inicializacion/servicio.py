@@ -199,6 +199,7 @@ def confirmar_carga(
             )
             for fila in entrada.productos
         ],
+        completar_piloto=estado.estado == ESTADO_PENDIENTE and estado.huella_solicitud is None,
     )
 
     sku_a_id = {fila.sku_externo: producto_por_codigo[fila.codigo] for fila in entrada.productos}
@@ -213,6 +214,7 @@ def confirmar_carga(
         huella_contenido=vista.huella_ventas,
         filas_aceptadas=len(entrada.ventas),
         motivo="Primera carga",
+        reutilizar_identicas=True,
     )
 
     pendiente: list[str] = []

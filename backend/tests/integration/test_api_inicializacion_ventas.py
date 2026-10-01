@@ -64,6 +64,102 @@ def archivos(ventas: bytes = VENTAS) -> list[tuple[str, tuple[str, bytes, str]]]
 FECHAS = {"fecha_objetivo_demo": "2022-08-24", "fecha_referencia_stock": "2022-08-23"}
 
 
+def sembrar_piloto(tmp_path):
+    from datetime import date
+    from sqlalchemy import select
+    from app.modules.productos.servicio import cargar_catalogo_bakery, listar_skus_bakery
+    from app.modules.ventas.servicio import registrar_ventas_diarias
+    from app.modules.ventas.modelos import RevisionVenta
+
+    catalogo = tmp_path / "piloto.md"
+    catalogo.write_text("| Producto | Precio(s) válido(s) |\n|---|---:|\n"
+                        "| BAGUETTE | 1 |\n| CROISSANT | 1 |\n| BANETTE | 1 |\n", encoding="utf-8")
+    with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+        cargar_catalogo_bakery(sesion, catalogo)
+        ids = {sku: producto_id for producto_id, sku in listar_skus_bakery(sesion).items()}
+        registrar_ventas_diarias(sesion, {(ids["BAGUETTE"], date(2022, 8, 21)): 12},
+                                "piloto-previo", "a" * 64, 1, "Carga inicial bakery")
+        sesion.commit()
+        revision_id = sesion.scalar(select(RevisionVenta.id))
+    return ids, revision_id
+
+
+def test_completar_piloto_conserva_ids_historial_y_no_duplica(cliente, tmp_path):
+    from sqlalchemy import select, func
+    from app.modules.productos.modelos import Producto
+    from app.modules.ventas.modelos import VentaDiaria, RevisionVenta, ImportacionVenta
+    from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
+
+    ids, revision_id = sembrar_piloto(tmp_path)
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    primera = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "completa-1"},
+                           files=archivos(), headers=admin)
+    assert primera.status_code == 201, primera.text
+    assert primera.json()["datos"]["ventas_diarias"] == 3
+    productos = cliente.get("/api/v1/productos", headers=admin).json()["datos"]
+    assert {p["codigo"]: p["id"] for p in productos} == {sku.lower(): pid for sku, pid in ids.items()}
+    assert all(p["demostrar"] for p in productos)
+    segunda = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "completa-1"},
+                           files=archivos(), headers=admin)
+    assert segunda.json()["datos"]["ya_estaba_cargada"] is True
+    with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+        assert sesion.scalar(select(func.count()).select_from(Producto)) == 3
+        assert sesion.scalar(select(func.count()).select_from(VentaDiaria)) == 4
+        assert sesion.scalar(select(func.count()).select_from(RevisionVenta)) == 4
+        assert sesion.get(RevisionVenta, revision_id).unidades_vendidas == 12
+        venta = sesion.get(VentaDiaria, sesion.get(RevisionVenta, revision_id).venta_id)
+        assert sesion.get(ImportacionVenta, venta.importacion_id).clave_importacion == "piloto-previo"
+        assert sesion.scalar(select(func.count()).select_from(ImportacionVenta)) == 2
+        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 1
+
+
+@pytest.mark.parametrize("fallo", ["unidades", "omision", "sku", "inactivo", "stock"])
+def test_completar_piloto_conflicto_revierte_toda_la_carga(cliente, tmp_path, fallo):
+    from sqlalchemy import select, func
+    from app.modules.productos.modelos import Producto, SkuProducto
+    from app.modules.ventas.modelos import VentaDiaria, RevisionVenta, ImportacionVenta
+    from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
+
+    ids, _ = sembrar_piloto(tmp_path)
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    entrega = dict((nombre, crudo) for _, (nombre, crudo, _) in archivos())
+    codigo = "HISTORIAL_DIFERENTE"
+    if fallo == "unidades":
+        entrega["ventas.csv"] = VENTAS.replace(b"BAGUETTE,12", b"BAGUETTE,13")
+    elif fallo == "omision":
+        entrega["ventas.csv"] = VENTAS.replace(b"2022-08-21,BAGUETTE,12\r\n", b"").replace(b"2022-08-21,BAGUETTE,12\n", b"")
+    elif fallo == "sku":
+        entrega["productos.csv"] = PRODUCTOS.replace(b"baguette,Baguette,BAGUETTE", b"baguette,Baguette,BANETTE").replace(
+            b"banette,Banette,BANETTE", b"banette,Banette,BAGUETTE")
+        # Un catálogo ordinario no puede cambiar la identidad de códigos ya usados.
+        with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+            for sku, pid in ids.items():
+                sesion.get(Producto, pid).codigo = sku.lower()
+            sesion.commit()
+        codigo = "CATALOGO_DIFERENTE"
+    elif fallo == "inactivo":
+        with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+            sesion.scalar(select(SkuProducto).where(SkuProducto.sku_externo == "BAGUETTE")).activo = False
+            sesion.commit()
+        codigo = "CATALOGO_DIFERENTE"
+    else:
+        entrega["stock_inicial.csv"] = STOCK.replace(b"2022-08-25", b"2022-09-25")
+        codigo = "VIDA_UTIL_EXCEDIDA"
+    respuesta = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "conflicto-piloto"},
+                             files=[("archivos", (nombre, crudo, "text/csv")) for nombre, crudo in entrega.items()], headers=admin)
+    assert respuesta.status_code in (409, 422), respuesta.text
+    assert respuesta.json()["error"]["codigo"] == codigo
+    assert cliente.get("/api/v1/ingredientes", headers=admin).json()["datos"] == []
+    with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+        assert all(not p.demostrar for p in sesion.scalars(select(Producto)))
+        if fallo != "sku":
+            assert all(p.codigo.startswith("bakery-") for p in sesion.scalars(select(Producto)))
+        assert sesion.scalar(select(func.count()).select_from(VentaDiaria)) == 1
+        assert sesion.scalar(select(func.count()).select_from(RevisionVenta)) == 1
+        assert sesion.scalar(select(func.count()).select_from(ImportacionVenta)) == 1
+        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 0
+
+
 @pytest.fixture
 def cliente(monkeypatch, tmp_path):
     # Identidad de credencial simulada; nunca consulta Telegram en esta fixture.
@@ -156,7 +252,8 @@ def test_frontera_stock_invalido_revierte_carga_completa(cliente):
     assert cliente.get("/api/v1/inicializacion/estado", headers=admin).json()["datos"]["preparacion"] is None
 
 
-def test_proveedores_api_permisos_referencia_y_oferta(cliente):
+def test_proveedores_api_permisos_referencia_y_oferta(cliente, monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "")
     admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
     operador = cabecera(token(cliente, "operador@example.com", "clave-segura-operador"))
     assert cliente.get("/api/v1/proveedores").status_code == 401
@@ -176,7 +273,7 @@ def test_proveedores_api_permisos_referencia_y_oferta(cliente):
     assert preferida["compra_automatica_habilitada"] is False
     verificacion = cliente.post(f"/api/v1/proveedores/{pid}/verificar-destino", headers=admin)
     assert verificacion.json()["datos"]["verificado"] is False
-    assert "no configurado" in verificacion.json()["datos"]["detalle"]
+    assert verificacion.json()["datos"]["codigo"] == "TOKEN_NO_CONFIGURADO"
 
 
 def test_stock_cero_caducidad_ajuste_idempotente_y_saldo(cliente):

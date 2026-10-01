@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Corrección piloto→primera carga (30-09-2026, Codex para Axel):** una instalación PENDIENTE sin huella aceptada puede completar el mismo catálogo bakery con cinco CSV. E03 consume las opciones públicas de Productos/Ventas para adoptar códigos y selección conservando IDs, reutilizar ventas idénticas y cargar solo pares nuevos explícitos. Conflictos o fallo de stock revierten toda la sesión; repetición aceptada no duplica. Ver condiciones y errores en el contrato de importaciones. No requiere migración ni reinicialización.
+
 **Paso 1 · 30-09-2026:** E03→ML disponible en este corte: confirmación reserva preparación automática, estado enlaza ejecución/modelo/evaluación y POST reintentar-preparacion reutiliza una reserva activa o crea otra tras fallo sin importar. ENTRENANDO se confirma al iniciar el intento; ver contrato E03 en docs/api/contrato-importaciones.md. PostgreSQL/Redis/CatBoost y Beat real verificados.
 
 **Integración 30-09-2026:** La ruta completa ya pasa ServicioRecetasM01 y ServicioInventarioV01 en una sola sesión: DATOS_CARGADOS sin pendientes de esos puertos. Rollback de stock verificado. El piloto se conserva separado. Entrenamiento automático integrado en el paso 1.
