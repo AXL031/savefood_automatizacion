@@ -50,3 +50,8 @@ Crear archivos al necesitarlos: `esquemas.py` para entrada/salida y validación,
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+
+## Historial paginado E01/E04 · 30-09-2026
+
+GET /ventas añade desplazamiento>=0 y metadatos.total filtrado, conservando datos y limite (1–500). Orden fecha descendente/producto/id; cuenta antes de recortar. No agrega fechas ausentes ni modifica revisiones/stock; sin migración. Ventas UI consume el sobre para recorrer todo el historial.

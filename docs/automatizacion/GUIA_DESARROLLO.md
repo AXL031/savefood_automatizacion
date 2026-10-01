@@ -37,3 +37,7 @@ Un fallo en cualquier paso indica quién lo resuelve y cómo se recupera.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../equipo/avances/cueva.md) siguiendo [la plantilla](../equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Claridad y flujo completo · 30-09-2026
+
+programacion.md/flujos.md documentan flujo conectado y ejecución única; recurrencia diaria con ventas actuales sigue futura. Propuesta enviada histórica conserva bloqueo de recompra.

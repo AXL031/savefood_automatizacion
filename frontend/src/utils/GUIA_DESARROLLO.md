@@ -34,3 +34,7 @@ Fecha de escenario conserva día y significado en la zona del negocio.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Claridad y flujo completo · 30-09-2026
+
+etiquetas.ts centraliza etiquetas humanas; unidades.ts ofrece cantidadVisible, unidadesEntrada y aUnidadBase. Conversión exacta por desplazamiento decimal de cadenas, coma de entrada aceptada. >=1000 g/ml se muestran kg/L; null sigue desconocido. No convertir el saldo persistido ni usar floats para cantidades. 17 comprobaciones de límites, precisión, negativos y unidades inválidas correctas.

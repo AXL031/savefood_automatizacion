@@ -33,7 +33,7 @@ function mensajeError(body: ApiErrorBody | null, status: number): string {
   return `No se pudo completar la solicitud (${status}).`;
 }
 
-export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
+export async function solicitarSobre<T>(ruta: string, opciones: Opciones = {}): Promise<ApiEnvelope<T>> {
   let respuesta: Response;
   try {
     respuesta = await fetch(`${baseUrl}/api/v1${ruta}`, {
@@ -73,7 +73,11 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
     );
   }
   if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "La API no devolvió datos.");
-  return body.datos;
+  return body;
+}
+
+export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
+  return (await solicitarSobre<T>(ruta, opciones)).datos;
 }
 
 /**

@@ -13,6 +13,9 @@ from app.modules.proveedores.servicio import ServicioProveedores
 from .modelos import EnvioPedido, LineaPedido, PedidoCompra, PropuestaCompra
 
 
+ESTADOS_CANCELABLES = {"BLOQUEADO", "PENDIENTE_APROBACION", "RECHAZADO"}
+
+
 def _bloquear_fecha(sesion, fecha):
     if sesion.get_bind().dialect.name == "postgresql":
         sesion.execute(text("SELECT pg_advisory_xact_lock(734002, :dia)"), {"dia": fecha.toordinal()})
@@ -26,7 +29,15 @@ def estado_compras_del_plan(sesion: Session, plan_id: int) -> str:
 def _conflicto_fecha(sesion, fecha):
     anterior = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.fecha_objetivo == fecha, PropuestaCompra.activa.is_(True)))
     if anterior is not None:
-        raise ErrorAPI(409, "RECOMPRA_FECHA", f"La fecha ya tiene la propuesta #{anterior.id} del plan #{anterior.plan_id}. Cancélala explícitamente antes de usar otro plan.")
+        estados = set(sesion.scalars(select(PedidoCompra.estado).where(PedidoCompra.propuesta_id == anterior.id)))
+        referencia = f"La fecha {fecha.isoformat()} ya tiene la propuesta #{anterior.id} del plan #{anterior.plan_id}."
+        if "ENVIADO" in estados:
+            detalle = "Su mensaje ya fue enviado a Telegram. No se puede cancelar para enviar otro pedido de la misma fecha. Consulta la confirmación en Pedidos y envíos; para una nueva prueba elige otra fecha del escenario histórico."
+        elif estados - ESTADOS_CANCELABLES:
+            detalle = "Tiene un envío autorizado o un intento registrado y no se puede cancelar. Consulta su estado en Pedidos y envíos antes de cualquier nueva compra; para otra prueba elige otra fecha del escenario histórico."
+        else:
+            detalle = "Todavía no se ha autorizado ningún envío. Cancélala explícitamente en Pedidos y envíos antes de usar otro plan de esta fecha."
+        raise ErrorAPI(409, "RECOMPRA_FECHA", f"{referencia} {detalle}")
 
 
 def _cantidades(faltante, oferta):
@@ -41,14 +52,16 @@ def _cantidades(faltante, oferta):
         return cantidad, base
 
 
-def generar_pedidos(sesion: Session, plan_id: int) -> PropuestaCompra:
+def generar_pedidos(sesion: Session, plan_id: int, *, modo_envio: str | None = None) -> PropuestaCompra:
     entrada = obtener_contexto_compras(sesion, plan_id)
     fecha = date.fromisoformat(entrada["fecha_objetivo"])
     _bloquear_fecha(sesion, fecha)
     previo = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.plan_id == plan_id))
     if previo is not None:
         return previo
-    modo = obtener_modo_envio_pedidos(sesion)
+    modo = modo_envio or obtener_modo_envio_pedidos(sesion)
+    if modo not in {"REQUIERE_APROBACION", "AUTOMATICO"}:
+        raise ErrorAPI(422, "MODO_ENVIO_INVALIDO", "Modo de envío no admitido.")
     incidencias, grupos = [], {}
     if entrada["necesidades_estado"] != "CALCULADAS":
         incidencias.append({"codigo": "NECESIDADES_INCOMPLETAS", "detalle": "Falta producción calculable o stock conocido. Crear un plan corregido antes de comprar."})
@@ -67,8 +80,6 @@ def generar_pedidos(sesion: Session, plan_id: int) -> PropuestaCompra:
         if not oferta.destino_verificado or not oferta.chat_id_pruebas:
             if "DESTINO_NO_VERIFICADO" not in grupo["bloqueos"]:
                 grupo["bloqueos"].append("DESTINO_NO_VERIFICADO")
-        if modo == "AUTOMATICO" and "CANAL_PENDIENTE_L03" not in grupo["bloqueos"]:
-            grupo["bloqueos"].append("CANAL_PENDIENTE_L03")
         grupo["lineas"].append({"necesidad_ingrediente_id": n["necesidad_id"], "oferta_ingrediente_id": oferta.oferta_id,
             "ingrediente_id": n["ingrediente_id"], "faltante_base": Decimal(n["faltante"]), "cantidad_compra": cantidad,
             "cantidad_base_pedida": base, "unidad_base": n["unidad_base"], "unidad_compra": oferta.unidad_compra,
@@ -94,6 +105,28 @@ def generar_pedidos(sesion: Session, plan_id: int) -> PropuestaCompra:
                 sesion.add(pedido); sesion.flush()
                 sesion.add_all(LineaPedido(pedido_id=pedido.id, **linea) for linea in grupo["lineas"])
             sesion.flush()
+            if modo == "AUTOMATICO" and not bloqueada and not sin_faltantes:
+                # Preparar TODOS los envíos antes de reservar cualquiera. Sin red,
+                # sin commit y sin decisiones administrativas ficticias.
+                pedidos = list(sesion.scalars(select(PedidoCompra).where(PedidoCompra.propuesta_id == propuesta.id).order_by(PedidoCompra.id)))
+                envios = []
+                for pedido in pedidos:
+                    try:
+                        envios.append(_preparar_envio(sesion, pedido))
+                    except ErrorAPI as error:
+                        pedido.bloqueos_json = [error.codigo]
+                        bloqueada = True
+                if bloqueada:
+                    propuesta.estado = "BLOQUEADA"
+                    for pedido in pedidos:
+                        pedido.estado = "BLOQUEADO"
+                        if not pedido.bloqueos_json:
+                            pedido.bloqueos_json = ["PROPUESTA_BLOQUEADA"]
+                else:
+                    for pedido in pedidos:
+                        pedido.estado = "PENDIENTE_ENVIO"
+                    sesion.add_all(envios)
+                sesion.flush()
     except IntegrityError:
         previo = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.plan_id == plan_id))
         if previo is not None:
@@ -167,7 +200,7 @@ def cancelar_propuesta(sesion: Session, propuesta_id: int, usuario_id: int, moti
             raise ErrorAPI(409, "CANCELACION_DIFERENTE", "La propuesta ya se canceló con otro motivo.")
         return propuesta
     pedidos = list(sesion.scalars(select(PedidoCompra).where(PedidoCompra.propuesta_id == propuesta_id).with_for_update()))
-    if any(p.estado not in {"BLOQUEADO", "PENDIENTE_APROBACION", "RECHAZADO"} for p in pedidos):
+    if any(p.estado not in ESTADOS_CANCELABLES for p in pedidos):
         raise ErrorAPI(409, "PROPUESTA_NO_CANCELABLE", "Hay pedidos con aprobación o envío que requieren conciliación.")
     propuesta.estado, propuesta.activa = "CANCELADA", False
     propuesta.cancelado_en, propuesta.cancelado_por, propuesta.motivo_cancelacion = datetime.now(timezone.utc), usuario_id, motivo
@@ -183,12 +216,23 @@ def construir_mensaje(sesion: Session, pedido: PedidoCompra) -> str:
     propuesta = sesion.get(PropuestaCompra, pedido.propuesta_id)
     def linea_texto(valor):
         return " ".join(str(valor).split())
+    def cantidad_texto(valor, unidad):
+        valor = Decimal(valor)
+        if abs(valor) >= 1000 and unidad in {"g", "ml"}:
+            with localcontext() as contexto:
+                contexto.prec = 60
+                valor /= 1000
+            unidad = "kg" if unidad == "g" else "L"
+        if unidad == "l": unidad = "L"
+        numero = format(valor, "f")
+        if "." in numero: numero = numero.rstrip("0").rstrip(".")
+        return f"{numero.replace('.', ',')} {linea_texto(unidad)}"
     partes = ["DEMOSTRACIÓN — NO SURTIR", f"FoodSave · Pedido #{pedido.id}",
         f"Fecha del escenario: {propuesta.fecha_objetivo.isoformat()}",
         f"Proveedor simulado: {linea_texto(pedido.proveedor_json['nombre'])}", f"Plan de origen: #{pedido.plan_id}", "", "Insumos:"]
     for linea in sesion.scalars(select(LineaPedido).where(LineaPedido.pedido_id == pedido.id).order_by(LineaPedido.ingrediente_id)):
-        partes.append(f"• {linea_texto(linea.ingrediente_json['stock']['nombre'])}: {linea.cantidad_compra} {linea_texto(linea.unidad_compra)} "
-                      f"(equivale a {linea.cantidad_base_pedida} {linea_texto(linea.unidad_base)}; faltante {linea.faltante_base} {linea_texto(linea.unidad_base)})")
+        partes.append(f"• {linea_texto(linea.ingrediente_json['stock']['nombre'])}: {cantidad_texto(linea.cantidad_compra, linea.unidad_compra)} "
+                      f"(equivale a {cantidad_texto(linea.cantidad_base_pedida, linea.unidad_base)}; faltante {cantidad_texto(linea.faltante_base, linea.unidad_base)})")
     partes.extend(["", "Prueba universitaria con datos de escenario. No abastecer, cobrar ni despachar mercancía."])
     return "\n".join(partes)
 
@@ -202,6 +246,20 @@ def _bloquear_pedido(sesion: Session, pedido_id: int) -> tuple[PedidoCompra, Pro
     propuesta = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.id == propuesta.id).with_for_update().execution_options(populate_existing=True))
     pedido = sesion.scalar(select(PedidoCompra).where(PedidoCompra.id == pedido_id).with_for_update().execution_options(populate_existing=True))
     return pedido, propuesta
+
+
+def _preparar_envio(sesion: Session, pedido: PedidoCompra, *, chat_id_revisado: str | None = None) -> EnvioPedido:
+    proveedores = ServicioProveedores(sesion)
+    destino = proveedores.consultar_destino(pedido.proveedor_id, bloquear=True)
+    if not destino.activo or not destino.destino_verificado or not destino.chat_id_pruebas:
+        raise ErrorAPI(409, "DESTINO_NO_VERIFICADO", "El proveedor debe estar activo y su chat verificado con la credencial vigente.")
+    if chat_id_revisado is not None and chat_id_revisado != destino.chat_id_pruebas:
+        raise ErrorAPI(409, "DESTINO_CAMBIO", "El chat cambió desde tu revisión. Actualiza el pedido y revisa el nuevo destino.")
+    texto = construir_mensaje(sesion, pedido)
+    if len(texto.encode("utf-16-le")) // 2 > 4096:
+        raise ErrorAPI(422, "MENSAJE_FUERA_DE_RANGO", "El pedido supera el tamaño de un mensaje de Telegram; reduce sus líneas antes de enviarlo.")
+    return EnvioPedido(pedido_id=pedido.id, estado="PENDIENTE_ENVIO", chat_id=destino.chat_id_pruebas,
+                       credencial_huella=proveedores.telegram.huella, texto=texto)
 
 
 def decidir_pedido(sesion: Session, pedido_id: int, *, accion: str, clave: str,
@@ -230,17 +288,9 @@ def decidir_pedido(sesion: Session, pedido_id: int, *, accion: str, clave: str,
     if accion == "APROBAR":
         if pedido.modo_envio != "REQUIERE_APROBACION":
             raise ErrorAPI(409, "AUTOMATICO_PENDIENTE_PASO7", "El modo automático se verificará en el paso 7.")
-        proveedores = ServicioProveedores(sesion)
-        destino = proveedores.consultar_destino(pedido.proveedor_id, bloquear=True)
-        if not destino.activo or not destino.destino_verificado or not destino.chat_id_pruebas:
-            raise ErrorAPI(409, "DESTINO_NO_VERIFICADO", "El proveedor debe estar activo y su chat verificado con la credencial vigente.")
-        if chat_id_revisado != destino.chat_id_pruebas:
-            raise ErrorAPI(409, "DESTINO_CAMBIO", "El chat cambió desde tu revisión. Actualiza el pedido y revisa el nuevo destino.")
-        texto = construir_mensaje(sesion, pedido)
-        if len(texto.encode("utf-16-le")) // 2 > 4096:
-            raise ErrorAPI(422, "MENSAJE_FUERA_DE_RANGO", "El pedido supera el tamaño de un mensaje de Telegram; reduce sus líneas antes de enviarlo.")
-        envio = EnvioPedido(pedido_id=pedido.id, estado="PENDIENTE_ENVIO", chat_id=destino.chat_id_pruebas,
-                           credencial_huella=proveedores.telegram.huella, texto=texto)
+        if chat_id_revisado is None:
+            raise ErrorAPI(409, "DESTINO_CAMBIO", "Revisa el chat antes de aprobar.")
+        envio = _preparar_envio(sesion, pedido, chat_id_revisado=chat_id_revisado)
     try:
         with sesion.begin_nested():
             pedido.clave_decision = clave
@@ -271,6 +321,10 @@ def verificar_destinos_propuesta(sesion: Session, propuesta_id: int) -> Propuest
         bloqueos = [b for b in pedido.bloqueos_json if b not in {"DESTINO_NO_VERIFICADO", "PROVEEDOR_INACTIVO", "PROPUESTA_BLOQUEADA"}]
         if not destino.activo: bloqueos.append("PROVEEDOR_INACTIVO")
         if not destino.destino_verificado or not destino.chat_id_pruebas: bloqueos.append("DESTINO_NO_VERIFICADO")
+        # Un pedido automático bloqueado requiere una nueva propuesta explícita;
+        # revisar destinos nunca debe generar un envío externo por sorpresa.
+        if pedido.modo_envio == "AUTOMATICO" and "AUTOMATICO_REQUIERE_NUEVO_PLAN" not in bloqueos:
+            bloqueos.append("AUTOMATICO_REQUIERE_NUEVO_PLAN")
         pedido.bloqueos_json = bloqueos
         bloqueada = bloqueada or bool(bloqueos)
     for pedido in pedidos:

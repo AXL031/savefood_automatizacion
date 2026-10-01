@@ -42,3 +42,12 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](.
 Ruta / implementada como página principal protegida con bienvenida y consultas reales de inicialización/modelo, últimos planes y pedidos pendientes de las últimas 50 propuestas; errores parciales se muestran sin sustituirlos por cero. Accesos a inventario, recetas, Proveedores/Telegram, Compras, evaluación y automatizaciones. Login exitoso y marca FoodSave enlazan a /. La página /panel conserva la evaluación histórica de Kevin.
 
 Menú de escritorio dentro de sidebar-menu: altura disponible, min-height:0, overflow-y:auto, teclado y scroll independientes; marca/cierre de sesión permanecen visibles. En móvil se mantiene navegación horizontal por grupo y desplazamiento normal de página. Usuarios solo visible a Administrador. Implementación por Codex para Axel en coordinación E04 de Edu; no añade datos simulados al producto.
+
+## Claridad y flujo completo · 30-09-2026
+
+Todas las rutas disponibles consumen GuiaPantalla. Menú por etapas con desplegable móvil; Inicio orienta el recorrido. No usar mensajes de funciones pendientes si la ruta/API ya está implementada. Labels técnicos en detalles. Tablas anchas con scroll horizontal. Ver especificacion-visual.md y registro Sanchez.
+
+
+## Navegación, páginas y detalles · 30-09-2026
+
+AppShell se monta en layout.tsx: mantiene sesión, sidebar y encabezado entre rutas. ProtectedShell aporta título/guía/contenido de cada pantalla. Navegar con Link no vuelve a consultar perfil/negocio; 401 y cerrar sesión limpian el contexto. Tablas disponibles consumen TablaPaginada/TablaDatos; detalles y edición de registros usan PanelDetalle.

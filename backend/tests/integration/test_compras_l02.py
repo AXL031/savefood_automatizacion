@@ -76,7 +76,7 @@ def test_pedidos_conversion_exacta_snapshots_permisos_y_stock(compra):
     assert repetida == propuesta
 
 
-@pytest.mark.parametrize("causa", ["SIN_PROVEEDOR", "DESTINO_NO_VERIFICADO", "AUTOMATICO", "INCOMPLETAS"])
+@pytest.mark.parametrize("causa", ["SIN_PROVEEDOR", "DESTINO_NO_VERIFICADO", "INCOMPLETAS"])
 def test_bloqueos_reales_no_simulan_envio(compra, causa):
     escenario, proveedor_id, oferta_id, _ = compra
     cliente, sesiones, admin, _, corrida, productos = escenario
@@ -108,7 +108,10 @@ def test_recompra_requiere_cancelacion_explicita_y_conserva_historial(compra):
     original = solicitar(escenario).json()["datos"]
     anterior = generar(escenario, original["id"]).json()["datos"]
     nuevo = solicitar(escenario, "plan-nuevo").json()["datos"]
-    assert generar(escenario, nuevo["id"]).status_code == 409
+    conflicto = generar(escenario, nuevo["id"])
+    assert conflicto.status_code == 409
+    assert "Cancélala explícitamente" in conflicto.text
+    assert "Todavía no se ha autorizado ningún envío" in conflicto.text
     ruta = f'/api/v1/compras/propuestas/{anterior["id"]}/cancelar'
     assert cliente.post(ruta, headers=operador, json={"motivo":"corrección"}).status_code == 403
     assert cliente.post(ruta, headers=admin, json={"motivo":" "}).status_code == 422

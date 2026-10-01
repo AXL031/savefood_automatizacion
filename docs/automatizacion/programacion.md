@@ -1,5 +1,15 @@
 # Programación de la exposición
 
+## Funcionamiento vigente · 30-09-2026
+
+El flujo completo de GENERAR_PROPUESTA está conectado: modelo listo → pronóstico anterior al objetivo → plan/recetas/stock → faltantes → ofertas por proveedor → outbox Telegram. En /automatizaciones el administrador elige entre 1 y 5 productos por nombre, fecha/hora real del equipo, fecha/hora histórica y envío manual o automático. La elección queda conservada por programación; automático tiene una confirmación explícita de chat propio de pruebas en la UI. El modo del negocio sirve de valor inicial. API/Beat/worker deben permanecer encendidos; el disparo y envío dependen de sus ciclos de 30 segundos.
+
+Es una ejecución única, no un calendario recurrente. No confundir la fecha real de ejecución con el objetivo histórico. Para otra prueba no se puede reutilizar una fecha que ya tenga compra activa/enviada. Completar ofertas preferidas para todos los faltantes y verificar los chats; datos incompletos bloquean toda la propuesta. El resultado enlaza al plan y a pedidos; ENVIADO se confirma aparte con message_id. Ningún plan ni mensaje modifica stock. [Contrato](../api/contrato-pedidos.md).
+
+Stock pequeño aplicado en la instalación por solicitud de Axel: 5 lotes de productos con 2 u.; ingredientes medidos en g/ml con 500 g/ml y huevo con 2 u. Son 14 ajustes auditados (movimientos 17–30), efectivos en el escenario 2022-08-24 10:00. Las aperturas y el historial se conservan. Un lote vencido para otra fecha sigue sin contar. El pedido #1 del 24-08-2022 ya fue enviado; esa fecha conserva la protección de recompra.
+
+Las secciones Paso 2/Paso 4 que siguen documentan cortes anteriores y no describen la integración actual.
+
 **Paso 2 local · 30-09-2026:** GENERAR_PROPUESTA ya consume el modelo y produce
 una corrida y un plan M02 con snapshots; reserva EVALUAR_PRONOSTICO después
 de guardar el plan, en la misma transacción. Su salida declara PLAN_M02 y

@@ -58,3 +58,12 @@ API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras
 Aprobación/rechazo administrativos con clave idempotente, responsable, nombre y fecha; rechazo motivado de pendiente/bloqueado sin exigir canal. Aprobar exige modo manual, propuesta válida y chat revisado/verificado con credencial vigente. Congela texto/chat/huella y reserva envio_pedido en la misma transacción. Consultas/UI incluyen decisión, destino actual separado de snapshots, mensaje DEMOSTRACIÓN — NO SURTIR e intento/evidencia de Telegram. Aprobar no confirma envío; Beat/worker lo ejecutan y guardan message_id/fecha solo con respuesta válida.
 
 Outbox con lease y token de despacho: revalida antes de transmitir y confirma ENVIANDO antes del efecto externo. Reentrega no vuelve a enviar; timeout, respuesta inválida o worker interrumpido quedan PENDIENTE_VERIFICACION sin retry. Cambiar destino/credencial bloquea antes de red. Ninguna acción mueve stock ni libera por sí sola la reserva de fecha. AUTOMATICO, conciliación y nuevos intentos humanos siguen en paso 7. Migración aditiva 0013; downgrade bloqueado si existen decisiones para no borrar evidencia. Contrato vigente: docs/api/contrato-pedidos.md; prueba test_aprobacion_envio_l03.py. Implementación local por Codex para Axel, responsabilidad de Aguirre, sin commit ni remoto; bot real pendiente del usuario.
+
+## Claridad y flujo completo · 30-09-2026
+
+Se muestran bloqueo y siguiente acción, destino actual, texto conservado y evidencia Telegram. Manual exige revisión explícita antes de aprobar. Automático válido no muestra aprobación; bloqueado corregido requiere nuevo plan. Estados/detalles diferencian cálculo completado de envío confirmado. Cantidades grandes en kg/L.
+
+
+## Ajustes de interfaz · 30-09-2026
+
+Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Detalle/edición en PanelDetalle, cierre/Escape y retorno a la página de origen; conservar permisos, snapshots y unidades. Las APIs mantienen listas recientes hasta 50 registros, identificadas en la pantalla; paginar esas filas no amplía el contrato histórico.

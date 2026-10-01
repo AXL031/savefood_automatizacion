@@ -1,5 +1,13 @@
 # Especificación integral de diseño de FoodSave
 
+## Implementación de claridad transversal · 30-09-2026
+
+ProtectedShell y GuiaPantalla orientan todas las rutas disponibles con propósito, pasos, términos y enlace siguiente. Menú agrupado en preparación, catálogo/inventario, planificación/compras, resultados y administración; menú móvil desplegable accesible y navegación activa por ruta. Inicio muestra un recorrido de cuatro pasos. No se llama backend futuro desde Notificaciones: ofrece enlaces a pedidos y ejecuciones reales. La carga completa está implementada y no se describe como pendiente.
+
+Las páginas distinguen hora real/escenario, cálculo/pedido/envío, stock desconocido/cero y modelo/evaluación. Etiquetas humanas reemplazan códigos internos; claves/JSON/huellas y acciones de rechazo/cancelación están en detalles desplegables. Programación elige productos por nombre y guarda el modo; compras explica bloqueos y siguiente acción, revisión del chat y evidencia. Proveedores separa conectar bot, vincular/verificar chat y registrar ofertas. Evaluación explica MAE/WAPE/cobertura. Formularios, textos y tablas tienen mayor tamaño; tablas anchas se desplazan horizontalmente sin partir encabezados en letras.
+
+utils/unidades.ts convierte decimales mediante cadenas: >=1000 g/ml → kg/L, entradas kg/g y L/ml en ajustes/ofertas, conservando unidad base/API. No hay migración de unidades ni fórmulas ML nuevas. Esta sección describe código actual; maquetas más amplias que siguen mantienen carácter de referencia.
+
 ## Identidad y propósito de la interfaz
 
 FoodSave es una aplicación de gestión operativa para un negocio de alimentos. Su interfaz presenta el estado de la operación, las decisiones automáticas, sus resultados y los problemas que requieren intervención. El diseño debe ser sobrio, amplio y fácil de recorrer: superficies claras, pocos acentos de color, jerarquía tipográfica definida y datos agrupados en tarjetas. La pantalla debe responder rápidamente a cuatro preguntas: **qué ocurre, qué hará el sistema, cómo se verificó y qué debe hacer la persona usuaria**.
@@ -99,3 +107,8 @@ Los títulos y opciones de navegación se expresan en español, incluido **Panel
 ## Accesibilidad
 
 Los iconos llevan etiqueta textual o nombre accesible. Los interruptores exponen su estado. Foco visible y navegación por teclado alcanzan menús, botones, campos, tablas y opciones de recuperación. Los avisos críticos se anuncian sin depender únicamente de color. El contraste de texto secundario, insignias y estados debe verificarse al implementar, especialmente en tamaños de 10 y 11 px.
+
+
+## Navegación y consulta implementadas · 30-09-2026
+
+Marco/sesión persistentes en layout raíz; Link cambia contenido y conserva menú. Tablas paginadas con rango, tamaño y salto, sin alterar decimales ni orden de dominio. Ventas pagina el historial en servidor; listas recientes de otros contratos se identifican. PanelDetalle sustituye los detalles añadidos al pie en recetas, ventas, inventario, planes, compras, pronósticos y edición de ingredientes/usuarios; foco nativo, Escape, encabezado visible y regreso a lista sin perder página.

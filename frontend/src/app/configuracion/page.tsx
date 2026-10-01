@@ -87,7 +87,7 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
               <option value="REQUIERE_APROBACION">Requiere aprobación de un administrador</option>
               <option value="AUTOMATICO">Automático después de validar el pedido</option>
             </select>
-            <small>El cambio se aplicará solo a pedidos nuevos. El canal de Telegram se habilitará con el módulo de compras.</small>
+            <small>Predeterminado para pedidos nuevos. En Programar tareas puedes elegir un modo para cada ejecución. El envío exige chat verificado y ofertas completas.</small>
           </label>
           {error && <div className="inline-error field-full" role="alert">{error}</div>}
           {mensaje && <div className="inline-success field-full" role="status">{mensaje}</div>}
@@ -97,9 +97,9 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
       </section>
       <aside className="card aside-card"><h2>Estado de la instalación</h2><div className="fact"><span>Comercio</span><strong>{negocio.nombre}</strong></div><div className="fact"><span>Sucursales</span><strong>1 en este MVP</strong></div><div className="fact"><span>Tipo de instalación</span><strong>Local</strong></div><p className="helper-text">Cada comercio conserva su propia base de datos y configuración.</p></aside>
     </div>
-    <div className="section-heading section-space"><div><h2>Preferencias operativas</h2><p>La interfaz deja visible el alcance previsto; estos ajustes se habilitarán con sus servicios.</p></div></div>
+    <details className="card section-space"><summary>Funciones futuras (todavía no disponibles)</summary><p>Estas opciones no se aplican a las tareas actuales.</p>
     <div className="preference-grid">{preferenciasPrevistas.map((item) => <div className="card preference" key={item.titulo}><div><strong>{item.titulo}</strong><p>{item.detalle}</p></div><span className="badge badge-neutral">Pendiente de API</span></div>)}</div>
-    <EstadoPanel tono="info" titulo="Límites y avisos en preparación" descripcion="Monto máximo de pedido, margen de seguridad, descuento, reintentos y preferencias de notificación se podrán guardar cuando sus contratos y rutas estén implementados. Aún no se aplican a decisiones automáticas." />
+    </details>
   </>;
 }
 

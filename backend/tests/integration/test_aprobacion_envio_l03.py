@@ -20,8 +20,100 @@ from app.modules.compras.envios import despachar_envios, ejecutar_envio
 from app.modules.compras.modelos import EnvioPedido, PedidoCompra, PropuestaCompra
 from app.modules.compras.servicio import decidir_pedido
 from app.modules.proveedores.servicio import ServicioProveedores
+from app.modules.compras.servicio import generar_pedidos
 
 TOKEN = "123:token-falso-para-pruebas-locales"
+
+
+def test_automatico_reserva_outbox_sin_aprobar_y_no_duplica(compra):
+    entorno = compra[0]
+    http, sesiones, admin, _, _, _ = entorno
+    stock = saldos(sesiones)
+    assert http.patch('/api/v1/negocios/actual', headers=admin, json={'modo_envio_pedidos':'AUTOMATICO'}).status_code == 200
+    propuesta, pedido = borrador(compra)
+    assert pedido['estado'] == 'PENDIENTE_ENVIO' and pedido['decision'] is None
+    assert pedido['envio']['chat_id'] == '123' and 'DEMOSTRACIÓN — NO SURTIR' in pedido['mensaje']
+    assert '4 kg' in pedido['mensaje'] and '1,503 kg' in pedido['mensaje']
+    assert aprobar(entorno, pedido).status_code == 409
+    assert generar(entorno, propuesta['plan_id']).json()['datos']['pedidos'][0]['envio']['id'] == pedido['envio']['id']
+    # Cambiar el modo del negocio NO altera la autorización ya conservada.
+    assert http.patch('/api/v1/negocios/actual', headers=admin, json={'modo_envio_pedidos':'REQUIERE_APROBACION'}).status_code == 200
+    tareas, _ = publicar(sesiones)
+    fake = TelegramEnvio(sesiones)
+    assert ejecutar_envio(*tareas[0], sesiones=sesiones, cliente=fake)['estado'] == 'ENVIADO'
+    assert ejecutar_envio(*tareas[0], sesiones=sesiones, cliente=fake)['estado'] == 'OMITIDO'
+    assert len(fake.llamadas) == 1 and saldos(sesiones) == stock
+
+
+@pytest.mark.parametrize('cambio', ['chat','credencial','inactivo'])
+def test_automatico_revalida_antes_de_red(compra, cambio):
+    entorno, proveedor_id, _, _ = compra
+    _, sesiones, _, _, _, _ = entorno
+    plan = solicitar(entorno).json()['datos']
+    with sesiones.begin() as sesion:
+        generar_pedidos(sesion, plan['id'], modo_envio='AUTOMATICO')
+    tareas, _ = publicar(sesiones)
+    fake = TelegramEnvio(sesiones)
+    if cambio == 'credencial': fake.huella = 'f'*64
+    else:
+        with sesiones.begin() as sesion:
+            s = ServicioProveedores(sesion, fake)
+            if cambio == 'chat': s.vincular_chat(proveedor_id, '456')
+            else: s.cambiar_estado(proveedor_id, False)
+    assert ejecutar_envio(*tareas[0], sesiones=sesiones, cliente=fake)['estado'] == 'FALLIDO'
+    assert fake.llamadas == []
+
+
+def test_automatico_bloqueado_corregir_chat_no_envia_sorpresivamente(compra):
+    entorno, proveedor_id, _, _ = compra
+    http, sesiones, admin, _, _, _ = entorno
+    with sesiones.begin() as sesion: ServicioProveedores(sesion).vincular_chat(proveedor_id,'456')
+    http.patch('/api/v1/negocios/actual',headers=admin,json={'modo_envio_pedidos':'AUTOMATICO'})
+    propuesta, _ = borrador(compra)
+    assert propuesta['estado'] == 'BLOQUEADA' and publicar(sesiones)[0] == []
+    with sesiones.begin() as sesion: ServicioProveedores(sesion,TelegramFalso()).verificar_destino(proveedor_id)
+    revisada = http.post(f'/api/v1/compras/propuestas/{propuesta["id"]}/verificar-destinos',headers=admin).json()['datos']
+    assert revisada['estado'] == 'BLOQUEADA'
+    assert 'AUTOMATICO_REQUIERE_NUEVO_PLAN' in revisada['pedidos'][0]['bloqueos']
+    assert publicar(sesiones)[0] == []
+
+
+def test_modo_programado_se_conserva_y_motor_lo_consume(compra, monkeypatch):
+    from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
+    from app.modules.pronosticos.modelos import ArtefactoModelo
+    from app.modules.pronosticos import servicio as inferencia
+    from app.workers import motor
+    entorno, _, _, _ = compra
+    http, sesiones, admin, operador, _, productos = entorno
+    monkeypatch.setattr(motor,'SessionLocal',sesiones)
+    class ModeloFixture:
+        def predict(self, tabla): return [10]
+    monkeypatch.setattr(inferencia,'_cargar_cbm',lambda _: (ModeloFixture(), {'productos_entrenados':['BAGUETTE','CROISSANT','BANETTE'],'min_observaciones_previas_28_dias':1}))
+    with sesiones.begin() as sesion:
+        modelo = sesion.scalar(select(ArtefactoModelo))
+        modelo.particion_json = {'inicio_prueba':'2022-08-01','fin_prueba':'2022-08-31'}
+    ahora = datetime.now(timezone.utc)
+    datos = {'tipo':'GENERAR_PROPUESTA','ejecutar_desde_utc':(ahora+timedelta(minutes=1)).isoformat(),
+             'fecha_hora_simulada_local':'2022-08-24T10:00:00','fecha_objetivo_demo':'2022-08-24',
+             'producto_ids':list(productos.values()),'clave_idempotencia':'flujo-auto-prueba','modo_envio_pedidos':'AUTOMATICO'}
+    assert http.post('/api/v1/programaciones-demo',headers=operador,json=datos).status_code == 403
+    programada = http.post('/api/v1/programaciones-demo',headers=admin,json=datos)
+    assert programada.status_code == 200, programada.text
+    tarea = programada.json()['datos']['ejecucion_id']
+    assert programada.json()['datos']['parametros']['modo_envio_pedidos'] == 'AUTOMATICO'
+    assert http.post('/api/v1/programaciones-demo',headers=admin,json={**datos,'modo_envio_pedidos':'REQUIERE_APROBACION'}).status_code == 409
+    mensajes = []
+    motor.despachar_pendientes(lambda id_, token: mensajes.append((id_, token)), ahora=ahora+timedelta(minutes=2))
+    monkeypatch.setattr(motor, "_ahora", lambda: ahora + timedelta(minutes=2))
+    assert motor.ejecutar(*next(m for m in mensajes if m[0]==tarea))['resultado'] == 'COMPLETADA'
+    with sesiones() as sesion:
+        ejecucion = sesion.get(EjecucionAutomatizacion,tarea)
+        assert ejecucion.datos_salida_json['pedidos_estado'] == 'GENERADA'
+        assert sesion.scalar(select(PedidoCompra)).estado == 'PENDIENTE_ENVIO'
+    envios, _ = publicar(sesiones)
+    fake = TelegramEnvio(sesiones)
+    assert ejecutar_envio(*envios[0], sesiones=sesiones, cliente=fake)['estado'] == 'ENVIADO'
+    assert len(fake.llamadas) == 1
 
 
 def borrador(compra):
@@ -76,11 +168,16 @@ def test_aprobar_auditoria_idempotencia_permisos_y_envio_confirmado(compra):
     assert aprobado["decision"]["nombre_usuario"] and aprobado["decision"]["fecha"]
     assert aprobado["envio"]["chat_id"] == "123" and aprobado["envio"]["message_id"] is None
     assert aprobado["mensaje"].startswith("DEMOSTRACIÓN — NO SURTIR\n")
-    assert "2022-08-24" in aprobado["mensaje"] and "1503" in aprobado["mensaje"]
+    assert "2022-08-24" in aprobado["mensaje"] and "1,503 kg" in aprobado["mensaje"]
     assert TOKEN not in respuesta.text and "credencial_huella" not in respuesta.text
     assert aprobar(entorno, pedido).json()["datos"] == aprobado
     assert aprobar(entorno, pedido, "otra-decision").status_code == 409
     assert http.post(f'/api/v1/compras/propuestas/{propuesta["id"]}/cancelar', headers=admin, json={"motivo":"repetir"}).status_code == 409
+    plan_pendiente = solicitar(entorno, "recompra-con-envio-autorizado").json()["datos"]
+    conflicto_pendiente = generar(entorno, plan_pendiente["id"])
+    assert conflicto_pendiente.status_code == 409
+    assert "envío autorizado" in conflicto_pendiente.text
+    assert "Cancélala explícitamente" not in conflicto_pendiente.text
     tareas, datos = publicar(sesiones)
     assert datos == {"publicados":1,"publicaciones_fallidas":0,"inciertos":0}
     fake = TelegramEnvio(sesiones)
@@ -93,7 +190,12 @@ def test_aprobar_auditoria_idempotencia_permisos_y_envio_confirmado(compra):
     assert final["decision"] == aprobado["decision"] and aprobar(entorno, pedido).json()["datos"] == final
     assert publicar(sesiones)[0] == [] and saldos(sesiones) == stock
     nuevo = solicitar(entorno, "recompra-despues-envio").json()["datos"]
-    assert generar(entorno, nuevo["id"]).status_code == 409
+    conflicto_enviado = generar(entorno, nuevo["id"])
+    assert conflicto_enviado.status_code == 409
+    assert "Su mensaje ya fue enviado a Telegram" in conflicto_enviado.text
+    assert "otra fecha del escenario histórico" in conflicto_enviado.text
+    assert "Cancélala explícitamente" not in conflicto_enviado.text
+    assert len(fake.llamadas) == 1 and saldos(sesiones) == stock
 
 
 @pytest.mark.parametrize("sin_destino", [False,True])

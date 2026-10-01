@@ -5,6 +5,7 @@
 Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este archivo se actualiza al terminar cada avance significativo.
 
 ## Resumen vigente
+- **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Pronósticos y panel explican cálculo, modelo, partición, MAE/WAPE y cobertura en lenguaje legible; huellas/JSON técnicos en detalles. Automatización completa conserva pronóstico anterior al objetivo y evaluación posterior. No se cambia modelo, entrenamiento ni política cronológica.
 
 - **Consumo K02/K03 verificado en paso 2 local (2026-09-30, Codex para Axel):** M02 utiliza consultar_corrida/obtener_pronosticos y GENERAR_PROPUESTA enlaza inferencia CatBoost → plan → evaluación histórica con Beat/PostgreSQL/Redis. [Entrega y límites](rojas.md); 140 pruebas y 6 subpruebas correctas. No es una entrega nueva personal de Kevin; falta M03/pedido y revisión antes de publicar.
 
@@ -25,6 +26,17 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; API respondió en PostgreSQL y frontend compiló |
 
 ## Bitácora
+
+### Flujo completo, unidades y claridad · 30-09-2026
+
+- **Fecha/zona/autor/estado:** 2026-09-30, America/Bogota. Codex para la tarea de Axel, bloque de bohorquez; coordinación transversal en [Cueva](cueva.md). LISTO_PARA_INTEGRAR local; consumo programado y outbox verificados en pruebas aisladas, sin atribuir autoría a integrantes.
+- **Tareas/comportamiento:** K02/K04/K05, presentación y consumidor M02/A02. Se reemplazaron etiquetas visibles de corrida/estado/partición por nombres comprensibles y se aclararon vacíos/métricas. Inicio y guía común enlazan preparación, cálculo y evaluación. El motor programado se comprobó con inferencia controlada en fixture, no constituye un nuevo entrenamiento real.
+- **Archivos clave:** [Pronósticos](../../../frontend/src/app/pronosticos/page.tsx), [Panel](../../../frontend/src/app/panel/page.tsx), [guía común](../../../frontend/src/components/layout/GuiaPantalla.tsx).
+- **Contrato/ejemplo:** [corte vigente de pedidos](../../api/contrato-pedidos.md#corte-vigente--envío-automático-y-prueba-real--30-09-2026), [A02/unidades](../../api/contratos.md), [programación](../../automatizacion/programacion.md), [diseño](../../diseno/especificacion-visual.md). Elegir AUTOMATICO por programación; 1503 g se presenta como 1,503 kg, sin cambiar API.
+- **Configuración/migración:** sin migración nueva sobre 0013, sin secretos registrados. Imágenes finales API/worker/Beat/frontend/migraciones reconstruidas correctamente con docker compose build, sin el servidor temporal de QA. Los servicios habituales se detectaron detenidos durante la tarea y se conservarán apagados; solo PostgreSQL fue encendido temporalmente para QA. Bot/chat propio existente conserva configuración cifrada. Preferencia global manual preservada; no se agenda una hora sin elección del usuario.
+- **Pruebas y límites:** 54 passed en PostgreSQL aislado: test_aprobacion_envio_l03.py, test_compras_l02.py, test_programaciones_a02.py y test_planificacion_m02.py. npm run typecheck correcto y 17 comprobaciones exactas de unidades correctas. Los intentos iniciales tuvieron dos expectativas obsoletas (texto de unidad y reloj del motor); se corrigieron y la suite completa pasó. Transporte automático falso, sin acreditar segundo envío real. Navegador comprobó Inicio, menú móvil, selección por nombre/mode y aprobación deshabilitada sin revisión; stock 0,5 kg→500 g en fixture aislada. La fixture SQLite temporal falló con consultas concurrentes y se cambió a PostgreSQL aislado para QA; instalación habitual no tiene ese backend SQLite. QA final: 15 pantallas principales con guía y sin errores de carga, más detalle de ejecución; Panel se verificó después de completar metadatos del modelo falso de la fixture. Entrada 0,5 kg→500 g en PostgreSQL aislado, tabla/fecha histórica comprobadas; se corrigió un catch de consulta abortada que sustituía el objetivo por hoy bajo StrictMode. Imagen final anterior verificó 5 pruebas automáticas adicionales (25 deselected). Typecheck final correcto. Build final correcto; servidor Next del puerto 3001, contenedores/esquema de QA y archivos temporales retirados. SQL final confirma 0 esquemas e03_test, pedido #1 ENVIADO/message_id=2 y 14 ajustes pequeños intactos. Servicios habituales apagados como estaban al terminar la revisión; no se acredita validación visual de todos los formularios ni entrenamiento real.
+- **Dependencias/siguiente paso:** Usar modelo listo e historial suficiente para cada fecha demo. Revisar métricas con dataset real completo; no confundir planificación histórica con recurrencia diaria operativa. Coordinación con otros registros enlazados desde dependencias.md.
+- **Git:** rama cueva, cambios locales sin commit/push/PR/merge.
 
 ### Paso 1 · Inicialización completa → preparación y evaluación ML · 30-09-2026
 

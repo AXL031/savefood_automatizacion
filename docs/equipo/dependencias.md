@@ -1,5 +1,13 @@
 # Dependencias y orden de entregas
 
+## Entrega transversal vigente · 30-09-2026 · Codex para Axel
+
+A02/A03 y L03: envío AUTOMATICO conectado, modo opcional conservado por programación, outbox transaccional y worker revalida destinos sin aprobación ficticia. 54 pruebas PostgreSQL correctas; envío manual real pedido #1 confirmado en chat propio, message_id=2. E04: orientación, etiquetas y menú comunes en todas las pantallas. V01/V04: entradas kg/L y presentación exacta, 14 ajustes reales auditados para stock pequeño. M02/M03: consumidor conserva unidades base y modo elegido. K02/K04: etiquetas/métricas explicadas; predicción no cambia su política histórica.
+
+Coordina [Cueva](avances/cueva.md); detalles en [Aguirre](avances/aguirre.md), [Sanchez](avances/sanchez.md), [Vera](avances/vera.md), [Rojas](avances/rojas.md) y [Bohorquez](avances/bohorquez.md). Autor real: Codex para la tarea de Axel; no se atribuye trabajo a integrantes. Las notas de cortes anteriores que indican automático bloqueado o Telegram no configurado se conservan como historial.
+
+Pendiente de configuración por usuario: ofertas preferidas para todos los ingredientes faltantes; el proveedor habitual solo tenía oferta de harina al revisar. No se inventaron proveedores/ofertas para permitir envíos. Compra enviada del 24-08-2022 bloquea recompra de esa fecha. El aviso RECOMPRA_FECHA distingue borrador cancelable de envío autorizado/confirmado; no recomendar cancelar una propuesta ya enviada. Cambiar hora real no cambia fecha objetivo. Automatización actual es única y demostrativa; recurrencia diaria operativa y conciliación manual completa siguen pendientes.
+
 **Paso 5 local · 30-09-2026:** L01/L03 entrega configuración administrativa Telegram, token cifrado, bot/chat y verificación ligada a credencial; UI y Compras consumen con 42 pruebas del corte (PostgreSQL/SQLite/transporte falso). Migración 0012 y volumen privado. El usuario aún no tiene bot: prueba real pendiente, sin mensajes. Aprobación/envío/conciliación siguen pasos 6/7. Detalle en [Aguirre](avances/aguirre.md) y coordinación [Axel](avances/cueva.md).
 
 La asignación vigente está en [responsabilidades](responsabilidades.md). Una dependencia bloquea la integración indicada, no todo el trabajo del integrante. Se puede avanzar con un fixture que respete el contrato, etiquetado como prueba, hasta que el proveedor entregue su servicio. No presentar una integración simulada como terminada.
@@ -60,3 +68,8 @@ Necesidades y faltantes implementados en la transacción del plan. API/UI conser
 Codex para Axel implementa compras bajo responsabilidad de Aguirre, consumiendo M03 de Max y modo de negocio de Axel por interfaces públicas. Migración aditiva 0011_l02_compras sobre 0010: propuesta_compra, pedido_compra y linea_pedido. Snapshots de necesidades, proveedor/oferta, factor, mínimo, múltiplo y modo; cálculo Decimal exacto. Una propuesta activa por fecha; cancelación administrativa motivada libera la fecha y conserva historial. Idempotencia por plan y bloqueo global ante datos/proveedor/destino incompletos. Sin faltantes no se crean pedidos ni se reserva fecha. No hay envíos ni cambios de stock.
 
 API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras/propuestas y /compras/propuestas/{id}, POST /compras/propuestas/{id}/cancelar {motivo}. UI /proveedores y /compras, enlace desde /planificacion; Operador consulta, Administrador modifica. GENERAR_PROPUESTA genera pedidos en su transacción y comunica RECOMPRA_FECHA sin perder el nuevo plan ni su evaluación. Servicios sin commit. Contrato actualizado en docs/api/contrato-pedidos.md; pruebas test_compras_l02.py y flujo real test_inicializacion_ml.py. Aprobación/envío siguen pendientes en L03 y nunca se declaran realizados por un borrador.
+
+
+## Corte de interfaz y plan de cierre · 30-09-2026
+
+Solicitud de Axel: terminar y verificar navegación persistente, tablas paginadas y detalles visibles; detenerse antes de recuperar envíos/promociones. Plan vigente en [plan-cierre-prototipo.md](plan-cierre-prototipo.md), coordinación E04/A01. AppShell/TablaPaginada/PanelDetalle son contratos visuales compartidos; Ventas recibe el total filtrado de API. Base 1–6 completa local, 7 automático implementado con recuperación pendiente; pasos 8–10 se definen en el plan. Los cortes antiguos de estado-desarrollo.md no son pendientes vigentes.

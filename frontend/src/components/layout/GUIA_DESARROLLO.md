@@ -53,3 +53,12 @@ A01 ampliado por Codex para Axel: API /usuarios y pantalla administrativa para l
 Ruta / implementada como página principal protegida con bienvenida y consultas reales de inicialización/modelo, últimos planes y pedidos pendientes de las últimas 50 propuestas; errores parciales se muestran sin sustituirlos por cero. Accesos a inventario, recetas, Proveedores/Telegram, Compras, evaluación y automatizaciones. Login exitoso y marca FoodSave enlazan a /. La página /panel conserva la evaluación histórica de Kevin.
 
 Menú de escritorio dentro de sidebar-menu: altura disponible, min-height:0, overflow-y:auto, teclado y scroll independientes; marca/cierre de sesión permanecen visibles. En móvil se mantiene navegación horizontal por grupo y desplazamiento normal de página. Usuarios solo visible a Administrador. Implementación por Codex para Axel en coordinación E04 de Edu; no añade datos simulados al producto.
+
+## Claridad y flujo completo · 30-09-2026
+
+GuiaPantalla aporta propósito/pasos/términos/enlace según ruta, incluidos detalle de ejecución y piloto. ProtectedShell conserva autenticación/permisos y usa menú agrupado, indicador de ruta y botón móvil con aria-expanded/controls. Piloto se abre desde Datos iniciales; Notificaciones futura no aparece en navegación principal.
+
+
+## Navegación, páginas y detalles · 30-09-2026
+
+AppShell vive en el layout raíz y conserva el marco y ContextoSesion. ProtectedShell solo presenta la pantalla. actualizarPerfilLocal/actualizarNegocioLocal permiten reflejar cambios sin reload. La sesión se consulta al entrar desde login o al reintentar un error, no en cada ruta. Conservar evento 401 y validación de permisos en servidor.

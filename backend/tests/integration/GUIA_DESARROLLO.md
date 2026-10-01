@@ -66,3 +66,9 @@ API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras
 ## Paso 6 · pruebas L03
 
 test_aprobacion_envio_l03.py verifica API real→decisión→outbox→worker con Telegram simulado: permisos, auditoría, clave/duplicados, rechazo incluso bloqueado, chat/token cambiados, reserva de fecha, stock intacto, publicación perdida, interrupción y confirmación tardía sin retry. PostgreSQL con E03_POSTGRES_TEST=1 prueba carreras entre decisiones y entre despachos/workers. Fixture usa esquemas aislados y nunca envía mensajes reales. Migración 0013 se compara con modelos, conserva borradores y rechaza downgrade que borraría decisiones. El check de tipos/build no sustituye estas pruebas.
+
+## Claridad y flujo completo · 30-09-2026
+
+test_aprobacion_envio_l03 cubre automático sin decisión manual, deduplicación, revalidación, actualización sin envío sorpresa y motor programado → plan → outbox → Telegram falso. Usar E03_POSTGRES_TEST=1 para esquemas aislados. El transporte falso no acredita envío real.
+
+Los casos de recompra y aprobación/envío también verifican los avisos para borrador, envío autorizado y enviado: no recomendar cancelar un pedido ya autorizado o transmitido, sin duplicar red ni movimientos.

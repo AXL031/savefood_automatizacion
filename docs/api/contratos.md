@@ -1,5 +1,13 @@
 # Contratos del recorrido demostrable
 
+## Ampliación vigente A02/L03 y unidades · 30-09-2026
+
+POST /programaciones-demo admite modo_envio_pedidos opcional: REQUIERE_APROBACION, AUTOMATICO o null. Si se proporciona queda en parametros/datos_entrada y participa en la huella/idempotencia; omitirlo mantiene el comportamiento previo de leer negocio al ejecutar. La UI siempre guarda su elección. No modifica la preferencia global. Ejemplo de campo adicional: "modo_envio_pedidos":"AUTOMATICO" junto al cuerpo A02 documentado abajo. Sigue siendo una ejecución única a hora real futura para una fecha histórica, no una recurrencia diaria.
+
+GENERAR_PROPUESTA ya conecta pronóstico, plan M02, necesidades M03, propuesta y reserva del envío automático. Ver [contrato vigente de pedidos](contrato-pedidos.md#corte-vigente--envío-automático-y-prueba-real--30-09-2026). Declarar COMPLETADA la ejecución del plan no declara ENVIADO el mensaje: el outbox tiene estado y evidencia separados.
+
+Inventario/ofertas mantienen sus contratos numéricos en unidad base; solo la UI permite ingresar kg/L y convertir exactamente a g/ml. Disponibilidad, movimientos, necesidades y vista previa presentan cantidades grandes en kg/L. No se renombra la unidad persistida de ingredientes ni se reinterpretan recetas históricas.
+
 **Estado:** A01–A03 implementan acceso, programación y motor. El corte K01–K04 de pronósticos tiene rutas y servicios propios; la primera carga completa de Edu ya reserva preparación y evaluación ML; M02/M03 locales consumen corrida, recetas y stock y conservan plan/necesidades; L02 local genera borradores; paso 5 configura bot/chat Telegram sin envíos; aprobación/envío siguen pendientes. Las demás rutas de dominio son especificación de desarrollo. [Alcance del prototipo](../guia-inicio-desarrollo.md). Una instalación local tiene un comercio/sucursal (`negocio.id = 1`); no se envía `negocio_id` en cada solicitud. Las rutas de negocio requieren Bearer y los cambios de carga/stock requieren Administrador. Los servicios de un módulo exponen interfaces públicas; ningún módulo importa modelos privados de otro.
 
 ## Convenciones HTTP
@@ -377,3 +385,8 @@ Estados: `CALCULADAS` si todos los productos son calculables y todos los ingredi
 `POST /api/v1/planes/{id}/necesidades`, solo Administrador y sin cuerpo, completa una vez un plan anterior usando sus recetas/producción guardadas y el stock actual para la fecha objetivo. Devuelve 200 con el detalle; repetir recupera el snapshot sin volver a leer stock. No modifica inventario. `POST /planes` con una clave ya usada compara también los ingredientes: entradas diferentes generan 409 `CLAVE_REUTILIZADA`; otra clave conserva otro plan.
 
 Frontera pública: `obtener_necesidades(sesion, plan_id)` devuelve estado, metadatos y filas guardadas sin commit. La API es consumidor verificado. `GENERAR_PROPUESTA` devuelve `alcance=PLAN_PEDIDOS_L02` y el estado real; conserva inferencia/plan/necesidades/evaluación en la transacción del motor. L02 consume obtener_contexto_compras, con fecha e IDs de necesidades; producción incompleta deja propuesta bloqueada sin líneas. Política: una propuesta activa por fecha, cancelación administrativa explícita antes de sustituir. No existe envío en este corte.
+
+
+## Ventas: paginación disponible · 30-09-2026
+
+GET /ventas?limite=25&desplazamiento=50&producto_id=1&desde=2022-08-01&hasta=2022-08-23 conserva datos como lista y añade metadatos={limite:25,desplazamiento:50,total:total_filtrado,total_devuelto:filas_de_la_pagina}. Desplazamiento entero >=0, limite entre 1 y 500, hasta inclusivo. Total usa los mismos filtros; orden estable fecha_local DESC, producto_id, id. Un desplazamiento fuera de rango devuelve datos=[] con el total conservado. Ausencia sigue desconocida, cero explícito se conserva. Sin migración; consultas Bearer existentes siguen compatibles.

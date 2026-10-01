@@ -1,5 +1,19 @@
 # Contrato de pedidos derivados del pronóstico
 
+## Corte vigente · Envío automático y prueba real · 30-09-2026
+
+Este corte sustituye las restricciones sobre AUTOMATICO de los pasos 4–6 conservados abajo. Generar un pedido con modo AUTOMATICO, necesidades completas, ofertas preferidas activas y destinos verificados reserva todos sus envíos en la misma transacción. Si cualquier pedido tiene bloqueo o mensaje demasiado largo no se reserva ninguno. No se inventa una decisión APROBAR: decision_json/actor/clave de decisión quedan vacíos; la autorización es el modo conservado de propuesta y pedido. La programación conserva además creado_por y el modo elegido. El worker exige propuesta GENERADA activa, sin incidencias/bloqueos, pedido PENDIENTE_ENVIO, modo automático coincidente y destino/credencial vigentes. El modo manual conserva la aprobación administrativa auditada.
+
+Interfaz pública: generar_pedidos(sesion, plan_id, *, modo_envio=None), sin commit. A02 admite modo_envio_pedidos opcional por programación (REQUIERE_APROBACION o AUTOMATICO); GENERAR_PROPUESTA lo pasa a compras. Omitirlo usa el modo del negocio al ejecutar, como antes. Cada propuesta conserva su modo; cambiar preferencias no modifica pedidos anteriores. Igual plan recupera su resultado y no duplica el outbox. Una propuesta activa por fecha sigue impidiendo recompra; una ya enviada no se cancela para eludir esa regla. RECOMPRA_FECHA conserva su código HTTP 409, pero el motivo depende del estado: borrador cancelable indica cancelación explícita; envío autorizado/intento registrado indica revisar su estado; ENVIADO indica que el mensaje ya se transmitió y que una nueva prueba requiere otra fecha histórica. Cambiar solamente la hora real no libera la fecha objetivo.
+
+Actualizar destinos de una propuesta automática bloqueada no reserva envíos ni la convierte a manual: queda AUTOMATICO_REQUIERE_NUEVO_PLAN. Corregir ofertas/destinos, cancelar explícitamente la propuesta no transmitida y programar otro plan. Los mensajes inciertos siguen sin reintento ciego; conciliación manual completa continúa pendiente. Sin faltantes no se envía nada. No se mueve stock al planificar, comprar o enviar.
+
+Presentación: cantidades >=1000 g/ml se muestran en kg/L en mensajes nuevos y UI (1503 g → 1,503 kg). La API, recetas y snapshots conservan unidades base exactas; el texto ya autorizado queda congelado. UI de inventario/ofertas acepta kg/g y L/ml y convierte exactamente antes de llamar la API.
+
+Prueba real autorizada por Axel: propuesta #4/plan #4 (2022-08-24), pedido #1 ENVIADO al chat propio ya verificado, message_id=2. El snapshot inicial tenía destino_verificado=false: configurar el chat no actualizaba el borrador anterior por sí solo. La reserva se aprobó con actor administrativo existente y clave específica de prueba; Beat/worker confirmó la entrega. Sin secretos en el registro. Esta prueba acredita envío manual real; el flujo automático completo se acredita con transporte falso en PostgreSQL, no con un segundo mensaje real.
+
+Pruebas: 54 passed en compras/aprobación/programación/planificación con PostgreSQL aislado, incluido motor → plan → outbox → transporte falso, duplicados y cambios de destino/credencial. No requiere nueva migración sobre 0013.
+
 ## Paso 6 local · Revisión, aprobación y envío manual
 
 `POST /pedidos/{id}/aprobar` recibe `{clave_idempotencia,chat_id_revisado}` y responde 202 con el

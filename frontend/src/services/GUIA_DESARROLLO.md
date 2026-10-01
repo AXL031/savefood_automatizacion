@@ -66,3 +66,8 @@ API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras
 ## Contrato L03 · Paso 6
 
 Compras incorpora aprobarPedido (clave_idempotencia,chat_id_revisado), rechazarPedido (clave,motivo) y verificarDestinosPropuesta. Pedido incluye decision, destino_actual, mensaje y envio (intento, chat conservado, tiempos/message_id/error saneado). UI conserva clave al repetir una solicitud; 202 es aprobación pendiente de worker, no envío confirmado. Destino actual es consulta viva, snapshots y mensaje aprobado permanecen. No exponer huella/token ni inventar estado ENVIADO. Contrato-pedidos y pruebas L03 son la referencia vigente.
+
+
+## Consulta paginada · 30-09-2026
+
+solicitarSobre conserva datos y metadatos con el mismo tratamiento de errores/401. solicitar sigue devolviendo datos para consumidores existentes. listarPaginaVentas consume total filtrado, limite y desplazamiento; si la API antigua no incluye total pide actualizarla, sin inventar un conteo.

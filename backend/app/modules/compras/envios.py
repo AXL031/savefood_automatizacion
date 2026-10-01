@@ -71,14 +71,18 @@ def ejecutar_envio(envio_id: int, token: str, *, sesiones=SessionLocal, cliente=
             _fallar(envio, pedido, "FALLIDO", error_configuracion.codigo, str(error_configuracion), ahora)
             return {"estado": "FALLIDO"}
         destino = ServicioProveedores(sesion, cliente).consultar_destino(pedido.proveedor_id, bloquear=True)
-        autorizado = (propuesta.activa and pedido.estado == "PENDIENTE_ENVIO" and
-                      pedido.decision_json and pedido.decision_json.get("accion") == "APROBAR" and
-                      pedido.modo_envio == "REQUIERE_APROBACION" and destino.activo and
+        autorizacion_manual = (pedido.modo_envio == "REQUIERE_APROBACION" and
+                               pedido.decision_json and pedido.decision_json.get("accion") == "APROBAR")
+        autorizacion_automatica = (pedido.modo_envio == propuesta.modo_envio == "AUTOMATICO" and
+                                   pedido.decision_json is None)
+        autorizado = (propuesta.activa and propuesta.estado == "GENERADA" and not propuesta.incidencias_json and
+                      not pedido.bloqueos_json and pedido.estado == "PENDIENTE_ENVIO" and
+                      (autorizacion_manual or autorizacion_automatica) and destino.activo and
                       destino.destino_verificado and destino.chat_id_pruebas == envio.chat_id and
                       cliente.huella == envio.credencial_huella)
         if not autorizado:
             _fallar(envio, pedido, "FALLIDO", "DESTINO_O_CREDENCIAL_CAMBIO",
-                    "El proveedor, chat o credencial cambió después de aprobar. El mensaje no se transmitió.", ahora)
+                    "El proveedor, chat o credencial cambió después de autorizar el envío. El mensaje no se transmitió.", ahora)
             return {"estado": "FALLIDO"}
         envio.estado = pedido.estado = "ENVIANDO"
         envio.inicio_en = ahora

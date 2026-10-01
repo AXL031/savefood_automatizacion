@@ -53,3 +53,7 @@ Crear archivos al necesitarlos: `esquemas.py` para entrada/salida y validación,
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Claridad y flujo completo · 30-09-2026
+
+programar_propuesta admite modo_envio_pedidos opcional y lo conserva en parámetros/huella. Omitir conserva comportamiento previo; null no añade snapshot de modo. Validar literal manual/automático. La UI administra una ejecución única para el objetivo histórico.

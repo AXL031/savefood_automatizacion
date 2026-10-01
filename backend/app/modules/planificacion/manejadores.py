@@ -33,7 +33,7 @@ def generar_propuesta(sesion: Session, contexto: ContextoEjecucion) -> dict:
                                   producto_ids=productos)
         plan = generar_plan(sesion, corrida_id=corrida.id, clave_ejecucion=f"plan-propuesta-{contexto.id}")
         try:
-            propuesta = generar_pedidos(sesion, plan.id)
+            propuesta = generar_pedidos(sesion, plan.id, modo_envio=parametros.get("modo_envio_pedidos"))
             compra = {"propuesta_compra_id": propuesta.id, "pedidos_estado": propuesta.estado}
         except ErrorAPI as exc:
             if exc.codigo != "RECOMPRA_FECHA":

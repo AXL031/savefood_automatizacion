@@ -5,3 +5,8 @@ Responsable: Axel Cueva, ampliación A01 autorizada por el usuario. Leer [guía 
 Página administrativa `/usuarios`: listado, creación, edición de nombre/correo/rol y activación. Usa servicios HTTP y componentes compartidos. Operadores ven acceso restringido; el backend también exige administrador. El último administrador activo no puede desactivarse ni degradarse. No hay eliminación física ni registro público.
 
 Registrar cambios y pruebas reales en [avance de Axel](../../../../docs/equipo/avances/cueva.md). No mostrar ni conservar contraseñas en respuestas o tablas.
+
+
+## Ajustes de interfaz · 30-09-2026
+
+Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Detalle/edición en PanelDetalle, cierre/Escape y retorno a la página de origen; conservar permisos, snapshots y unidades.

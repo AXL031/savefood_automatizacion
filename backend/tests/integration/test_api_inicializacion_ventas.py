@@ -305,6 +305,34 @@ def test_stock_cero_caducidad_ajuste_idempotente_y_saldo(cliente):
     assert next(f for f in vencidos if f["codigo"] == "baguette")["cantidad_disponible"] == "0"
 
 
+def test_paginacion_ventas_recorrer_filtrar_y_validar(cliente: TestClient):
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    carga = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "paginacion"},
+                         files=archivos(), headers=admin)
+    assert carga.status_code == 201, carga.text
+    ruta = "/api/v1/ventas"
+    primera = cliente.get(ruta, params={"limite": 2}, headers=admin).json()
+    segunda = cliente.get(ruta, params={"limite": 2, "desplazamiento": 2}, headers=admin).json()
+    assert primera["metadatos"]["total"] == segunda["metadatos"]["total"] == 4
+    assert len(primera["datos"]) == len(segunda["datos"]) == 2
+    ids = [fila["id"] for pagina in (primera, segunda) for fila in pagina["datos"]]
+    completa = cliente.get(ruta, headers=admin).json()["datos"]
+    assert ids == [fila["id"] for fila in completa]
+    assert len(set(ids)) == 4
+    vacia = cliente.get(ruta, params={"desplazamiento": 4}, headers=admin).json()
+    assert vacia["datos"] == [] and vacia["metadatos"]["total"] == 4
+    filtrada = cliente.get(ruta, params={"desde": "2022-08-21", "hasta": "2022-08-21"}, headers=admin).json()
+    assert filtrada["metadatos"]["total"] == 2
+    assert any(fila["unidades_vendidas"] == 0 for fila in filtrada["datos"])
+    producto = completa[0]["producto_id"]
+    individual = cliente.get(ruta, params={"producto_id": producto, "limite": 1}, headers=admin).json()
+    assert individual["metadatos"]["total"] == sum(fila["producto_id"] == producto for fila in completa)
+    assert cliente.get(ruta, params={"desplazamiento": -1}, headers=admin).status_code == 422
+    assert cliente.get(ruta, params={"limite": 501}, headers=admin).status_code == 422
+    assert cliente.get(ruta, params={"desde": "2022-08-23", "hasta": "2022-08-21"}, headers=admin).status_code == 422
+    assert cliente.get(ruta).status_code == 401
+
+
 def token(cliente: TestClient, correo: str, contrasena: str) -> str:
     respuesta = cliente.post(
         "/api/v1/autenticacion/iniciar-sesion", json={"correo": correo, "contrasena": contrasena}

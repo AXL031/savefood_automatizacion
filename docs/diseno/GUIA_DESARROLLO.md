@@ -35,3 +35,12 @@ Una pantalla no añade funciones de negocio solo porque estén dibujadas en el m
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../equipo/avances/sanchez.md) siguiendo [la plantilla](../equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Claridad y flujo completo · 30-09-2026
+
+La sección implementación de claridad transversal de especificacion-visual.md describe orientación común, navegación, texto humano, detalles y unidades exactas disponibles. La maqueta amplia posterior sigue siendo referencia.
+
+
+## Navegación, páginas y detalles · 30-09-2026
+
+Especificación visual actualizada: marco persistente, paginador común y diálogo accesible para consultar/editar registros. Ventas tiene paginación remota; los demás historiales limitados se rotulan como recientes. Ver plan-cierre-prototipo.md y registro Sanchez para evidencia y alcance.

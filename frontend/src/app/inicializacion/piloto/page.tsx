@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
+import { etiquetaDato } from "@/utils/etiquetas";
 import { ProtectedShell } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { listarEjecuciones, obtenerEjecucion } from "@/services/automatizaciones";
@@ -99,19 +100,19 @@ function CargaPiloto({ token, administrador }: { token: string; administrador: b
       <div className="fact"><span>Ventas diarias nuevas</span><strong>{resultado.ventas_diarias_creadas}</strong></div>
       <div className="fact"><span>Líneas negativas excluidas en esta carga</span><strong>{resultado.filas_negativas_excluidas}</strong></div>
       <div className="fact"><span>Versión del modelo</span><strong>{resultado.version_modelo}</strong></div>
-      <div className="fact"><span>Preparación</span><strong>{ejecucion?.estado ?? resultado.estado_ejecucion}</strong></div>
+      <div className="fact"><span>Preparación</span><strong>{etiquetaDato(ejecucion?.estado ?? resultado.estado_ejecucion)}</strong></div>
       {ejecucion?.mensaje_error && <p className="error-text">{ejecucion.mensaje_error}</p>}
       <p className="helper-text"><Link href={`/automatizaciones/ejecuciones/${ejecucionId}`}>Ver ejecución #{ejecucionId}</Link> · <Link href="/pronosticos">Ver modelos</Link> · <Link href="/panel">Ver panel histórico</Link></p>
       {ejecucion?.estado === "FALLIDA" && <button className="button-secondary" disabled={reintentando} onClick={() => void reintentar()}>{reintentando ? "Solicitando…" : "Reintentar preparación sin subir el CSV"}</button>}
     </section>}
     {!resultado && ejecucion && <section className="card section-space" aria-live="polite">
       <h2>Preparación anterior</h2>
-      <p>Estado: <strong>{ejecucion.estado}</strong>. Puedes consultar el modelo sin volver a subir el archivo.</p>
+      <p>Estado: <strong>{etiquetaDato(ejecucion.estado)}</strong>. Puedes consultar el modelo sin volver a subir el archivo.</p>
       {ejecucion.mensaje_error && <p className="error-text">{ejecucion.mensaje_error}</p>}
       <p className="helper-text"><Link href={`/automatizaciones/ejecuciones/${ejecucion.id}`}>Ver ejecución #{ejecucion.id}</Link> · <Link href="/pronosticos">Ver modelos</Link> · <Link href="/panel">Ver panel histórico</Link></p>
       {ejecucion.estado === "FALLIDA" && <button className="button-secondary" disabled={reintentando} onClick={() => void reintentar()}>{reintentando ? "Solicitando…" : "Reintentar preparación sin subir el CSV"}</button>}
     </section>}
-    <section className="card section-space"><h2>Alcance de esta carga</h2><p>Este acceso carga el CSV del piloto y solicita el modelo. La primera inicialización completa con recetas, lotes y archivos Excel sigue en desarrollo.</p></section>
+    <section className="card section-space"><h2>Alcance de esta carga</h2><p>Este acceso carga el CSV del piloto y solicita el modelo. La carga completa con recetas y stock está disponible en Datos iniciales. Este acceso rápido prepara el piloto de ventas.</p></section>
   </>;
 }
 

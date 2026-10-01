@@ -48,3 +48,14 @@ La ruta compone `page.tsx` y componentes del feature correspondiente. Usar layou
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/vera.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Claridad y flujo completo · 30-09-2026
+
+Ajustes permiten kg/g y L/ml; antes de enviar convierten exactamente a unidad base y validan su precisión. Saldos/lotes/movimientos grandes muestran kg/L. Movimientos cuya unidad no se puede resolver se rotulan unidad base. Stock pequeño real documentado en Vera; no se modifican aperturas.
+
+La lectura inicial ignora respuestas/errores de consultas abortadas; evita que StrictMode deje el filtro en hoy en lugar de la fecha histórica. Verificado al recargar con objetivo 2022-08-24.
+
+
+## Ajustes de interfaz · 30-09-2026
+
+Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Detalle/edición en PanelDetalle, cierre/Escape y retorno a la página de origen; conservar permisos, snapshots y unidades. Movimientos consulta los últimos 50 registros.

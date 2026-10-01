@@ -1,4 +1,8 @@
-# Estado verificado de desarrollo — 30-09-2026
+# Estado verificado de desarrollo — 01-10-2026
+
+## Corte vigente · 01-10-2026
+
+Consultar [plan de cierre del prototipo](plan-cierre-prototipo.md) y resúmenes recientes de [Cueva](avances/cueva.md)/[Sanchez](avances/sanchez.md). Pasos 1–6 implementados; 7 automático conectado, conciliación completa y prueba automática real pendientes. Promociones y demostración conjunta/reproducción en otra PC pendientes. Este avance entrega navegación persistente, paginación y paneles de detalle; los diagnósticos siguientes son cortes históricos.
 
 Corte funcional: `main` / `origin/main` en `902f0e6` (PR #10). Auditoría de Codex para coordinación de Axel Cueva. Se contrastaron responsabilidades, registros, código, rutas registradas, migraciones, pantallas y pruebas. El [reparto](responsabilidades.md) y el [alcance](../guia-inicio-desarrollo.md) siguen vigentes.
 

@@ -89,6 +89,7 @@ def programar_propuesta(
     producto_ids: list[int],
     clave_idempotencia: str,
     creado_por: int,
+    modo_envio_pedidos: str | None = None,
 ) -> ProgramacionDemo:
     """Reserva programación y ejecución pendiente en la misma transacción."""
     if fecha_hora_simulada_local.tzinfo is not None:
@@ -100,6 +101,10 @@ def programar_propuesta(
     ):
         raise ValueError("Se requieren entre 1 y 5 productos únicos con IDs positivos")
     parametros = {"fecha_objetivo_demo": fecha_objetivo_demo, "producto_ids": sorted(producto_ids)}
+    if modo_envio_pedidos is not None:
+        if modo_envio_pedidos not in {"REQUIERE_APROBACION", "AUTOMATICO"}:
+            raise ValueError("Modo de envío no admitido")
+        parametros["modo_envio_pedidos"] = modo_envio_pedidos
     return programar_ejecucion(
         sesion, tipo="GENERAR_PROPUESTA", ejecutar_desde_utc=ejecutar_desde_utc,
         fecha_hora_simulada_local=fecha_hora_simulada_local, parametros=parametros,
