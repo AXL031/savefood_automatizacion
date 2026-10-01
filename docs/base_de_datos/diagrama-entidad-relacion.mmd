@@ -50,7 +50,24 @@ erDiagram
     NECESIDAD_INGREDIENTE ||--o| LINEA_PEDIDO : justifica
     OFERTA_INGREDIENTE ||--o{ LINEA_PEDIDO : convierte
     USUARIO |o--o{ PEDIDO_COMPRA : decide
-    PEDIDO_COMPRA ||--o| ENVIO_PEDIDO : envio_paso6
+    PEDIDO_COMPRA ||--o{ ENVIO_PEDIDO : intentos_conservados
+    ENVIO_PEDIDO ||--o{ RECUPERACION_ENVIO : revisiones
+    ENVIO_PEDIDO |o--o{ RECUPERACION_ENVIO : nuevo_intento
+    USUARIO ||--o{ RECUPERACION_ENVIO : registra
+
+    RECUPERACION_ENVIO {
+        int id PK
+        int envio_id FK
+        string clave_idempotencia UK
+        string accion
+        int usuario_id FK
+        string nombre_usuario
+        datetime creado_en
+        string evidencia
+        json solicitud_json
+        json resultado_anterior_json
+        int nuevo_envio_id FK
+    }
 
     PROGRAMACION_DEMO ||--o| EJECUCION_AUTOMATIZACION : dispara
     EJECUCION_AUTOMATIZACION ||--o{ INTENTO_AUTOMATIZACION : intenta

@@ -5,6 +5,9 @@
 Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este archivo se actualiza al terminar cada avance significativo.
 
 ## Resumen vigente
+
+- **Dashboard y Reportes · 01-10-2026:** E01/E04 consumidor K04: lecturas públicas periodo_ventas/resumen_ventas por fechas inclusivas, sin truncar ni completar ausencias; Inicio y Reportes con gráficos, tablas y CSV. 34 pruebas del corte correctas y build/typecheck correctos. Coordinación Codex para Axel, no autoría personal de Edu.
+
 - **Navegación, paginación y detalles (01-10-2026, Codex para Axel):** E04 mantiene sesión/menú en el layout raíz; tablas paginadas y detalles en diálogo accesible conservan la lista. E01 Ventas pagina el historial completo en PostgreSQL con total filtrado. 19 pruebas de integración correctas y QA de navegador aislado; ver bitácora y [plan de cierre](../plan-cierre-prototipo.md). Se detiene el trabajo tras este corte, según petición del usuario.
 - **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Orientación y navegación comunes para todas las pantallas disponibles: pasos, términos, siguiente acción y menú móvil accesible. Inicio con recorrido, etiquetas humanas, detalles técnicos desplegables y tablas legibles con scroll. Cada dominio mantiene sus reglas; Notificaciones futura ya no llama API inexistente. Typecheck correcto y verificación visual de las 15 pantallas principales y detalle de ejecución correcta con PostgreSQL aislado.
 
@@ -31,6 +34,13 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | E04 · Entregar pantallas y piezas comunes | LISTO_PARA_INTEGRAR: primitivos compartidos, navegación y pantallas de carga, productos y ventas |
 
 ## Bitácora
+
+### Dashboard y Reportes · 01-10-2026
+
+- **Fecha/zona/autor/estado:** 2026-10-01, America/Bogota. Codex para Axel; LISTO_PARA_INTEGRAR local y activo en Compose, validación visual pendiente por bloqueo de navegador.
+- Ventas publica agregados de revisiones actuales por día y producto, incluyendo productos inactivos con historia; sin unir SKU que duplique conteos. 75 fechas verificadas sin límite 50 y cero explícito separado de ausencia. Frontend añade Reportes a navegación persistente y descarga autenticada; gráfico respeta distancias temporales y cero registrado. [Contrato](../../api/contrato-informes.md), [evidencia de K04](bohorquez.md#dashboard-en-inicio-y-reportes--01-10-2026), coordinación [Cueva](cueva.md). Sin migración, correcciones de ventas reales ni envíos. Revisión visual bloqueada en 3001; siguiente validar las pantallas protegidas. Cambios locales, sin commit/PR.
+
+
 
 ### E04/E01 · Navegación persistente, tablas y detalles · 01-10-2026
 

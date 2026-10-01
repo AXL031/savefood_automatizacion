@@ -55,3 +55,7 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](.
 ## Historial paginado E01/E04 · 30-09-2026
 
 GET /ventas añade desplazamiento>=0 y metadatos.total filtrado, conservando datos y limite (1–500). Orden fecha descendente/producto/id; cuenta antes de recortar. No agrega fechas ausentes ni modifica revisiones/stock; sin migración. Ventas UI consume el sobre para recorrer todo el historial.
+
+## Dashboard y Reportes de lectura · 01-10-2026
+
+Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` con períodos inclusivos, versión del modelo, tablas paginadas, detalle en diálogo y CSV completo del período. [Contrato](../../../../docs/api/contrato-informes.md). Ventas publica `resumen_ventas`/`periodo_ventas`; Compras `resumen_pedidos`/`periodo_propuestas` cuenta pedidos sin multiplicar intentos; K03 admite filtros `desde`/`hasta` opcionales conservando la consulta anterior sin filtros. Informes coordina únicamente interfaces públicas. No migra, entrena, modifica stock ni envía mensajes. Fechas ausentes no se rellenan con cero. Registro/evidencia en Bohorquez y coordinación Cueva.

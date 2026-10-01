@@ -73,3 +73,9 @@ API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras
 ## Corte de interfaz y plan de cierre · 30-09-2026
 
 Solicitud de Axel: terminar y verificar navegación persistente, tablas paginadas y detalles visibles; detenerse antes de recuperar envíos/promociones. Plan vigente en [plan-cierre-prototipo.md](plan-cierre-prototipo.md), coordinación E04/A01. AppShell/TablaPaginada/PanelDetalle son contratos visuales compartidos; Ventas recibe el total filtrado de API. Base 1–6 completa local, 7 automático implementado con recuperación pendiente; pasos 8–10 se definen en el plan. Los cortes antiguos de estado-desarrollo.md no son pendientes vigentes.
+
+Continuación autorizada 01-10-2026: L04 entrega recuperar_envio(sesion,pedido_id,accion,clave,envio_id,chat_id_revisado,evidencia,usuario_id,nombre_usuario,...) sin commit ni red. HTTP y UI consumen conciliación/reintento; worker/Beat usan locks ordenados y descartan resultados obsoletos. Aplicar 0014 antes de actualizar API/worker. Nuevo intento conserva texto/plan y revalida destino; no libera fechas ni stock. Ver contrato-pedidos.md y registro de Aguirre. La pausa del corte visual anterior ya no impide este avance; promociones y prueba automática real siguen pendientes.
+
+## Ampliación solicitada · Dashboard y Reportes · 01-10-2026
+
+Axel solicita gráficos en Inicio y Reportes de lectura. Contrato previo: [Dashboard y reportes](../api/contrato-informes.md). Kevin coordina K04 y reutiliza K03; Edu publica agregados de ventas y Aguirre distribución de pedidos. Informes consume esas interfaces sin tablas privadas, commits, envíos ni movimientos. Coordinación transversal en Cueva, evidencia del dominio en Bohorquez. Esta ampliación no incorpora informes económicos o de impacto.

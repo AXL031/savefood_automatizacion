@@ -43,3 +43,7 @@ El README y la especificación funcional amplios describen la **visión futura**
 ## Criterio de demo completa
 
 Partiendo solo de la migración inicial, una persona puede completar la carga de primera vez, configurar el proveedor y chat de pruebas, y observar el entrenamiento automático. Programa una ejecución próxima y **Beat** genera pronóstico, plan, faltantes y pedidos por proveedor sin pulsar un botón de cálculo. En modo aprobación, un administrador autoriza el envío; en modo automático se envía tras las validaciones. El mensaje real de Telegram queda trazado y rotulado «DEMOSTRACIÓN — NO SURTIR», sin fingir confirmación del proveedor. El dashboard compara automáticamente pronóstico y venta real del día histórico, con cobertura visible. Ajusta stock y observa una evaluación programada que registra una sugerencia de promoción o un rechazo razonado. Puede mostrar ejecución, intentos, horario real, reloj histórico simulado, resultado e idempotencia. Hasta que ese recorrido pase de extremo a extremo, el repositorio sigue siendo una base en desarrollo.
+
+## Ampliación expresa · 01-10-2026
+
+Se añade Dashboard en Inicio y Reportes de lectura con filtros por fecha y CSV: ventas observadas, evaluación histórica existente y estados actuales de pedidos por fecha del escenario. [Contrato](api/contrato-informes.md). Reutiliza fuentes públicas, sin entrenar, enviar ni cambiar stock; indicadores económicos e impacto siguen fuera de alcance. Responsabilidad K04 de Kevin, integración coordinada por Axel.

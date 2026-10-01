@@ -24,7 +24,7 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `backend/app/modules/compras` | Leonardo Aguirre | Demo · Pedidos, aprobación y envío | [Abrir](../../backend/app/modules/compras/GUIA_DESARROLLO.md) |
 | `backend/app/modules/desperdicio` | Leonardo Vera | Futuro; custodia | [Abrir](../../backend/app/modules/desperdicio/GUIA_DESARROLLO.md) |
 | `backend/app/modules/excedentes` | Leonardo Vera | Futuro; custodia | [Abrir](../../backend/app/modules/excedentes/GUIA_DESARROLLO.md) |
-| `backend/app/modules/informes` | Kevin Bohorquez | Futuro; custodia | [Abrir](../../backend/app/modules/informes/GUIA_DESARROLLO.md) |
+| `backend/app/modules/informes` | Kevin Bohorquez | K04; reportes de lectura | [Abrir](../../backend/app/modules/informes/GUIA_DESARROLLO.md) |
 | `backend/app/modules/ingredientes` | Max Rojas | Demo · Ingredientes y unidades | [Abrir](../../backend/app/modules/ingredientes/GUIA_DESARROLLO.md) |
 | `backend/app/modules/inicializacion` | Edu Sanchez | Demo · Asistente y primera carga | [Abrir](../../backend/app/modules/inicializacion/GUIA_DESARROLLO.md) |
 | `backend/app/modules/inventario` | Leonardo Vera | Demo · Inventario por lotes y movimientos | [Abrir](../../backend/app/modules/inventario/GUIA_DESARROLLO.md) |
@@ -78,7 +78,7 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `frontend/src/app/compras` | Leonardo Aguirre | Demo · Pedidos, aprobación y envío | [Abrir](../../frontend/src/app/compras/GUIA_DESARROLLO.md) |
 | `frontend/src/app/configuracion` | Axel Cueva | Demo · Negocio y configuración | [Abrir](../../frontend/src/app/configuracion/GUIA_DESARROLLO.md) |
 | `frontend/src/app/excedentes` | Leonardo Vera | Futuro; custodia | [Abrir](../../frontend/src/app/excedentes/GUIA_DESARROLLO.md) |
-| `frontend/src/app/informes` | Kevin Bohorquez | Futuro; custodia | [Abrir](../../frontend/src/app/informes/GUIA_DESARROLLO.md) |
+| `frontend/src/app/informes` | Kevin Bohorquez | K04; reportes de lectura | [Abrir](../../frontend/src/app/informes/GUIA_DESARROLLO.md) |
 | `frontend/src/app/ingredientes` | Max Rojas | Demo · Ingredientes y unidades | [Abrir](../../frontend/src/app/ingredientes/GUIA_DESARROLLO.md) |
 | `frontend/src/app/inicializacion` | Edu Sanchez | Demo · Asistente y primera carga | [Abrir](../../frontend/src/app/inicializacion/GUIA_DESARROLLO.md) |
 | `frontend/src/app/inicializacion/piloto` | Edu Sanchez, coordinación de Axel | Demo · Carga rápida del CSV bakery | [Abrir](../../frontend/src/app/inicializacion/piloto/GUIA_DESARROLLO.md) |

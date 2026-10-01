@@ -48,6 +48,7 @@ const grupos = [
   { titulo: "Resultados", enlaces: [
     { href: "/pronosticos", texto: "Pronósticos y modelos" },
     { href: "/panel", texto: "Evaluación histórica" },
+    { href: "/informes", texto: "Reportes" },
   ] },
   {
     titulo: "Administración",

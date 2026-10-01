@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
@@ -5,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.base_datos import obtener_sesion
 from app.core.identidad import identidad_actual, requiere_administrador
 from .modelos import PedidoCompra
+from .recuperacion import recuperar_envio
 from .servicio import cancelar_propuesta, decidir_pedido, detalle_pedido, detalle_propuesta, generar_pedidos, listar_propuestas, verificar_destinos_propuesta
 
 router = APIRouter(tags=["compras"])
@@ -30,6 +33,37 @@ class RechazarPedido(BaseModel):
     model_config = ConfigDict(extra="forbid")
     clave_idempotencia: str = Field(min_length=1, max_length=80)
     motivo: str = Field(min_length=1, max_length=500)
+
+
+class RecuperarPedido(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    clave_idempotencia: str = Field(min_length=1, max_length=80)
+    envio_id: int = Field(gt=0)
+    chat_id_revisado: str = Field(pattern=r"^-?[1-9][0-9]{0,18}$")
+    evidencia: str = Field(min_length=10, max_length=1500)
+
+
+class ConciliarPedido(RecuperarPedido):
+    resultado: Literal["ENVIADO", "NO_ENVIADO"]
+    message_id: int | None = Field(default=None, strict=True, gt=0, le=9223372036854775807)
+    fecha_telegram: datetime | None = None
+
+
+@router.post("/pedidos/{pedido_id}/conciliar")
+def conciliar(pedido_id: int, datos: ConciliarPedido, admin=Depends(requiere_administrador), sesion: Session = Depends(obtener_sesion)):
+    entrada = datos.model_dump(exclude={"resultado", "clave_idempotencia"})
+    recuperar_envio(sesion, pedido_id, accion="CONFIRMAR_ENVIO" if datos.resultado == "ENVIADO" else "CONFIRMAR_NO_ENVIO",
+        clave=datos.clave_idempotencia, usuario_id=admin.id, nombre_usuario=admin.nombre, **entrada)
+    sesion.commit()
+    return {"datos": detalle_pedido(sesion, pedido_id)}
+
+
+@router.post("/pedidos/{pedido_id}/reintentar", status_code=202)
+def reintentar(pedido_id: int, datos: RecuperarPedido, admin=Depends(requiere_administrador), sesion: Session = Depends(obtener_sesion)):
+    recuperar_envio(sesion, pedido_id, accion="REINTENTAR", clave=datos.clave_idempotencia,
+        usuario_id=admin.id, nombre_usuario=admin.nombre, **datos.model_dump(exclude={"clave_idempotencia"}))
+    sesion.commit()
+    return {"datos": detalle_pedido(sesion, pedido_id)}
 
 
 @router.post("/pedidos/{pedido_id}/aprobar", status_code=202)

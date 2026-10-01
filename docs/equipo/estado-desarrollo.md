@@ -2,7 +2,7 @@
 
 ## Corte vigente · 01-10-2026
 
-Consultar [plan de cierre del prototipo](plan-cierre-prototipo.md) y resúmenes recientes de [Cueva](avances/cueva.md)/[Sanchez](avances/sanchez.md). Pasos 1–6 implementados; 7 automático conectado, conciliación completa y prueba automática real pendientes. Promociones y demostración conjunta/reproducción en otra PC pendientes. Este avance entrega navegación persistente, paginación y paneles de detalle; los diagnósticos siguientes son cortes históricos.
+Consultar [plan de cierre del prototipo](plan-cierre-prototipo.md) y resúmenes recientes de [Cueva](avances/cueva.md)/[Aguirre](avances/aguirre.md)/[Sanchez](avances/sanchez.md). Pasos 1–6 implementados; 7 automático, conciliación humana y nuevo intento explícito conectados. Migración 0014 aplicada; 57 pruebas PostgreSQL de compras/recuperación y 7 de migraciones correctas. Falta demostración automática Telegram real autorizada; promociones y demostración conjunta/reproducción en otra PC siguen pendientes. El corte visual previo entregó navegación persistente, paginación y paneles de detalle. Los diagnósticos siguientes son cortes históricos.
 
 Corte funcional: `main` / `origin/main` en `902f0e6` (PR #10). Auditoría de Codex para coordinación de Axel Cueva. Se contrastaron responsabilidades, registros, código, rutas registradas, migraciones, pantallas y pruebas. El [reparto](responsabilidades.md) y el [alcance](../guia-inicio-desarrollo.md) siguen vigentes.
 
@@ -69,3 +69,7 @@ Necesidades y faltantes implementados en la transacción del plan. API/UI conser
 Codex para Axel implementa compras bajo responsabilidad de Aguirre, consumiendo M03 de Max y modo de negocio de Axel por interfaces públicas. Migración aditiva 0011_l02_compras sobre 0010: propuesta_compra, pedido_compra y linea_pedido. Snapshots de necesidades, proveedor/oferta, factor, mínimo, múltiplo y modo; cálculo Decimal exacto. Una propuesta activa por fecha; cancelación administrativa motivada libera la fecha y conserva historial. Idempotencia por plan y bloqueo global ante datos/proveedor/destino incompletos. Sin faltantes no se crean pedidos ni se reserva fecha. No hay envíos ni cambios de stock.
 
 API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras/propuestas y /compras/propuestas/{id}, POST /compras/propuestas/{id}/cancelar {motivo}. UI /proveedores y /compras, enlace desde /planificacion; Operador consulta, Administrador modifica. GENERAR_PROPUESTA genera pedidos en su transacción y comunica RECOMPRA_FECHA sin perder el nuevo plan ni su evaluación. Servicios sin commit. Contrato actualizado en docs/api/contrato-pedidos.md; pruebas test_compras_l02.py y flujo real test_inicializacion_ml.py. Aprobación/envío siguen pendientes en L03 y nunca se declaran realizados por un borrador.
+
+## Dashboard y Reportes · 01-10-2026
+
+Inicio incluye gráficos reales y Reportes ofrece fechas/versiones, tablas, detalles y CSV de ventas, evaluación y estados de pedidos. [Entrega K04](avances/bohorquez.md#dashboard-en-inicio-y-reportes--01-10-2026). API/UI activas, 34 pruebas correctas y build/typecheck correctos; revisión visual aislada bloqueada en 3001. Sin mensajes nuevos, stock alterado ni migración adicional. Indicadores económicos/impacto continúan fuera de alcance.

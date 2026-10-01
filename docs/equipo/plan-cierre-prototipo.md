@@ -2,6 +2,8 @@
 
 Fecha: 30-09-2026, America/Bogota. Coordinación: Axel Cueva. Preparado por Codex para la solicitud de Axel. Este plan reemplaza el seguimiento antiguo de pasos 1–4 de estado-desarrollo.md; conserva los números 1–7 documentados y define ahora los títulos de 8–10, cuya lista original no quedó registrada. Responsables: [reparto vigente](responsabilidades.md). Alcance: [criterio de demo completa](../guia-inicio-desarrollo.md#criterio-de-demo-completa).
 
+Actualización 01-10-2026: el usuario pidió avanzar con lo pendiente después de recibir el corte visual. Se implementa ahora la recuperación L04 del paso 7: API/UI de conciliación y nuevo intento explícito, auditoría e historial, migración 0014. La pausa inicial aplica al avance visual anterior y deja de bloquear este trabajo autorizado. Falta la demostración automática real autorizada; los pasos 8–10 y recurrencia siguen pendientes.
+
 ## Regla de avance solicitada
 
 Primero entregar el ajuste transversal de interfaz: navegación persistente, tablas paginadas y detalles visibles. **Detenerse al terminar y verificar ese corte.** Los pasos siguientes están planificados y no se implementan en este avance. No cambiar de rama, integrar ni publicar sin la tarea correspondiente. Conservar los cambios locales y los datos de la instalación.
@@ -16,7 +18,7 @@ Primero entregar el ajuste transversal de interfaz: navegación persistente, tab
 | 4 | Proveedores, ofertas, pedidos agrupados y regla de una compra activa por fecha | Implementado; recompra protegida |
 | 5 | Configuración cifrada del bot y verificación del chat propio | Disponible y configurado en la instalación |
 | 6 | Aprobación/rechazo auditados y envío manual por worker | Mensaje real confirmado del pedido #1; message_id=2 |
-| 7 | Programación única → pronóstico → plan → faltantes → envío automático | Implementado con Telegram falso en pruebas; falta entrega real automática y conciliación completa |
+| 7 | Programación única → pronóstico → plan → faltantes → envío automático; recuperación humana | Automático/conciliación/reintento implementados con transporte falso; falta prueba automática real |
 
 La inicialización no es una carga diaria de operación. Los escenarios son históricos; no convertir fechas ausentes en ventas cero. Planes y pedidos no cambian stock. El modo queda conservado por programación/propuesta. Los cambios de kg/L son presentación y conversión de entrada, sin modificar las unidades persistidas.
 
@@ -82,3 +84,7 @@ Cierre: otro integrante puede instalar, iniciar y demostrar el prototipo sin dep
 ## Ampliación posterior: ejecución diaria recurrente
 
 Petición previa del usuario, todavía pendiente y distinta del criterio de cierre histórico. Planificarla después de los pasos 7–10: horario y zona del negocio, días activos, pausa/reanudación, siguiente ejecución, unicidad por día y política ante reinicio/horas perdidas. Primero acordar fuente de ventas/stock actualizados y fecha objetivo dinámica; el modelo y el historial de 2022 no acreditan pronóstico operativo de hoy. En una demo recurrente histórica, definir avance y fin del calendario sin reutilizar una fecha con compra enviada. Requiere contratos, migración, API/UI y pruebas de horario/idempotencia antes de habilitar envíos diarios.
+
+## Ampliación disponible: dashboard y Reportes · 01-10-2026
+
+Solicitud expresa incorporada a K04: gráficos en Inicio y `/informes` de ventas/evaluación/estados de pedidos, filtros por fecha/modelo y CSV completo. [Contrato](../api/contrato-informes.md) y [evidencia/límites](avances/bohorquez.md#dashboard-en-inicio-y-reportes--01-10-2026). 34 pruebas correctas; typecheck/build web y lecturas reales correctas. API/frontend activos, validación visual aislada bloqueada por navegador en 3001. Esta ampliación no marca promociones, demostración automática real o despliegue reproducible en otra PC como terminados.

@@ -54,7 +54,7 @@ La distribución considera el trabajo pendiente y la dificultad de integración,
 | K01 · Extraer entrenamiento reutilizable | Llevar la lógica del notebook a funciones ejecutables en worker; partición temporal y validaciones del artefacto. | Entrenar sin abrir Colab produce CBM y metadatos compatibles con versión, huella y partición. |
 | K02 · Implementar inferencia y persistencia | Construir las 13 características por calendario, validar modelo y cobertura, guardar corrida y pronósticos. | Cambiar la venta del día objetivo no cambia sus características; historial insuficiente produce null con motivo. |
 | K03 · Implementar evaluación histórica | Backtest por fecha y comparación posterior con revisión de venta; MAE, WAPE, ±20% y cobertura. | Reentregar no duplica evaluación; venta ausente se excluye y WAPE con real total cero queda indefinido. |
-| K04 · Construir dashboard y vistas de pronóstico | API de métricas, serie histórica, comparación por producto, fecha y versión; gráficos con componentes de Edu. | Los totales previsto/real usan los mismos pares evaluables y permiten rastrear la corrida. |
+| K04 · Construir dashboard y vistas de pronóstico | API de métricas, serie histórica, comparación por producto, fecha y versión; gráficos con componentes de Edu. Ampliación solicitada 01-10-2026: Inicio con gráficos y Reportes de lectura según [contrato](../api/contrato-informes.md). | Los totales previsto/real usan los mismos pares evaluables y permiten rastrear la corrida; reportes conservan fechas, fuentes y cobertura. |
 
 ### Leonardo Vera — Inventario por lotes y promociones sugeridas
 

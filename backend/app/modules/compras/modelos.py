@@ -59,8 +59,9 @@ class PedidoCompra(Base):
 class EnvioPedido(Base):
     __tablename__ = "envio_pedido"
     __table_args__ = (
-        UniqueConstraint("pedido_id", name="uq_envio_pedido_unico"),
-        CheckConstraint("numero_intento = 1", name="ck_envio_numero"),
+        UniqueConstraint("pedido_id", "numero_intento", name="uq_envio_pedido_intento"),
+        UniqueConstraint("chat_id", "message_id", name="uq_envio_evidencia_telegram"),
+        CheckConstraint("numero_intento >= 1", name="ck_envio_numero"),
         CheckConstraint("estado IN ('PENDIENTE_ENVIO','ENVIANDO','ENVIADO','FALLIDO','PENDIENTE_VERIFICACION')", name="ck_envio_estado"),
         CheckConstraint("(estado = 'ENVIADO' AND message_id IS NOT NULL AND message_id > 0 AND fin_en IS NOT NULL) OR (estado <> 'ENVIADO' AND message_id IS NULL)", name="ck_envio_confirmacion"),
         Index("ix_envio_pendiente", "estado", "lease_hasta"),
@@ -82,6 +83,26 @@ class EnvioPedido(Base):
     despachado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     lease_hasta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     token_despacho: Mapped[str | None] = mapped_column(String(36))
+
+
+class RecuperacionEnvio(Base):
+    __tablename__ = "recuperacion_envio"
+    __table_args__ = (
+        UniqueConstraint("clave_idempotencia", name="uq_recuperacion_clave"),
+        CheckConstraint("accion IN ('CONFIRMAR_ENVIO','CONFIRMAR_NO_ENVIO','REINTENTAR')", name="ck_recuperacion_accion"),
+        CheckConstraint("length(evidencia) BETWEEN 10 AND 1500", name="ck_recuperacion_evidencia"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    envio_id: Mapped[int] = mapped_column(ForeignKey("envio_pedido.id", ondelete="RESTRICT"), nullable=False)
+    clave_idempotencia: Mapped[str] = mapped_column(String(80), nullable=False)
+    accion: Mapped[str] = mapped_column(String(24), nullable=False)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuario.id", ondelete="RESTRICT"), nullable=False)
+    nombre_usuario: Mapped[str] = mapped_column(String(150), nullable=False)
+    creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    evidencia: Mapped[str] = mapped_column(String(1500), nullable=False)
+    solicitud_json: Mapped[dict] = mapped_column(JsonPersistido, nullable=False)
+    resultado_anterior_json: Mapped[dict] = mapped_column(JsonPersistido, nullable=False)
+    nuevo_envio_id: Mapped[int | None] = mapped_column(ForeignKey("envio_pedido.id", ondelete="RESTRICT"))
 
 
 class LineaPedido(Base):

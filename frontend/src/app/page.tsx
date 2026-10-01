@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
+import { DashboardInicio } from "@/components/charts/DashboardInicio";
 import { obtenerEstadoInicial } from "@/services/inicializacion";
 import { listarPlanes } from "@/services/planificacion";
 import { listarPropuestas } from "@/services/compras";
@@ -38,6 +39,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     </section>
     {errores.length > 0 && <EstadoPanel tono="alerta" titulo="Algunas secciones no están disponibles" descripcion={[...new Set(errores)].join(" ")} />}
     {cargando && <p role="status">Consultando el estado de la instalación…</p>}
+    <DashboardInicio token={contexto.token} revision={revision} />
     <div className="home-grid section-space">
       <section className="card"><h2>Datos y modelo</h2><strong className="home-stat">{inicial ? estados[inicial.estado] : cargando ? "Consultando…" : "Sin consulta disponible"}</strong><p>{inicial?.modelo_id ? `Modelo #${inicial.modelo_id}` : "Primera carga y preparación del modelo."}</p><Link href="/inicializacion">Abrir primera carga</Link>{inicial?.modelo_id && <p><Link href="/pronosticos">Ver pronósticos</Link></p>}</section>
       <section className="card"><h2>Planificación</h2><strong className="home-stat">{planes ? planes.length : cargando ? "…" : "—"}</strong><p>Planes en la consulta reciente{planes?.[0] ? `. Último: #${planes[0].id}, escenario ${planes[0].fecha_objetivo}.` : "."}</p><Link href="/planificacion">Revisar planes y faltantes</Link></section>

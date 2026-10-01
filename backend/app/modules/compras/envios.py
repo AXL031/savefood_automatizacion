@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from sqlalchemy import or_, select
+from sqlalchemy.exc import IntegrityError
 
 from app.core.base_datos import SessionLocal
 from app.modules.autenticacion.modelos import Usuario  # noqa: F401; FK en proceso worker sin FastAPI
@@ -25,13 +26,20 @@ def despachar_envios(publicar, *, sesiones=SessionLocal, ahora=None) -> dict:
     ahora = ahora or datetime.now(timezone.utc)
     mensajes, inciertos = [], 0
     with sesiones.begin() as sesion:
-        envios = sesion.scalars(select(EnvioPedido).where(
+        candidatos = sesion.execute(select(EnvioPedido.id, EnvioPedido.pedido_id).where(
             EnvioPedido.estado.in_(["PENDIENTE_ENVIO", "ENVIANDO"]),
             or_(EnvioPedido.lease_hasta.is_(None), EnvioPedido.lease_hasta <= ahora)
-        ).order_by(EnvioPedido.id).limit(50).with_for_update(skip_locked=True)).all()
-        for envio in envios:
+        ).order_by(EnvioPedido.id).limit(50)).all()
+        for envio_id, pedido_id in candidatos:
+            pedido, _ = _bloquear_pedido(sesion, pedido_id)
+            envio = sesion.scalar(select(EnvioPedido).where(EnvioPedido.id == envio_id)
+                .with_for_update().execution_options(populate_existing=True))
+            lease = envio.lease_hasta
+            if lease and lease.tzinfo is None:
+                lease = lease.replace(tzinfo=timezone.utc)
+            if envio.estado not in {"PENDIENTE_ENVIO", "ENVIANDO"} or (lease and lease > ahora):
+                continue
             if envio.estado == "ENVIANDO":
-                pedido = sesion.scalar(select(PedidoCompra).where(PedidoCompra.id == envio.pedido_id).with_for_update())
                 _fallar(envio, pedido, "PENDIENTE_VERIFICACION", "WORKER_INTERRUMPIDO",
                         "El worker no confirmó el resultado. Revisa el chat; no se reenviará automáticamente.", ahora)
                 inciertos += 1
@@ -62,10 +70,13 @@ def ejecutar_envio(envio_id: int, token: str, *, sesiones=SessionLocal, cliente=
     # Reclamar y confirmar antes del primer efecto externo. Una segunda entrega
     # nunca vuelve a llamar a Telegram, incluso después de perder el resultado.
     with sesiones.begin() as sesion:
+        pedido_id = sesion.scalar(select(EnvioPedido.pedido_id).where(EnvioPedido.id == envio_id))
+        if pedido_id is None:
+            return {"estado": "OMITIDO"}
+        pedido, propuesta = _bloquear_pedido(sesion, pedido_id)
         envio = sesion.scalar(select(EnvioPedido).where(EnvioPedido.id == envio_id).with_for_update())
         if envio is None or envio.token_despacho != token or envio.estado != "PENDIENTE_ENVIO":
             return {"estado": "OMITIDO"}
-        pedido, propuesta = _bloquear_pedido(sesion, envio.pedido_id)
         ahora = datetime.now(timezone.utc)
         if error_configuracion:
             _fallar(envio, pedido, "FALLIDO", error_configuracion.codigo, str(error_configuracion), ahora)
@@ -98,14 +109,21 @@ def ejecutar_envio(envio_id: int, token: str, *, sesiones=SessionLocal, cliente=
         resultado = ResultadoEnvio("PENDIENTE_VERIFICACION", "RESULTADO_NO_CONFIRMADO",
                                    "No se pudo confirmar el resultado. Revisa el chat antes de cualquier nuevo envío.")
     with sesiones.begin() as sesion:
+        pedido, _ = _bloquear_pedido(sesion, pedido_id)
         envio = sesion.scalar(select(EnvioPedido).where(EnvioPedido.id == envio_id).with_for_update())
         if envio.token_despacho != token or envio.estado not in {"ENVIANDO", "PENDIENTE_VERIFICACION"}:
             return {"estado": "OMITIDO"}
-        pedido = sesion.scalar(select(PedidoCompra).where(PedidoCompra.id == envio.pedido_id).with_for_update())
-        envio.estado = pedido.estado = resultado.estado
-        envio.fin_en = datetime.now(timezone.utc)
-        envio.message_id = resultado.message_id if resultado.estado == "ENVIADO" else None
-        envio.fecha_telegram = resultado.fecha_telegram
-        envio.codigo_error, envio.detalle_error = resultado.codigo, resultado.detalle
-        envio.lease_hasta = None
+        try:
+            with sesion.begin_nested():
+                envio.estado = pedido.estado = resultado.estado
+                envio.fin_en = datetime.now(timezone.utc)
+                envio.message_id = resultado.message_id if resultado.estado == "ENVIADO" else None
+                envio.fecha_telegram = resultado.fecha_telegram
+                envio.codigo_error, envio.detalle_error = resultado.codigo, resultado.detalle
+                envio.lease_hasta = None
+                sesion.flush()
+        except IntegrityError:
+            _fallar(envio, pedido, "PENDIENTE_VERIFICACION", "EVIDENCIA_TELEGRAM_REUTILIZADA",
+                    "La respuesta identifica un mensaje ya registrado en otro intento. Revisa la evidencia del chat.", datetime.now(timezone.utc))
+            return {"estado": "PENDIENTE_VERIFICACION"}
     return {"estado": resultado.estado}

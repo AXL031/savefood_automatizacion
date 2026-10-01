@@ -5,6 +5,8 @@
 Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este archivo se actualiza al terminar cada avance significativo.
 
 ## Resumen vigente
+
+- **Dashboard y Reportes (01-10-2026, Codex para Axel):** gráficos reales en Inicio y `/informes` con ventas, evaluación K03 y estados de pedidos, filtros inclusivos por fecha/modelo, tablas paginadas, detalle en diálogo y CSV completo. 34 pruebas de reportes/ventas/ML correctas; typecheck y build web correctos. API/web activas; lectura real de septiembre: 13.383 unidades, 139 productos, 4.170 pares evaluables. Revisión visual aislada pendiente por ERR_BLOCKED_BY_CLIENT en puerto 3001. [Contrato](../../api/contrato-informes.md); integración transversal en [Cueva](cueva.md). Cambios locales, sin commit ni migración nueva.
 - **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Pronósticos y panel explican cálculo, modelo, partición, MAE/WAPE y cobertura en lenguaje legible; huellas/JSON técnicos en detalles. Automatización completa conserva pronóstico anterior al objetivo y evaluación posterior. No se cambia modelo, entrenamiento ni política cronológica.
 
 - **Consumo K02/K03 verificado en paso 2 local (2026-09-30, Codex para Axel):** M02 utiliza consultar_corrida/obtener_pronosticos y GENERAR_PROPUESTA enlaza inferencia CatBoost → plan → evaluación histórica con Beat/PostgreSQL/Redis. [Entrega y límites](rojas.md); 140 pruebas y 6 subpruebas correctas. No es una entrega nueva personal de Kevin; falta M03/pedido y revisión antes de publicar.
@@ -26,6 +28,17 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; API respondió en PostgreSQL y frontend compiló |
 
 ## Bitácora
+
+### Dashboard en Inicio y Reportes · 01-10-2026
+
+- **Fecha/zona/autor/estado:** 2026-10-01, America/Bogota. Codex para la solicitud expresa de Axel, bloque K04 de Kevin; coordinación en [Cueva](cueva.md). LISTO_PARA_INTEGRAR local y activo en Compose; no se atribuye una entrega personal a Kevin. Revisión visual de pantallas protegidas pendiente por bloqueo del navegador de pruebas.
+- **Comportamiento:** Inicio presenta ventas por día con espacios en fechas desconocidas, ocho productos principales y distribución de pedidos. Reportes filtra hasta 366 días y versión del modelo, reutiliza las métricas K03, distingue ausencia/cero y revisión vigente. Tablas paginadas y productos del pronóstico en diálogo accesible. CSV autenticado de ventas, pares de pronóstico/exclusiones y distribución de pedidos; incluye fecha/fuentes, neutraliza textos de fórmula y exporta todo el período.
+- **Archivos/contrato:** [API y fuentes](../../api/contrato-informes.md), [servicio de informes](../../../backend/app/modules/informes/servicio.py), [Reportes](../../../frontend/src/app/informes/page.tsx), [gráficos](../../../frontend/src/components/charts/GraficosOperacion.tsx). `/api/v1/informes/resumen` y `/informes/exportar`; Operador y Administrador. Ejemplo: `?desde=2022-08-24&hasta=2022-08-24`, que conserva 1 pedido ENVIADO y 3 propuestas de esa fecha.
+- **Fuentes públicas/dependencias:** Edu publica `resumen_ventas`/`periodo_ventas`; Aguirre `resumen_pedidos`/`periodo_propuestas`; K03 admite desde/hasta sin cambiar su comportamiento anterior cuando faltan filtros. Sin tablas privadas en Informes, commits, cálculo económico, entrenamiento, mensajes ni cambios de stock.
+- **Pruebas ejecutadas:** `E03_POSTGRES_TEST=1 python -m pytest -q --tb=short -p no:cacheprovider tests/integration/test_informes.py tests/integration/test_pronosticos_k02_k03.py tests/integration/test_api_inicializacion_ventas.py`: **34 correctas**. Fixture PostgreSQL aislada para API/ventas/pedidos; pruebas K02/K03 usan SQLite según su fixture existente. Verifica permisos, límites, 75 días sin truncar, CSV/BOM/fórmulas, revisiones, MAE/WAPE/cobertura y no duplicar dos intentos ni mover stock. El primer montaje ocultó foodsave-ml; se corrigió la configuración de la prueba y se repitió correctamente.
+- **Entorno/despliegue:** `npm run typecheck` correcto; build Next.js de 22 páginas correcto. La reconstrucción completa de API se quedó descargando CatBoost y se canceló; imagen local actualizada sobre sus dependencias ya instaladas/verificadas, sin cambios al Dockerfile fuente. API y frontend activados con Compose sin reconstruir volúmenes. Salud, Inicio y `/informes` HTTP 200; API sin sesión 401 y ambas rutas presentes en OpenAPI. Lectura real 01-09–30-09-2022: 13.383 unidades, 4.170 registros, 139 productos, modelo #2 y 4.170 pares; los tres CSV se generan correctamente.
+- **Límites/limpieza/siguiente:** navegador pudo abrir login de 3000 pero bloqueó 3001 con ERR_BLOCKED_BY_CLIENT; no se declara revisión visual ni descarga por navegador verificada. API/frontend temporales y sus dos esquemas propios eliminados; cero esquemas e03_test remanentes. Validar vista protegida y CSV en navegador del usuario; luego retomar promociones/demostración final del plan vigente. Sin commit/PR/remoto ni nuevos mensajes externos. Informes económicos/impacto quedan fuera de este corte.
+
 
 ### Flujo completo, unidades y claridad · 30-09-2026
 

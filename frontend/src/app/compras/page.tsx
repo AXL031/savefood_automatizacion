@@ -17,6 +17,7 @@ import type { ResumenPlan } from "@/types/planificacion";
 import { etiquetaDato } from "@/utils/etiquetas";
 import { cantidadVisible } from "@/utils/unidades";
 import { formatearFechaHora } from "@/utils/fechas";
+import { RecuperacionPedido } from "./RecuperacionPedido";
 
 const ESTADOS: Record<string, string> = { GENERADA: "Lista para revisión", BLOQUEADA: "Bloqueada", SIN_FALTANTES: "Sin faltantes", CANCELADA: "Cancelada", BLOQUEADO: "Bloqueado", PENDIENTE_APROBACION: "Pendiente de aprobación", CANCELADO: "Cancelado", RECHAZADO: "Rechazado", PENDIENTE_ENVIO: "Autorizado · pendiente de envío", ENVIANDO: "Enviando", ENVIADO: "Envío confirmado por Telegram", FALLIDO: "Envío fallido", PENDIENTE_VERIFICACION: "Resultado incierto · verificar el chat" };
 const BLOQUEOS: Record<string, string> = { DESTINO_NO_VERIFICADO: "El chat no estaba verificado al crear el pedido. Verifícalo en Proveedores y actualiza el destino de esta propuesta.", PROVEEDOR_INACTIVO: "Activa el proveedor antes de enviar.", CANAL_PENDIENTE_L03: "Este pedido fue creado antes de habilitar el envío automático. Conserva su historial; utiliza un plan nuevo.", AUTOMATICO_REQUIERE_NUEVO_PLAN: "Para enviar automáticamente después de corregir los datos, cancela esta propuesta y programa un plan nuevo.", MENSAJE_FUERA_DE_RANGO: "El pedido es demasiado largo para un mensaje. Reduce los productos de un plan nuevo.", NECESIDADES_SIN_PROVEEDOR: "Faltan ofertas para algunos ingredientes. Completa las ofertas y utiliza un plan nuevo.", PROPUESTA_BLOQUEADA: "Otro pedido de esta propuesta requiere corrección. Revisa los motivos de todos los pedidos." };
@@ -47,11 +48,11 @@ function RevisionPedido({ pedido, token, admin, ocupado, zona, alCambiar, alOcup
     {pedido.envio && pedido.modo_envio === "AUTOMATICO" && <p>Envío autorizado por el modo automático guardado en esta propuesta. No requiere aprobación adicional.</p>}
     {pedido.envio && <div><p>Intento #{pedido.envio.numero_intento} · chat conservado: {pedido.envio.chat_id} · {ESTADOS[pedido.envio.estado] ?? pedido.envio.estado}.</p>
       {pedido.envio.inicio_en && <p>Inicio: {fecha(pedido.envio.inicio_en)}{pedido.envio.fin_en && ` · Resultado: ${fecha(pedido.envio.fin_en)}`}.</p>}
-      {pedido.envio.message_id && <p>Identificador de Telegram: <strong>{pedido.envio.message_id}</strong>{pedido.envio.fecha_telegram && ` · Fecha: ${fecha(pedido.envio.fecha_telegram)}`}. Telegram confirmó el mensaje; esto no constituye aceptación del proveedor.</p>}
-      {pedido.envio.detalle_error && <EstadoPanel tono="alerta" titulo={ESTADOS[pedido.envio.estado] ?? pedido.envio.estado} descripcion={pedido.envio.detalle_error} />}
-      {pedido.envio.estado === "PENDIENTE_VERIFICACION" && <p>Consulta el chat de pruebas antes de cualquier nuevo envío. La herramienta de conciliación manual todavía no está disponible.</p>}
+      {pedido.envio.message_id && <p>Identificador de Telegram: <strong>{pedido.envio.message_id}</strong>{pedido.envio.fecha_telegram && ` · Fecha: ${fecha(pedido.envio.fecha_telegram)}`}. {pedido.recuperaciones?.some((r) => r.envio_id === pedido.envio!.id && r.accion === "CONFIRMAR_ENVIO") ? "Entrega registrada por el administrador con evidencia." : "Telegram confirmó el mensaje."} Esto no constituye aceptación del proveedor.</p>}
+      {pedido.envio.detalle_error && pedido.envio.estado !== "ENVIADO" && <EstadoPanel tono="alerta" titulo={ESTADOS[pedido.envio.estado] ?? pedido.envio.estado} descripcion={pedido.envio.detalle_error} />}
       {["PENDIENTE_ENVIO", "ENVIANDO"].includes(pedido.envio.estado) && <EstadoPanel tono="info" titulo="Envío autorizado" descripcion="El sistema lo procesará automáticamente. Puede tardar unos 30 segundos en comenzar; esta pantalla actualiza el resultado sola." />}
     </div>}
+    <RecuperacionPedido key={pedido.envio?.id ?? "sin-envio"} pedido={pedido} admin={admin} token={token} ocupado={deshabilitado} zona={zona} alOcupar={alOcupar} alCambiar={alCambiar} />
     {error && <EstadoPanel tono="alerta" titulo="Revisa la decisión" descripcion={error} />}
     {admin && ["PENDIENTE_APROBACION", "BLOQUEADO"].includes(pedido.estado) && <div>
       {pedido.estado === "PENDIENTE_APROBACION" && <div className="next-action"><strong>Siguiente paso: autorizar el mensaje</strong><label className="review-checkbox"><input type="checkbox" checked={aceptado} disabled={deshabilitado} onChange={(evento) => setAceptado(evento.target.checked)} /> Revisé el texto y confirmo que el chat {destino.chat_id_pruebas ?? "sin vincular"} es mi destino de pruebas.</label>

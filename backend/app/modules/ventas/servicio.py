@@ -207,6 +207,33 @@ def limites_historial(sesion: Session, producto_ids: list[int]) -> tuple[date | 
                           .where(VentaDiaria.producto_id.in_(producto_ids))).one()
 
 
+def periodo_ventas(sesion: Session) -> tuple[date | None, date | None]:
+    """Límites de todo el historial conocido, incluyendo productos inactivos."""
+    return sesion.execute(select(func.min(VentaDiaria.fecha_local), func.max(VentaDiaria.fecha_local))).one()
+
+
+def resumen_ventas(sesion: Session, desde: date, hasta: date) -> dict:
+    """Agrega revisiones actuales del período completo; no rellena ausencias."""
+    filtro = (VentaDiaria.fecha_local >= desde, VentaDiaria.fecha_local <= hasta)
+    dias = sesion.execute(select(VentaDiaria.fecha_local,
+        func.sum(VentaDiaria.unidades_vendidas), func.count(VentaDiaria.id))
+        .where(*filtro).group_by(VentaDiaria.fecha_local).order_by(VentaDiaria.fecha_local)).all()
+    productos = sesion.execute(select(Producto.id, Producto.nombre,
+        func.sum(VentaDiaria.unidades_vendidas), func.count(VentaDiaria.id))
+        .join(VentaDiaria, VentaDiaria.producto_id == Producto.id).where(*filtro)
+        .group_by(Producto.id, Producto.nombre)
+        .order_by(func.sum(VentaDiaria.unidades_vendidas).desc(), Producto.id)).all()
+    return {
+        "unidades": sum(int(unidades) for _, unidades, _ in dias),
+        "registros": sum(int(registros) for _, _, registros in dias),
+        "dias_observados": len(dias), "productos_observados": len(productos),
+        "serie_diaria": [{"fecha": fecha.isoformat(), "unidades": int(unidades),
+                          "productos_observados": int(registros)} for fecha, unidades, registros in dias],
+        "por_producto": [{"producto_id": pid, "producto": nombre, "unidades": int(unidades),
+                          "dias_observados": int(registros)} for pid, nombre, unidades, registros in productos],
+    }
+
+
 def corregir_venta(sesion: Session, venta_id: int, unidades: int, motivo: str, usuario_id: int | None = None) -> int:
     """Crea revisión sin borrar el valor usado en evaluaciones anteriores."""
     if unidades < 0 or not motivo.strip():

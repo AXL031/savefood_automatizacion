@@ -51,3 +51,7 @@ Todas las rutas disponibles consumen GuiaPantalla. Menú por etapas con desplega
 ## Navegación, páginas y detalles · 30-09-2026
 
 AppShell se monta en layout.tsx: mantiene sesión, sidebar y encabezado entre rutas. ProtectedShell aporta título/guía/contenido de cada pantalla. Navegar con Link no vuelve a consultar perfil/negocio; 401 y cerrar sesión limpian el contexto. Tablas disponibles consumen TablaPaginada/TablaDatos; detalles y edición de registros usan PanelDetalle.
+
+## Dashboard y Reportes de lectura · 01-10-2026
+
+Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` con períodos inclusivos, versión del modelo, tablas paginadas, detalle en diálogo y CSV completo del período. [Contrato](../../../docs/api/contrato-informes.md). Ventas publica `resumen_ventas`/`periodo_ventas`; Compras `resumen_pedidos`/`periodo_propuestas` cuenta pedidos sin multiplicar intentos; K03 admite filtros `desde`/`hasta` opcionales conservando la consulta anterior sin filtros. Informes coordina únicamente interfaces públicas. No migra, entrena, modifica stock ni envía mensajes. Fechas ausentes no se rellenan con cero. Registro/evidencia en Bohorquez y coordinación Cueva.

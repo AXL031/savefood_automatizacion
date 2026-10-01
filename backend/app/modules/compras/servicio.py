@@ -2,7 +2,7 @@
 from datetime import date, datetime, timezone
 from decimal import Decimal, ROUND_CEILING, localcontext
 
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -10,10 +10,35 @@ from app.core.errores import ErrorAPI
 from app.modules.negocios.servicio import obtener_modo_envio_pedidos
 from app.modules.planificacion.servicio import obtener_contexto_compras
 from app.modules.proveedores.servicio import ServicioProveedores
-from .modelos import EnvioPedido, LineaPedido, PedidoCompra, PropuestaCompra
+from .modelos import EnvioPedido, LineaPedido, PedidoCompra, PropuestaCompra, RecuperacionEnvio
 
 
 ESTADOS_CANCELABLES = {"BLOQUEADO", "PENDIENTE_APROBACION", "RECHAZADO"}
+
+ESTADOS_REPORTE = ("BLOQUEADO", "PENDIENTE_APROBACION", "CANCELADO", "RECHAZADO",
+                   "PENDIENTE_ENVIO", "ENVIANDO", "ENVIADO", "FALLIDO", "PENDIENTE_VERIFICACION")
+
+
+def periodo_propuestas(sesion: Session) -> tuple[date | None, date | None]:
+    return sesion.execute(select(func.min(PropuestaCompra.fecha_objetivo),
+                                 func.max(PropuestaCompra.fecha_objetivo))).one()
+
+
+def resumen_pedidos(sesion: Session, desde: date, hasta: date) -> dict:
+    """Estado actual por fecha objetivo; cuenta pedidos, no intentos de envío."""
+    filtro = (PropuestaCompra.fecha_objetivo >= desde, PropuestaCompra.fecha_objetivo <= hasta)
+    estados = dict(sesion.execute(select(PedidoCompra.estado, func.count(PedidoCompra.id))
+        .join(PropuestaCompra, PropuestaCompra.id == PedidoCompra.propuesta_id)
+        .where(*filtro).group_by(PedidoCompra.estado)).all())
+    propuestas = dict(sesion.execute(select(PropuestaCompra.estado, func.count(PropuestaCompra.id))
+        .where(*filtro).group_by(PropuestaCompra.estado)).all())
+    sin_pedidos = sesion.scalar(select(func.count(PropuestaCompra.id)).where(*filtro,
+        ~select(PedidoCompra.id).where(PedidoCompra.propuesta_id == PropuestaCompra.id).exists()))
+    return {"total": sum(estados.values()),
+            "por_estado": [{"estado": estado, "cantidad": estados.get(estado, 0)} for estado in ESTADOS_REPORTE],
+            "propuestas": sum(propuestas.values()), "propuestas_sin_pedidos": sin_pedidos,
+            "propuestas_por_estado": [{"estado": estado, "cantidad": propuestas.get(estado, 0)}
+                                      for estado in ("GENERADA", "BLOQUEADA", "SIN_FALTANTES", "CANCELADA")]}
 
 
 def _bloquear_fecha(sesion, fecha):
@@ -141,7 +166,15 @@ def detalle_pedido(sesion: Session, pedido_id: int) -> dict:
     if pedido is None:
         raise ErrorAPI(404, "PEDIDO_NO_ENCONTRADO", "El pedido no existe.")
     propuesta = sesion.get(PropuestaCompra, pedido.propuesta_id)
-    envio = sesion.scalar(select(EnvioPedido).where(EnvioPedido.pedido_id == pedido.id))
+    envios = list(sesion.scalars(select(EnvioPedido).where(EnvioPedido.pedido_id == pedido.id).order_by(EnvioPedido.numero_intento)))
+    envio = envios[-1] if envios else None
+    def resumir(e):
+        return {"id": e.id, "numero_intento": e.numero_intento, "estado": e.estado,
+                "chat_id": e.chat_id, "message_id": e.message_id, "creado_en": e.creado_en.isoformat(),
+                "inicio_en": e.inicio_en.isoformat() if e.inicio_en else None,
+                "fin_en": e.fin_en.isoformat() if e.fin_en else None,
+                "fecha_telegram": e.fecha_telegram.isoformat() if e.fecha_telegram else None,
+                "codigo_error": e.codigo_error, "detalle_error": e.detalle_error}
     destino = ServicioProveedores(sesion).consultar_destino(pedido.proveedor_id)
     return {"id": pedido.id, "propuesta_id": pedido.propuesta_id, "plan_id": pedido.plan_id,
         "fecha_objetivo": propuesta.fecha_objetivo.isoformat(), "proveedor": pedido.proveedor_json,
@@ -151,13 +184,14 @@ def detalle_pedido(sesion: Session, pedido_id: int) -> dict:
                      "fecha": pedido.decidido_en.isoformat()} if pedido.decision_json else None,
         "destino_actual": destino.model_dump(mode="json"),
         "mensaje": envio.texto if envio else construir_mensaje(sesion, pedido),
-        "envio": {"id": envio.id, "numero_intento": envio.numero_intento, "estado": envio.estado,
-                  "chat_id": envio.chat_id, "message_id": envio.message_id,
-                  "creado_en": envio.creado_en.isoformat(),
-                  "inicio_en": envio.inicio_en.isoformat() if envio.inicio_en else None,
-                  "fin_en": envio.fin_en.isoformat() if envio.fin_en else None,
-                  "fecha_telegram": envio.fecha_telegram.isoformat() if envio.fecha_telegram else None,
-                  "codigo_error": envio.codigo_error, "detalle_error": envio.detalle_error} if envio else None,
+        "envio": resumir(envio) if envio else None,
+        "envios": [resumir(e) for e in envios],
+        "recuperaciones": [{"id": r.id, "envio_id": r.envio_id, "accion": r.accion,
+            "usuario_id": r.usuario_id, "nombre_usuario": r.nombre_usuario, "fecha": r.creado_en.isoformat(),
+            "evidencia": r.evidencia, "nuevo_envio_id": r.nuevo_envio_id,
+            "resultado_anterior": r.resultado_anterior_json}
+            for r in sesion.scalars(select(RecuperacionEnvio).join(EnvioPedido, RecuperacionEnvio.envio_id == EnvioPedido.id)
+                .where(EnvioPedido.pedido_id == pedido.id).order_by(RecuperacionEnvio.id))],
         "lineas": [
             {"id": l.id, "necesidad_ingrediente_id": l.necesidad_ingrediente_id, "ingrediente_id": l.ingrediente_id,
              "nombre": l.ingrediente_json["stock"]["nombre"], "faltante_base": str(l.faltante_base),
@@ -273,7 +307,7 @@ def decidir_pedido(sesion: Session, pedido_id: int, *, accion: str, clave: str,
     if pedido.clave_decision is not None:
         if pedido.clave_decision == clave and pedido.decidido_por == usuario_id and pedido.decision_json["accion"] == accion and pedido.decision_json.get("motivo") == motivo:
             if accion == "APROBAR":
-                envio = sesion.scalar(select(EnvioPedido).where(EnvioPedido.pedido_id == pedido.id))
+                envio = sesion.scalar(select(EnvioPedido).where(EnvioPedido.pedido_id == pedido.id).order_by(EnvioPedido.numero_intento).limit(1))
                 if envio.chat_id != chat_id_revisado:
                     raise ErrorAPI(409, "DECISION_DIFERENTE", "La decisión original corresponde a otro chat revisado.")
             return pedido

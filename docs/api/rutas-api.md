@@ -56,6 +56,8 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `POST /compras/propuestas/{id}/cancelar` | Administrador; motivo obligatorio, historial conservado |
 | `POST /pedidos/{id}/aprobar` | Administrador; clave y chat revisado, 202 con decisión/envío pendiente |
 | `POST /pedidos/{id}/rechazar` | Administrador; clave y motivo, sin envío |
+| `POST /pedidos/{id}/conciliar` | Administrador; último intento incierto, evidencia/chat revisado; no transmite |
+| `POST /pedidos/{id}/reintentar` | Administrador; fallo definitivo/conciliado, clave y revisión del destino; reserva intento N+1, 202 |
 | `POST /compras/propuestas/{id}/verificar-destinos` | Administrador; revisar bloqueos de destino sin alterar snapshots |
 | `GET /salud` | Pública, fuera de `/api/v1` |
 
@@ -67,7 +69,6 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 |---|---|---|
 | `GET /inventario` | Saldos por lote y agregado con unidad/caducidad. | Bearer |
 | Evento tras `POST /inventario/ajustes` | Conectar promoción V03 al ajuste implementado. | Administrador |
-| `POST /pedidos/{id}/conciliar` | Resolver resultado de envío incierto con evidencia. | Administrador |
 | `GET /promociones/evaluaciones` | Sugerencia o motivo de rechazo por lote; no activa descuentos. | Bearer |
 
 Actualmente `POST /pronosticos/preparar-modelo` reserva el entrenamiento a demanda y el worker registra el backtest al publicar el artefacto. El estado durable `configuracion_inicial` ya existe y el asistente consume recetas/inventario reales; la confirmación ya reserva su entrenamiento y el reintento no vuelve a importar. Aplicar 0008; el estado expone preparación, modelo y evaluación. Celery Beat revisa programaciones cada 30 segundos. La misma clave idempotente recupera la ejecución, y otra entrada con esa clave devuelve conflicto.
@@ -76,7 +77,7 @@ El acceso rápido `POST /inicializacion/piloto-bakery` recibe el CSV original de
 
 ## Visión futura, fuera de la demo
 
-Recepción física de pedidos, **activación** de promociones, excedentes intradía, notificaciones, informes, importación recurrente, Google Sheets y automatización diaria con ventas reales. Proveedor mínimo, pedido y envío a chat de pruebas están implementados en el corte local de pasos 5/6 del [contrato](contrato-pedidos.md); bot real pendiente de configuración del usuario, conciliación y automático en paso 7.
+Recepción física de pedidos, **activación** de promociones, excedentes intradía, notificaciones, informes económicos o de impacto, importación recurrente, Google Sheets y automatización diaria con ventas reales. Proveedor mínimo, pedido y envío a chat de pruebas están implementados en el corte local de pasos 5/6 del [contrato](contrato-pedidos.md); bot real pendiente de configuración del usuario, conciliación y automático en paso 7.
 ## Paso 2 local · Planificación M02
 
 | Método | Ruta bajo `/api/v1` | Acceso | Estado |
@@ -90,3 +91,7 @@ Necesidades y pedidos siguen pendientes en este corte local.
 ## Ampliación M03 local · 30-09-2026
 
 `POST /api/v1/planes/{plan_id}/necesidades` (Administrador, sin cuerpo) completa una sola vez las necesidades de un plan anterior y devuelve su detalle. GET del plan incluye necesidades, faltantes y trazas persistidas. POST de planes nuevos ya incluye M03 de forma atómica. No crea pedidos ni movimientos.
+
+## Reportes de lectura · 01-10-2026
+
+GET `/api/v1/informes/resumen` y GET `/api/v1/informes/exportar?tipo=ventas|pronosticos|pedidos`, para Administrador y Operador autenticados. Filtros inclusivos desde/hasta y modelo_id, máximo 366 días. CSV del período completo, sin paginación de exportación. [Contrato](contrato-informes.md). Vista `/informes` y dashboard en `/`; informes económicos/impacto siguen fuera de alcance.

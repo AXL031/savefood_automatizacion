@@ -1,5 +1,5 @@
 import { solicitar } from "./http";
-import type { EstadoTelegram, VerificacionDestino, NuevaOferta, Oferta, Pedido, PropuestaCompra, Proveedor } from "@/types/compras";
+import type { EntradaConciliacion, EntradaRecuperacion, EstadoTelegram, VerificacionDestino, NuevaOferta, Oferta, Pedido, PropuestaCompra, Proveedor } from "@/types/compras";
 export function consultarTelegram(token: string, signal?: AbortSignal) { return solicitar<EstadoTelegram>("/proveedores/telegram/configuracion", { token, signal }); }
 export function guardarTelegram(token: string, credencial: string) { return solicitar<EstadoTelegram>("/proveedores/telegram/configuracion", { token, method: "POST", body: { token: credencial } }); }
 export function comprobarTelegram(token: string) { return solicitar<EstadoTelegram>("/proveedores/telegram/comprobar", { token, method: "POST" }); }
@@ -20,3 +20,5 @@ export function cancelarPropuesta(token: string, id: number, motivo: string) { r
 export function aprobarPedido(token: string, id: number, clave: string, chat: string) { return solicitar<Pedido>(`/pedidos/${id}/aprobar`, { token, method: "POST", body: { clave_idempotencia: clave, chat_id_revisado: chat } }); }
 export function rechazarPedido(token: string, id: number, clave: string, motivo: string) { return solicitar<Pedido>(`/pedidos/${id}/rechazar`, { token, method: "POST", body: { clave_idempotencia: clave, motivo } }); }
 export function verificarDestinosPropuesta(token: string, id: number) { return solicitar<PropuestaCompra>(`/compras/propuestas/${id}/verificar-destinos`, { token, method: "POST" }); }
+export function conciliarPedido(token: string, id: number, entrada: EntradaConciliacion) { return solicitar<Pedido>(`/pedidos/${id}/conciliar`, { token, method: "POST", body: entrada }); }
+export function reintentarPedido(token: string, id: number, entrada: EntradaRecuperacion) { return solicitar<Pedido>(`/pedidos/${id}/reintentar`, { token, method: "POST", body: entrada }); }

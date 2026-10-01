@@ -5,6 +5,10 @@
 Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este archivo se actualiza al terminar cada avance significativo.
 
 ## Resumen vigente
+
+- **Dashboard y Reportes · 01-10-2026:** Coordinación K04/E01/L02: dashboard en Inicio y Reportes de lectura activos; contrato, alcance y mapa actualizados. 34 pruebas correctas, typecheck/build web correctos, API/Inicio/Reportes 200 y acceso sin sesión 401. Sin migración, stock ni envíos nuevos. Revisión visual aislada bloqueada en 3001.
+
+- **Recuperación L04 desplegada (01-10-2026, Codex para Axel):** API/UI permiten conciliar evidencia y reservar reintento explícito; historial completo, locks ordenados y resultados tardíos protegidos. Migración 0014 aplicada, alembic check correcto; API/worker/Beat/frontend actualizados y activos. 57 pruebas PostgreSQL y 7 de migraciones correctas, typecheck/build correctos. Sin nuevo envío real; registro detallado en [Aguirre](aguirre.md). Promociones y demostración final siguen pendientes.
 - **Corte de interfaz y plan de cierre (01-10-2026, Codex para Axel):** Navegación persistente, tablas paginadas y detalles visibles entregados localmente; integración E04/E01 registrada en [Sanchez](sanchez.md). 19 pruebas PostgreSQL y navegador aislado correctos, typecheck final correcto. [Plan completo](../plan-cierre-prototipo.md) conserva pasos 1–7 y define cierre 8–10; conciliación, promociones y demo final siguen pendientes. Detenerse tras este corte, según petición del usuario.
 - **Aviso de recompra corregido (30-09-2026, Codex para Axel):** RECOMPRA_FECHA distingue borrador cancelable, envío autorizado y mensaje ya enviado; nunca recomienda cancelar una compra transmitida. Propuesta #4/plan #4 del 24-08-2022 confirmado ENVIADO/message_id=2. Tres pruebas PostgreSQL correctas; imágenes reconstruidas y API/worker/Beat actualizados. Misma política de una compra activa por fecha, sin nuevo envío.
 - **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Flujo automático completo programable por ejecución, modo conservado y outbox validado sin aprobación manual ficticia. UI aclarada transversalmente; unidades kg/L sin migrar datos. Envío manual real pedido #1 confirmado (message_id=2) y 14 ajustes auditados para stock pequeño. 54 pruebas PostgreSQL, typecheck y 17 comprobaciones de unidades correctos. Ver Aguirre/Sanchez/Vera/Rojas/Bohorquez; recurrencia diaria operativa y conciliación completa pendientes.
@@ -40,6 +44,21 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | A04 · Preparar infraestructura común | LISTO_PARA_INTEGRAR; CI remoto y arranque en otra PC pendientes |
 
 ## Bitácora
+
+### Dashboard y Reportes · 01-10-2026
+
+- **Fecha/zona/autor/estado:** 2026-10-01, America/Bogota. Codex para Axel; LISTO_PARA_INTEGRAR local y activo en Compose, validación visual pendiente por bloqueo de navegador.
+- Inicio y Reportes consumen fuentes públicas de ventas, pedidos y evaluación. [Entrega completa de K04](bohorquez.md#dashboard-en-inicio-y-reportes--01-10-2026) y [contrato](../../api/contrato-informes.md). Nuevas lecturas de Edu y Aguirre registradas en sus bloques. Se conservó el trabajo previo, rama cueva y volúmenes; se actualizaron API/frontend locales reutilizando dependencias verificadas al atascarse una descarga del build completo. Limpieza de procesos/esquemas de prueba verificada. Siguiente: revisión visual en el navegador del usuario y luego el plan de cierre; promociones y prueba automática real siguen pendientes. Cambios locales, sin commit/PR.
+
+
+
+### A03/A04 · Integración de recuperación L04 · 01-10-2026
+
+- **Fecha/zona/autor/estado:** 2026-10-01, America/Bogota. Codex para Axel coordinando dominio L04 de Aguirre; LISTO_PARA_INTEGRAR local, sin atribuir autoría a integrantes. Usuario autorizó avanzar después del corte visual.
+- **Disponible/archivos/contrato:** recuperar_envio sin commit/red, API/UI administrativas e historial conservado; worker/despacho usan orden fecha→propuesta→pedido→envío. Nuevo intento solo ante fallo definitivo o conciliado, mismo texto/snapshots y revisión explícita del destino; resultado incierto nunca reintenta automáticamente. Referencias y ejemplo en [contrato L04](../../api/contrato-pedidos.md#contrato-l04--recuperación-administrativa--01-10-2026) y [registro de Aguirre](aguirre.md). Motor común no asume decisiones del dominio.
+- **Configuración/migración/pruebas:** build api/worker/migraciones/frontend correcto. Parada acotada de servicios, migración aditiva 0014, alembic check sin operaciones pendientes y reactivación API/worker/Beat/frontend correctos; PostgreSQL/Redis conservados. 57 pruebas PostgreSQL de compras/aprobación/recuperación y 7 de migraciones SQLite correctas; typecheck/build 21 páginas correctos. HTTP API/UI 200 y despacho real sin pendientes. No repite toda la suite ML ni acredita otro PC/CI.
+- **Datos/límites:** pedido #1 conserva ENVIADO/message_id=2; no cambios de stock/mensajes ni recuperaciones en base habitual. Esquemas de QA=0; API temporal 8001, Next temporal 3001, auxiliar y caché retirados. Navegador rechazó localhost de QA con ERR_BLOCKED_BY_CLIENT: formularios nuevos sin validación visual completa. Telegram exclusivamente falso en pruebas. Se mantiene pendiente demostración automática real autorizada.
+- **Dependencias/siguiente/Git:** siguiente bloque V03/V04 de Vera, integración ajuste→promoción y pruebas conjuntas; [plan actualizado](../plan-cierre-prototipo.md) diferencia esa implementación de demo/entrega/recurrencia. Cambios locales en cueva, sin commit/push/PR/merge.
 
 ### A01/E04 · Ajustes de interfaz y plan para cerrar prototipo · 01-10-2026
 

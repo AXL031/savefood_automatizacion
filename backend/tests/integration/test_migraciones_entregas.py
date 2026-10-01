@@ -17,11 +17,18 @@ NUEVAS = {"ingrediente", "receta", "receta_ingrediente", "lote_producto",
           "lote_ingrediente", "movimiento_inventario", "proveedor", "oferta_ingrediente"}
 
 
+def cargar_revision(nombre):
+    ruta = Path(__file__).resolve().parents[2] / "migrations" / "versions" / f"{nombre}.py"
+    spec = importlib.util.spec_from_file_location(nombre, ruta)
+    modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
+    return modulo
+
+
 def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0013_l03_aprobacion_envio"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0014_l04_recuperacion"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")
@@ -118,23 +125,27 @@ def test_migracion_0011_reversible_y_coherente_con_modelos():
     def funciones(c, _):
         c.create_function("char_length", 1, len)
         c.execute("PRAGMA foreign_keys=ON")
-    nuevas = {"propuesta_compra", "pedido_compra", "linea_pedido", "envio_pedido"}
+    nuevas = {"propuesta_compra", "pedido_compra", "linea_pedido", "envio_pedido", "recuperacion_envio"}
     Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name not in nuevas])
     spec = importlib.util.spec_from_file_location("l02", backend / "migrations/versions/0011_l02_compras.py")
     modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
     spec_envio = importlib.util.spec_from_file_location("l03", backend / "migrations/versions/0013_l03_aprobacion_envio.py")
     envio = importlib.util.module_from_spec(spec_envio); spec_envio.loader.exec_module(envio)
+    recuperacion = cargar_revision("0014_l04_recuperacion")
     with motor.begin() as conexion:
         contexto = MigrationContext.configure(conexion)
         with Operations.context(contexto):
             modulo.upgrade()
             envio.upgrade()
+            recuperacion.upgrade()
             assert compare_metadata(contexto, Base.metadata) == []
+            recuperacion.downgrade()
             envio.downgrade()
             modulo.downgrade()
             assert not nuevas.intersection(inspect(conexion).get_table_names())
             modulo.upgrade()
             envio.upgrade()
+            recuperacion.upgrade()
             assert compare_metadata(contexto, Base.metadata) == []
     motor.dispose()
 
@@ -169,13 +180,14 @@ def test_migracion_0013_conserva_borradores_y_protege_evidencia():
     motor = create_engine("sqlite://")
     @event.listens_for(motor,"connect")
     def funciones(c,_): c.create_function("char_length",1,len)
-    nuevas = {"propuesta_compra","pedido_compra","linea_pedido","envio_pedido"}
+    nuevas = {"propuesta_compra","pedido_compra","linea_pedido","envio_pedido","recuperacion_envio"}
     Base.metadata.create_all(motor,tables=[t for t in Base.metadata.sorted_tables if t.name not in nuevas])
     def cargar(nombre):
         spec=importlib.util.spec_from_file_location(nombre,backend/"migrations/versions"/f"{nombre}.py")
         modulo=importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
         return modulo
     anterior,nueva=cargar("0011_l02_compras"),cargar("0013_l03_aprobacion_envio")
+    recuperacion = cargar_revision("0014_l04_recuperacion")
     with motor.begin() as conexion:
         contexto=MigrationContext.configure(conexion)
         with Operations.context(contexto):
@@ -183,8 +195,10 @@ def test_migracion_0013_conserva_borradores_y_protege_evidencia():
             conexion.execute(text("INSERT INTO propuesta_compra (id,plan_id,fecha_objetivo,estado,activa,modo_envio,necesidades_json,incidencias_json) VALUES (1,1,'2022-08-24','GENERADA',true,'REQUIERE_APROBACION','{}','[]')"))
             conexion.execute(text("INSERT INTO pedido_compra (id,propuesta_id,plan_id,proveedor_id,proveedor_json,estado,modo_envio,bloqueos_json) VALUES (1,1,1,1,'{}','PENDIENTE_APROBACION','REQUIERE_APROBACION','[]')"))
             nueva.upgrade()
+            recuperacion.upgrade()
             assert conexion.execute(text("SELECT estado,clave_decision,decidido_por,decision_json FROM pedido_compra")).one()==("PENDIENTE_APROBACION",None,None,None)
             assert compare_metadata(contexto,Base.metadata)==[]
+            recuperacion.downgrade()
             nueva.downgrade()
             assert conexion.execute(text("SELECT estado FROM pedido_compra")).scalar()=="PENDIENTE_APROBACION"
             nueva.upgrade()
@@ -192,4 +206,36 @@ def test_migracion_0013_conserva_borradores_y_protege_evidencia():
             with pytest.raises(RuntimeError,match="conservar su evidencia"): nueva.downgrade()
             assert "envio_pedido" in inspect(conexion).get_table_names()
             assert conexion.execute(text("SELECT clave_decision FROM pedido_compra")).scalar()=="fixture"
+    motor.dispose()
+
+
+def test_migracion_0014_conserva_envio_reversible_y_protege_recuperaciones():
+    from sqlalchemy import text
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor, "connect")
+    def funciones(c, _): c.create_function("char_length", 1, len)
+    nuevas = {"propuesta_compra", "pedido_compra", "linea_pedido", "envio_pedido", "recuperacion_envio"}
+    Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name not in nuevas])
+    l02, l03, l04 = (cargar_revision(n) for n in ("0011_l02_compras", "0013_l03_aprobacion_envio", "0014_l04_recuperacion"))
+    with motor.begin() as conexion:
+        contexto = MigrationContext.configure(conexion)
+        with Operations.context(contexto):
+            l02.upgrade(); l03.upgrade()
+            conexion.execute(text("INSERT INTO propuesta_compra (id,plan_id,fecha_objetivo,estado,activa,modo_envio,necesidades_json,incidencias_json) VALUES (1,1,'2022-08-24','GENERADA',true,'AUTOMATICO','{}','[]')"))
+            conexion.execute(text("INSERT INTO pedido_compra (id,propuesta_id,plan_id,proveedor_id,proveedor_json,estado,modo_envio,bloqueos_json) VALUES (1,1,1,1,'{}','ENVIADO','AUTOMATICO','[]')"))
+            conexion.execute(text("INSERT INTO envio_pedido (id,pedido_id,numero_intento,estado,chat_id,credencial_huella,texto,fin_en,message_id) VALUES (1,1,1,'ENVIADO','123',:huella,'DEMOSTRACION conservada','2026-10-01',42)"), {"huella": "a"*64})
+            consulta = text("SELECT numero_intento,estado,chat_id,texto,message_id FROM envio_pedido")
+            previo = conexion.execute(consulta).one()
+            l04.upgrade()
+            assert conexion.execute(consulta).one() == previo
+            assert compare_metadata(contexto, Base.metadata) == []
+            l04.downgrade()
+            assert conexion.execute(consulta).one() == previo
+            assert "recuperacion_envio" not in inspect(conexion).get_table_names()
+            l04.upgrade()
+            conexion.execute(text("INSERT INTO recuperacion_envio (envio_id,clave_idempotencia,accion,usuario_id,nombre_usuario,evidencia,solicitud_json,resultado_anterior_json) VALUES (1,'fixture','CONFIRMAR_ENVIO',1,'Fixture','Evidencia de fixture aislada','{}','{}')"))
+            with pytest.raises(RuntimeError, match="conservar su evidencia"):
+                l04.downgrade()
+            assert conexion.execute(consulta).one() == previo
+            assert conexion.execute(text("SELECT count(*) FROM recuperacion_envio")).scalar() == 1
     motor.dispose()

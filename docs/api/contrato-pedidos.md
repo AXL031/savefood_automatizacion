@@ -1,5 +1,41 @@
 # Contrato de pedidos derivados del pronóstico
 
+## Contrato L04 · Recuperación administrativa · 01-10-2026
+
+Frontera del siguiente corte: `POST /pedidos/{id}/conciliar` recibe clave_idempotencia,
+envio_id, resultado `ENVIADO|NO_ENVIADO`, chat_id_revisado, evidencia (10–1500 caracteres)
+y, solo para ENVIADO, message_id positivo y fecha_telegram con zona. Solo Administrador.
+Exige último intento PENDIENTE_VERIFICACION, mismo chat conservado y evidencia explícita
+del administrador. No consulta Telegram ni transmite. ENVIADO registra confirmación
+manual distinguible de la respuesta del worker; NO_ENVIADO termina ese intento FALLIDO
+con código CONCILIADO_NO_ENVIADO. No basta registrar NO_ENVIADO para volver a transmitir.
+Una revisión del chat es evidencia humana declarada, no una comprobación automática.
+
+`POST /pedidos/{id}/reintentar` recibe clave_idempotencia, envio_id del intento fallido,
+chat_id_revisado y evidencia/motivo. Devuelve 202. Exige último intento FALLIDO, propuesta
+GENERADA activa, autorización original y destino/credencial vigentes. Congela el mismo
+texto original y conserva cantidades/plan/modo. Reserva intento N+1 en la transacción;
+el worker vuelve a validar antes de salir. Nunca reintenta ENVIADO, ENVIANDO, pendiente o
+incierto sin conciliar. Cambiar chat exige revisar expresamente el nuevo destino.
+
+Ambas acciones son idempotentes por clave global y contenido/usuario/acción exactos,
+con 409 ante reutilización distinta o intento obsoleto; 422 ante evidencia vacía/fecha
+sin zona o futura/campos incompatibles. Una confirmación no puede reutilizar el par
+chat_id/message_id de otra entrega. Auditoría conserva actor, nombre, fecha, acción,
+evidencia y referencia al intento. Historial aditivo `envios`/`recuperaciones`; `envio`
+sigue representando el último intento para mantener consumidores existentes.
+
+Migración aditiva 0014_l04_recuperacion sobre 0013: unicidad (pedido_id,numero_intento),
+numero_intento>=1, unicidad de evidencia chat/message_id y tabla recuperacion_envio.
+No reescribir 0013 ni borrar intentos. Downgrade solo sin acciones ni intentos posteriores.
+Bloqueos ordenados fecha→propuesta→pedido→envío en despacho/worker/recuperación evitan
+inversión de locks. Una respuesta tardía no sobrescribe una conciliación ni un nuevo
+intento. Los servicios no hacen commit ni cambian stock.
+
+Ejemplo: conciliar envío 12 con resultado NO_ENVIADO/evidencia/chat; luego reintentar
+ese envio_id con otra clave y motivo explícito. Son dos decisiones auditadas. Pruebas
+de desarrollo usan transporte falso; no autorizan nuevos mensajes reales por sí mismas.
+
 ## Corte vigente · Envío automático y prueba real · 30-09-2026
 
 Este corte sustituye las restricciones sobre AUTOMATICO de los pasos 4–6 conservados abajo. Generar un pedido con modo AUTOMATICO, necesidades completas, ofertas preferidas activas y destinos verificados reserva todos sus envíos en la misma transacción. Si cualquier pedido tiene bloqueo o mensaje demasiado largo no se reserva ninguno. No se inventa una decisión APROBAR: decision_json/actor/clave de decisión quedan vacíos; la autorización es el modo conservado de propuesta y pedido. La programación conserva además creado_por y el modo elegido. El worker exige propuesta GENERADA activa, sin incidencias/bloqueos, pedido PENDIENTE_ENVIO, modo automático coincidente y destino/credencial vigentes. El modo manual conserva la aprobación administrativa auditada.
@@ -157,7 +193,8 @@ Transiciones del envío: `PENDIENTE_ENVIO → ENVIANDO → ENVIADO | FALLIDO | P
 | `POST /pedidos/{id}/aprobar` | Autorizar envío solo si el pedido está `PENDIENTE_APROBACION`; requiere clave y chat revisado. | Administrador |
 | `POST /pedidos/{id}/rechazar` | Rechazo motivado de pendiente/bloqueado; conserva actor/fecha, sin envío. | Administrador |
 | `POST /compras/propuestas/{id}/verificar-destinos` | Revisa bloqueos de destino antes de decisiones; no recalcula líneas. | Administrador |
-| `POST /pedidos/{id}/conciliar` | Diseño pendiente de paso 7; todavía no existe. | Administrador |
+| `POST /pedidos/{id}/conciliar` | Resolver último intento incierto con evidencia humana; no transmite. | Administrador |
+| `POST /pedidos/{id}/reintentar` | Reservar nuevo intento explícito desde fallo definitivo/conciliado. | Administrador |
 
 Las rutas nuevas siguen [convenciones HTTP](contratos.md): sobre `datos`, errores con `error.codigo`, `409` para clave reutilizada o transición inválida. El envío efectivo lo realiza el worker: no se espera la respuesta de Telegram dentro de `POST /aprobar`. La generación de pedidos es un efecto de `GENERAR_PROPUESTA`, no una ruta que calcule otro pronóstico.
 

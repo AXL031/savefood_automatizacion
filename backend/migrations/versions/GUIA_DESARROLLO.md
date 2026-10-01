@@ -62,3 +62,9 @@ API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras
 ## Cabeza vigente · Paso 6 · 0013_l03_aprobacion_envio
 
 Revisión aditiva sobre 0012: decisión completa nullable en pedido_compra (clave única, FK usuario, hora, JSON) y nuevos estados; envio_pedido único por pedido con texto/chat/huella, lease/token, intento 1 y evidencia. ENVIADO exige message_id positivo y fin_en. Conserva borradores existentes. Downgrade admisible sin decisiones; con actividad se detiene sin quitar evidencia y exige migración correctiva. Reversibilidad, preservación de datos y comparación de metadatos en test_migraciones_entregas.py; no reescribir 0011/0012 aplicadas.
+
+## Recuperación L04 · 01-10-2026
+
+Codex para Axel bajo responsabilidad de Aguirre: POST /pedidos/{id}/conciliar registra ENVIADO o NO_ENVIADO con evidencia del último intento incierto; no transmite. POST /pedidos/{id}/reintentar reserva N+1 solo desde FALLIDO y con chat actual revisado/verificado. Conserva texto, plan, cantidades, autorización original e historial. GET incorpora envios/recuperaciones; envio sigue siendo el último. Locks fecha→propuesta→pedido→envío en recuperación/despacho/worker, respuesta tardía obsoleta ignorada. Clave/contenido/actor idempotentes, evidencia chat/message_id única. Usuario Operador consulta; solo Administrador actúa.
+
+Migración aditiva 0014_l04_recuperacion sobre 0013, sin reescribir anteriores; downgrade bloqueado con acciones/reintentos. 57 pruebas PostgreSQL y 7 de migraciones correctas; typecheck/build correctos, API/UI/worker locales actualizados y alembic check sin diferencias. QA visual nuevo no acreditado: navegador integrado rechazó el entorno temporal con ERR_BLOCKED_BY_CLIENT. Pruebas usan transporte falso; no se envió otro Telegram. Contrato vigente: docs/api/contrato-pedidos.md, registro detallado en docs/equipo/avances/aguirre.md. Automático real, promociones y demo conjunta pendientes.

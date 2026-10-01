@@ -62,3 +62,7 @@ GuiaPantalla aporta propósito/pasos/términos/enlace según ruta, incluidos det
 ## Navegación, páginas y detalles · 30-09-2026
 
 AppShell vive en el layout raíz y conserva el marco y ContextoSesion. ProtectedShell solo presenta la pantalla. actualizarPerfilLocal/actualizarNegocioLocal permiten reflejar cambios sin reload. La sesión se consulta al entrar desde login o al reintentar un error, no en cada ruta. Conservar evento 401 y validación de permisos en servidor.
+
+## Dashboard y Reportes de lectura · 01-10-2026
+
+Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` con períodos inclusivos, versión del modelo, tablas paginadas, detalle en diálogo y CSV completo del período. [Contrato](../../../../docs/api/contrato-informes.md). Ventas publica `resumen_ventas`/`periodo_ventas`; Compras `resumen_pedidos`/`periodo_propuestas` cuenta pedidos sin multiplicar intentos; K03 admite filtros `desde`/`hasta` opcionales conservando la consulta anterior sin filtros. Informes coordina únicamente interfaces públicas. No migra, entrena, modifica stock ni envía mensajes. Fechas ausentes no se rellenan con cero. Registro/evidencia en Bohorquez y coordinación Cueva.

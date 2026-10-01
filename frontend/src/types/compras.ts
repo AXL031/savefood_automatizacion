@@ -3,10 +3,14 @@ export type EstadoTelegram = { configurado: boolean; origen: string; codigo: str
 export type VerificacionDestino = { verificado: boolean; codigo: string; detalle: string };
 export type Oferta = { id: number; proveedor_id: number; ingrediente_id: number; descripcion: string; unidad_compra: string; factor_conversion: string; minimo: string; multiplo: string; activa: boolean; preferida: boolean };
 export type NuevaOferta = Pick<Oferta, "ingrediente_id" | "descripcion" | "unidad_compra" | "factor_conversion" | "minimo" | "multiplo" | "preferida">;
+export type IntentoEnvio = { id: number; numero_intento: number; estado: string; chat_id: string; message_id: number | null; creado_en: string; inicio_en: string | null; fin_en: string | null; fecha_telegram: string | null; codigo_error: string | null; detalle_error: string | null };
+export type Recuperacion = { id: number; envio_id: number; accion: "CONFIRMAR_ENVIO" | "CONFIRMAR_NO_ENVIO" | "REINTENTAR"; usuario_id: number; nombre_usuario: string; fecha: string; evidencia: string; nuevo_envio_id: number | null; resultado_anterior: { estado: string; codigo_error: string | null; detalle_error: string | null } };
+export type EntradaRecuperacion = { clave_idempotencia: string; envio_id: number; chat_id_revisado: string; evidencia: string };
+export type EntradaConciliacion = EntradaRecuperacion & { resultado: "ENVIADO" | "NO_ENVIADO"; message_id?: number; fecha_telegram?: string };
 export type Pedido = { id: number; propuesta_id: number; plan_id: number; fecha_objetivo: string; proveedor: { id: number; codigo: string; nombre: string }; estado: string; modo_envio: string; bloqueos: string[]; envio_estado: string;
   destino_actual: Proveedor; mensaje: string;
   decision: { accion: "APROBAR" | "RECHAZAR"; nombre_usuario: string; usuario_id: number; fecha: string; motivo: string | null } | null;
-  envio: { id: number; numero_intento: number; estado: string; chat_id: string; message_id: number | null; creado_en: string; inicio_en: string | null; fin_en: string | null; fecha_telegram: string | null; codigo_error: string | null; detalle_error: string | null } | null;
+  envio: IntentoEnvio | null; envios: IntentoEnvio[]; recuperaciones: Recuperacion[];
   lineas: { id: number; ingrediente_id: number; necesidad_ingrediente_id: number; nombre: string; faltante_base: string; cantidad_compra: string; cantidad_base_pedida: string; unidad_base: string; unidad_compra: string; oferta: { oferta_id: number; factor_conversion: string; minimo: string; multiplo: string } }[];
 };
 export type PropuestaCompra = { id: number; plan_id: number; fecha_objetivo: string; estado: string; activa: boolean; modo_envio: string; creado_en: string; motivo_cancelacion: string | null; cancelado_por: number | null; cancelado_en: string | null; incidencias: { codigo: string; detalle: string; ingrediente_id?: number; nombre?: string }[]; pedidos: Pedido[] };
