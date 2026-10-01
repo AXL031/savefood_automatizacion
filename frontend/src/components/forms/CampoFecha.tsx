@@ -22,6 +22,7 @@ export function CampoFecha({ id, etiqueta, valor, onCambio, min, max, ayuda, err
         id={id}
         type="date"
         value={valor}
+        onInput={(evento) => onCambio(evento.currentTarget.value)}
         onChange={(evento) => onCambio(evento.target.value)}
         min={min}
         max={max}

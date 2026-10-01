@@ -1,3 +1,4 @@
+import { TablaPaginada } from "@/components/tables/TablaPaginada";
 import React from "react";
 import type { DesgloseProducto } from "@/types/pronosticos";
 
@@ -18,8 +19,7 @@ export function TablaDesgloseProductos({ desglose, fecha }: Props) {
         </div>
       </div>
 
-      <div className="table-wrap">
-        <table>
+      <TablaPaginada>
           <thead>
             <tr>
               <th>Producto / SKU</th>
@@ -71,8 +71,7 @@ export function TablaDesgloseProductos({ desglose, fecha }: Props) {
               );
             })}
           </tbody>
-        </table>
-      </div>
+        </TablaPaginada>
     </div>
   );
 }

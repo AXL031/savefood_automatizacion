@@ -1,4 +1,14 @@
 erDiagram
+    PROVEEDOR {
+        int id PK
+        string codigo UK
+        string nombre
+        boolean activo
+        string chat_id_pruebas "nullable"
+        boolean destino_verificado
+        datetime destino_verificado_en "nullable"
+        string destino_credencial_huella "sha256 nullable, sin token"
+    }
     PRODUCTO ||--o{ SKU_PRODUCTO : mapea
     PRODUCTO ||--o{ RECETA : versiona
     RECETA ||--o{ RECETA_INGREDIENTE : contiene
@@ -25,17 +35,39 @@ erDiagram
     EJECUCION_AUTOMATIZACION ||--o{ PLAN_PRODUCCION : registra
     PLAN_PRODUCCION ||--o{ ELEMENTO_PLAN : contiene
     PRODUCTO ||--o{ ELEMENTO_PLAN : propone
-    RECETA ||--o{ ELEMENTO_PLAN : calcula
+    PRONOSTICO ||--o{ ELEMENTO_PLAN : conserva
+    RECETA |o--o{ ELEMENTO_PLAN : calcula_si_existe
     PLAN_PRODUCCION ||--o{ NECESIDAD_INGREDIENTE : genera
     INGREDIENTE ||--o{ NECESIDAD_INGREDIENTE : falta
     PLAN_PRODUCCION ||--o{ PEDIDO_COMPRA : propone
+    PLAN_PRODUCCION ||--o| PROPUESTA_COMPRA : agrupa_compras
+    PROPUESTA_COMPRA ||--o{ PEDIDO_COMPRA : contiene
+    USUARIO |o--o{ PROPUESTA_COMPRA : cancela
     PROVEEDOR ||--o{ OFERTA_INGREDIENTE : ofrece
     INGREDIENTE ||--o{ OFERTA_INGREDIENTE : se_compra
     PROVEEDOR ||--o{ PEDIDO_COMPRA : recibe
     PEDIDO_COMPRA ||--o{ LINEA_PEDIDO : contiene
     NECESIDAD_INGREDIENTE ||--o| LINEA_PEDIDO : justifica
     OFERTA_INGREDIENTE ||--o{ LINEA_PEDIDO : convierte
-    PEDIDO_COMPRA ||--o{ ENVIO_PEDIDO : intenta_enviar
+    USUARIO |o--o{ PEDIDO_COMPRA : decide
+    PEDIDO_COMPRA ||--o{ ENVIO_PEDIDO : intentos_conservados
+    ENVIO_PEDIDO ||--o{ RECUPERACION_ENVIO : revisiones
+    ENVIO_PEDIDO |o--o{ RECUPERACION_ENVIO : nuevo_intento
+    USUARIO ||--o{ RECUPERACION_ENVIO : registra
+
+    RECUPERACION_ENVIO {
+        int id PK
+        int envio_id FK
+        string clave_idempotencia UK
+        string accion
+        int usuario_id FK
+        string nombre_usuario
+        datetime creado_en
+        string evidencia
+        json solicitud_json
+        json resultado_anterior_json
+        int nuevo_envio_id FK
+    }
 
     PROGRAMACION_DEMO ||--o| EJECUCION_AUTOMATIZACION : dispara
     EJECUCION_AUTOMATIZACION ||--o{ INTENTO_AUTOMATIZACION : intenta

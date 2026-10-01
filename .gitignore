@@ -1,5 +1,6 @@
-# Secretos y configuraciÃ³n local
+# Secretos y configuración local
 .env
+telegram_secrets/
 .env.*
 !.env.example
 
@@ -29,6 +30,4 @@ backend/model_artifacts/
 Thumbs.db
 .idea/
 .vscode/
-
-# TypeScript
-*.tsbuildinfo
+backend/build/

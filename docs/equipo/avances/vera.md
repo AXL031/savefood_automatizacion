@@ -5,6 +5,9 @@
 Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este archivo se actualiza al terminar cada avance significativo.
 
 ## Resumen vigente
+- **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Stock pequeño real: 5 lotes de producto en 2 u.; ingredientes g/ml en 500 g/ml y huevo en 2 u. 14 movimientos explícitos (17–30), sin reemplazar apertura/historial. Inventario admite kg/g y L/ml y muestra grandes cantidades en kg/L, incluidos movimientos. Conversión exacta, typecheck y 17 comprobaciones correctas; formulario 0,5 kg→500 g verificado en fixture aislada.
+
+- **Consumidor V02 verificado en paso 2 local (2026-09-30, Codex para Axel):** M02 guarda disponibilidad, lotes, saldo y motivos en snapshots y conserva la lectura anterior tras un ajuste. Caducidad/límite, cero conocido, ausencia y vigencia desconocida probados. [Entrega M02](rojas.md); no cambia código de inventario ni atribuye nueva implementación a Vera.
 
 - **Coordinación verificada (2026-09-30):** entrega V01/V02 de `rojas` integrada localmente por Codex para Axel. Apertura real en sesión de Edu, cero conocido, caducidad, ajuste idempotente y rechazo de saldo negativo verificados por API en SQLite. Misma clave con otro motivo/hora ahora es conflicto. Pruebas PostgreSQL añadidas para CI; no se declara verificada concurrencia en SQLite. V03 y detalle de promociones siguen pendientes.
 
@@ -23,6 +26,17 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | V04 · Entregar inventario y promoción en UI | PARCIAL: inventario hecho; falta detalle de promoción |
 
 ## Bitácora
+
+### Flujo completo, unidades y claridad · 30-09-2026
+
+- **Fecha/zona/autor/estado:** 2026-09-30, America/Bogota. Codex para la tarea de Axel, bloque de vera; coordinación transversal en [Cueva](cueva.md). LISTO_PARA_INTEGRAR local; consumo programado y outbox verificados en pruebas aisladas, sin atribuir autoría a integrantes.
+- **Tareas/comportamiento:** V01/V04 y presentación común con E04/M03/L02. Solicitud expresa del usuario aplicada por registrar_ajuste en una transacción coherente, actor administrativo existente, efectivo_en_demo 2022-08-24T10:00 y claves demo-stock-pequeno-20260930-{tipo}-{lote_id}. Motivo: Stock pequeño para probar automatización completa; solicitado por Axel a Codex. No se cambia la unidad base de ingredientes ni se inventan movimientos por enviar pedidos. Lotes vencidos continúan excluidos según fecha.
+- **Archivos clave:** [Inventario](../../../frontend/src/app/inventario/page.tsx), [conversiones](../../../frontend/src/utils/unidades.ts).
+- **Contrato/ejemplo:** [corte vigente de pedidos](../../api/contrato-pedidos.md#corte-vigente--envío-automático-y-prueba-real--30-09-2026), [A02/unidades](../../api/contratos.md), [programación](../../automatizacion/programacion.md), [diseño](../../diseno/especificacion-visual.md). Elegir AUTOMATICO por programación; 1503 g se presenta como 1,503 kg, sin cambiar API.
+- **Configuración/migración:** sin migración nueva sobre 0013, sin secretos registrados. Imágenes finales API/worker/Beat/frontend/migraciones reconstruidas correctamente con docker compose build, sin el servidor temporal de QA. Los servicios habituales se detectaron detenidos durante la tarea y se conservarán apagados; solo PostgreSQL fue encendido temporalmente para QA. Bot/chat propio existente conserva configuración cifrada. Preferencia global manual preservada; no se agenda una hora sin elección del usuario.
+- **Pruebas y límites:** 54 passed en PostgreSQL aislado: test_aprobacion_envio_l03.py, test_compras_l02.py, test_programaciones_a02.py y test_planificacion_m02.py. npm run typecheck correcto y 17 comprobaciones exactas de unidades correctas. Los intentos iniciales tuvieron dos expectativas obsoletas (texto de unidad y reloj del motor); se corrigieron y la suite completa pasó. Transporte automático falso, sin acreditar segundo envío real. Navegador comprobó Inicio, menú móvil, selección por nombre/mode y aprobación deshabilitada sin revisión; stock 0,5 kg→500 g en fixture aislada. La fixture SQLite temporal falló con consultas concurrentes y se cambió a PostgreSQL aislado para QA; instalación habitual no tiene ese backend SQLite. QA final: 15 pantallas principales con guía y sin errores de carga, más detalle de ejecución; Panel se verificó después de completar metadatos del modelo falso de la fixture. Entrada 0,5 kg→500 g en PostgreSQL aislado, tabla/fecha histórica comprobadas; se corrigió un catch de consulta abortada que sustituía el objetivo por hoy bajo StrictMode. Imagen final anterior verificó 5 pruebas automáticas adicionales (25 deselected). Typecheck final correcto. Build final correcto; servidor Next del puerto 3001, contenedores/esquema de QA y archivos temporales retirados. SQL final confirma 0 esquemas e03_test, pedido #1 ENVIADO/message_id=2 y 14 ajustes pequeños intactos. Servicios habituales apagados como estaban al terminar la revisión; no se acredita validación visual de todos los formularios ni entrenamiento real.
+- **Dependencias/siguiente paso:** Utilizar la fecha del escenario al revisar disponibilidad. Un plan conserva su snapshot; después de ajustar se necesita otro plan para usar el nuevo saldo. No liberar fecha con pedido enviado. Coordinación con otros registros enlazados desde dependencias.md.
+- **Git:** rama cueva, cambios locales sin commit/push/PR/merge.
 
 ### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
 
@@ -61,4 +75,3 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Límite conocido:** `VIDA_UTIL_EXCEDIDA` aparece al confirmar la carga, no en la vista previa; conviene que Edu lo valide también en `validacion.py`.
 - **Siguiente desarrollador:** Leonardo Vera (V03) y Max Rojas (M02).
 - **Commit/PR:** cambios locales, sin commit.
-

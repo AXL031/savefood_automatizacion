@@ -118,12 +118,15 @@ def registrar_ventas_diarias(
     filas_aceptadas: int,
     motivo: str,
     origen: str = ORIGEN_BAKERY,
+    *, reutilizar_identicas: bool = False,
 ) -> ResultadoImportacion:
     """Persiste ventas ya agregadas por producto y fecha, sin hacer commit.
 
     `diarios` llega agregado: esta función no interpreta archivos. La usa tanto la
     carga del piloto como el asistente de primera carga, para que ambos caminos
-    compartan una sola escritura y las mismas reglas de idempotencia.
+    compartan una sola escritura y las mismas reglas de idempotencia. La primera
+    carga puede reutilizar filas idénticas del piloto e insertar solo las nuevas;
+    nunca corrige ni borra ventas/revisiones previas.
     """
     if not clave_importacion or len(clave_importacion) > 128:
         raise ErrorAPI(422, "CLAVE_INVALIDA", "La clave de importación debe tener entre 1 y 128 caracteres.")
@@ -143,12 +146,15 @@ def registrar_ventas_diarias(
 
     ids = {producto_id for producto_id, _ in diarios}
     fechas = [fecha for _, fecha in diarios]
-    duplicada = sesion.scalar(select(VentaDiaria.id).where(
+    existentes = dict(((producto_id, fecha), unidades) for producto_id, fecha, unidades in sesion.execute(
+        select(VentaDiaria.producto_id, VentaDiaria.fecha_local, VentaDiaria.unidades_vendidas).where(
         VentaDiaria.producto_id.in_(ids),
         VentaDiaria.fecha_local.between(min(fechas), max(fechas)),
-    ).limit(1))
-    if duplicada is not None:
+    ).with_for_update()))
+    if existentes and not reutilizar_identicas:
         raise ErrorAPI(409, "VENTA_DUPLICADA", "Ya existen ventas en el periodo de esta importación.")
+    if reutilizar_identicas and any(diarios.get(par) != unidades for par, unidades in existentes.items()):
+        raise ErrorAPI(409, "HISTORIAL_DIFERENTE", "Las ventas entregadas cambian u omiten días ya cargados en ese periodo; no se modificó nada.")
 
     registro = ImportacionVenta(
         origen=origen, clave_importacion=clave_importacion,
@@ -156,7 +162,8 @@ def registrar_ventas_diarias(
     )
     sesion.add(registro)
     sesion.flush()
-    items = sorted(diarios.items(), key=lambda item: (item[0][1], item[0][0]))
+    items = sorted(((par, unidades) for par, unidades in diarios.items() if par not in existentes),
+                   key=lambda item: (item[0][1], item[0][0]))
     for offset in range(0, len(items), 1000):
         lote = items[offset:offset + 1000]
         valores = [
@@ -171,7 +178,7 @@ def registrar_ventas_diarias(
             for venta_id, unidades in ventas
         ]
         sesion.execute(insert(RevisionVenta), revisiones)
-    return ResultadoImportacion(registro.id, filas_aceptadas, 0, len(diarios))
+    return ResultadoImportacion(registro.id, filas_aceptadas, 0, len(items))
 
 
 def leer_historial(sesion: Session, producto_ids: list[int], inicio: date, fin_exclusivo: date) -> list[VentaHistorica]:
@@ -198,6 +205,33 @@ def limites_historial(sesion: Session, producto_ids: list[int]) -> tuple[date | 
         return None, None
     return sesion.execute(select(func.min(VentaDiaria.fecha_local), func.max(VentaDiaria.fecha_local))
                           .where(VentaDiaria.producto_id.in_(producto_ids))).one()
+
+
+def periodo_ventas(sesion: Session) -> tuple[date | None, date | None]:
+    """Límites de todo el historial conocido, incluyendo productos inactivos."""
+    return sesion.execute(select(func.min(VentaDiaria.fecha_local), func.max(VentaDiaria.fecha_local))).one()
+
+
+def resumen_ventas(sesion: Session, desde: date, hasta: date) -> dict:
+    """Agrega revisiones actuales del período completo; no rellena ausencias."""
+    filtro = (VentaDiaria.fecha_local >= desde, VentaDiaria.fecha_local <= hasta)
+    dias = sesion.execute(select(VentaDiaria.fecha_local,
+        func.sum(VentaDiaria.unidades_vendidas), func.count(VentaDiaria.id))
+        .where(*filtro).group_by(VentaDiaria.fecha_local).order_by(VentaDiaria.fecha_local)).all()
+    productos = sesion.execute(select(Producto.id, Producto.nombre,
+        func.sum(VentaDiaria.unidades_vendidas), func.count(VentaDiaria.id))
+        .join(VentaDiaria, VentaDiaria.producto_id == Producto.id).where(*filtro)
+        .group_by(Producto.id, Producto.nombre)
+        .order_by(func.sum(VentaDiaria.unidades_vendidas).desc(), Producto.id)).all()
+    return {
+        "unidades": sum(int(unidades) for _, unidades, _ in dias),
+        "registros": sum(int(registros) for _, _, registros in dias),
+        "dias_observados": len(dias), "productos_observados": len(productos),
+        "serie_diaria": [{"fecha": fecha.isoformat(), "unidades": int(unidades),
+                          "productos_observados": int(registros)} for fecha, unidades, registros in dias],
+        "por_producto": [{"producto_id": pid, "producto": nombre, "unidades": int(unidades),
+                          "dias_observados": int(registros)} for pid, nombre, unidades, registros in productos],
+    }
 
 
 def corregir_venta(sesion: Session, venta_id: int, unidades: int, motivo: str, usuario_id: int | None = None) -> int:

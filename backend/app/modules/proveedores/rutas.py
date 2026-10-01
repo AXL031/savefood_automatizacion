@@ -2,6 +2,8 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, SecretStr, Field
+from app.integrations.proveedores.telegram import ClienteTelegram, ConfiguracionTelegram, ErrorTelegram, validar_token
 from app.core.base_datos import obtener_sesion
 from app.core.errores import ErrorAPI
 from app.core.identidad import identidad_actual, requiere_administrador
@@ -12,15 +14,77 @@ router = APIRouter(prefix="/proveedores", tags=["proveedores"])
 
 
 def get_servicio(db: Session = Depends(obtener_sesion)) -> ServicioProveedores:
-    # L01 no trae adaptador real; nunca se simula una verificación.
-    return ServicioProveedores(db, telegram=None)
+    return ServicioProveedores(db)
+
+
+class TokenTelegram(BaseModel):
+    token: SecretStr = Field(min_length=1, max_length=256)
+
+
+def _estado_telegram(comprobar=False, token=None):
+    try:
+        configuracion = ConfiguracionTelegram()
+        cliente = ClienteTelegram(token) if token is not None else ClienteTelegram.desde_configuracion()
+        configurado = cliente.huella is not None
+        bot = cliente.comprobar_bot() if comprobar else None
+        return {"configurado": configurado,
+                "origen": "SISTEMA" if token is not None or configuracion.ruta.exists() else "ENTORNO" if configurado else "SIN_CONFIGURAR",
+                "codigo": "BOT_VERIFICADO" if bot else "SIN_COMPROBAR" if configurado else "TOKEN_NO_CONFIGURADO",
+                "detalle": "Bot verificado con Telegram." if bot else "Comprobar el bot para validar su acceso." if configurado else "Guarda el token de tu bot para comenzar.",
+                "bot": bot}
+    except ErrorTelegram as error:
+        return {"configurado": False if error.codigo in ("CONFIGURACION_ILEGIBLE", "TOKEN_NO_CONFIGURADO") else True,
+                "origen": "SISTEMA" if ConfiguracionTelegram().ruta.exists() else "ENTORNO",
+                "codigo": error.codigo, "detalle": str(error), "bot": None}
+
+
+@router.get("/telegram/configuracion")
+def configuracion_telegram(_admin=Depends(requiere_administrador)):
+    return {"datos": _estado_telegram()}
+
+
+@router.post("/telegram/configuracion")
+def guardar_telegram(datos: TokenTelegram, _admin=Depends(requiere_administrador)):
+    try:
+        token = SecretStr(validar_token(datos.token.get_secret_value()))
+        estado = _estado_telegram(comprobar=True, token=token)
+        if estado["bot"] is None:
+            actual = _estado_telegram()
+            actual.update(codigo=estado["codigo"], detalle=estado["detalle"])
+            return {"datos": actual}
+        ConfiguracionTelegram().guardar(token)
+        return {"datos": estado}
+    except ErrorTelegram as error:
+        raise ErrorAPI(422 if error.codigo == "TOKEN_INVALIDO" else 503, error.codigo, str(error)) from None
+
+
+@router.post("/telegram/comprobar")
+def comprobar_telegram(_admin=Depends(requiere_administrador)):
+    return {"datos": _estado_telegram(comprobar=True)}
+
+
+@router.post("/telegram/chats-pruebas")
+def buscar_chats_telegram(_admin=Depends(requiere_administrador)):
+    try:
+        return {"datos": ClienteTelegram.desde_configuracion().buscar_chats_pruebas()}
+    except ErrorTelegram as error:
+        raise ErrorAPI(409 if error.codigo == "BOT_CON_WEBHOOK" else 503, error.codigo, str(error)) from None
+
+
+@router.delete("/telegram/configuracion")
+def deshabilitar_telegram(_admin=Depends(requiere_administrador)):
+    try:
+        ConfiguracionTelegram().guardar(SecretStr(""))
+    except ErrorTelegram as error:
+        raise ErrorAPI(503, error.codigo, str(error)) from None
+    return {"datos": _estado_telegram()}
 
 
 def _guardar(s: ServicioProveedores, operacion, esquema=None):
     try:
         resultado = operacion()
         s.db.commit()
-        datos = esquema.model_validate(resultado) if esquema else resultado
+        datos = s.salida_proveedor(resultado) if esquema is ProveedorSalida else esquema.model_validate(resultado) if esquema else resultado
         return {"datos": datos}
     except (NoEncontrado, Conflicto) as error:
         s.db.rollback()
@@ -39,7 +103,7 @@ def crear(datos: ProveedorCrear, _admin=Depends(requiere_administrador), s=Depen
 
 @router.get("")
 def listar(_usuario=Depends(identidad_actual), s=Depends(get_servicio)):
-    return {"datos": [ProveedorSalida.model_validate(p) for p in s.repo.listar_proveedores()]}
+    return {"datos": [s.salida_proveedor(p) for p in s.repo.listar_proveedores()]}
 
 
 @router.patch("/{proveedor_id}/estado")

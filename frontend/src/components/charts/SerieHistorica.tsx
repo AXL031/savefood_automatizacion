@@ -11,8 +11,8 @@ export function SerieHistorica({ dias, seleccion, alSeleccionar }: {
       className={`serie-dia ${seleccion === dia.fecha_local ? "seleccionado" : ""}`}
       aria-pressed={seleccion === dia.fecha_local} title={`${dia.fecha_local}: previsto ${dia.total_previsto_evaluable}, real ${dia.total_real_conocido}, cobertura ${dia.metricas.cobertura_pct}%`}>
       <span className="serie-barras">
-        {dia.productos_evaluables > 0 && <><span className="serie-barra previsto" style={{ height: `${Math.max(2, 100 * dia.total_previsto_evaluable / maximo)}%` }} />
-        <span className="serie-barra real" style={{ height: `${Math.max(2, 100 * dia.total_real_conocido / maximo)}%` }} /></>}
+        {dia.productos_evaluables > 0 && <><span className="serie-barra previsto" style={{ height: `${100 * dia.total_previsto_evaluable / maximo}%` }} />
+        <span className="serie-barra real" style={{ height: `${100 * dia.total_real_conocido / maximo}%` }} /></>}
       </span>
       <span className="serie-fecha">{dia.fecha_local.slice(5)}</span>
     </button>)}

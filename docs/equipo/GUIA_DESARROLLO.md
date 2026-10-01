@@ -39,3 +39,8 @@ El siguiente responsable consulta registro y contrato para continuar sin inspecc
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](avances/cueva.md) siguiendo [la plantilla](avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+
+## Plan de cierre vigente · 30-09-2026
+
+Consultar [plan-cierre-prototipo.md](plan-cierre-prototipo.md): base disponible 1–7, corte de interfaz solicitado y pasos 7–10 pendientes con criterios de aceptación. Detenerse al concluir el corte UI; recurrencia diaria se planifica como ampliación posterior con fuente de datos actuales.

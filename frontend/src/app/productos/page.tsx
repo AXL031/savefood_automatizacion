@@ -13,13 +13,13 @@ const columnas: Columna<Producto>[] = [
   { clave: "codigo", encabezado: "Código interno", celda: (fila) => <span className="mono-corto">{fila.codigo}</span> },
   {
     clave: "sku",
-    encabezado: "SKU externo",
+    encabezado: "Código del archivo (SKU)",
     celda: (fila) => <span className="mono-corto"><ValorOpcional valor={fila.sku_externo} textoAusente="Sin mapeo" /></span>,
   },
   { clave: "origen", encabezado: "Origen", celda: (fila) => <ValorOpcional valor={fila.origen} /> },
   {
     clave: "demostrar",
-    encabezado: "En la demo",
+    encabezado: "Participa en el plan",
     celda: (fila) => <span className={`badge badge-${fila.demostrar ? "ok" : "neutral"}`}>{fila.demostrar ? "Sí" : "No"}</span>,
   },
   {
@@ -67,7 +67,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         <div>
           <h2>Catálogo local</h2>
           <p>
-            Los productos se registran en la primera carga. El SKU externo es el nombre del artículo del
+            Los productos se registran en la primera carga. El Código del archivo (SKU) es el nombre del artículo del
             dataset y se resuelve al identificador interno; no se crean productos implícitos.
           </p>
         </div>
@@ -100,7 +100,7 @@ export default function PaginaProductos() {
   return (
     <ProtectedShell
       titulo="Productos"
-      descripcion="Catálogo del comercio y correspondencia con los SKU del archivo de ventas."
+      descripcion="Productos registrados y códigos usados para reconocer sus ventas importadas."
     >
       {(contexto) => <Contenido contexto={contexto} />}
     </ProtectedShell>

@@ -23,6 +23,7 @@ class Proveedor(Base):
     chat_id_pruebas: Mapped[str | None] = mapped_column(String(64), nullable=True)
     destino_verificado: Mapped[bool] = mapped_column(Boolean, default=False)
     destino_verificado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    destino_credencial_huella: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     ofertas: Mapped[list["OfertaIngrediente"]] = relationship(back_populates="proveedor")
 
