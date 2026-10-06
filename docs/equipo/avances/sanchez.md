@@ -26,7 +26,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
 
-- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Fecha/zona y autor:** 2026-09-30, America/Lima. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
 - **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
 - **Comportamiento:** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo sigue pendiente.
 - **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).
@@ -75,7 +75,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### E02, E03 y E04 · Asistente de primera carga, estado durable y piezas visuales
 
-- **Fecha/hora y zona:** 2026-09-29 (America/Bogota).
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
 - **Autor y responsable del bloque:** IA de la sesión, trabajando en el bloque asignado a Edu Sanchez a pedido del usuario; no atribuye la implementación a Edu.
 - **Tareas:** E02, E03, E04 y ampliación de E01 con rutas HTTP.
 - **Estado:** LISTO_PARA_INTEGRAR en SQLite; sin verificar en PostgreSQL.
@@ -100,7 +100,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### E01 · Consumo local por Kevin y ampliación de lecturas públicas
 
-- **Fecha/hora y zona:** 2026-09-29 (America/Bogota).
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
 - **Autor y responsable del bloque:** Codex, trabajando en la frontera de Edu Sanchez a pedido del usuario; no atribuye la edición a Edu.
 - **Tareas:** E01 parcial y dependencia de K01–K03.
 - **Estado:** EN_CURSO; servicio consumido localmente por Kevin, sin PostgreSQL verificado.
@@ -116,7 +116,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### E01 · Corte de catálogo y ventas para K02/K03
 
-- **Fecha/hora y zona:** 2026-09-29 (America/Bogota).
+- **Fecha/hora y zona:** 2026-09-29 (America/Lima).
 - **Autor y responsable del bloque:** IA de la sesión, trabajando en el bloque asignado a Edu Sanchez; no atribuye esta implementación a Edu.
 - **Tareas:** E01 parcial.
 - **Estado:** EN_CURSO; servicio listo para prueba de integración, aún sin PostgreSQL verificado.

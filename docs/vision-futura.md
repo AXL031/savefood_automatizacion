@@ -1,14 +1,16 @@
-# Después de la demostración universitaria
+# Visión posterior a la demo
 
-Esta página es **hoja de ruta**, no contrato de la migración `0002` ni compromiso de funciones disponibles. El [prototipo](guia-inicio-desarrollo.md) genera pedidos por proveedor y los envía por Telegram a un chat de pruebas según un modo de aprobación configurable; conserva ventas diarias y stock por lotes en PostgreSQL. [ADR-008](arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) delimita ese envío demostrativo.
+Hoja de ruta, no contrato. Nada de esta página está implementado ni se construye para la entrega universitaria. El alcance vigente está en la [guía de alcance](guia-inicio-desarrollo.md).
 
-| Etapa posterior | Qué se añade | Decisión previa necesaria |
+| Etapa | Qué se añade | Decisión previa necesaria |
 |---|---|---|
-| Operación diaria | Carga o registro continuo de ventas, producción real, descuentos de stock por ventas/consumo y política de devoluciones. | Elegir sistema de origen y cómo evitar aplicar dos veces cada movimiento. |
-| Compras operativas | El prototipo ya crea y envía pedidos de demostración. Después se añade confirmación comercial del proveedor, recepción parcial y conciliación operativa. La recepción física crea movimientos de ingreso, no la sola aprobación. | Datos actuales, evidencia de aceptación y reglas de recepción. |
-| Automatización operativa | El prototipo ya demuestra Beat, ejecución durable y reintentos con un escenario histórico. Después se añade cierre diario real, evaluación periódica intradía e idempotencia de efectos externos. | Hora local de cierre, datos actuales, fallos recuperables y método de reconciliación por canal. |
-| Fuentes externas | Adaptadores para Excel recurrente, POS o Google Sheets. PostgreSQL sigue siendo la fuente operativa del prototipo; una sincronización futura debe definir quién es autoridad para cada dato. | Dirección de sincronización, conflictos, permisos y verificación de escrituras. |
-| Prevención | El prototipo guarda sugerencias de promoción por regla de stock y caducidad. Después se añaden activación real, medición y excedentes intradía. | Datos intradía y modelo/regla propios; el CatBoost diario no predice venta restante del día. |
-| Comercialización | Seguridad, pruebas integradas, despliegue y evaluación prospectiva del modelo. | Datos reales nuevos, criterios de calidad por comercio y operación soportada. |
+| Operación diaria | Registro continuo de ventas y producción real; descuento de stock por venta y consumo; devoluciones. | Sistema de origen y cómo evitar aplicar dos veces un movimiento. |
+| Compras operativas | Confirmación comercial del proveedor, recepción parcial y conciliación. La recepción crea el ingreso de stock, no la aprobación. | Evidencia de aceptación y reglas de recepción. |
+| Automatización operativa | Cierre diario real (p. ej. planificación nocturna fija), control intradía de excedentes, idempotencia de efectos externos por canal. | Hora local de cierre, datos actuales y método de reconciliación. |
+| Prevención | Detección intradía de excedentes con nivel de riesgo, activación y publicación de promociones, medición posterior del efecto. | Datos intradía y modelo propio; el CatBoost diario no predice la venta restante del día. |
+| Avisos | Notificaciones internas e historial de avisos; canales adicionales (correo, WhatsApp). | Canal, consentimiento y política de reintento. |
+| Informes | Impacto económico (pérdida evitada), desperdicio en unidades y kg, métricas de automatización por periodo. | Definición de línea base y de valores medidos vs. estimados. |
+| Fuentes externas | Excel recurrente, POS o Google Sheets. | Quién es autoridad de cada dato y cómo se resuelven conflictos. |
+| Comercialización | Varias sucursales o comercios, SaaS, seguridad reforzada, despliegue y evaluación prospectiva del modelo. | Datos reales nuevos y operación soportada. |
 
-Estas etapas se diseñarán en ADR y migraciones nuevas. `0002` sí incluye programación, ejecuciones, proveedor mínimo y pedido/envío de **demostración** según ADR-008. No convierte el escenario histórico en una compra operativa del día actual.
+Las pantallas de referencia de Excedentes y Promociones activas ([mockups 08 y 09](diseno/mockups/README.md)) pertenecen a esta visión. Cada etapa requiere su propio ADR y migraciones nuevas.

@@ -56,6 +56,7 @@ El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [depende
 | `docs/arquitectura/c4` | Axel Cueva | Compartida; coordinación | [Abrir](../arquitectura/c4/GUIA_DESARROLLO.md) |
 | `docs/arquitectura/decisiones` | Axel Cueva | Compartida; coordinación | [Abrir](../arquitectura/decisiones/GUIA_DESARROLLO.md) |
 | `docs/arquitectura/diagramas` | Axel Cueva | Compartida; coordinación | [Abrir](../arquitectura/diagramas/GUIA_DESARROLLO.md) |
+| `docs/procesos` | Axel Cueva | Compartida; coordinación | [Abrir](../procesos/GUIA_DESARROLLO.md) |
 | `docs/automatizacion` | Axel Cueva | Compartida; coordinación | [Abrir](../automatizacion/GUIA_DESARROLLO.md) |
 | `docs/base_de_datos` | Axel Cueva | Compartida; coordinación | [Abrir](../base_de_datos/GUIA_DESARROLLO.md) |
 | `docs/diseno` | Edu Sanchez | Compartida; coordinación | [Abrir](../diseno/GUIA_DESARROLLO.md) |

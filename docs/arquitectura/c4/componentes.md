@@ -1,47 +1,36 @@
 # C4 · Componentes
 
-Muestra los módulos del servidor y la coordinación de las automatizaciones.
+Módulos del servidor en la demo (`backend/app/modules/`) y quién orquesta las automatizaciones. Los módulos marcados con * aún no tienen código.
 
 ```mermaid
 flowchart LR
     api[API FastAPI]
     autenticacion[Autenticación]
     negocios[Negocios]
+    inicializacion[Inicialización]
     productos[Productos]
-    recetas[Recetas]
     ventas[Ventas]
-    produccion[Producción]
+    ingredientes[Ingredientes]
+    recetas[Recetas]
     inventario[Inventario]
     pronosticos[Pronósticos]
-    planificacion[Planificación]
+    planificacion[Planificación*]
     proveedores[Proveedores]
-    compras[Compras]
-    excedentes[Excedentes]
-    promociones[Promociones]
+    compras[Compras*]
+    promociones[Promociones sugeridas*]
     automatizaciones[Motor de automatización]
-    informes[Informes]
-    notificaciones[Notificaciones]
+    telegram[Adaptador Telegram*]
 
-    api --> autenticacion
-    api --> negocios
-    api --> productos
-    api --> recetas
-    api --> ventas
-    api --> produccion
-    api --> inventario
-    api --> pronosticos
-    api --> planificacion
-    api --> proveedores
-    api --> compras
-    api --> excedentes
-    api --> promociones
-    api --> automatizaciones
-    api --> informes
+    api --> autenticacion & negocios & inicializacion & productos & ventas
+    api --> ingredientes & recetas & inventario & pronosticos & planificacion
+    api --> proveedores & compras & promociones & automatizaciones
 
-    automatizaciones --> pronosticos
-    automatizaciones --> planificacion
-    automatizaciones --> compras
-    automatizaciones --> excedentes
-    automatizaciones --> promociones
-    automatizaciones --> notificaciones
+    inicializacion --> productos & ventas & recetas & inventario
+    recetas --> ingredientes
+    automatizaciones --> pronosticos & planificacion & compras & promociones
+    planificacion --> pronosticos & recetas & inventario
+    compras --> planificacion & proveedores & telegram
+    promociones --> inventario
 ```
+
+Producción, excedentes, desperdicio, notificaciones e informes son [visión futura](../../vision-futura.md).

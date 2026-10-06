@@ -1,6 +1,6 @@
 # ADR-001: Monolito modular
 
-**Estado:** Propuesto en el README principal.
+**Estado:** Aceptado e implementado.
 
 ## Contexto
 

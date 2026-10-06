@@ -1,28 +1,24 @@
 # Cronograma de FoodSave: semanas 1 a 16
 
-El plan usa semanas académicas y evita asignar fechas de calendario no confirmadas. Las semanas 1 a 3 son hitos comunicados por el equipo; la semana 5 es la semana actual y contempla presentar el avance del repositorio. El contenido de la semana 4 debe validarse con el equipo. Las semanas 6 a 16 son objetivos propuestos para seis responsables que trabajan **en paralelo por módulos completos**: interfaz, servidor, API, pruebas e integración.
+Semanas académicas, sin fechas de calendario. Estado según la evidencia de los [registros de avance](avances/README.md) al **06-10-2026**. Una semana solo se marca «Realizado» con demostración, pruebas o cambios en el repositorio. El alcance es el de la [guía de alcance](../guia-inicio-desarrollo.md).
 
-**Nota de vigencia (26-09-2026):** esta tabla conserva el plan original y sus hitos propuestos; no describe el estado actual del código ni el alcance de la entrega universitaria ya acotada. Para ejecutar el prototipo, usar las [puertas de integración](../base-para-desarrollo.md) y el [criterio de demo](../guia-inicio-desarrollo.md). Proveedor mínimo, pedido desde el plan y Telegram real a chat de pruebas **sí entran** por [ADR-008](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md). Activación de descuentos, recepción física y operación diaria siguen después.
-
-| Semana | Objetivo | Entregable o criterio de aceptación | Estado |
+| Semana | Objetivo | Entregable / criterio | Estado |
 |---|---|---|---|
-| 1 | Presentar la idea del proyecto | Problema, público objetivo y propuesta FoodSave explicados | Realizado según el equipo |
-| 2 | Presentar el flujo del sistema | Secuencia desde datos y predicción hasta prevención y control | Realizado según el equipo |
-| 3 | Presentar la propuesta de interfaz | Pantallas principales y sistema visual expuestos | Realizado según el equipo |
-| 4 | Consolidar alcance, arquitectura y responsabilidades | Acuerdos técnicos y distribución de todos los módulos; confirmar qué se entregó realmente esa semana | Por confirmar |
-| 5 | Presentar el avance del repositorio | Estructura de carpetas, README principal, especificaciones, cronograma y distribución de responsabilidades | Semana actual; presentación prevista |
-| 6 | Crear la base ejecutable común | Interfaz y API arrancan localmente; PostgreSQL conectado; migración inicial; autenticación y negocio mínimos; contratos entre responsables acordados | Propuesto |
-| 7 | Implementar el primer corte de cada dominio | Productos, ingredientes, recetas, ventas, inventario y proveedores tienen datos y API básicos; pronóstico, plan, pedido, riesgo, panel y ejecución cuentan con un primer recorrido conectado | Propuesto |
-| **8** | **Presentar la versión preliminar integrada** | **Se puede recorrer con un negocio de demostración: registrar o cargar datos, generar demanda y plan, detectar faltantes, crear un pedido, visualizar riesgo y una acción preventiva, y ver el resultado en el panel. La interfaz usa rutas reales y persistencia; las integraciones externas aún pueden usar adaptadores de prueba claramente identificados.** | **Hito propuesto** |
-| 9 | Completar la operación diaria | Validaciones e importación de ventas, registro de producción, movimientos de inventario, catálogo y recetas; pruebas de consistencia de existencias | Propuesto |
-| 10 | Completar planificación y abastecimiento | Pronóstico evaluable, plan revisable y aprobable, cálculo de faltantes, selección de proveedor, envío de pedido y estados de confirmación | Propuesto |
-| 11 | Completar prevención de desperdicio | Detección y clasificación de excedentes, promociones dentro de límites, medición posterior y registro de desperdicio real | Propuesto |
-| 12 | Completar automatización y recuperación | Programación, disparadores, trazabilidad, verificación, reintentos, manejo de duplicados y notificaciones ante fallos | Propuesto |
-| 13 | Consolidar panel, informes y configuración | Indicadores con periodos y origen, métricas de impacto, filtros necesarios, límites y preferencias editables, permisos por negocio | Propuesto |
-| 14 | Integrar y probar el ciclo completo | Pruebas de extremo a extremo para planificación, compra, excedente y fallo; conexiones disponibles verificadas; registros y observabilidad funcional | Propuesto |
-| 15 | Estabilizar la entrega | Corrección de defectos, pruebas de regresión y seguridad, revisión de accesibilidad, documentación de instalación y preparación de demostración | Propuesto |
-| **16** | **Entregar el sistema completo** | **Todos los módulos asignados funcionan integrados, con interfaz, API, persistencia, permisos, automatizaciones, pruebas y documentación; se demuestra el flujo normal y al menos un fallo recuperado, y se entrega una versión instalable.** | **Hito final propuesto** |
+| 1 | Presentar la idea | Problema, público y propuesta | Realizado |
+| 2 | Presentar el flujo | Recorrido datos → predicción → plan → compra → prevención | Realizado |
+| 3 | Presentar la interfaz | Sistema visual y mockups | Realizado |
+| 4 | Consolidar alcance y reparto | Acuerdos técnicos y responsables | Por confirmar con el equipo |
+| 5 | Presentar el repositorio | Estructura, README, especificaciones, cronograma y reparto | Realizado |
+| 6 | Base ejecutable común | Compose, API, web, migraciones, acceso, configuración, motor (A01–A04) | Realizado (listo para integrar) |
+| 7 | Primer corte por dominio | Productos, ventas, primera carga, ingredientes, recetas, lotes, proveedores con API; modelo entrenado y evaluado | En curso: todo hecho salvo pantalla de proveedores |
+| **8** | **Versión preliminar integrada** | Carga → modelo → Beat genera pronóstico, plan y faltantes → pedido por proveedor; panel histórico con datos reales | **Pendiente:** plan (M02–M03) y pedidos (L02) |
+| 9 | Plan y pedidos completos | Pantalla del plan con trazas (M04); aprobación y envío Telegram a chat de pruebas (L03) | Propuesto |
+| 10 | Promoción sugerida | Ajuste de stock → `EVALUAR_PROMOCION` → sugerencia o rechazo visible (V03–V04) | Propuesto |
+| 11 | Fallos y recuperación | Envío incierto, conciliación, reintentos visibles, reentregas sin duplicar (L04, A03) | Propuesto |
+| 12 | Alinear interfaz | Tokens, navegación e íconos según la especificación visual; estados vacío/error en todas las pantallas | Propuesto |
+| 13 | Pruebas de extremo a extremo | Recorrido completo de la guía en PostgreSQL/Redis; CI verde | Propuesto |
+| 14 | Estabilizar | Corrección de defectos, accesibilidad, instalación en otra PC | Propuesto |
+| 15 | Ensayo de demo | Guion, datos de demostración y caso de fallo recuperado | Propuesto |
+| **16** | **Entrega final** | Criterio de demo completa de la guía de alcance, documentación al día y versión instalable | **Hito final** |
 
-## Seguimiento
-
-La versión preliminar de la semana 8 no equivale al sistema final: demuestra el recorrido principal con datos persistidos y deja visibles las integraciones externas simuladas. Las semanas 9 a 15 completan reglas, excepciones, mediciones, seguridad y calidad sin detener el trabajo paralelo. El equipo debe registrar evidencia de cada entrega —demostración, pruebas y cambios en el repositorio— antes de marcarla como realizada. Si una integración externa exige credenciales o acceso de un tercero, se debe documentar su estado y conservar un adaptador verificable para la demostración; no se presentará como conexión real algo que esté simulado.
+Una integración externa sin credenciales se demuestra con su adaptador y se declara como simulada.

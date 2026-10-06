@@ -15,7 +15,7 @@
 
 ## Punto de partida
 
-Archivos técnicos observados al preparar esta guía: `01-guia-de-estilos.png`, `03-panel-principal.png`, `04-planificacion-de-produccion.png`, `06-compras.png`, `08-excedentes.png`, `09-promociones.png`, `10-automatizaciones.png`, `11-ejecucion-y-control.png`, `12-configuracion.png`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Edu Sanchez](../../equipo/avances/sanchez.md) para el último estado.
+El [README](README.md) indica la vigencia de cada imagen y las pantallas sin mockup. Consultar el resumen vigente de [Edu Sanchez](../../equipo/avances/sanchez.md) para el último estado.
 
 ## Trabajo en esta carpeta
 

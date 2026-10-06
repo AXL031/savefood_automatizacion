@@ -1,9 +1,13 @@
 # API
 
-> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**. Tareas, dependencias y avances se detallan en la guía local.
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**.
 
-El [contrato de pedidos](contrato-pedidos.md) define el flujo añadido al prototipo: faltantes del plan, proveedor, aprobación configurable y envío real por Telegram a un chat de pruebas. Las [rutas](rutas-api.md) distinguen las existentes de las propuestas.
+| Documento | Contenido |
+|---|---|
+| [rutas-api.md](rutas-api.md) | Rutas existentes y propuestas, con autorización |
+| [contratos.md](contratos.md) | Convenciones HTTP y contratos entre módulos (A01–A03, E, K, M01, V01/V02, L01) |
+| [contrato-importaciones.md](contrato-importaciones.md) | Primera carga: plantillas, validación y errores |
+| [contrato-pedidos.md](contrato-pedidos.md) | Pedidos desde el plan, aprobación y Telegram |
+| [errores.md](errores.md) | Catálogo de códigos de error por módulo |
 
-Contratos entre módulos, [primera inicialización](contrato-importaciones.md) y [rutas existentes/propuestas](rutas-api.md) del [prototipo universitario](../guia-inicio-desarrollo.md).
-
-Aquí se conserva y actualiza la documentación de esta área.
+La documentación interactiva se genera en `http://localhost:8000/docs`.

@@ -27,7 +27,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
 
-- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Fecha/zona y autor:** 2026-09-30, America/Lima. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
 - **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
 - **Comportamiento:** `rojas` y `aguirre` reunidas en `cueva`, conflictos resueltos y cadena 0004→0005→0006→0007 preparada. Primera carga consume recetas y stock reales. Proveedores usa Base/sesión comunes, permisos, sobre de errores y transacción del llamador. Pruebas locales: 112 correctas, 10 omitidas y 6 subpruebas correctas; frontend typecheck/build correctos. PostgreSQL/Redis pendientes de CI porque Docker Desktop no arrancó. Publicación en main pendiente de revisión de esta entrega.
 - **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).
@@ -40,7 +40,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### A04 · Auditoría de ramas pendientes de integrar
 
-- **Fecha y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación A04; autoría de los módulos permanece con sus responsables.
+- **Fecha y autor:** 2026-09-30, America/Lima. Codex a solicitud de Axel Cueva, coordinación A04; autoría de los módulos permanece con sus responsables.
 - **Estado:** revisión de Git completada; integración funcional pendiente de los responsables.
 - **Resultado:** contra `origin/main` (`b3041ea`), commits exclusivos / commits de main ausentes: aguirre 1/41, rojas 2/48, bohorquez 0/10, cueva 0/1, sanchez 0/5, vera 0/48. `main` local está 9 commits detrás; `cueva` local coincide con su remoto. El árbol de trabajo estaba limpio antes del registro.
 - **Archivos y dependencias:** [Aguirre](aguirre.md), [Rojas](rojas.md), [Vera](vera.md), [flujo Git](../flujo-git.md). Cambios de Rojas incluyen ingredientes, recetas, inventario, primera carga y UI compartida; requerir revisión de Edu y coordinación con Vera.
@@ -73,7 +73,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Dependencias y siguiente paso:** otro integrante prueba el iniciador en su PC; Edu continúa E02/E03 completo.
 - **Commit/PR:** incluido en el commit local de `cueva`; push pendiente por Axel.
 
-### 2026-09-29 19:24 America/Bogota — coordinación A04 de la integración Edu–Kevin
+### 2026-09-29 19:24 America/Lima — coordinación A04 de la integración Edu–Kevin
 
 - **Autor y responsable del bloque:** Codex por solicitud de Axel Cueva; coordinación A04, sin atribuir implementación de E01 o K01–K04 a Axel.
 - **Tareas y estado:** A04, LISTO_PARA_INTEGRAR en Git; la ejecución del nuevo flujo en PostgreSQL sigue pendiente.
