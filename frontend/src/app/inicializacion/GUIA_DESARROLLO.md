@@ -19,6 +19,10 @@
 
 `page.tsx` implementa el asistente de primera carga de Sánchez: dos XLSX o cinco CSV, vista previa y confirmación. `piloto/page.tsx` conserva la carga rápida del CSV bakery para la base local existente y reserva la preparación del modelo. Son flujos distintos. La carga completa sigue parcialmente pendiente de los servicios de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
+## Integración E03/K01
+
+El asistente completo reserva preparación al confirmar y consulta progreso cada tres segundos mientras la ejecución está activa. Muestra enlace a intentos y panel; permite reintentar fallo sin adjuntar archivos. Una carga aceptada deja de mostrar el formulario de importación.
+
 ## Trabajo en esta carpeta
 
 1. Construir pasos de archivos, fechas, vista previa, errores y confirmación.

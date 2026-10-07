@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.base import Base
 from app.core.errores import ErrorAPI
 from app.modules.autenticacion.modelos import Usuario  # noqa: F401, registra FK
+from app.modules.automatizaciones.modelos import EjecucionAutomatizacion  # noqa: F401, FK E03
 from app.modules.inicializacion.modelos import (
     ESTADO_DATOS_CARGADOS,
     ESTADO_ENTRENANDO,

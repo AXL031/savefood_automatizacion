@@ -13,14 +13,15 @@ from app.core.base import Base
 from app.principal import app  # noqa: F401; carga los modelos de todas las rutas
 
 NUEVAS = {"ingrediente", "receta", "receta_ingrediente", "lote_producto",
-          "lote_ingrediente", "movimiento_inventario", "proveedor", "oferta_ingrediente"}
+          "lote_ingrediente", "movimiento_inventario", "proveedor", "oferta_ingrediente",
+          "plan_produccion", "elemento_plan", "necesidad_ingrediente"}
 
 
 def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0007_l01_proveedores"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0009_m02_planes"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")
@@ -30,9 +31,11 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
 
     # La base previa se construye desde los modelos ya existentes: no modifica
     # datos ni revisiones aplicadas. Se ejecutan las tres nuevas migraciones.
-    Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name not in NUEVAS])
+    Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables
+                                          if t.name not in NUEVAS | {"configuracion_inicial"}])
     modulos = []
-    for nombre in ("0005_m01_ingredientes_recetas", "0006_v01_inventario", "0007_l01_proveedores"):
+    for nombre in ("0004_e03_inicializacion", "0005_m01_ingredientes_recetas",
+                   "0006_v01_inventario", "0007_l01_proveedores", "0008_e03_modelo", "0009_m02_planes"):
         spec = importlib.util.spec_from_file_location(nombre, backend / "migrations" / "versions" / f"{nombre}.py")
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
@@ -40,14 +43,15 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
     with motor.begin() as conexion:
         contexto = MigrationContext.configure(conexion)
         with Operations.context(contexto):
-            for modulo in modulos:
+            modulos[0].upgrade()
+            for modulo in modulos[1:]:
                 modulo.upgrade()
             assert NUEVAS <= set(inspect(conexion).get_table_names())
             assert compare_metadata(contexto, Base.metadata) == []
-            for modulo in reversed(modulos):
+            for modulo in reversed(modulos[1:]):
                 modulo.downgrade()
             assert not NUEVAS.intersection(inspect(conexion).get_table_names())
-            for modulo in modulos:
+            for modulo in modulos[1:]:
                 modulo.upgrade()
             assert compare_metadata(contexto, Base.metadata) == []
     motor.dispose()

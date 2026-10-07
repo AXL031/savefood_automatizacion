@@ -1,0 +1,6 @@
+tipo,codigo,cantidad,codigo_lote,fecha_caducidad,fecha_limite_venta
+producto,baguette,4,PT-001,2022-09-25,2022-09-24
+producto,croissant,0,,,
+producto,banette,2,PT-002,2022-09-26,2022-09-25
+ingrediente,harina,12000.500,ING-001,2022-12-31,
+ingrediente,levadura,0,,,

@@ -50,3 +50,7 @@ Crear archivos al necesitarlos: `esquemas.py` para entrada/salida y validación,
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/rojas.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+M02–M04 implementados: `generar_plan`, `obtener_plan`, `obtener_necesidades`, rutas `/planes` y handler `GENERAR_PROPUESTA`. Snapshots de recetas, pronósticos y lotes; omisiones explícitas y necesidades con null si falta stock. Una clave recupera el mismo resultado; otra conserva un recálculo. No hace commit ni modifica inventario. Migración `0009_m02_planes`. Compras siguen pendientes.

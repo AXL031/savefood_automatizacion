@@ -19,6 +19,14 @@ EstadoFinal = Literal["COMPLETADA", "REINTENTANDO", "FALLIDA"]
 TIPOS_EJECUCION = frozenset(TipoEjecucion.__args__)
 
 
+def obtener_ejecucion(sesion: Session, ejecucion_id: int) -> EjecucionAutomatizacion:
+    """Consulta pública para consumidores que enlazan una ejecución durable."""
+    ejecucion = sesion.get(EjecucionAutomatizacion, ejecucion_id)
+    if ejecucion is None:
+        raise ErrorAPI(404, "EJECUCION_NO_ENCONTRADA", "Ejecución no encontrada")
+    return ejecucion
+
+
 def _json_normalizado(datos: dict) -> dict:
     try:
         return json.loads(json.dumps(datos, sort_keys=True, ensure_ascii=False, allow_nan=False))

@@ -92,7 +92,7 @@ function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaH
   );
 
   return <>
-    <EstadoPanel tono="info" titulo="Motor automático disponible; cálculos pendientes de integración" descripcion="Las programaciones se despachan con los servicios de automatización encendidos. Los cálculos de pronóstico y plan aún requieren conectar sus módulos; mientras tanto, una ejecución informa el servicio faltante." />
+    <EstadoPanel tono="info" titulo="Pronóstico y plan automáticos" descripcion="Al llegar la hora real, la propuesta calcula el pronóstico, guarda el plan y los faltantes, y solicita su evaluación histórica. Pedidos y envío siguen pendientes." accion={<Link href="/planificacion">Ver planes</Link>} />
     {errorCarga && <div className="inline-error" role="alert">No se pudo actualizar: {errorCarga}</div>}
     {error && <div className="inline-error" role="alert">{error}</div>}
     {mensaje && <div className="inline-success" role="status">{mensaje}</div>}
@@ -102,7 +102,7 @@ function Contenido({ token, zonaHoraria, administrador }: { token: string; zonaH
         <form className="form-grid" onSubmit={guardar}>
           <label className="field">Hora real próxima (zona de este equipo)<input type="datetime-local" value={horaReal} onChange={(e) => setHoraReal(e.target.value)} disabled={!administrador || guardando} required /></label>
           <label className="field">Hora local del escenario<input type="datetime-local" value={horaSimulada} onChange={(e) => setHoraSimulada(e.target.value)} disabled={!administrador || guardando} required /></label>
-          <label className="field field-full">IDs de productos<input value={productos} onChange={(e) => setProductos(e.target.value)} placeholder="1, 2, 3" disabled={!administrador || guardando} required /><small>Usa IDs del catálogo cuando Edu lo entregue. La programación todavía no comprueba la existencia del producto.</small></label>
+          <label className="field field-full">IDs de productos<input value={productos} onChange={(e) => setProductos(e.target.value)} placeholder="1, 2, 3" disabled={!administrador || guardando} required /><small>Consulta los IDs en Productos. Selecciona productos con receta, stock registrado e historia cubierta por el modelo; usa una fecha de su tramo de prueba.</small></label>
           <label className="field field-full">Clave de la solicitud<input value={clave} onChange={(e) => setClave(e.target.value)} maxLength={128} disabled={!administrador || guardando} required /><small>Repetir esta clave con los mismos datos recupera la programación. Cambiar sus datos produce un conflicto.</small></label>
           <div className="form-actions field-full"><button className="button-primary" type="submit" disabled={!administrador || guardando}>{guardando ? "Guardando…" : "Guardar programación"}</button></div>
         </form>

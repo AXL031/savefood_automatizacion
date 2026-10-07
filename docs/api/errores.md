@@ -54,6 +54,7 @@ Generado desde `backend/app` el 06-10-2026. Sobre de error y significado de cada
 |---|---|
 | 409 | `TRANSICION_INVALIDA` |
 | 409 | `YA_INICIALIZADA` |
+| 409 | `INICIALIZACION_NO_PREPARADA` (reintento de modelo sin primera carga completa) |
 | 413 | `ARCHIVO_DEMASIADO_GRANDE` |
 | 422 | `ARCHIVO_ILEGIBLE` |
 | 422 | `ARCHIVO_INVALIDO` |
@@ -151,3 +152,16 @@ Generado desde `backend/app` el 06-10-2026. Sobre de error y significado de cada
 | 422 | `CHAT_INVALIDO` |
 
 `CODIGO_DUPLICADO` es 409 cuando el código ya existe en la base y 422 cuando se repite dentro del mismo archivo de carga.
+
+## Planificación M02–M04
+
+| HTTP | Código |
+|---|---|
+| 404 | `PLAN_NO_ENCONTRADO` |
+| 404 | `CORRIDA_NO_ENCONTRADA` |
+| 409 | `CORRIDA_SIN_PRONOSTICOS` |
+| 409 | `CLAVE_REUTILIZADA` |
+| 422 | `CANTIDAD_PLAN_FUERA_RANGO` |
+| 422 | `CLAVE_INVALIDA` |
+
+Ausencias de pronóstico/receta/stock aparecen como omisiones/avisos del plan; nunca como ceros inventados.

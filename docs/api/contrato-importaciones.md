@@ -1,10 +1,20 @@
 # Contrato de primera inicialización
 
-**Estado:** el asistente completo de primera inicialización sigue en diseño. Existe una carga web parcial del CSV piloto bakery que guarda catálogo y ventas en PostgreSQL y reserva el entrenamiento; no incluye XLSX, recetas, lotes ni estado `configuracion_inicial`. Para la carga completa, los archivos se solicitan **solo la primera vez** y PostgreSQL queda como fuente de ventas y stock.
+**Estado:** asistente completo implementado con recetas y apertura reales. La integración E03/K01 reserva entrenamiento durable al confirmar la carga completa. Los archivos se solicitan **solo la primera vez** y PostgreSQL queda como fuente de ventas y stock. El CSV piloto conserva su flujo independiente.
+
+## Preparación automática E03/K01
+
+`POST /inicializacion/confirmar` conserva HTTP 201 y añade `datos.ejecucion_id` nullable. Una carga completa reserva `PREPARAR_MODELO` en la misma transacción que catálogo, ventas, recetas, apertura y estado; una carga parcial no reserva entrenamiento. La revisión `0008_e03_modelo` añade `configuracion_inicial.preparacion_ejecucion_id`, FK nullable a ejecución con `ON DELETE RESTRICT`. Las revisiones anteriores se conservan.
+
+`GET /inicializacion/estado` añade `preparacion_modelo`, null o `{ejecucion_id, estado, version_modelo, modelo_id, mensaje_error}`. Tras la carga queda `DATOS_CARGADOS` con ejecución `PENDIENTE`. El motor guarda `ENTRENANDO` al iniciar un intento, antes del cálculo largo. Éxito confirma artefacto, reserva de `EVALUAR_MODELO`, resultado y `MODELO_LISTO` juntos. El backtest tiene su ejecución independiente: modelo listo no significa evaluación terminada. Fallo o interrupción recuperada devuelve la instalación a `DATOS_CARGADOS` con mensaje, sin borrar ni cargar otra vez ventas o lotes.
+
+`POST /inicializacion/reintentar-modelo` (Administrador) recibe `{ "clave_idempotencia": "reintento-1" }`, 1–64 caracteres `[A-Za-z0-9._:-]`, y responde 202 con el resumen de preparación. Sin carga completa devuelve `409 INICIALIZACION_NO_PREPARADA`. Una ejecución pendiente/activa/en reintento o un modelo listo se recupera sin reservar otra tarea. Tras un fallo definitivo, una clave nueva crea una ejecución y versión nuevas; repetir esa clave recupera su resultado. La instalación se bloquea al confirmar/reservar para serializar solicitudes concurrentes. Los callbacks comprueban ID de ejecución y huella de inicialización antes de cambiar estado; el piloto no cambia esta fila.
+
+El asistente consulta el progreso periódicamente, enlaza la ejecución y ofrece reintento sin archivos cuando la preparación falla. Las cinco muestras CSV de `backend/tests/fixtures/primera_carga/` son sintéticas y cubren enero–septiembre de 2022; no acreditan calidad comercial del modelo.
 
 ## Acceso rápido del piloto implementado
 
-`POST /api/v1/inicializacion/piloto-bakery` requiere Bearer de Administrador y `multipart/form-data` con el campo `archivo` (`.csv`, máximo 25 MB). Acepta las columnas originales `date,article,Quantity`; toma el catálogo de `lista_productos_precios_limpia.md` incluido en la aplicación. Tras validar, carga productos y ventas agregadas en una sola sesión, calcula la huella SHA-256 del archivo y reserva `PREPARAR_MODELO` en el mismo commit. Responde `202` con `datos = {importacion_id, repetida, productos, filas_aceptadas, filas_negativas_excluidas, ventas_diarias_creadas, version_modelo, ejecucion_id, estado_ejecucion}`. Repetir el mismo archivo recupera la importación y la ejecución sin duplicarlas; un error revierte todo. La UI `/inicializacion` muestra la carga, el estado de ejecución y un reintento de preparación si falla, sin volver a subir el CSV.
+`POST /api/v1/inicializacion/piloto-bakery` requiere Bearer de Administrador y `multipart/form-data` con el campo `archivo` (`.csv`, máximo 25 MB). Acepta las columnas originales `date,article,Quantity`; toma el catálogo de `lista_productos_precios_limpia.md` incluido en la aplicación. Tras validar, carga productos y ventas agregadas en una sola sesión, calcula la huella SHA-256 del archivo y reserva `PREPARAR_MODELO` en el mismo commit. Responde `202` con `datos = {importacion_id, repetida, productos, filas_aceptadas, filas_negativas_excluidas, ventas_diarias_creadas, version_modelo, ejecucion_id, estado_ejecucion}`. Repetir el mismo archivo recupera la importación y la ejecución sin duplicarlas; un error revierte todo. La UI `/inicializacion/piloto` muestra la carga, el estado de ejecución y un reintento de preparación si falla, sin volver a subir el CSV.
 
 El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo temporal que se borra al terminar la solicitud. Este acceso es solo para el dataset bakery y no establece el estado de primera inicialización completa.
 
@@ -16,7 +26,7 @@ El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo 
 - Equivalente CSV UTF-8: `ventas.csv`, `productos.csv`, `ingredientes.csv`, `recetas.csv`, `stock_inicial.csv`. Un CSV no puede contener varias hojas. Encabezados exactos y fechas `YYYY-MM-DD`.
 - El sistema muestra vista previa, cantidad de filas, productos mapeados, fechas cubiertas, errores por archivo/hoja/fila y huellas. Solo una aceptación explícita inicia la carga. Si falla una validación, no se marca inicializado ni se entrena.
 - El asistente pide `fecha_objetivo_demo` y `fecha_referencia_stock` local. Para el caso del dataset se propone `2022-08-24` y stock simulado al cierre de `2022-08-23`. Se rechaza una referencia de stock igual o posterior al objetivo. Son supuestos visibles, no una fotografía histórica real del comercio.
-- `clave_importacion` estable y SHA-256 canónico evitan duplicar la carga al reintentar. Los dos archivos se conservan como referencia de auditoría; ninguna ruta absoluta de la computadora del usuario entra en las tablas de negocio. `configuracion_inicial` pasa por `PENDIENTE → DATOS_CARGADOS → MODELO_LISTO`.
+- `clave_importacion` estable y SHA-256 canónico evitan duplicar la carga al reintentar. Los dos archivos se conservan como referencia de auditoría; ninguna ruta absoluta de la computadora del usuario entra en las tablas de negocio. `configuracion_inicial` pasa por `PENDIENTE → DATOS_CARGADOS → ENTRENANDO → MODELO_LISTO`.
 
 ## Ventas históricas
 
@@ -59,4 +69,4 @@ Tras aceptar datos, la preparación separa entrenamiento, validación y prueba p
 
 ## Integración de puertos M01/V01 (30-09-2026)
 
-La ruta de confirmación usa `ServicioRecetasM01` y `ServicioInventarioV01` con la sesión compartida. Una carga completa devuelve DATOS_CARGADOS y pendiente_de vacío. Cero de stock crea lote sin movimiento; caducidad de pastelería mayor que referencia+4 días provoca 422 VIDA_UTIL_EXCEDIDA en confirmación y revierte toda la transacción. La comprobación de esa regla en vista previa sigue pendiente. El entrenamiento automático desde el asistente completo no se declara conectado.
+La ruta de confirmación usa `ServicioRecetasM01` y `ServicioInventarioV01` con la sesión compartida. Una carga completa devuelve DATOS_CARGADOS y pendiente_de vacío. Cero de stock crea lote sin movimiento; caducidad de pastelería mayor que referencia+4 días provoca 422 VIDA_UTIL_EXCEDIDA en confirmación y revierte toda la transacción. La comprobación de esa regla en vista previa sigue pendiente. El disparador automático se conecta en la entrega E03/K01 descrita al inicio de este contrato.

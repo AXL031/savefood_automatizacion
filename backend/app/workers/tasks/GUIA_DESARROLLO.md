@@ -20,6 +20,10 @@
 
 Axel mantiene infraestructura; cada dueño implementa la función de su dominio y sus pruebas.
 
+## Integración E03/K01
+
+`AL_INICIAR` y `AL_FALLAR` registran callbacks transaccionales por tipo. PREPARAR_MODELO conecta el estado de E03 solo si la entrada pertenece a esa carga; el éxito lo confirma el handler de Kevin junto al artefacto.
+
 ## Trabajo en esta carpeta
 
 1. Crear envoltorios finos de PREPARAR_MODELO, EVALUAR_MODELO, GENERAR_PROPUESTA y EVALUAR_PROMOCION.
@@ -38,3 +42,7 @@ Reentrega usa el resultado persistido y no repite el efecto de dominio.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+`GENERAR_PROPUESTA` registrado con el adaptador de Planificación: inferencia K02, plan/insumos M02–M03 y reserva K03; una transacción, sin compras o envíos. Se verifica con Beat/worker reales en esquema y cola aislados.

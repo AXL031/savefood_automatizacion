@@ -8,7 +8,7 @@ volver a cargar ventas ni stock.
 
 from datetime import date, datetime
 
-from sqlalchemy import CheckConstraint, Date, DateTime, Integer, String, Text, func
+from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base import Base
@@ -53,6 +53,10 @@ class ConfiguracionInicial(Base):
     huella_ventas: Mapped[str | None] = mapped_column(String(64))
     huella_catalogo: Mapped[str | None] = mapped_column(String(64))
     huella_solicitud: Mapped[str | None] = mapped_column(String(64))
+    preparacion_ejecucion_id: Mapped[int | None] = mapped_column(
+        ForeignKey("ejecucion_automatizacion.id", ondelete="RESTRICT",
+                   name="fk_inicializacion_preparacion"), nullable=True
+    )
 
     # Fechas del escenario simulado, en hora local del comercio.
     fecha_objetivo_demo: Mapped[date | None] = mapped_column(Date)

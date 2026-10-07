@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { PasosAsistente } from "@/components/ui/PasosAsistente";
@@ -10,7 +11,7 @@ import { CampoFecha } from "@/components/forms/CampoFecha";
 import { CampoTexto } from "@/components/forms/CampoTexto";
 import { BotonEnviar } from "@/components/forms/BotonEnviar";
 import { ResumenErrores } from "@/components/forms/ResumenErrores";
-import { confirmarCarga, obtenerEstadoInicial, pedirVistaPrevia } from "@/services/inicializacion";
+import { confirmarCarga, obtenerEstadoInicial, pedirVistaPrevia, reintentarModeloInicial } from "@/services/inicializacion";
 import type { ConfiguracionInicial, InformeCarga, VistaPrevia } from "@/types/inicializacion";
 import { formatearFechaHora } from "@/utils/fechas";
 
@@ -75,6 +76,13 @@ function TarjetaEstado({ estado }: { estado: ConfiguracionInicial }) {
           </strong>
         </div>
       </div>
+      {estado.preparacion_modelo ? (
+        <div className="section-space" aria-live="polite">
+          <p>Preparación del modelo: {estado.preparacion_modelo.estado === "PENDIENTE" ? "Esperando el inicio automático" : estado.preparacion_modelo.estado === "EN_EJECUCION" ? "Entrenando" : estado.preparacion_modelo.estado === "REINTENTANDO" ? "Reintento automático pendiente" : estado.preparacion_modelo.estado === "COMPLETADA" ? "Modelo listo; la evaluación histórica se ejecuta por separado" : "No se pudo preparar el modelo"}.</p>
+          <Link href={`/automatizaciones/ejecuciones/${estado.preparacion_modelo.ejecucion_id}`}>Ver ejecución y sus intentos</Link>
+          {estado.estado === "MODELO_LISTO" ? <p><Link href="/panel">Abrir el panel histórico</Link></p> : null}
+        </div>
+      ) : null}
       {estado.mensaje_error ? (
         <EstadoPanel tono="alerta" titulo="Queda trabajo pendiente" descripcion={estado.mensaje_error} />
       ) : null}
@@ -143,7 +151,7 @@ function InformeFinal({ informe }: { informe: InformeCarga }) {
         descripcion={
           informe.pendiente_de.length
             ? "Se guardaron catálogo y ventas. La instalación no queda inicializada hasta que lleguen los servicios que faltan."
-            : "Catálogo, ventas, recetas y stock de apertura quedaron persistidos. El modelo ya puede prepararse."
+            : "Catálogo, ventas, recetas y stock de apertura quedaron persistidos. La preparación del modelo se iniciará automáticamente."
         }
       />
       <div className="stats-grid">
@@ -176,18 +184,43 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [informe, setInforme] = useState<InformeCarga | null>(null);
   const [validando, setValidando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [reintentando, setReintentando] = useState(false);
+  const claveReintento = useRef<string | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const control = new AbortController();
-    obtenerEstadoInicial(token, control.signal)
-      .then(setEstado)
-      .catch((fallo: unknown) => {
+    let temporizador: ReturnType<typeof setTimeout> | undefined;
+    async function consultar() {
+      try {
+        const actual = await obtenerEstadoInicial(token, control.signal);
+        if (control.signal.aborted) return;
+        setEstado(actual);
+        if (actual.preparacion_modelo && ["PENDIENTE", "EN_EJECUCION", "REINTENTANDO"].includes(actual.preparacion_modelo.estado)) {
+          temporizador = setTimeout(consultar, 3000);
+        }
+      } catch (fallo: unknown) {
         if (control.signal.aborted) return;
         setError(fallo instanceof Error ? fallo.message : "No se pudo leer el estado.");
-      });
-    return () => control.abort();
-  }, [token]);
+        temporizador = setTimeout(consultar, 5000);
+      }
+    }
+    void consultar();
+    return () => { control.abort(); if (temporizador) clearTimeout(temporizador); };
+  }, [token, estado?.estado, estado?.preparacion_modelo?.estado]);
+
+  async function reintentar() {
+    setReintentando(true);
+    setError("");
+    claveReintento.current ??= `reintento-${crypto.randomUUID()}`;
+    try {
+      await reintentarModeloInicial(token, claveReintento.current);
+      setEstado(await obtenerEstadoInicial(token));
+      claveReintento.current = null;
+    } catch (fallo) {
+      setError(fallo instanceof Error ? fallo.message : "No se pudo solicitar la preparación.");
+    } finally { setReintentando(false); }
+  }
 
   const elegidos = Object.values(archivos).filter((archivo): archivo is File => archivo !== null);
   const paso = informe ? 2 : vista ? 1 : 0;
@@ -239,6 +272,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     try {
       const resultado = await confirmarCarga(token, elegidos, objetivo, referencia, clave.trim());
       setInforme(resultado);
+      setVista(null);
       setEstado(await obtenerEstadoInicial(token));
     } catch (fallo) {
       setError(fallo instanceof Error ? fallo.message : "No se pudo aceptar la carga.");
@@ -250,13 +284,21 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   return (
     <>
       {estado ? <TarjetaEstado estado={estado} /> : null}
+      {error ? <EstadoPanel tono="alerta" titulo="No se pudo completar la operación" descripcion={error} /> : null}
+      {administrador && estado?.estado === "DATOS_CARGADOS" && (!estado.preparacion_modelo || estado.preparacion_modelo.estado === "FALLIDA") ? (
+        <section className="card">
+          <h2>Preparar el modelo con los datos cargados</h2>
+          <p>Las ventas, recetas y el stock se conservan. No necesitas adjuntar los archivos otra vez.</p>
+          <BotonEnviar type="button" enviando={reintentando} textoEnviando="Solicitando…" onClick={reintentar}>Reintentar preparación del modelo</BotonEnviar>
+        </section>
+      ) : null}
 
-      <section className="card main-card">
+      {(!estado || estado.estado === "PENDIENTE") ? <section className="card main-card">
         <div className="section-heading">
           <div>
             <h2>Asistente de primera carga</h2>
             <p>
-              Los archivos se piden una sola vez. Después, PostgreSQL es la fuente de ventas y stock.
+              Los archivos se piden una sola vez. Al aceptar la carga completa se prepara el modelo automáticamente. Después, PostgreSQL es la fuente de ventas y stock.
             </p>
           </div>
         </div>
@@ -308,8 +350,6 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           />
         </div>
 
-        {error ? <EstadoPanel tono="alerta" titulo="Revisa la entrega" descripcion={error} /> : null}
-
         <div className="form-actions">
           <BotonEnviar
             type="button"
@@ -321,7 +361,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
             Validar y ver vista previa
           </BotonEnviar>
         </div>
-      </section>
+      </section> : null}
 
       {vista ? (
         <section className="card">

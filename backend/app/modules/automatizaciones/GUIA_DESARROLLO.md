@@ -19,6 +19,10 @@
 
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
 
+## Integración E03/K01
+
+`obtener_ejecucion(sesion, id)` es la consulta pública de los consumidores que enlazan progreso, sin commit. E03 usa esa consulta y la reserva idempotente en la transacción de primera carga.
+
 ## Trabajo en esta carpeta
 
 **A02 y A03 disponibles:** `modelos.py`, `esquemas.py`, `servicio.py` y `rutas.py` reservan programación más ejecución pendiente en una transacción, exponen lecturas y permiten iniciar/finalizar intentos con sesión del consumidor sin commit. `programar_ejecucion` permite a servicios internos reservar `GENERAR_PROPUESTA` o `EVALUAR_PROMOCION` con fecha UTC, fecha simulada, parámetros y clave idempotente. `0001b_automatizaciones` crea las tres tablas y `0001c_motor` agrega token y lease a la ejecución. Beat reclama y recupera trabajos; el cálculo de cada dominio espera su adaptador público. Ver [contratos A02 y A03](../../../../docs/api/contratos.md).

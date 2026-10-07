@@ -42,3 +42,7 @@ Una base nueva llega a head y rechaza cantidades/identidades inválidas según c
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+`env.py` registra las tres tablas del plan; cabeza `0009_m02_planes` tras `0008`. Revisiones anteriores conservadas.

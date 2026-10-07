@@ -15,6 +15,15 @@ export type ConfiguracionInicial = {
   iniciada_en: string | null;
   completada_en: string | null;
   mensaje_error: string | null;
+  preparacion_modelo: PreparacionModelo | null;
+};
+
+export type PreparacionModelo = {
+  ejecucion_id: number;
+  estado: "PENDIENTE" | "EN_EJECUCION" | "REINTENTANDO" | "COMPLETADA" | "FALLIDA";
+  version_modelo: string;
+  modelo_id: number | null;
+  mensaje_error: string | null;
 };
 
 export type ErrorEntrada = { campo: string; mensaje: string };
@@ -61,6 +70,7 @@ export type InformeCarga = {
   movimientos_apertura: number;
   /** Dominios que aún no tienen servicio; la instalación no queda inicializada. */
   pendiente_de: string[];
+  ejecucion_id: number | null;
 };
 
 export type ResultadoCargaPiloto = {

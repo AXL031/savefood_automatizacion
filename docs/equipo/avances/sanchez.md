@@ -6,20 +6,22 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Frontera E02/E03 verificada (2026-09-30):** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo sigue pendiente.
+- **Integración transversal E03/K01 (06-10-2026):** Codex para Axel cerró carga→preparación automática y reintento sin reimportar. Recetas/apertura ya estaban conectadas; la frontera completa pasó PostgreSQL/Redis/Beat con CatBoost real y ejemplos sintéticos. E03 INTEGRADO localmente; evidencia, límites y autoría en [coordinación](cueva.md). Falta consumir estos datos en el plan de Max.
 
-- **Estado:** E01 amplía API HTTP; E02 y E03 implementados con pruebas en SQLite; E04 entrega los primitivos compartidos y las tres pantallas propias. `0004_e03_inicializacion` ya se aplicó en PostgreSQL local; la carga completa depende de Max (M01) y Vera (V01).
+- **Frontera E02/E03 verificada (2026-09-30):** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo quedó conectado en la entrega E03/K01 del 06-10-2026.
+
+- **Estado:** E01 amplía API HTTP; E02 y E03 verificados localmente en SQLite y PostgreSQL, incluyendo recetas M01, apertura V01 y preparación automática K01. E04 entrega los primitivos compartidos y las tres pantallas propias. La base local está en `0008_e03_modelo`.
 - **Punto de partida alcanzado:** lectores XLSX y CSV con encabezados exactos, adaptador del CSV de tickets del piloto, validación que reúne todos los errores por archivo y fila, vista previa que no escribe, carga atómica, estado durable `configuracion_inicial` con sus transiciones, y API de inicialización, productos y ventas.
 - **Contrato disponible:** [contrato de servicios E01–E03](../../api/contratos.md#inicialización--ventas-y-catálogo), [contrato de primera carga](../../api/contrato-importaciones.md) y [esquema objetivo](../../base_de_datos/esquema-objetivo-mvp.md).
 - **Entrega a consumidores:** Kevin sigue usando `leer_historial`, `listar_skus_bakery`, `nombres_productos` y `limites_historial`, y ahora puede leer el estado con `hay_datos_cargados(sesion)` y mover la transición con `marcar_entrenando` / `marcar_modelo_listo` / `marcar_fallo_entrenamiento`. Max y Vera tienen los puertos `ServicioRecetas` y `ServicioInventario`, que la carga invoca dentro de la misma sesión. Todos pueden reutilizar `components/forms`, `components/tables/TablaDatos` y `components/ui`.
-- **Bloqueos:** La carga completa necesita los servicios de Max y Vera; sin ellos la instalación queda en `PENDIENTE` con constancia de qué falta. Falta una prueba de confirmación completa en PostgreSQL con esos servicios.
-- **Siguiente paso:** conectar los servicios de Max y Vera y comprobar la confirmación completa en PostgreSQL.
+- **Bloqueos:** ninguno en la frontera de carga→modelo local. Los puertos ausentes siguen produciendo PENDIENTE en pruebas controladas; la API real ya consume recetas/apertura. CI remoto y otra PC pendientes.
+- **Siguiente paso:** usar los archivos sintéticos para repetir el recorrido en otra PC; plan de Max pendiente.
 
 | Tarea | Estado de seguimiento |
 |---|---|
 | E01 · Definir y cargar productos y ventas | LISTO_PARA_INTEGRAR: CSV piloto verificado en PostgreSQL; rutas generales probadas en SQLite y expuestas en Docker |
 | E02 · Construir asistente XLSX/CSV | LISTO_PARA_INTEGRAR: lectores, adaptador bakery, validación, vista previa y carga atómica |
-| E03 · Preparar primera inicialización | LISTO_PARA_INTEGRAR: `configuracion_inicial`, migración `0004` y transiciones |
+| E03 · Preparar primera inicialización | INTEGRADO localmente: carga completa, preparación automática y recuperación; coordinación en Cueva, CI remoto pendiente |
 | E04 · Entregar pantallas y piezas comunes | LISTO_PARA_INTEGRAR: primitivos compartidos, navegación y pantallas de carga, productos y ventas |
 
 ## Bitácora
@@ -28,7 +30,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 - **Fecha/zona y autor:** 2026-09-30, America/Lima. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
 - **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
-- **Comportamiento:** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo sigue pendiente.
+- **Comportamiento:** Codex para Axel conectó `ServicioRecetasM01` y `ServicioInventarioV01` de la entrega de Rojas. La API completa termina en DATOS_CARGADOS con pendiente_de vacío; error de stock revierte también catálogo/ventas/recetas. Verificado en SQLite; PostgreSQL pendiente de CI. El piloto conserva su ruta y reserva de PREPARAR_MODELO; el disparador ML del asistente completo quedó conectado en la entrega E03/K01 del 06-10-2026.
 - **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).
 - **Ejemplo público:** POST autenticado `/api/v1/inicializacion/confirmar` con los cinco CSV y fechas válidas devuelve DATOS_CARGADOS; POST administrativo `/api/v1/proveedores/{id}/ofertas` exige ingrediente existente y conversión explícita. Servicios participantes hacen flush, el llamador confirma.
 - **Migraciones/configuración:** continuar desde 0004 con 0005→0006→0007; registrar todos los modelos, incluido ConfiguracionInicial. Revisiones previas conservadas. Para concurrencia activar V02_POSTGRES_TEST=1 sobre esquema de pruebas aislado; no habilitar Telegram ni cambiar modo automático.

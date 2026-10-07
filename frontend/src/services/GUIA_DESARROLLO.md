@@ -19,6 +19,10 @@
 
 Archivos técnicos observados al preparar esta guía: `autenticacion.ts`, `automatizaciones.ts`, `http.ts`, `notificaciones.ts`, `sesion.ts`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Edu Sanchez](../../../docs/equipo/avances/sanchez.md) para el último estado.
 
+## Integración E03/K01
+
+`inicializacion.ts` incluye `reintentarModeloInicial` para POST administrativo con clave estable y consume el progreso del estado. Mantiene el cliente HTTP común.
+
 ## Trabajo en esta carpeta
 
 **Frontera A01:** `http.ts` conserva el sobre `error.codigo/mensaje/detalles` del servidor y emite `foodsave:sesion-vencida` cuando una solicitud protegida devuelve 401. `ProtectedShell` elimina el token de sesión y redirige al acceso. Edu puede consumir este contrato sin crear otro manejo de Bearer para cada pantalla.
@@ -42,3 +46,7 @@ El cliente conserva códigos/detalles útiles; una respuesta sin datos no parece
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+`planificacion.ts` consume POST/GET `/planes` y detalle con el transporte común. Decimales exactos y estados nullable se conservan.

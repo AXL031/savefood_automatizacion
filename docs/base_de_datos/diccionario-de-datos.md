@@ -13,9 +13,10 @@
 | Cantidades | Unidades de producto y ventas enteras; ingrediente `numeric(14,3)` en su unidad base. Importación inicial y movimientos no admiten saldo negativo. |
 | Pronóstico | `artefacto_modelo` identifica `.cbm`, huella y versión; `corrida_pronostico` fija fecha y entradas; `pronostico` es único por corrida/producto. Sin cobertura, cantidad `null` y estado explicativo. |
 | Evaluación | `evaluacion_pronostico` compara una predicción con una revisión concreta de venta real **después** de inferir. El panel histórico muestra MAE, WAPE, ±20% y cobertura; una venta ausente no equivale a cero. |
-| Plan | `plan_produccion` cita corrida. `elemento_plan` es el nombre físico canónico. `necesidad_ingrediente` guarda requerido, disponible, faltante y unidad; faltante positivo es sugerencia de compra, no pedido enviado. |
+| Plan | `plan_produccion` cita corrida. `elemento_plan` es el nombre físico canónico. `necesidad_ingrediente` guarda requerido, disponible, faltante y unidad (numeric(18,3)); stock desconocido conserva disponible/faltante null y stock_conocido=false. `trazas_json` conserva recetas/lotes/nombres/omisiones; faltante positivo es sugerencia de compra, no pedido enviado. |
 | Pedido | `pedido_compra` agrupa necesidades positivas por proveedor y plan; `linea_pedido` conserva la conversión y cantidad de compra. El modo `REQUIERE_APROBACION` o `AUTOMATICO` se copia del negocio. `envio_pedido` registra el resultado real de Telegram; `ENVIADO` no equivale a aceptación del proveedor. |
 | Idempotencia | `importacion_venta`, `movimiento_inventario` y `corrida_pronostico` usan clave única; misma clave con datos distintos es conflicto. |
+| Inicialización | `configuracion_inicial` conserva la carga y `preparacion_ejecucion_id` vincula su entrenamiento durable; un fallo no vuelve a importar ventas ni abrir stock. |
 | Automatización | `programacion_demo` guarda el disparo real y el reloj histórico simulado. `ejecucion_automatizacion` e `intento_automatizacion` registran estado, reintentos y efectos sin duplicarlos. |
 | Promoción | `regla_promocion_demo` versiona la regla pura existente. `evaluacion_promocion` registra sugerencia o rechazo por lote con motivo; no activa ni publica descuentos. |
 

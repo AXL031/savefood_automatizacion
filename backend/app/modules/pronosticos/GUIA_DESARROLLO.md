@@ -22,6 +22,10 @@ El corte K01–K04 implementa modelos/migración `0003_pronosticos`, entrenamien
 
 Desde `piloto-q65v2-*`, el entrenador conserva el cuantil 0.65 y usa esa misma pérdida para elegir la iteración en validación. Es una nueva versión del artefacto; los modelos y backtests anteriores siguen disponibles para trazabilidad. La prueba histórica de julio–septiembre de 2022 es exploratoria porque se consultó durante el desarrollo.
 
+## Integración E03/K01
+
+E03/K01: `preparar` confirma el modelo listo mediante la frontera pública de inicialización cuando su entrada incluye la identidad de la carga. El piloto y el entrenamiento a demanda permanecen independientes. La evaluación histórica continúa como tarea durable separada; modelo listo no equivale a backtest terminado.
+
 ## Trabajo en esta carpeta
 
 1. Integrar entrenamiento reutilizable y artefacto verificado con versión/huella/partición.
@@ -53,3 +57,7 @@ Crear archivos al necesitarlos: `esquemas.py` para entrada/salida y validación,
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/bohorquez.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+`obtener_corrida(sesion, id, bloquear=False)` entrega la corrida a M02. Planificación consume `generar_corrida` y reserva evaluación después del plan dentro de la misma transacción. No incorpora ventas del objetivo en inferencia.

@@ -20,6 +20,10 @@
 
 Archivos técnicos observados al preparar esta guía: `base-ci.yml`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../../docs/equipo/avances/cueva.md) para el último estado.
 
+## Integración E03/K01
+
+CI incluye E03 en PostgreSQL/Redis: migración completa sobre esquema vacío, carga automática, entrenamiento/evaluación reales, reintentos y Beat. Validación remota pendiente hasta publicar los cambios.
+
 ## Trabajo en esta carpeta
 
 **A01:** `base-ci.yml` incluye la prueba de contrato HTTP y configuración de Axel con SQLite aislado. El paso de Compose aplica también `0001a_configuracion` en PostgreSQL. Esta prueba no sustituye las futuras pruebas de Beat, Compras o consumidores.
@@ -46,3 +50,7 @@ El flujo falla ante una regresión significativa y detiene servicios al terminar
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+El paso PG/Redis E03 incluye `test_planificacion_m02.py` y la frontera programada de plan/evaluación mediante Beat real. CI remoto debe verificarse al publicar; ejecución local no acredita Actions.

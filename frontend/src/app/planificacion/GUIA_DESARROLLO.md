@@ -46,3 +46,7 @@ La ruta compone `page.tsx` y componentes del feature correspondiente. Usar layou
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/rojas.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+`page.tsx` consulta API real: últimos 50 planes con refresco, detalle `?plan_id=...`, generación administrativa desde corrida existente, producción/insumos/omisiones y trazas de recetas/lotes. Usa layout, cliente HTTP y tablas comunes; clave de reintento estable ante error de red. Enlaza ejecución de origen y programación; pedidos permanecen pendientes.

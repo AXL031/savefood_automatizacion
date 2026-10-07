@@ -75,6 +75,7 @@ class InformeCarga:
     movimientos_apertura: int = 0
     pendiente_de: list[str] = field(default_factory=list)
     ya_estaba_cargada: bool = False
+    ejecucion_id: int | None = None
 
 
 def skus_curados() -> set[str] | None:
@@ -86,9 +87,12 @@ def skus_curados() -> set[str] | None:
     return set(leer_nombres_bakery(LISTA_CURADA))
 
 
-def leer_estado(sesion: Session) -> ConfiguracionInicial:
+def leer_estado(sesion: Session, *, bloquear: bool = False) -> ConfiguracionInicial:
     """Devuelve la fila única, creándola en `PENDIENTE` si la migración no la dejó."""
-    estado = sesion.get(ConfiguracionInicial, FILA_UNICA)
+    consulta = select(ConfiguracionInicial).where(ConfiguracionInicial.id == FILA_UNICA)
+    if bloquear:
+        consulta = consulta.with_for_update().execution_options(populate_existing=True)
+    estado = sesion.scalar(consulta)
     if estado is None:
         estado = ConfiguracionInicial(id=FILA_UNICA, estado=ESTADO_PENDIENTE)
         sesion.add(estado)
@@ -160,7 +164,7 @@ def confirmar_carga(
     El llamador confirma o revierte. Repetir la misma solicitud sobre una
     instalación ya cargada devuelve el resultado anterior en lugar de duplicar.
     """
-    estado = leer_estado(sesion)
+    estado = leer_estado(sesion, bloquear=True)
     vista = preparar_vista_previa(
         archivos, fecha_objetivo_demo, fecha_referencia_stock, skus_permitidos
     )
@@ -172,6 +176,7 @@ def confirmar_carga(
             ventas_diarias=0,
             importacion_id=0,
             ya_estaba_cargada=True,
+            ejecucion_id=estado.preparacion_ejecucion_id,
         )
     if estado.estado in (ESTADO_DATOS_CARGADOS, ESTADO_ENTRENANDO, ESTADO_MODELO_LISTO):
         raise ErrorAPI(
@@ -253,6 +258,10 @@ def confirmar_carga(
     estado.actualizado_en = ahora
     sesion.flush()
 
+    if completa:
+        from app.modules.inicializacion.preparacion import solicitar_preparacion_modelo
+        solicitar_preparacion_modelo(sesion)
+
     return InformeCarga(
         estado=estado.estado,
         productos=len(producto_por_codigo),
@@ -262,6 +271,7 @@ def confirmar_carga(
         recetas=recetas,
         movimientos_apertura=movimientos,
         pendiente_de=pendiente,
+        ejecucion_id=estado.preparacion_ejecucion_id,
     )
 
 

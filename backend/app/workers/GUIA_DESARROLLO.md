@@ -18,6 +18,10 @@
 
 **A03 implementado:** `celery_app.py` registra el despacho de Beat cada 30 segundos y la tarea de ejecución; `motor.py` reclama con `SKIP LOCKED`, confirma el token y lease antes de publicar, registra intentos y recupera leases vencidos. El efecto local y la finalización se confirman en una misma transacción. Consultar el resumen vigente de [Axel Cueva](../../../docs/equipo/avances/cueva.md) para el último estado.
 
+## Integración E03/K01
+
+E03/K01: el motor notifica inicio antes del cálculo y fallo tras rollback del savepoint o recuperación de lease. Los callbacks no hacen commit. El dominio mantiene su estado sin perder intentos ni duplicar datos.
+
 ## Trabajo en esta carpeta
 
 1. Configurar broker, registro de tareas, scheduler y recuperación.

@@ -18,6 +18,10 @@
 
 Archivos técnicos observados al preparar esta guía: `api.ts`, `autenticacion.ts`, `automatizacion.ts`, `notificacion.ts`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Edu Sanchez](../../../docs/equipo/avances/sanchez.md) para el último estado.
 
+## Integración E03/K01
+
+`PreparacionModelo` tipa ejecución, estado, versión, modelo y error; `ConfiguracionInicial.preparacion_modelo` puede ser null antes de reservar o en instalaciones anteriores.
+
 ## Trabajo en esta carpeta
 
 **A01:** `Negocio` incluye `modo_envio_pedidos` como `REQUIERE_APROBACION | AUTOMATICO`; el PATCH acepta un subconjunto de campos. Los consumidores de Compras deben usar estos mismos valores al crear pedidos, sin inventar otros estados.
@@ -44,3 +48,7 @@ Typecheck y ejemplos de API coinciden en campos y estados.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+`planificacion.ts` tipa resumen, detalle, elementos, necesidades, omisiones y trazas. Disponible/faltante nullable por stock desconocido; strings de tres decimales.

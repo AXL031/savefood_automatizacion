@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **Frontera M02–M04 (06-10-2026):** Codex para Axel entrega M03 real: `obtener_necesidades` y detalle `/planes/{id}` con snapshots, unidades y faltantes nullable. Revisar omisiones/stock desconocido antes de L02; cálculo parcial no autoriza pedido automático. Recompra sigue pendiente. No se implementó ni envió Telegram. Evidencia y autoría en [coordinación](cueva.md).
+
 - **Estado (30-09-2026):** L01 `PARCIAL`. Proveedor y oferta persistidos (`0007_l01_proveedores`) con API protegida e integrada localmente (Codex para Axel, desde `59305f6`). Faltan pantalla de proveedores y adaptador real de Telegram (las pruebas usan uno falso). L02–L04 pendientes.
 - **Contrato:** [L01 en contratos.md](../../api/contratos.md#l01-integrado-proveedores-y-ofertas-30-09-2026). Compras consulta `GET /proveedores/ofertas/preferida/{ingrediente_id}`.
 - **Bloqueo:** regla de recompra entre planes de la misma fecha, a cerrar con Max antes de L02.

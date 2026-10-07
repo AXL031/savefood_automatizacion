@@ -6,7 +6,11 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Estado (30-09-2026):** V01 y V02 `LISTO_PARA_INTEGRAR`, implementadas por **Max Rojas por encargo** de Leonardo Vera e integradas localmente por Codex para Axel (probado en SQLite; concurrencia solo en CI con PostgreSQL). V03 pendiente; V04 parcial.
+- **Frontera M02–M04 (06-10-2026):** Codex para Axel verificó M02 como consumidor real de V02. Plan guarda lotes, stock elegible por fecha y advertencias; generación y reentrega no producen movimientos. Autoría V01/V02 previa se conserva; V03 pendiente. Evidencia y autoría en [coordinación](cueva.md).
+
+- **Verificación transversal (06-10-2026):** apertura consumida por E03 y ajustes concurrentes V02 verificados localmente en PostgreSQL; no modifica la autoría de Max por encargo. V03 y detalle de promociones siguen pendientes. Evidencia en [coordinación](cueva.md).
+
+- **Estado (06-10-2026):** V01 y V02 implementadas por **Max Rojas por encargo** de Leonardo Vera e integradas localmente por Codex para Axel; apertura E03 y ajustes concurrentes verificados en PostgreSQL. Integración Git y CI remoto pendientes. V03 pendiente; V04 parcial.
 - **Disponible:** lotes de producto e ingrediente, apertura en la sesión de la primera carga, ajustes con bloqueo y clave idempotente, disponibilidad por fecha con la regla de vida útil de pastelería. Pantalla `/inventario` con disponibilidad, lotes, ajuste y movimientos.
 - **Contrato:** [V01/V02 en contratos.md](../../api/contratos.md#v01v02-disponibles-apertura-ajustes-y-stock-por-fecha-30-09-2026).
 - **Vida útil:** producto 5 días máximo; días 1–3 óptimo, 4–5 prioridad, 6+ merma. Ver [vigencia.py](../../../backend/app/modules/inventario/vigencia.py).

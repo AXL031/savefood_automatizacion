@@ -32,6 +32,7 @@ const grupos = [
       { href: "/ingredientes", texto: "Ingredientes" },
       { href: "/recetas", texto: "Recetas" },
       { href: "/inventario", texto: "Inventario" },
+      { href: "/planificacion", texto: "Planificación" },
     ],
   },
   {

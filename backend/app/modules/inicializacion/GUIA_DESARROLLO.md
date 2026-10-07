@@ -19,7 +19,7 @@
 
 **Integración 30-09-2026:** La ruta completa ya pasa ServicioRecetasM01 y ServicioInventarioV01 en una sola sesión: DATOS_CARGADOS sin pendientes de esos puertos. Rollback de stock verificado. El piloto se conserva separado. Automatizar entrenamiento desde el asistente completo sigue pendiente.
 
-**E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa sigue sin prueba final por depender de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+**E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa consume recetas y apertura reales; la entrega E03/K01 añade preparación automática y pruebas en PostgreSQL/Redis. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 | Archivo | Responsabilidad |
 |---|---|
@@ -30,9 +30,14 @@
 | `puertos.py` | `ServicioRecetas` (Max) y `ServicioInventario` (Vera), invocados con la misma sesión. |
 | `servicio.py` | Vista previa sin escritura, carga atómica y transiciones de estado. |
 | `rutas.py` | `GET /inicializacion/estado`, `POST /inicializacion/vista-previa` y `POST /inicializacion/confirmar`. |
+| `preparacion.py` | Reserva ML, resumen de progreso y callbacks de estado para éxito/fallo/interrupción. |
 | `piloto.py` | Carga rápida del CSV bakery en `POST /inicializacion/piloto-bakery` y reserva `PREPARAR_MODELO`; flujo separado del asistente completo. |
 
 Migración `0004_e03_inicializacion`, sucesora de `0003_pronosticos`. Mientras falten los servicios de Max y Vera, la carga persiste catálogo y ventas y deja el estado en `PENDIENTE`: una carga parcial **no** declara la instalación inicializada. El CSV piloto usa su propio contrato y no altera esta fila. La lista curada se localiza desde el repositorio o `/code` en Docker.
+
+## Integración E03/K01
+
+E03/K01: `preparacion.py` reserva entrenamiento en la misma sesión de carga, mantiene el enlace de `0008_e03_modelo` y comprueba ejecución/huella en callbacks. El estado HTTP expone progreso; el reintento administrativo no reimporta datos. Recetas/apertura ya están conectadas; solo una carga completa reserva ML. Ejemplos: `backend/tests/fixtures/primera_carga/`. Contrato: [importaciones](../../../../docs/api/contrato-importaciones.md).
 
 ## Trabajo en esta carpeta
 

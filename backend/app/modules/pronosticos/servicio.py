@@ -127,6 +127,17 @@ def generar_corrida(
     return corrida
 
 
+def obtener_corrida(sesion: Session, corrida_id: int, *, bloquear: bool = False) -> CorridaPronostico:
+    """Lectura pública para planificación; bloqueo opcional serializa un cálculo."""
+    consulta = select(CorridaPronostico).where(CorridaPronostico.id == corrida_id)
+    if bloquear:
+        consulta = consulta.with_for_update().execution_options(populate_existing=True)
+    corrida = sesion.scalar(consulta)
+    if corrida is None:
+        raise ErrorAPI(404, "CORRIDA_NO_ENCONTRADA", "La corrida no existe.")
+    return corrida
+
+
 def obtener_pronosticos(sesion: Session, corrida_id: int) -> list[Pronostico]:
     """Frontera pública para Max: cantidad nullable y motivo por producto."""
     return list(sesion.scalars(select(Pronostico).where(Pronostico.corrida_id == corrida_id)

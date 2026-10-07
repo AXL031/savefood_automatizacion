@@ -15,7 +15,7 @@ from app.modules.negocios.modelos import Negocio  # noqa: F401
 from app.modules.automatizaciones.modelos import EjecucionAutomatizacion, IntentoAutomatizacion, ProgramacionDemo
 from app.modules.automatizaciones.servicio import finalizar_intento, iniciar_intento
 from app.workers.retry.politica import ErrorDatos, es_transitorio, siguiente_intento
-from app.workers.tasks.manejadores import ContextoEjecucion, obtener_manejador
+from app.workers.tasks.manejadores import contexto_ejecucion, notificar_inicio, notificar_fallo, obtener_manejador
 
 logger = logging.getLogger(__name__)
 LEASE_SEGUNDOS = 120
@@ -38,6 +38,7 @@ def _cerrar_fallo(sesion, intento, mensaje: str, transitorio: bool, ahora: datet
         sesion, intento.id, "REINTENTANDO" if proximo else "FALLIDA",
         mensaje_error=mensaje, proximo_intento_en=proximo,
     )
+    notificar_fallo(sesion, ejecucion, mensaje)
     _liberar(sesion, ejecucion)
 
 
@@ -120,6 +121,12 @@ def ejecutar(ejecucion_id: int, token: str) -> dict:
                 return {"resultado": "NO_VENCIDA"}
         intento = iniciar_intento(sesion, ejecucion_id)
         intento_id = intento.id
+        try:
+            with sesion.begin_nested():
+                notificar_inicio(sesion, ejecucion)
+        except ErrorDatos as error:
+            _cerrar_fallo(sesion, intento, str(error), False, ahora)
+            return {"resultado": "FALLIDA", "ejecucion_id": ejecucion_id}
         ejecucion.lease_hasta = ahora + timedelta(seconds=LEASE_SEGUNDOS)
         if ejecucion.programacion_id is not None:
             programacion.lease_hasta = ejecucion.lease_hasta
@@ -130,7 +137,7 @@ def ejecutar(ejecucion_id: int, token: str) -> dict:
             if ejecucion is None or ejecucion.token_despacho != token or ejecucion.estado != "EN_EJECUCION":
                 return {"resultado": "IGNORADA"}
             intento = sesion.get(IntentoAutomatizacion, intento_id)
-            contexto = ContextoEjecucion(ejecucion.id, ejecucion.tipo, ejecucion.clave_idempotencia, ejecucion.datos_entrada_json)
+            contexto = contexto_ejecucion(ejecucion)
             try:
                 # El bloqueo se mantiene durante el handler. El despachador omite esa fila,
                 # incluso si vence el lease durante un cálculo largo.

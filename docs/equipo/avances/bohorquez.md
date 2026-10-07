@@ -6,17 +6,21 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Estado:** K01–K04 implementados y listos para integrar en el prototipo local; no se declara integración con el plan de Max ni con la inicialización E03.
+- **Frontera M02–M04 (06-10-2026):** Codex para Axel verificó el consumidor M02 con K02: propuesta programada genera corrida real, plan/insumos y reserva K03 en una transacción. Beat/worker/Redis y CatBoost reales sobre escenarios sintéticos. M02 ya consume K02; compras pendientes. Evidencia y autoría en [coordinación](cueva.md).
+
+- **Integración transversal E03/K01/K03 (06-10-2026):** Codex para Axel conectó el asistente completo con preparación, progreso y recuperación. Entrenamiento y backtest reales pasaron PostgreSQL/Redis/Beat sobre muestra sintética. Frontera con E03 INTEGRADA localmente; M02 sigue pendiente. Evidencia y autoría en [coordinación](cueva.md).
+
+- **Estado:** K01–K04 implementados; preparación y evaluación integradas con E03 y verificadas localmente en PostgreSQL/Redis. Integración local con el plan M02 verificada; compras pendientes.
 - **Punto de partida alcanzado:** Entrenamiento desde historial E01, artefacto CBM versionado y verificado, inferencia persistida con 13 características temporales, backtest por fecha/revisión, API protegida y panel histórico. El piloto tiene una versión nueva `piloto-q65v2-*` que selecciona iteración con el mismo cuantil 0.65 usado para entrenar. En PostgreSQL/Compose, 4 047 pares evaluables dieron 66 de 90 días con total pronosticado superior al real; la versión anterior se conserva para comparación.
 - **Contrato disponible:** [artefacto ML](../../../foodsave-ml/CONTRATO_ARTEFACTO_INFERENCIA.md), [API y servicios](../../api/contratos.md#ventas--pronósticos) y [política de evaluación](../../../foodsave-ml/POLITICA_EVALUACION.md).
 - **Entrega a consumidores:** `generar_corrida`/`obtener_pronosticos` y `solicitar_evaluacion_corrida` reciben la sesión del plan sin confirmarla; API `/pronosticos/*`, páginas `/pronosticos` y `/panel`, y adaptadores A03 para preparación/evaluación.
-- **Bloqueos:** el CSV piloto ya dispara preparación y evaluación desde la carga web parcial de Edu; falta E03 completo y que Max consuma la corrida en su plan. No se ha probado el flujo plan/pedido.
-- **Siguiente paso:** integrar E03 completo y M02 con prueba de transacción compartida; verificar el recorrido en otra computadora.
+- **Bloqueos:** el CSV piloto ya dispara preparación y evaluación desde la carga web parcial de Edu; E03 completo ya integrado localmente; M02 ya consume la corrida; flujo de pedidos pendiente.
+- **Siguiente paso:** verificar consumidor de compras después de M03; verificar el recorrido en otra computadora.
 
 | Tarea | Estado de seguimiento |
 |---|---|
 | K01 · Extraer entrenamiento reutilizable | LISTO_PARA_INTEGRAR; entrenó CSV piloto desde E01 en PostgreSQL |
-| K02 · Implementar inferencia y persistencia | LISTO_PARA_INTEGRAR; Max aún no consume el servicio |
+| K02 · Implementar inferencia y persistencia | LISTO_PARA_INTEGRAR; M02 consume el servicio con prueba PostgreSQL/Beat |
 | K03 · Implementar evaluación histórica | LISTO_PARA_INTEGRAR; backtest PostgreSQL con 4 047 pares |
 | K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; API respondió en PostgreSQL y frontend compiló |
 

@@ -72,7 +72,7 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
         {typeof ejecucion.datos_entrada.ejecutar_desde_utc === "string" && <p>Hora real programada: {formatearFechaHora(ejecucion.datos_entrada.ejecutar_desde_utc, zonaHoraria)}</p>}
         {typeof ejecucion.datos_entrada.fecha_hora_simulada_local === "string" && <p>Escenario histórico: {ejecucion.datos_entrada.fecha_hora_simulada_local.replace("T", " ")}</p>}
         <p>Próximo intento: {ejecucion.proximo_intento_en ? formatearFechaHora(ejecucion.proximo_intento_en, zonaHoraria) : "Sin programar"}</p>
-        {ejecucion.datos_salida && <><h3>Resultado</h3><pre>{JSON.stringify(ejecucion.datos_salida, null, 2)}</pre></>}
+        {ejecucion.datos_salida && <><h3>Resultado</h3>{typeof ejecucion.datos_salida.plan_id === "number" && <p><Link href={`/planificacion?plan_id=${ejecucion.datos_salida.plan_id}`}>Ver plan y faltantes</Link></p>}<pre>{JSON.stringify(ejecucion.datos_salida, null, 2)}</pre></>}
       </aside>
     </div>
   </>;

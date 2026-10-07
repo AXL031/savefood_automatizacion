@@ -4,7 +4,7 @@
 
 Planes de producción y cálculo de ingredientes necesarios.
 
-Esta carpeta forma parte del esqueleto del proyecto. El código se agregará al implementar su funcionalidad.
+M02–M04 implementados con API y pantalla, snapshots y handler programado. Compras y envío siguen pendientes; consultar contrato y evidencia en Cueva/Rojas.
 
 **Responsable del módulo:** Max Rojas. La responsabilidad incluye interfaz, servidor y APIs según [la división del equipo](../../../../docs/equipo/responsabilidades.md).
 

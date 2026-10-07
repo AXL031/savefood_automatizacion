@@ -20,11 +20,13 @@ Archivos técnicos observados al preparar esta guía: `.env.example`, `.gitignor
 
 Axel coordina la raíz; los seis responden por su propio bloque. La revisión documental no declara implementados los módulos.
 
-**A03:** `compose.yaml` aplica Alembic mediante el servicio de una sola ejecución `migraciones` antes de iniciar API, worker y Beat. Beat es único en esta instalación local; revisa ejecuciones cada 30 segundos. Mantener PostgreSQL y Redis saludables antes de las pruebas del motor. Los adaptadores de negocio aún no están registrados.
+**A03:** `compose.yaml` aplica Alembic mediante el servicio de una sola ejecución `migraciones` antes de iniciar API, worker y Beat. Beat es único en esta instalación local; revisa ejecuciones cada 30 segundos. Mantener PostgreSQL y Redis saludables antes de las pruebas del motor. Están registrados preparación, backtest y evaluación de pronóstico; plan y evaluación programados disponibles; compras y promoción siguen pendientes.
 
 **A04:** la imagen backend instala el extra `ml` de ejecución y prepara `/code/model_artifacts`; Compose monta allí un volumen persistente con lectura en API y escritura en worker. El bot usa `TELEGRAM_BOT_TOKEN` opcional; el destino se vinculará en el módulo de Aguirre. CI revisa migración en cabeza, volumen compartido, cola y motor. El modelo y el canal no se declaran integrados hasta recibir las entregas y pruebas de sus dueños.
 
 `iniciar-foodsave.cmd` arranca Compose con las imágenes ya construidas y abre `/inicializacion/piloto` al terminar el arranque; conserva los volúmenes y necesita `.env` configurado una vez. El primer build sigue requiriendo Docker y descarga de dependencias. El asistente completo está en `/inicializacion`.
+
+**E03/K01:** primera carga completa conectada al modelo automático, progreso durable y reintento sin reimportar; revisión `0008_e03_modelo` al final de la cadena. Cinco CSV sintéticos y pruebas PostgreSQL/Redis de carga, entrenamiento, evaluación y recuperación. Ver [evidencia](docs/equipo/avances/cueva.md).
 
 ## Trabajo en esta carpeta
 
@@ -44,3 +46,5 @@ README, reparto, diccionario y guías atribuyen el mismo dueño; un compañero p
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](docs/equipo/avances/cueva.md) siguiendo [la plantilla](docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+**M02–M04:** plan, faltantes y pantalla conectados; `GENERAR_PROPUESTA` hace inferencia real y reserva evaluación. Migración `0009_m02_planes`. No genera pedidos aún; política de recompra pendiente. Ver avance de coordinación y Rojas.

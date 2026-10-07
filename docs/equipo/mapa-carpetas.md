@@ -10,6 +10,7 @@ El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [depende
 | `.github` | Axel Cueva | Compartida; coordinación | [Abrir](../../.github/GUIA_DESARROLLO.md) |
 | `.github/workflows` | Axel Cueva | Compartida; coordinación | [Abrir](../../.github/workflows/GUIA_DESARROLLO.md) |
 | `backend` | Axel Cueva | Compartida; coordinación | [Abrir](../../backend/GUIA_DESARROLLO.md) |
+| `backend/tests/fixtures/primera_carga` | Edu Sanchez, coordinación de Axel | Demo · Cinco CSV sintéticos para E03/K01 | [Abrir](../../backend/tests/fixtures/primera_carga/GUIA_DESARROLLO.md) |
 | `backend/app` | Axel Cueva | Compartida; coordinación | [Abrir](../../backend/app/GUIA_DESARROLLO.md) |
 | `backend/app/core` | Axel Cueva | Compartida; coordinación | [Abrir](../../backend/app/core/GUIA_DESARROLLO.md) |
 | `backend/app/integrations` | Leonardo Aguirre | Compartida; coordinación | [Abrir](../../backend/app/integrations/GUIA_DESARROLLO.md) |

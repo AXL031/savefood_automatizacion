@@ -34,6 +34,8 @@ jobs:
           docker compose exec -T worker python -c "from pathlib import Path; import os; (Path(os.environ['MODEL_ARTIFACT_DIR']) / '.ci-probe').unlink()"
       - name: Motor A03 e inventario V02 con PostgreSQL y Redis
         run: docker compose run --rm --no-deps --user root -e A03_POSTGRES_TEST=1 -e V02_POSTGRES_TEST=1 api sh -c "pip install -q '.[test]' && python -m pytest tests/integration/test_motor_a03.py tests/integration/test_inventario_concurrencia_pg.py -q"
+      - name: Primera carga, modelo y plan E03-M02 con PostgreSQL, Redis y Beat
+        run: docker compose run --rm --no-deps --user root -e E03_POSTGRES_TEST=1 api sh -c "pip install -q '.[test]' && python -m pytest tests/integration/test_preparacion_e03.py tests/integration/test_planificacion_m02.py -q"
       - name: Comprobar servicios
         run: |
           curl --fail --retry 10 --retry-delay 2 --retry-connrefused http://localhost:8000/salud

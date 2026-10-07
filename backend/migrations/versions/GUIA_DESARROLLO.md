@@ -24,6 +24,10 @@ Axel coordina integración de revisiones; no asume las tablas de los seis.
 
 **Cadena tras Kevin:** `0001_nucleo → 0001a_configuracion → 0001b_automatizaciones → 0001c_motor → 0002_e01_ventas → 0003_pronosticos`. `0002` agrega catálogo y ventas; `0003` agrega persistencia ML. Las siguientes revisiones de dominio dependen de `0003_pronosticos` o de su sucesora, sin modificar migraciones ya aplicadas. Coordinar tipos, FK y CHECK restantes con sus dueños.
 
+## Integración E03/K01
+
+`0008_e03_modelo` sucede a `0007_l01_proveedores` y añade la FK nullable `configuracion_inicial.preparacion_ejecucion_id`. No altera las revisiones anteriores ni recarga datos.
+
 ## Trabajo en esta carpeta
 
 1. Coordinar una sola cadena de revisiones; cada dueño entrega sus tablas/restricciones.
@@ -42,3 +46,7 @@ Una base nueva llega a head y rechaza cantidades/identidades inválidas según c
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+`0009_m02_planes` añade plan, elementos y necesidades; FK RESTRICT, unicidad y CHECK de cantidades. Necesidades NUMERIC(18,3); stock desconocido exige disponible/faltante NULL. Solo estado PROPUESTO. Delta reversible y comparación de modelos verificados por las pruebas.

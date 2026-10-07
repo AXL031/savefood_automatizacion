@@ -1,5 +1,11 @@
 import { enviarFormulario, solicitar } from "@/services/http";
-import type { ConfiguracionInicial, InformeCarga, ResultadoCargaPiloto, VistaPrevia } from "@/types/inicializacion";
+import type { ConfiguracionInicial, InformeCarga, PreparacionModelo, ResultadoCargaPiloto, VistaPrevia } from "@/types/inicializacion";
+
+export function reintentarModeloInicial(token: string, clave: string): Promise<PreparacionModelo> {
+  return solicitar<PreparacionModelo>("/inicializacion/reintentar-modelo", {
+    token, method: "POST", body: { clave_idempotencia: clave },
+  });
+}
 
 export function obtenerEstadoInicial(token: string, signal?: AbortSignal): Promise<ConfiguracionInicial> {
   return solicitar<ConfiguracionInicial>("/inicializacion/estado", { token, signal });
