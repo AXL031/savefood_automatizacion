@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
+import { TablaPaginada, type PaginacionRemota } from "./TablaPaginada";
 
 export type Columna<T> = {
   clave: string;
@@ -18,6 +19,7 @@ type Props<T> = {
   vacioDescripcion?: string;
   /** Pie opcional para totales o para advertir que la lista está recortada. */
   pie?: ReactNode;
+  paginacion?: PaginacionRemota;
 };
 
 /**
@@ -27,7 +29,7 @@ type Props<T> = {
  * de su dominio. Así una cantidad decimal no se ordena como texto ni pierde
  * precisión al pasar por aquí.
  */
-export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, vacioDescripcion, pie }: Props<T>) {
+export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, vacioDescripcion, pie, paginacion }: Props<T>) {
   if (cargando) {
     return <EstadoPanel tono="info" titulo="Cargando datos…" descripcion="Consultando la API local." />;
   }
@@ -41,8 +43,8 @@ export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, 
     );
   }
   return (
-    <div className="table-wrap">
-      <table>
+    <div>
+      <TablaPaginada remota={paginacion}>
         <thead>
           <tr>
             {columnas.map((columna) => (
@@ -63,7 +65,7 @@ export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, 
             </tr>
           ))}
         </tbody>
-      </table>
+      </TablaPaginada>
       {pie ? <small className="helper-text">{pie}</small> : null}
     </div>
   );

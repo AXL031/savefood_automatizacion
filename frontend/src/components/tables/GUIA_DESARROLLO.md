@@ -34,3 +34,8 @@ Tabla larga y vacía siguen siendo utilizables; acción por fila identifica la e
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+
+## Navegación, páginas y detalles · 30-09-2026
+
+TablaPaginada recibe thead/tbody y pagina filas por clave; tamaños 10/25/50/100, extremos, anterior/siguiente y salto accesible. Cambio de lista/filtro reinicia página; sondeo con mismos IDs la conserva. TablaDatos comparte el paginador. Props remota/paginacion reciben pagina, tamano, total, cargando y onCambio para listas servidas por API; Ventas usa ese contrato. No presentar el tamaño de una lista reciente limitada como total histórico.

@@ -42,11 +42,13 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       FRONTEND_ORIGIN: http://localhost:3000
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CONFIG_DIR: /code/telegram_secrets
       MODEL_ARTIFACT_DIR: /code/model_artifacts
       ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
       ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
     volumes:
       - model_artifacts:/code/model_artifacts:ro
+      - telegram_secrets:/code/telegram_secrets
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -67,11 +69,13 @@ services:
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CONFIG_DIR: /code/telegram_secrets
       MODEL_ARTIFACT_DIR: /code/model_artifacts
       ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
       ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
     volumes:
       - model_artifacts:/code/model_artifacts
+      - telegram_secrets:/code/telegram_secrets:ro
     depends_on:
       migraciones:
         condition: service_completed_successfully
@@ -106,3 +110,4 @@ services:
 volumes:
   postgres_data:
   model_artifacts:
+  telegram_secrets:

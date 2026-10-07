@@ -8,6 +8,7 @@ import { EstadoBadge } from "@/components/ui/EstadoBadge";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { obtenerEjecucion } from "@/services/automatizaciones";
 import type { EjecucionAutomatizacion } from "@/types/automatizacion";
+import { etiquetaDato } from "@/utils/etiquetas";
 import { formatearDuracion, formatearFechaHora } from "@/utils/fechas";
 
 function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHoraria: string }) {
@@ -66,13 +67,13 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
       </section>
       <aside className="card aside-card">
         <h2>Datos de ejecución</h2>
-        <p>Tipo: {ejecucion.tipo}</p>
-        <p>Clave: {ejecucion.clave_idempotencia}</p>
+        <p>Tipo: {etiquetaDato(ejecucion.tipo)}</p>
+        <details><summary>Identificador técnico</summary><p>{ejecucion.clave_idempotencia}</p></details>
         <p>Primer despacho: {ejecucion.despachada_en ? formatearFechaHora(ejecucion.despachada_en, zonaHoraria) : "Pendiente"}</p>
         {typeof ejecucion.datos_entrada.ejecutar_desde_utc === "string" && <p>Hora real programada: {formatearFechaHora(ejecucion.datos_entrada.ejecutar_desde_utc, zonaHoraria)}</p>}
         {typeof ejecucion.datos_entrada.fecha_hora_simulada_local === "string" && <p>Escenario histórico: {ejecucion.datos_entrada.fecha_hora_simulada_local.replace("T", " ")}</p>}
         <p>Próximo intento: {ejecucion.proximo_intento_en ? formatearFechaHora(ejecucion.proximo_intento_en, zonaHoraria) : "Sin programar"}</p>
-        {ejecucion.datos_salida && <><h3>Resultado</h3><pre>{JSON.stringify(ejecucion.datos_salida, null, 2)}</pre></>}
+        {ejecucion.datos_salida && <><h3>Resultado de la tarea</h3>{typeof ejecucion.datos_salida.plan_id === "number" && <p><Link href="/planificacion">Ver plan #{ejecucion.datos_salida.plan_id} y sus faltantes →</Link></p>}{typeof ejecucion.datos_salida.propuesta_compra_id === "number" && <p><Link href={`/compras?plan_id=${ejecucion.datos_salida.plan_id}`}>Ver pedidos y envíos →</Link></p>}{typeof ejecucion.datos_salida.pedidos_estado === "string" && <p>Pedidos: {etiquetaDato(ejecucion.datos_salida.pedidos_estado)}</p>}{typeof ejecucion.datos_salida.pedidos_motivo === "string" && <p>{ejecucion.datos_salida.pedidos_motivo}</p>}<details><summary>Datos técnicos del resultado</summary><pre>{JSON.stringify(ejecucion.datos_salida, null, 2)}</pre></details></>}
       </aside>
     </div>
   </>;

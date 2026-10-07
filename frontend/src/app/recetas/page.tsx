@@ -1,8 +1,10 @@
 "use client";
+import { cantidadVisible } from "@/utils/unidades";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { BotonEnviar } from "@/components/forms/BotonEnviar";
 import { CampoTexto } from "@/components/forms/CampoTexto";
+import { PanelDetalle } from "@/components/ui/PanelDetalle";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { TablaDatos, type Columna } from "@/components/tables/TablaDatos";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
@@ -29,7 +31,7 @@ function fechaCorta(valor: string | null): string {
 
 const columnasLineas: Columna<LineaReceta>[] = [
   { clave: "ingrediente", encabezado: "Ingrediente", celda: (fila) => fila.nombre },
-  { clave: "cantidad", encabezado: "Por unidad de producto", numerica: true, celda: (fila) => <strong>{fila.cantidad_por_unidad} {fila.unidad_base}</strong> },
+  { clave: "cantidad", encabezado: "Por unidad de producto", numerica: true, celda: (fila) => <strong>{cantidadVisible(fila.cantidad_por_unidad, fila.unidad_base)}</strong> },
 ];
 
 function Contenido({ contexto }: { contexto: ContextoSesion }) {
@@ -76,8 +78,8 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     if (!seleccion) return;
     const control = new AbortController();
     listarVersiones(token, seleccion.producto_id, control.signal)
-      .then(setVersiones)
-      .catch(() => setVersiones([]));
+      .then((datos) => { if (!control.signal.aborted) setVersiones(datos); })
+      .catch((fallo) => { if (!control.signal.aborted) { setVersiones([]); setError(fallo instanceof Error ? fallo.message : "No se pudo cargar el historial."); } });
     return () => control.abort();
   }, [token, seleccion]);
 
@@ -187,7 +189,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       </section>
 
       {seleccion ? (
-        <section className="card main-card section-space">
+        <PanelDetalle titulo={`Receta de ${seleccion.producto_nombre}`} onCerrar={() => setSeleccion(null)} ocupado={guardando}><section className="card main-card section-space">
           <div className="section-heading">
             <div>
               <h2>{seleccion.producto_nombre}</h2>
@@ -271,7 +273,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               </div>
             </form>
           ) : null}
-        </section>
+        </section></PanelDetalle>
       ) : null}
     </>
   );

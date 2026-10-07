@@ -1,13 +1,15 @@
 """Casos de uso. Las tareas asíncronas y otros módulos llaman solo a este servicio."""
 from datetime import datetime, timezone
 from typing import Protocol
+import re
 
 from sqlalchemy.orm import Session
 
 from app.modules.ingredientes.servicio import obtener_ingredientes
+from app.integrations.proveedores.telegram import ClienteTelegram, ErrorTelegram
 
 from .esquemas import (OfertaCrear, OfertaPreferidaCompras, ProveedorCrear,
-                       VerificacionDestino)
+                       VerificacionDestino, ProveedorSalida)
 from .modelos import OfertaIngrediente, Proveedor
 from .repositorio import RepositorioProveedores
 
@@ -27,13 +29,18 @@ class Conflicto(ErrorDominio):
 class AdaptadorTelegram(Protocol):
     """Implementado en la capa de integración. Nunca devuelve ni registra la credencial."""
     def verificar_chat(self, chat_id: str) -> bool: ...
+    @property
+    def huella(self) -> str | None: ...
 
 
 class ServicioProveedores:
     def __init__(self, db: Session, telegram: AdaptadorTelegram | None = None):
         self.repo = RepositorioProveedores(db)
         self.db = db
-        self.telegram = telegram
+        try:
+            self.telegram = telegram if telegram is not None else ClienteTelegram.desde_configuracion()
+        except ErrorTelegram:
+            self.telegram = None
 
     # --- Proveedores ---
     def crear_proveedor(self, datos: ProveedorCrear) -> Proveedor:
@@ -44,8 +51,8 @@ class ServicioProveedores:
         self.db.flush()
         return p
 
-    def _proveedor(self, proveedor_id: int) -> Proveedor:
-        p = self.repo.proveedor_por_id(proveedor_id)
+    def _proveedor(self, proveedor_id: int, bloquear: bool = False) -> Proveedor:
+        p = self.repo.proveedor_por_id(proveedor_id, bloquear)
         if not p:
             raise NoEncontrado("Proveedor no encontrado")
         return p
@@ -57,34 +64,62 @@ class ServicioProveedores:
         return p
 
     def vincular_chat(self, proveedor_id: int, chat_id: str) -> Proveedor:
-        p = self._proveedor(proveedor_id)
+        chat_id = chat_id.strip()
+        if not re.fullmatch(r"-?[1-9][0-9]{0,18}", chat_id):
+            raise Conflicto("Usa el identificador numérico del chat de pruebas, sin @usuario, ceros iniciales ni teléfono.")
+        p = self._proveedor(proveedor_id, bloquear=True)
         if p.chat_id_pruebas != chat_id:
             p.chat_id_pruebas = chat_id
             p.destino_verificado = False  # cambiar el destino invalida la verificación
             p.destino_verificado_en = None
+            p.destino_credencial_huella = None
         self.db.flush()
         return p
 
     def verificar_destino(self, proveedor_id: int) -> VerificacionDestino:
-        p = self._proveedor(proveedor_id)
+        p = self._proveedor(proveedor_id, bloquear=True)
+        p.destino_verificado = False
+        p.destino_verificado_en = None
+        p.destino_credencial_huella = None
         if not p.chat_id_pruebas:
-            return VerificacionDestino(verificado=False, detalle="Sin chat vinculado")
+            self.db.flush()
+            return VerificacionDestino(verificado=False, codigo="SIN_CHAT", detalle="Sin chat vinculado")
         if self.telegram is None:
-            return VerificacionDestino(verificado=False, detalle="Adaptador Telegram no configurado")
+            self.db.flush()
+            return VerificacionDestino(verificado=False, codigo="CONFIGURACION_ILEGIBLE", detalle="Revisa la configuración protegida de Telegram.")
         try:
             ok = self.telegram.verificar_chat(p.chat_id_pruebas)
+        except ErrorTelegram as error:
+            self.db.flush()
+            return VerificacionDestino(verificado=False, codigo=error.codigo, detalle=str(error))
         except Exception:  # no filtrar detalles que puedan incluir la credencial
             ok = False
         p.destino_verificado = ok
         p.destino_verificado_en = datetime.now(timezone.utc) if ok else None
+        p.destino_credencial_huella = self.telegram.huella if ok else None
         self.db.flush()
         return VerificacionDestino(
-            verificado=ok, detalle="Destino verificado" if ok else "No se pudo verificar el destino")
+            verificado=ok, codigo="DESTINO_VERIFICADO" if ok else "DESTINO_NO_VERIFICADO",
+            detalle="Acceso al chat de pruebas verificado; no se envió ningún mensaje." if ok else "No se pudo verificar el destino")
+
+    def destino_vigente(self, p: Proveedor) -> bool:
+        return bool(p.destino_verificado and p.chat_id_pruebas and self.telegram
+                    and self.telegram.huella and p.destino_credencial_huella == self.telegram.huella)
+
+    def salida_proveedor(self, p: Proveedor) -> ProveedorSalida:
+        vigente = self.destino_vigente(p)
+        return ProveedorSalida.model_validate(p).model_copy(update={
+            "destino_verificado": vigente,
+            "destino_verificado_en": p.destino_verificado_en if vigente else None})
+
+    def consultar_destino(self, proveedor_id: int, *, bloquear: bool = False) -> ProveedorSalida:
+        """Interfaz pública para revisión/aprobación; no expone credencial ni huella."""
+        return self.salida_proveedor(self._proveedor(proveedor_id, bloquear=bloquear))
 
     def puede_enviar(self, proveedor_id: int) -> bool:
         """Destino no verificado bloquea el envío."""
         p = self._proveedor(proveedor_id)
-        return bool(p.activo and p.destino_verificado)
+        return bool(p.activo and self.destino_vigente(p))
 
     # --- Ofertas ---
     def crear_oferta(self, proveedor_id: int, datos: OfertaCrear) -> OfertaIngrediente:
@@ -136,10 +171,12 @@ class ServicioProveedores:
         motivo = None
         if not p.activo:
             motivo = "Proveedor inactivo"
-        elif not p.destino_verificado:
+        elif not self.destino_vigente(p):
             motivo = "Destino no verificado"
         return OfertaPreferidaCompras(
             oferta_id=o.id, proveedor_id=p.id, proveedor_codigo=p.codigo,
+            proveedor_nombre=p.nombre, proveedor_activo=p.activo,
+            chat_id_pruebas=p.chat_id_pruebas, destino_verificado=self.destino_vigente(p),
             ingrediente_id=o.ingrediente_id, unidad_compra=o.unidad_compra,
             factor_conversion=o.factor_conversion, minimo=o.minimo, multiplo=o.multiplo,
             compra_automatica_habilitada=motivo is None, motivo_bloqueo=motivo)

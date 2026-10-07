@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { BotonEnviar } from "@/components/forms/BotonEnviar";
 import { CampoSelect } from "@/components/forms/CampoSelect";
 import { CampoTexto } from "@/components/forms/CampoTexto";
+import { PanelDetalle } from "@/components/ui/PanelDetalle";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { TablaDatos, type Columna } from "@/components/tables/TablaDatos";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
@@ -171,8 +172,9 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       </section>
 
       {administrador && edicion ? (
-        <section className="card main-card section-space">
+        <PanelDetalle titulo={`Editar ${edicion.ingrediente.nombre}`} onCerrar={() => setEdicion(null)} ocupado={guardando}><section className="card main-card section-space">
           <h2>Editar {edicion.ingrediente.nombre}</h2>
+          {error && <EstadoPanel tono="alerta" titulo="Revisa el ingrediente" descripcion={error} />}
           <form onSubmit={guardarEdicion}>
             <div className="form-grid">
               <CampoTexto id="editar-nombre" etiqueta="Nombre" valor={edicion.nombre} onCambio={(v) => setEdicion({ ...edicion, nombre: v })} requerido />
@@ -186,7 +188,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
                 ayuda={
                   edicion.ingrediente.unidad_editable
                     ? undefined
-                    : "Bloqueada: la usan recetas o lotes. Si la unidad real es otra, registra un ingrediente nuevo."
+                    : "Esta unidad se conserva porque ya se usa en recetas o lotes. En Inventario puedes introducir ajustes en kg o litros; las cantidades grandes se muestran en esas unidades."
                 }
               />
               <CampoSelect
@@ -198,11 +200,11 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               />
             </div>
             <div className="form-actions">
-              <button type="button" className="button-secondary" onClick={() => setEdicion(null)}>Cancelar</button>
+              <button type="button" className="button-secondary" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</button>
               <BotonEnviar enviando={guardando} textoEnviando="Guardando…">Guardar cambios</BotonEnviar>
             </div>
           </form>
-        </section>
+        </section></PanelDetalle>
       ) : null}
 
       {administrador ? (
@@ -226,7 +228,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 
 export default function PaginaIngredientes() {
   return (
-    <ProtectedShell titulo="Ingredientes" descripcion="Insumos con unidad base única para recetas, lotes y compras.">
+    <ProtectedShell titulo="Ingredientes" descripcion="Ingredientes registrados y unidad utilizada para calcular recetas y stock.">
       {(contexto) => <Contenido contexto={contexto} />}
     </ProtectedShell>
   );

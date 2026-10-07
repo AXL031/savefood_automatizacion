@@ -19,6 +19,14 @@ EstadoFinal = Literal["COMPLETADA", "REINTENTANDO", "FALLIDA"]
 TIPOS_EJECUCION = frozenset(TipoEjecucion.__args__)
 
 
+def obtener_ejecucion(sesion: Session, ejecucion_id: int) -> EjecucionAutomatizacion:
+    """Consulta pública para consumidores que enlazan una ejecución durable."""
+    ejecucion = sesion.get(EjecucionAutomatizacion, ejecucion_id)
+    if ejecucion is None:
+        raise ErrorAPI(404, "EJECUCION_NO_ENCONTRADA", "Ejecución no encontrada")
+    return ejecucion
+
+
 def _json_normalizado(datos: dict) -> dict:
     try:
         return json.loads(json.dumps(datos, sort_keys=True, ensure_ascii=False, allow_nan=False))
@@ -89,6 +97,7 @@ def programar_propuesta(
     producto_ids: list[int],
     clave_idempotencia: str,
     creado_por: int,
+    modo_envio_pedidos: str | None = None,
 ) -> ProgramacionDemo:
     """Reserva programación y ejecución pendiente en la misma transacción."""
     if fecha_hora_simulada_local.tzinfo is not None:
@@ -100,6 +109,10 @@ def programar_propuesta(
     ):
         raise ValueError("Se requieren entre 1 y 5 productos únicos con IDs positivos")
     parametros = {"fecha_objetivo_demo": fecha_objetivo_demo, "producto_ids": sorted(producto_ids)}
+    if modo_envio_pedidos is not None:
+        if modo_envio_pedidos not in {"REQUIERE_APROBACION", "AUTOMATICO"}:
+            raise ValueError("Modo de envío no admitido")
+        parametros["modo_envio_pedidos"] = modo_envio_pedidos
     return programar_ejecucion(
         sesion, tipo="GENERAR_PROPUESTA", ejecutar_desde_utc=ejecutar_desde_utc,
         fecha_hora_simulada_local=fecha_hora_simulada_local, parametros=parametros,
@@ -240,3 +253,13 @@ def finalizar_intento(
     ejecucion.mensaje_error = None if estado == "COMPLETADA" else mensaje_error
     sesion.flush()
     return ejecucion
+
+
+def consultar_ejecucion(sesion: Session, ejecucion_id: int | None) -> EjecucionAutomatizacion | None:
+    """Lectura pública del sobre durable, sin bloquear ni confirmar al consumidor."""
+    return sesion.get(EjecucionAutomatizacion, ejecucion_id) if ejecucion_id is not None else None
+
+
+def consultar_ejecucion_por_clave(sesion: Session, clave: str) -> EjecucionAutomatizacion | None:
+    """Localiza la reserva idempotente de otro servicio por su clave pública."""
+    return sesion.scalar(select(EjecucionAutomatizacion).where(EjecucionAutomatizacion.clave_idempotencia == clave))

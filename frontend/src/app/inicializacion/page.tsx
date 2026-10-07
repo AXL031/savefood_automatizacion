@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { PasosAsistente } from "@/components/ui/PasosAsistente";
@@ -10,14 +11,14 @@ import { CampoFecha } from "@/components/forms/CampoFecha";
 import { CampoTexto } from "@/components/forms/CampoTexto";
 import { BotonEnviar } from "@/components/forms/BotonEnviar";
 import { ResumenErrores } from "@/components/forms/ResumenErrores";
-import { confirmarCarga, obtenerEstadoInicial, pedirVistaPrevia } from "@/services/inicializacion";
+import { confirmarCarga, obtenerEstadoInicial, pedirVistaPrevia, reintentarPreparacion } from "@/services/inicializacion";
 import type { ConfiguracionInicial, InformeCarga, VistaPrevia } from "@/types/inicializacion";
 import { formatearFechaHora } from "@/utils/fechas";
 
 const PASOS = [
   { titulo: "Elegir archivos y fechas", detalle: "Dos libros XLSX o los cinco CSV, más las fechas del escenario." },
   { titulo: "Revisar la vista previa", detalle: "Filas, productos, fechas cubiertas y errores por fila. No se guarda nada." },
-  { titulo: "Aceptar la carga", detalle: "Se persiste todo en una transacción; un fallo no deja datos a medias." },
+  { titulo: "Aceptar la carga", detalle: "Se guardan los datos juntos; un fallo no deja una carga a medias." },
 ];
 
 const ETIQUETAS: Record<ConfiguracionInicial["estado"], string> = {
@@ -45,7 +46,17 @@ const RANURAS = [
   { clave: "stock", etiqueta: "Stock inicial", ayuda: "stock_inicial.csv" },
 ] as const;
 
-function TarjetaEstado({ estado }: { estado: ConfiguracionInicial }) {
+const ESTADOS_TAREA = {
+  PENDIENTE: "En espera", EN_EJECUCION: "En curso", REINTENTANDO: "Reintento automático pendiente",
+  COMPLETADA: "Completada", FALLIDA: "Fallida",
+};
+
+function TarjetaEstado({ estado, administrador, reintentando, alReintentar }: {
+  estado: ConfiguracionInicial; administrador: boolean; reintentando: boolean; alReintentar: () => void;
+}) {
+  const puedeReintentar = estado.preparacion?.estado === "FALLIDA"
+    || estado.evaluacion?.estado === "FALLIDA"
+    || (estado.estado === "DATOS_CARGADOS" && !estado.preparacion);
   return (
     <section className="card">
       <div className="section-heading">
@@ -57,11 +68,11 @@ function TarjetaEstado({ estado }: { estado: ConfiguracionInicial }) {
       </div>
       <div className="pronostico-meta">
         <div>
-          <span>Fecha objetivo de la demo</span>
+          <span>Día histórico que se va a planificar</span>
           <strong><ValorOpcional valor={estado.fecha_objetivo_demo} textoAusente="Sin definir" /></strong>
         </div>
         <div>
-          <span>Referencia de stock</span>
+          <span>Fecha que representa el stock inicial</span>
           <strong><ValorOpcional valor={estado.fecha_referencia_stock} textoAusente="Sin definir" /></strong>
         </div>
         <div>
@@ -69,15 +80,20 @@ function TarjetaEstado({ estado }: { estado: ConfiguracionInicial }) {
           <strong>{estado.iniciada_en ? formatearFechaHora(estado.iniciada_en) : "Sin iniciar"}</strong>
         </div>
         <div>
-          <span>Huella de la solicitud</span>
+          <span>Identificador de la carga</span>
           <strong className="mono-corto">
             <ValorOpcional valor={estado.huella_solicitud?.slice(0, 16)} textoAusente="Sin carga" />
           </strong>
         </div>
       </div>
       {estado.mensaje_error ? (
-        <EstadoPanel tono="alerta" titulo="Queda trabajo pendiente" descripcion={estado.mensaje_error} />
+        <EstadoPanel tono="alerta" titulo="Preparación pendiente" descripcion={estado.mensaje_error} />
       ) : null}
+      {estado.preparacion && <p role="status">Preparación del modelo: {ESTADOS_TAREA[estado.preparacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.preparacion.id}`}>Ver ejecución #{estado.preparacion.id}</Link></p>}
+      {estado.evaluacion && <p role="status">Evaluación histórica: {ESTADOS_TAREA[estado.evaluacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.evaluacion.id}`}>Ver ejecución #{estado.evaluacion.id}</Link></p>}
+      {estado.evaluacion?.mensaje_error && <EstadoPanel tono="alerta" titulo="La evaluación necesita revisión" descripcion={estado.evaluacion.mensaje_error} />}
+      {estado.modelo_id && estado.estado === "MODELO_LISTO" && <p><Link href={`/panel?modelo_id=${estado.modelo_id}`}>Ver evaluación del modelo #{estado.modelo_id}</Link></p>}
+      {puedeReintentar && administrador && <div className="form-actions"><BotonEnviar type="button" enviando={reintentando} textoEnviando="Solicitando…" onClick={alReintentar}>Preparar modelo sin volver a cargar</BotonEnviar></div>}
     </section>
   );
 }
@@ -88,7 +104,7 @@ function ResumenVistaPrevia({ vista }: { vista: VistaPrevia }) {
     <>
       <div className="stats-grid">
         <div className="stat"><span>Ventas diarias</span><strong>{ventas.filas}</strong></div>
-        <div className="stat"><span>SKU con ventas</span><strong>{ventas.skus}</strong></div>
+        <div className="stat"><span>Productos con ventas</span><strong>{ventas.skus}</strong></div>
         <div className="stat"><span>Productos</span><strong>{catalogo.productos}</strong></div>
         <div className="stat"><span>Líneas de receta</span><strong>{catalogo.lineas_receta}</strong></div>
         <div className="stat"><span>Filas de stock</span><strong>{catalogo.filas_stock}</strong></div>
@@ -177,6 +193,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [validando, setValidando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState("");
+  const [reintentando, setReintentando] = useState(false);
 
   useEffect(() => {
     const control = new AbortController();
@@ -189,6 +206,32 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     return () => control.abort();
   }, [token]);
 
+  useEffect(() => {
+    if (!estado?.huella_solicitud) return;
+    const control = new AbortController();
+    let temporizador: ReturnType<typeof setTimeout>;
+    async function refrescar() {
+      try {
+        const actual = await obtenerEstadoInicial(token, control.signal);
+        if (!control.signal.aborted) setEstado(actual);
+      } catch (fallo) {
+        if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudo actualizar el estado.");
+      } finally {
+        if (!control.signal.aborted) temporizador = setTimeout(refrescar, 3000);
+      }
+    }
+    temporizador = setTimeout(refrescar, 3000);
+    return () => { control.abort(); clearTimeout(temporizador); };
+  }, [token, estado?.huella_solicitud]);
+
+  async function reintentar() {
+    setReintentando(true); setError("");
+    try { setEstado(await reintentarPreparacion(token)); }
+    catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo solicitar la preparación."); }
+    finally { setReintentando(false); }
+  }
+
+  const cargada = Boolean(estado?.huella_solicitud && estado.estado !== "PENDIENTE");
   const elegidos = Object.values(archivos).filter((archivo): archivo is File => archivo !== null);
   const paso = informe ? 2 : vista ? 1 : 0;
 
@@ -249,14 +292,17 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 
   return (
     <>
-      {estado ? <TarjetaEstado estado={estado} /> : null}
+      {estado ? <TarjetaEstado estado={estado} administrador={administrador} reintentando={reintentando} alReintentar={reintentar} /> : null}
+      {cargada && <EstadoPanel tono="info" titulo="La carga ya está guardada" descripcion="Ventas, recetas y lotes permanecen en la base. La preparación y evaluación continúan automáticamente; si fallan puedes reintentar sin adjuntar archivos." />}
+      {cargada && error && <EstadoPanel tono="alerta" titulo="No se pudo completar la solicitud" descripcion={error} />}
+      {!cargada && <>
 
       <section className="card main-card">
         <div className="section-heading">
           <div>
             <h2>Asistente de primera carga</h2>
             <p>
-              Los archivos se piden una sola vez. Después, PostgreSQL es la fuente de ventas y stock.
+              Los archivos se piden una sola vez. Después, el sistema utiliza su base local para las ventas y el inventario.
             </p>
           </div>
         </div>
@@ -271,7 +317,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           />
         ) : null}
 
-        <h3 className="section-space">Archivos</h3>
+        <p className="helper-text"><Link href="/inicializacion/piloto">Carga rápida del CSV bakery (solo ventas del piloto) →</Link></p><h3 className="section-space">Archivos</h3>
         <div className="form-grid">
           {RANURAS.map((ranura) => (
             <CampoArchivo
@@ -291,7 +337,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         <div className="form-grid">
           <CampoFecha
             id="fecha-objetivo"
-            etiqueta="Fecha objetivo de la demo"
+            etiqueta="Día histórico que se va a planificar"
             valor={objetivo}
             onCambio={(valor) => { setObjetivo(valor); setVista(null); }}
             ayuda="Debe caer en el tramo de prueba reservado. Para el piloto se propone 2022-08-24."
@@ -299,7 +345,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           />
           <CampoFecha
             id="fecha-referencia"
-            etiqueta="Referencia de stock"
+            etiqueta="Fecha que representa el stock inicial"
             valor={referencia}
             onCambio={(valor) => { setReferencia(valor); setVista(null); }}
             max={objetivo || undefined}
@@ -344,7 +390,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               <div className="form-grid">
                 <CampoTexto
                   id="clave-importacion"
-                  etiqueta="Clave de importación"
+                  etiqueta="Identificador de esta carga"
                   valor={clave}
                   onCambio={setClave}
                   ayuda="Estable: repetirla con los mismos archivos no vuelve a cargar."
@@ -367,12 +413,13 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         </section>
       ) : null}
 
+      </>}
       {informe ? (
         <section className="card">
           <div className="section-heading">
             <div>
               <h2>Resultado de la carga</h2>
-              <p>Huella de la solicitud registrada para reconocer un reintento idéntico.</p>
+              <p>Identificador de la carga registrada para reconocer un reintento idéntico.</p>
             </div>
           </div>
           <InformeFinal informe={informe} />
@@ -385,7 +432,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 export default function PaginaInicializacion() {
   return (
     <ProtectedShell
-      titulo="Primera carga"
+      titulo="Datos iniciales"
       descripcion="Asistente de inicialización: valida los archivos, muestra la vista previa y acepta la carga."
     >
       {(contexto) => <Contenido contexto={contexto} />}

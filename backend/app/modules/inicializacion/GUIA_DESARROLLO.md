@@ -17,9 +17,13 @@
 
 ## Punto de partida
 
-**Integración 30-09-2026:** La ruta completa ya pasa ServicioRecetasM01 y ServicioInventarioV01 en una sola sesión: DATOS_CARGADOS sin pendientes de esos puertos. Rollback de stock verificado. El piloto se conserva separado. Automatizar entrenamiento desde el asistente completo sigue pendiente.
+**Corrección piloto→primera carga (30-09-2026, Codex para Axel):** una instalación PENDIENTE sin huella aceptada puede completar el mismo catálogo bakery con cinco CSV. E03 consume las opciones públicas de Productos/Ventas para adoptar códigos y selección conservando IDs, reutilizar ventas idénticas y cargar solo pares nuevos explícitos. Conflictos o fallo de stock revierten toda la sesión; repetición aceptada no duplica. Ver condiciones y errores en el contrato de importaciones. No requiere migración ni reinicialización.
 
-**E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa sigue sin prueba final por depender de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
+**Paso 1 · 30-09-2026:** E03→ML disponible en este corte: confirmación reserva preparación automática, estado enlaza ejecución/modelo/evaluación y POST reintentar-preparacion reutiliza una reserva activa o crea otra tras fallo sin importar. ENTRENANDO se confirma al iniciar el intento; ver contrato E03 en docs/api/contrato-importaciones.md. PostgreSQL/Redis/CatBoost y Beat real verificados.
+
+**Integración 30-09-2026:** La ruta completa ya pasa ServicioRecetasM01 y ServicioInventarioV01 en una sola sesión: DATOS_CARGADOS sin pendientes de esos puertos. Rollback de stock verificado. El piloto se conserva separado. Entrenamiento automático integrado en el paso 1.
+
+**E02 y E03 implementados (29-09-2026), verificados en SQLite; `0004` aplicado en PostgreSQL local.** La confirmación completa y su preparación ML pasaron PostgreSQL/Redis en el paso 1 de cueva. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 | Archivo | Responsabilidad |
 |---|---|
@@ -30,9 +34,14 @@
 | `puertos.py` | `ServicioRecetas` (Max) y `ServicioInventario` (Vera), invocados con la misma sesión. |
 | `servicio.py` | Vista previa sin escritura, carga atómica y transiciones de estado. |
 | `rutas.py` | `GET /inicializacion/estado`, `POST /inicializacion/vista-previa` y `POST /inicializacion/confirmar`. |
+| `preparacion.py` | Alias de compatibilidad de la reserva pública; no mantiene una política propia. |
 | `piloto.py` | Carga rápida del CSV bakery en `POST /inicializacion/piloto-bakery` y reserva `PREPARAR_MODELO`; flujo separado del asistente completo. |
 
-Migración `0004_e03_inicializacion`, sucesora de `0003_pronosticos`. Mientras falten los servicios de Max y Vera, la carga persiste catálogo y ventas y deja el estado en `PENDIENTE`: una carga parcial **no** declara la instalación inicializada. El CSV piloto usa su propio contrato y no altera esta fila. La lista curada se localiza desde el repositorio o `/code` en Docker.
+Migración `0004_e03_inicializacion`, sucesora de `0003_pronosticos`. La ruta completa consume los puertos reales de Max/Vera; compatibilidad sin puertos queda solo para pruebas parciales y nunca agenda ML. El CSV piloto usa su propio contrato y no altera esta fila. La lista curada se localiza desde el repositorio o `/code` en Docker.
+
+## Integración E03/K01
+
+E03/K01 conciliado: servicio.py mantiene reserva, progreso y callbacks durables; preparacion.py conserva el alias local. La cadena publicada usa 0008_e03_preparacion_ml; las revisiones locales están archivadas sin alterar bytes, con puente seguro documentado en la guía de migraciones. Cinco CSV sintéticos en backend/tests/fixtures/primera_carga/ y pruebas de ambos cortes adaptadas al contrato de importaciones.
 
 ## Trabajo en esta carpeta
 

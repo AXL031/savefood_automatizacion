@@ -68,30 +68,62 @@ def cargar_catalogo_bakery(sesion: Session, lista: Path) -> int:
 
 
 def registrar_catalogo(
-    sesion: Session, entradas: list[EntradaCatalogo], origen: str = ORIGEN_BAKERY
+    sesion: Session, entradas: list[EntradaCatalogo], origen: str = ORIGEN_BAKERY,
+    *, completar_piloto: bool = False,
 ) -> dict[str, int]:
     """Registra el catálogo del asistente y devuelve `codigo -> producto_id`.
 
     No confirma la sesión. Si el catálogo ya existe con los mismos códigos y SKU,
     los reutiliza: repetir la primera carga con el mismo archivo no duplica. Un
-    catálogo existente distinto es conflicto, no una fusión silenciosa.
+    catálogo existente distinto es conflicto. `completar_piloto` permite adoptar
+    los códigos y selección de la primera carga sobre el mismo catálogo bakery,
+    identificado por sus códigos técnicos y SKU, conservando todos los IDs.
     """
     if not entradas:
         raise ErrorAPI(422, "CATALOGO_INVALIDO", "El catálogo no puede estar vacío.")
+    if len({entrada.codigo for entrada in entradas}) != len(entradas) or len({entrada.sku_externo for entrada in entradas}) != len(entradas):
+        raise ErrorAPI(422, "CATALOGO_INVALIDO", "El catálogo contiene códigos o SKU repetidos.")
 
-    existentes = {
-        codigo: producto_id
-        for codigo, producto_id in sesion.execute(select(Producto.codigo, Producto.id))
-    }
+    productos = list(sesion.scalars(select(Producto).with_for_update()))
+    existentes = {producto.codigo: producto.id for producto in productos}
     if existentes:
-        esperados = {entrada.codigo for entrada in entradas}
-        if set(existentes) != esperados:
+        skus = list(sesion.scalars(select(SkuProducto).where(SkuProducto.origen == origen)))
+        por_sku = {sku.sku_externo: sku.producto_id for sku in skus}
+        por_id = {producto.id: producto for producto in productos}
+        mapeo_valido = (
+            set(por_sku) == {entrada.sku_externo for entrada in entradas}
+            and set(por_sku.values()) == set(por_id)
+            and len(por_sku) == len(productos) == len(entradas)
+            and all(sku.activo for sku in skus)
+            and all(producto.activo for producto in productos)
+        )
+        mismos_codigos = mapeo_valido and all(
+            existentes.get(entrada.codigo) == por_sku[entrada.sku_externo]
+            for entrada in entradas
+        )
+        es_piloto = mapeo_valido and origen == ORIGEN_BAKERY and all(
+            por_id[producto_id].codigo == "bakery-" + hashlib.sha256(sku.encode("utf-8")).hexdigest()[:20]
+            for sku, producto_id in por_sku.items()
+        )
+        codigos_sin_colision = mapeo_valido and all(
+            entrada.codigo not in existentes or existentes[entrada.codigo] == por_sku[entrada.sku_externo]
+            for entrada in entradas
+        )
+        if not mismos_codigos and not (completar_piloto and es_piloto and codigos_sin_colision):
             raise ErrorAPI(
                 409,
                 "CATALOGO_DIFERENTE",
-                "Ya hay un catálogo distinto cargado; reinicializa antes de cargar otro.",
+                "El catálogo cargado no coincide con los códigos y SKU de esta entrega; no se modificó nada.",
             )
-        return existentes
+        mapa = {entrada.codigo: por_sku[entrada.sku_externo] for entrada in entradas}
+        if completar_piloto:
+            for entrada in entradas:
+                producto = por_id[mapa[entrada.codigo]]
+                producto.codigo = entrada.codigo
+                producto.nombre = entrada.nombre
+                producto.demostrar = entrada.demostrar
+            sesion.flush()
+        return mapa
 
     mapa: dict[str, int] = {}
     for entrada in entradas:

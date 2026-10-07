@@ -14,6 +14,7 @@ class ProgramarPropuesta(BaseModel):
     fecha_hora_simulada_local: datetime
     fecha_objetivo_demo: date
     producto_ids: list[PositiveInt] = Field(min_length=1, max_length=5)
+    modo_envio_pedidos: Literal["REQUIERE_APROBACION", "AUTOMATICO"] | None = None
     clave_idempotencia: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$")
 
     @field_validator("ejecutar_desde_utc")

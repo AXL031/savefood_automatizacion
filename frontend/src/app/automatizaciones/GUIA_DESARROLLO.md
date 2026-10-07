@@ -48,3 +48,12 @@ La ruta compone `page.tsx` y componentes del feature correspondiente. Usar layou
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Claridad y flujo completo · 30-09-2026
+
+Elegir productos por nombre (1–5), hora real y reloj histórico, modo manual/automático conservado y confirmación explícita del chat propio. Ejecución única, no recurrencia. Resultado enlaza plan y compras, datos técnicos desplegables. No se afirma ENVIADO desde COMPLETADA del motor.
+
+
+## Ajustes de interfaz · 30-09-2026
+
+Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Las APIs mantienen listas recientes hasta 50 registros, identificadas en la pantalla; paginar esas filas no amplía el contrato histórico.

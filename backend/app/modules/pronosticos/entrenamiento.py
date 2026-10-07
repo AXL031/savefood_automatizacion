@@ -39,7 +39,7 @@ def _ventas_para_entrenamiento(sesion: Session):
     return leer_historial(sesion, ids, limites[0], limites[1] + timedelta(days=1))
 
 
-def preparar_modelo(sesion: Session, *, version: str, ejecucion_id: int) -> ArtefactoModelo:
+def preparar_modelo(sesion: Session, *, version: str, ejecucion_id: int, clave_evaluacion: str | None = None) -> ArtefactoModelo:
     """Registra un CBM versionado y agenda su evaluación; no hace commit."""
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", version):
         raise ErrorDatos("La versión del modelo contiene caracteres no válidos.")
@@ -53,6 +53,8 @@ def preparar_modelo(sesion: Session, *, version: str, ejecucion_id: int) -> Arte
     if existente is not None:
         if existente.huella_datos_entrenamiento != huella:
             raise ErrorDatos("La versión del modelo ya corresponde a otro historial.")
+        if clave_evaluacion:
+            crear_o_recuperar_ejecucion(sesion, "EVALUAR_MODELO", clave_evaluacion, {"modelo_id": existente.id})
         return existente
 
     preparar_ruta_ml()
@@ -70,7 +72,10 @@ def preparar_modelo(sesion: Session, *, version: str, ejecucion_id: int) -> Arte
             escritor.writerow(["comercio_id", "sucursal_id", "fecha_local", "producto_id", "unidades_vendidas"])
             escritor.writerows((comercio, sucursal, v.fecha_local.isoformat(), v.sku_externo, v.unidades_vendidas) for v in ventas)
         if not destino.exists():
-            particion = calcular_particion(csv_path, comercio, sucursal)
+            try:
+                particion = calcular_particion(csv_path, comercio, sucursal)
+            except ValueError as exc:
+                raise ErrorDatos(str(exc)) from exc
             staging = raiz / f".staging-{version}-{huella[:12]}-{uuid4().hex}"
             staging.mkdir()
             try:
@@ -95,7 +100,7 @@ def preparar_modelo(sesion: Session, *, version: str, ejecucion_id: int) -> Arte
     sesion.add(artefacto)
     sesion.flush()
     crear_o_recuperar_ejecucion(
-        sesion, "EVALUAR_MODELO", f"evaluar-modelo-{version}-{huella[:12]}",
+        sesion, "EVALUAR_MODELO", clave_evaluacion or f"evaluar-modelo-{version}-{huella[:12]}",
         {"modelo_id": artefacto.id},
     )
     return artefacto

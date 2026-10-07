@@ -8,9 +8,10 @@ os.environ.setdefault("JWT_SECRET", "clave-local-para-pruebas-de-inicializacion"
 import pytest
 from fastapi.testclient import TestClient
 from pwdlib import PasswordHash
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
+from uuid import uuid4
 
 from app.core.base import Base
 from app.core.base_datos import obtener_sesion
@@ -63,19 +64,128 @@ def archivos(ventas: bytes = VENTAS) -> list[tuple[str, tuple[str, bytes, str]]]
 FECHAS = {"fecha_objetivo_demo": "2022-08-24", "fecha_referencia_stock": "2022-08-23"}
 
 
-@pytest.fixture
-def cliente():
-    motor = create_engine(
-        "sqlite+pysqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+def sembrar_piloto(tmp_path):
+    from datetime import date
+    from sqlalchemy import select
+    from app.modules.productos.servicio import cargar_catalogo_bakery, listar_skus_bakery
+    from app.modules.ventas.servicio import registrar_ventas_diarias
+    from app.modules.ventas.modelos import RevisionVenta
 
-    @event.listens_for(motor, "connect")
-    def registrar_char_length(conexion, _registro):
-        conexion.create_function("char_length", 1, len)
+    catalogo = tmp_path / "piloto.md"
+    catalogo.write_text("| Producto | Precio(s) válido(s) |\n|---|---:|\n"
+                        "| BAGUETTE | 1 |\n| CROISSANT | 1 |\n| BANETTE | 1 |\n", encoding="utf-8")
+    with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+        cargar_catalogo_bakery(sesion, catalogo)
+        ids = {sku: producto_id for producto_id, sku in listar_skus_bakery(sesion).items()}
+        registrar_ventas_diarias(sesion, {(ids["BAGUETTE"], date(2022, 8, 21)): 12},
+                                "piloto-previo", "a" * 64, 1, "Carga inicial bakery")
+        sesion.commit()
+        revision_id = sesion.scalar(select(RevisionVenta.id))
+    return ids, revision_id
+
+
+def test_completar_piloto_conserva_ids_historial_y_no_duplica(cliente, tmp_path):
+    from sqlalchemy import select, func
+    from app.modules.productos.modelos import Producto
+    from app.modules.ventas.modelos import VentaDiaria, RevisionVenta, ImportacionVenta
+    from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
+
+    ids, revision_id = sembrar_piloto(tmp_path)
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    primera = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "completa-1"},
+                           files=archivos(), headers=admin)
+    assert primera.status_code == 201, primera.text
+    assert primera.json()["datos"]["ventas_diarias"] == 3
+    productos = cliente.get("/api/v1/productos", headers=admin).json()["datos"]
+    assert {p["codigo"]: p["id"] for p in productos} == {sku.lower(): pid for sku, pid in ids.items()}
+    assert all(p["demostrar"] for p in productos)
+    segunda = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "completa-1"},
+                           files=archivos(), headers=admin)
+    assert segunda.json()["datos"]["ya_estaba_cargada"] is True
+    with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+        assert sesion.scalar(select(func.count()).select_from(Producto)) == 3
+        assert sesion.scalar(select(func.count()).select_from(VentaDiaria)) == 4
+        assert sesion.scalar(select(func.count()).select_from(RevisionVenta)) == 4
+        assert sesion.get(RevisionVenta, revision_id).unidades_vendidas == 12
+        venta = sesion.get(VentaDiaria, sesion.get(RevisionVenta, revision_id).venta_id)
+        assert sesion.get(ImportacionVenta, venta.importacion_id).clave_importacion == "piloto-previo"
+        assert sesion.scalar(select(func.count()).select_from(ImportacionVenta)) == 2
+        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 1
+
+
+@pytest.mark.parametrize("fallo", ["unidades", "omision", "sku", "inactivo", "stock"])
+def test_completar_piloto_conflicto_revierte_toda_la_carga(cliente, tmp_path, fallo):
+    from sqlalchemy import select, func
+    from app.modules.productos.modelos import Producto, SkuProducto
+    from app.modules.ventas.modelos import VentaDiaria, RevisionVenta, ImportacionVenta
+    from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
+
+    ids, _ = sembrar_piloto(tmp_path)
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    entrega = dict((nombre, crudo) for _, (nombre, crudo, _) in archivos())
+    codigo = "HISTORIAL_DIFERENTE"
+    if fallo == "unidades":
+        entrega["ventas.csv"] = VENTAS.replace(b"BAGUETTE,12", b"BAGUETTE,13")
+    elif fallo == "omision":
+        entrega["ventas.csv"] = VENTAS.replace(b"2022-08-21,BAGUETTE,12\r\n", b"").replace(b"2022-08-21,BAGUETTE,12\n", b"")
+    elif fallo == "sku":
+        entrega["productos.csv"] = PRODUCTOS.replace(b"baguette,Baguette,BAGUETTE", b"baguette,Baguette,BANETTE").replace(
+            b"banette,Banette,BANETTE", b"banette,Banette,BAGUETTE")
+        # Un catálogo ordinario no puede cambiar la identidad de códigos ya usados.
+        with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+            for sku, pid in ids.items():
+                sesion.get(Producto, pid).codigo = sku.lower()
+            sesion.commit()
+        codigo = "CATALOGO_DIFERENTE"
+    elif fallo == "inactivo":
+        with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+            sesion.scalar(select(SkuProducto).where(SkuProducto.sku_externo == "BAGUETTE")).activo = False
+            sesion.commit()
+        codigo = "CATALOGO_DIFERENTE"
+    else:
+        entrega["stock_inicial.csv"] = STOCK.replace(b"2022-08-25", b"2022-09-25")
+        codigo = "VIDA_UTIL_EXCEDIDA"
+    respuesta = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "conflicto-piloto"},
+                             files=[("archivos", (nombre, crudo, "text/csv")) for nombre, crudo in entrega.items()], headers=admin)
+    assert respuesta.status_code in (409, 422), respuesta.text
+    assert respuesta.json()["error"]["codigo"] == codigo
+    assert cliente.get("/api/v1/ingredientes", headers=admin).json()["datos"] == []
+    with next(app.dependency_overrides[obtener_sesion]()) as sesion:
+        assert all(not p.demostrar for p in sesion.scalars(select(Producto)))
+        if fallo != "sku":
+            assert all(p.codigo.startswith("bakery-") for p in sesion.scalars(select(Producto)))
+        assert sesion.scalar(select(func.count()).select_from(VentaDiaria)) == 1
+        assert sesion.scalar(select(func.count()).select_from(RevisionVenta)) == 1
+        assert sesion.scalar(select(func.count()).select_from(ImportacionVenta)) == 1
+        assert sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion)) == 0
+
+
+@pytest.fixture
+def cliente(monkeypatch, tmp_path):
+    # Identidad de credencial simulada; nunca consulta Telegram en esta fixture.
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:token-falso-para-pruebas-locales")
+    monkeypatch.setenv("TELEGRAM_CONFIG_DIR", str(tmp_path / "telegram-secrets"))
+    admin_db = None
+    esquema = None
+    if os.getenv("E03_POSTGRES_TEST") == "1":
+        url = os.environ["DATABASE_URL"]
+        assert url.startswith("postgresql")
+        esquema = "e03_test_" + uuid4().hex
+        admin_db = create_engine(url)
+        with admin_db.begin() as conexion:
+            conexion.execute(text(f'CREATE SCHEMA "{esquema}"'))
+        motor = create_engine(url, connect_args={"options": f"-csearch_path={esquema}"})
+    else:
+        motor = create_engine("sqlite+pysqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+        @event.listens_for(motor, "connect")
+        def registrar_char_length(conexion, _registro):
+            conexion.create_function("char_length", 1, len)
 
     Base.metadata.create_all(motor)
+    from app.modules.inicializacion.modelos import ConfiguracionInicial
+    with Session(motor) as inicial:
+        inicial.add(ConfiguracionInicial(id=1, estado="PENDIENTE"))
+        inicial.commit()
     cifrador = PasswordHash.recommended()
     with Session(motor) as sesion:
         sesion.add(Negocio(id=1, nombre="Prueba", zona_horaria="America/Lima", moneda="PEN"))
@@ -98,6 +208,10 @@ def cliente():
         yield prueba
     app.dependency_overrides.clear()
     motor.dispose()
+    if admin_db is not None:
+        with admin_db.begin() as conexion:
+            conexion.execute(text(f'DROP SCHEMA "{esquema}" CASCADE'))
+        admin_db.dispose()
 
 
 def test_frontera_carga_recetas_stock_y_versiones(cliente):
@@ -135,9 +249,11 @@ def test_frontera_stock_invalido_revierte_carga_completa(cliente):
     assert cliente.get("/api/v1/productos", headers=admin).json()["datos"] == []
     assert cliente.get("/api/v1/ingredientes", headers=admin).json()["datos"] == []
     assert cliente.get("/api/v1/recetas", headers=admin).json()["datos"] == []
+    assert cliente.get("/api/v1/inicializacion/estado", headers=admin).json()["datos"]["preparacion"] is None
 
 
-def test_proveedores_api_permisos_referencia_y_oferta(cliente):
+def test_proveedores_api_permisos_referencia_y_oferta(cliente, monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "")
     admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
     operador = cabecera(token(cliente, "operador@example.com", "clave-segura-operador"))
     assert cliente.get("/api/v1/proveedores").status_code == 401
@@ -157,7 +273,7 @@ def test_proveedores_api_permisos_referencia_y_oferta(cliente):
     assert preferida["compra_automatica_habilitada"] is False
     verificacion = cliente.post(f"/api/v1/proveedores/{pid}/verificar-destino", headers=admin)
     assert verificacion.json()["datos"]["verificado"] is False
-    assert "no configurado" in verificacion.json()["datos"]["detalle"]
+    assert verificacion.json()["datos"]["codigo"] == "TOKEN_NO_CONFIGURADO"
 
 
 def test_stock_cero_caducidad_ajuste_idempotente_y_saldo(cliente):
@@ -187,6 +303,34 @@ def test_stock_cero_caducidad_ajuste_idempotente_y_saldo(cliente):
     assert negativo.status_code == 409
     vencidos = cliente.get("/api/v1/inventario/disponibilidad?fecha=2022-08-26", headers=admin).json()["datos"]
     assert next(f for f in vencidos if f["codigo"] == "baguette")["cantidad_disponible"] == "0"
+
+
+def test_paginacion_ventas_recorrer_filtrar_y_validar(cliente: TestClient):
+    admin = cabecera(token(cliente, "admin@example.com", "clave-segura-admin"))
+    carga = cliente.post("/api/v1/inicializacion/confirmar", data={**FECHAS, "clave_importacion": "paginacion"},
+                         files=archivos(), headers=admin)
+    assert carga.status_code == 201, carga.text
+    ruta = "/api/v1/ventas"
+    primera = cliente.get(ruta, params={"limite": 2}, headers=admin).json()
+    segunda = cliente.get(ruta, params={"limite": 2, "desplazamiento": 2}, headers=admin).json()
+    assert primera["metadatos"]["total"] == segunda["metadatos"]["total"] == 4
+    assert len(primera["datos"]) == len(segunda["datos"]) == 2
+    ids = [fila["id"] for pagina in (primera, segunda) for fila in pagina["datos"]]
+    completa = cliente.get(ruta, headers=admin).json()["datos"]
+    assert ids == [fila["id"] for fila in completa]
+    assert len(set(ids)) == 4
+    vacia = cliente.get(ruta, params={"desplazamiento": 4}, headers=admin).json()
+    assert vacia["datos"] == [] and vacia["metadatos"]["total"] == 4
+    filtrada = cliente.get(ruta, params={"desde": "2022-08-21", "hasta": "2022-08-21"}, headers=admin).json()
+    assert filtrada["metadatos"]["total"] == 2
+    assert any(fila["unidades_vendidas"] == 0 for fila in filtrada["datos"])
+    producto = completa[0]["producto_id"]
+    individual = cliente.get(ruta, params={"producto_id": producto, "limite": 1}, headers=admin).json()
+    assert individual["metadatos"]["total"] == sum(fila["producto_id"] == producto for fila in completa)
+    assert cliente.get(ruta, params={"desplazamiento": -1}, headers=admin).status_code == 422
+    assert cliente.get(ruta, params={"limite": 501}, headers=admin).status_code == 422
+    assert cliente.get(ruta, params={"desde": "2022-08-23", "hasta": "2022-08-21"}, headers=admin).status_code == 422
+    assert cliente.get(ruta).status_code == 401
 
 
 def token(cliente: TestClient, correo: str, contrasena: str) -> str:

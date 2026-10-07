@@ -36,3 +36,22 @@ Navegación identifica correctamente funciones disponibles y estado de la demo.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Inicio y navegación · 30-09-2026
+
+Ruta / implementada como página principal protegida con bienvenida y consultas reales de inicialización/modelo, últimos planes y pedidos pendientes de las últimas 50 propuestas; errores parciales se muestran sin sustituirlos por cero. Accesos a inventario, recetas, Proveedores/Telegram, Compras, evaluación y automatizaciones. Login exitoso y marca FoodSave enlazan a /. La página /panel conserva la evaluación histórica de Kevin.
+
+Menú de escritorio dentro de sidebar-menu: altura disponible, min-height:0, overflow-y:auto, teclado y scroll independientes; marca/cierre de sesión permanecen visibles. En móvil se mantiene navegación horizontal por grupo y desplazamiento normal de página. Usuarios solo visible a Administrador. Implementación por Codex para Axel en coordinación E04 de Edu; no añade datos simulados al producto.
+
+## Claridad y flujo completo · 30-09-2026
+
+Todas las rutas disponibles consumen GuiaPantalla. Menú por etapas con desplegable móvil; Inicio orienta el recorrido. No usar mensajes de funciones pendientes si la ruta/API ya está implementada. Labels técnicos en detalles. Tablas anchas con scroll horizontal. Ver especificacion-visual.md y registro Sanchez.
+
+
+## Navegación, páginas y detalles · 30-09-2026
+
+AppShell se monta en layout.tsx: mantiene sesión, sidebar y encabezado entre rutas. ProtectedShell aporta título/guía/contenido de cada pantalla. Navegar con Link no vuelve a consultar perfil/negocio; 401 y cerrar sesión limpian el contexto. Tablas disponibles consumen TablaPaginada/TablaDatos; detalles y edición de registros usan PanelDetalle.
+
+## Dashboard y Reportes de lectura · 01-10-2026
+
+Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` con períodos inclusivos, versión del modelo, tablas paginadas, detalle en diálogo y CSV completo del período. [Contrato](../../../docs/api/contrato-informes.md). Ventas publica `resumen_ventas`/`periodo_ventas`; Compras `resumen_pedidos`/`periodo_propuestas` cuenta pedidos sin multiplicar intentos; K03 admite filtros `desde`/`hasta` opcionales conservando la consulta anterior sin filtros. Informes coordina únicamente interfaces públicas. No migra, entrena, modifica stock ni envía mensajes. Fechas ausentes no se rellenan con cero. Registro/evidencia en Bohorquez y coordinación Cueva.

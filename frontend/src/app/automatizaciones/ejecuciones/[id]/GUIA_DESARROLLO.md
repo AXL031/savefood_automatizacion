@@ -48,3 +48,7 @@ La ruta compone `page.tsx` y componentes del feature correspondiente. Usar layou
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Corte M02–M04 · 06-10-2026
+
+Si el resultado contiene `plan_id`, ofrece enlace al detalle real de producción y faltantes en `/planificacion?plan_id=...`.

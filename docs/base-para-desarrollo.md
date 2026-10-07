@@ -19,10 +19,10 @@
 | Puerta | Entrega verificable | Responsable principal según la distribución actual | Estado |
 |---|---|---|---|
 | 0. Núcleo coherente | Validación de configuración, error uniforme, tipos de interfaz acordes a los estados del prototipo, CI verde y Compose reproducido en otra PC | Axel; Edu coordina componentes compartidos | Hecha salvo prueba en otra PC |
-| 1. Persistencia | Migraciones `0002`–`0007` con FK, `CHECK`, unicidad y modelos de datos, incluido proveedor, oferta, pedido, líneas y envíos; migración arriba/abajo probada con base nueva | Axel coordina; cada dueño aporta su esquema según el [diccionario](base_de_datos/diccionario-de-datos.md) | Hecha hasta `0007`; faltan plan, pedidos y promoción |
-| 2. Primera carga | Archivos de ejemplo versionados sin datos personales, validación/vista previa, carga atómica, segunda carga idéntica sin duplicados y rechazo completo de SKU desconocido | Edu (asistente, estado, productos y ventas); Max (ingredientes/recetas); Vera (apertura de stock) | Hecha; faltan archivos de ejemplo versionados |
+| 1. Persistencia | Migraciones `0002`–`0007` con FK, `CHECK`, unicidad y modelos de datos, incluido proveedor, oferta, pedido, líneas y envíos; migración arriba/abajo probada con base nueva | Axel coordina; cada dueño aporta su esquema según el [diccionario](base_de_datos/diccionario-de-datos.md) | Hecha hasta `0009`; faltan pedidos y promoción |
+| 2. Primera carga | Archivos de ejemplo versionados sin datos personales, validación/vista previa, carga atómica, segunda carga idéntica sin duplicados y rechazo completo de SKU desconocido | Edu (asistente, estado, productos y ventas); Max (ingredientes/recetas); Vera (apertura de stock) | Hecha; cinco CSV sintéticos disponibles para repetir E03/K01 |
 | 3. Modelo | Entrenamiento fuera de HTTP y del notebook, `.cbm` persistido con huella y partición, vector de inferencia validado, backtest sin fuga del día objetivo | Kevin; Axel integra ejecución durable | Hecha |
-| 4. Plan y evaluación | Programación próxima ejecutada por Beat, una corrida y un plan por clave/entrada, faltantes con unidad, comparación posterior con ventas reales y cobertura visible | Kevin (pronóstico, evaluación y panel); Max (plan/necesidades); Vera (stock); Axel (Beat) | Pendiente: plan (M02–M03) |
+| 4. Plan y evaluación | Programación próxima ejecutada por Beat, una corrida y un plan por clave/entrada, faltantes con unidad, comparación posterior con ventas reales y cobertura visible | Kevin (pronóstico, evaluación y panel); Max (plan/necesidades); Vera (stock); Axel (Beat) | Hecha localmente: M02–M04, programador y evaluación; CI remoto/otra PC pendientes |
 | 5. Pedidos y canal | Un pedido por plan/proveedor con líneas trazables; aprobación manual y modo automático probados; mensaje real al chat de pruebas con `message_id` y fallo incierto sin reenvío ciego | Leonardo Aguirre (compras y Telegram); Axel (configuración y worker) | Pendiente (L02–L04) |
 | 6. Promoción | Ajuste atómico de lote, programación próxima, sugerencia o rechazo guardado con regla/version/horas y entrega repetida sin segundo efecto | Leonardo Vera (stock, regla y resultado); Axel (orquestación) | Pendiente (V03) |
 | 7. Demo reproducible | Desde base vacía: migrar, cargar, entrenar, programar, comparar, pedir, enviar al chat de pruebas, ajustar y observar trazas. Probar caída transitoria, reintento y reentrega de Beat | Todo el equipo; Axel coordina la integración | Pendiente |
@@ -32,8 +32,8 @@ Ninguna puerta se declara terminada por documentación o maqueta. La evidencia m
 ## Riesgos abiertos
 
 - **Recompra entre planes:** Max y Aguirre deben cerrar cómo evitar un segundo pedido cuando se recalcula el plan de la misma fecha antes de habilitar compras automáticas.
-- **Archivos de ejemplo:** solo está versionado el CSV `bakery`. Faltan plantillas XLSX o los cinco CSV de catálogo, recetas y stock para demostrar la primera carga desde cero.
-- **Verificación en PostgreSQL:** M01, V01/V02 y L01 se integraron y probaron en SQLite; la concurrencia y `alembic check` dependen del CI con PostgreSQL/Redis.
+- **Archivos de ejemplo:** cinco CSV sintéticos disponibles en `backend/tests/fixtures/primera_carga/`; documentan fechas y limitaciones del escenario. No representan ventas de un comercio real.
+- **Verificación en PostgreSQL:** la cadena de migraciones sobre esquemas vacíos, concurrencia V02 y la frontera E03/K01 con worker/Beat reales ya pasaron localmente. La validación remota de CI y el arranque en otra PC siguen pendientes; plan/evaluación programados también verificados; pedidos y Telegram pendientes.
 - **Interfaz:** la navegación y los estilos aún no siguen la [especificación visual](diseno/especificacion-visual.md#pendiente-en-el-código).
 
 ## Regla para cambiar esta base

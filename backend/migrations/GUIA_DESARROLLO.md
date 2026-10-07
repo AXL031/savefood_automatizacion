@@ -1,5 +1,37 @@
 # Guía de desarrollo — Migraciones y metadatos
 
+## Conciliación de las revisiones locales · 06-10-2026
+
+La cadena publicada de `origin/cueva` conserva sus revisiones y llega a
+`0014_l04_recuperacion`. Las dos revisiones locales `0008_e03_modelo.py` y
+`0009_m02_planes.py` mantienen exactamente su contenido en esta carpeta,
+fuera de `versions/`; no son nuevas cabezas ni se ejecutan en una base nueva.
+
+Si una base tiene uno de esos IDs, hacer copia de seguridad y detener API,
+worker y Beat antes de ejecutar:
+
+```sh
+docker compose stop api worker beat
+docker compose run --rm --no-deps migraciones python migrations/conciliar_local.py
+docker compose up -d
+docker compose exec -T api alembic current --check-heads
+docker compose exec -T api alembic check
+```
+
+Construir previamente las imágenes del código conciliado. El puente usa una
+única transacción PostgreSQL: conserva el enlace de preparación, artefactos,
+catálogos, ventas, recetas, lotes y movimientos, adopta el esquema publicado
+y cambia la revisión solo después de comparar todos los metadatos. Se
+detiene sin eliminar datos si hay tareas activas o planes/necesidades
+locales guardados; esos casos necesitan convertir sus snapshots en una
+migración específica. No marcar una revisión con `stamp` para saltar DDL.
+En una base publicada ya en 0014, repetir el puente es una lectura sin cambio.
+
+`test_conciliacion_migraciones.py`, con `E03_POSTGRES_TEST=1`, comprueba en
+esquemas aislados conservación de catálogo/estado/enlace/modelo, rollback de
+un fallo intermedio y rechazo de planes existentes. Una base nueva utiliza
+`alembic upgrade head` normalmente. Esta conciliación no transmite Telegram.
+
 **Carpeta:** `backend/migrations`.
 
 **Responsable:** Axel Cueva. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.
@@ -15,6 +47,10 @@
 - [docs/base_de_datos/esquema-objetivo-mvp.md](../../docs/base_de_datos/esquema-objetivo-mvp.md).
 
 ## Punto de partida
+
+**30-09-2026 · Paso 5: 0012_l03_telegram_config sobre 0011 añade proveedor.destino_credencial_huella (String 64 nullable, SHA-256, no secreto). Invalida verificaciones heredadas sin evidencia. No modifica revisiones ya aplicadas. Downgrade revoca evidencia y conserva proveedor/chat.**
+
+**Paso 2 local · 30-09-2026:** env.py incorpora PlanProduccion/ElementoPlan y la cabeza aditiva 0009_m02_planificacion. No modifica revisiones previas.
 
 **Integración 30-09-2026:** env.py registra ConfiguracionInicial y todos los modelos nuevos. Cadena única hasta 0007_l01_proveedores. CI ejecuta alembic check sobre PostgreSQL.
 
@@ -42,3 +78,23 @@ Una base nueva llega a head y rechaza cantidades/identidades inválidas según c
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Paso 3 local · M03 · 30-09-2026
+
+Necesidades y faltantes implementados en la transacción del plan. API/UI conservan aportes, unidades, lotes y lectura de stock; decimales como cadenas, agregación antes de redondear a tres decimales. Producción o stock ausente deja estado INCOMPLETAS y motivo; no se inventan ceros ni se modifica inventario. Migración aditiva 0010_m03_necesidades sobre 0009; planes antiguos quedan PENDIENTE_M03 y el administrador puede completarlos una vez. Servicio público obtener_necesidades y contrato M03 en docs/api/contratos.md. Compras y Telegram siguen pendientes. Cambios locales por Codex para Axel, sin commit ni cambios remotos.
+
+## Paso 4 local · L01/L02 · 30-09-2026
+
+Codex para Axel implementa compras bajo responsabilidad de Aguirre, consumiendo M03 de Max y modo de negocio de Axel por interfaces públicas. Migración aditiva 0011_l02_compras sobre 0010: propuesta_compra, pedido_compra y linea_pedido. Snapshots de necesidades, proveedor/oferta, factor, mínimo, múltiplo y modo; cálculo Decimal exacto. Una propuesta activa por fecha; cancelación administrativa motivada libera la fecha y conserva historial. Idempotencia por plan y bloqueo global ante datos/proveedor/destino incompletos. Sin faltantes no se crean pedidos ni se reserva fecha. No hay envíos ni cambios de stock.
+
+API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras/propuestas y /compras/propuestas/{id}, POST /compras/propuestas/{id}/cancelar {motivo}. UI /proveedores y /compras, enlace desde /planificacion; Operador consulta, Administrador modifica. GENERAR_PROPUESTA genera pedidos en su transacción y comunica RECOMPRA_FECHA sin perder el nuevo plan ni su evaluación. Servicios sin commit. Contrato actualizado en docs/api/contrato-pedidos.md; pruebas test_compras_l02.py y flujo real test_inicializacion_ml.py. Aprobación/envío siguen pendientes en L03 y nunca se declaran realizados por un borrador.
+
+## Cabeza vigente · Paso 6 · 0013_l03_aprobacion_envio
+
+Revisión aditiva sobre 0012: decisión completa nullable en pedido_compra (clave única, FK usuario, hora, JSON) y nuevos estados; envio_pedido único por pedido con texto/chat/huella, lease/token, intento 1 y evidencia. ENVIADO exige message_id positivo y fin_en. Conserva borradores existentes. Downgrade admisible sin decisiones; con actividad se detiene sin quitar evidencia y exige migración correctiva. Reversibilidad, preservación de datos y comparación de metadatos en test_migraciones_entregas.py; no reescribir 0011/0012 aplicadas.
+
+## Recuperación L04 · 01-10-2026
+
+Codex para Axel bajo responsabilidad de Aguirre: POST /pedidos/{id}/conciliar registra ENVIADO o NO_ENVIADO con evidencia del último intento incierto; no transmite. POST /pedidos/{id}/reintentar reserva N+1 solo desde FALLIDO y con chat actual revisado/verificado. Conserva texto, plan, cantidades, autorización original e historial. GET incorpora envios/recuperaciones; envio sigue siendo el último. Locks fecha→propuesta→pedido→envío en recuperación/despacho/worker, respuesta tardía obsoleta ignorada. Clave/contenido/actor idempotentes, evidencia chat/message_id única. Usuario Operador consulta; solo Administrador actúa.
+
+Migración aditiva 0014_l04_recuperacion sobre 0013, sin reescribir anteriores; downgrade bloqueado con acciones/reintentos. 57 pruebas PostgreSQL y 7 de migraciones correctas; typecheck/build correctos, API/UI/worker locales actualizados y alembic check sin diferencias. QA visual nuevo no acreditado: navegador integrado rechazó el entorno temporal con ERR_BLOCKED_BY_CLIENT. Pruebas usan transporte falso; no se envió otro Telegram. Contrato vigente: docs/api/contrato-pedidos.md, registro detallado en docs/equipo/avances/aguirre.md. Automático real, promociones y demo conjunta pendientes.

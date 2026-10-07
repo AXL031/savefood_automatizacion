@@ -33,7 +33,7 @@ function mensajeError(body: ApiErrorBody | null, status: number): string {
   return `No se pudo completar la solicitud (${status}).`;
 }
 
-export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
+export async function solicitarSobre<T>(ruta: string, opciones: Opciones = {}): Promise<ApiEnvelope<T>> {
   let respuesta: Response;
   try {
     respuesta = await fetch(`${baseUrl}/api/v1${ruta}`, {
@@ -73,7 +73,31 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
     );
   }
   if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "La API no devolvió datos.");
-  return body.datos;
+  return body;
+}
+
+export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promise<T> {
+  return (await solicitarSobre<T>(ruta, opciones)).datos;
+}
+
+/** Descarga autenticada: el token nunca se coloca en la URL. */
+export async function solicitarArchivo(ruta: string, opciones: { token: string; signal?: AbortSignal }): Promise<Blob> {
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(`${baseUrl}/api/v1${ruta}`, {
+      headers: { Authorization: `Bearer ${opciones.token}` }, signal: opciones.signal, cache: "no-store",
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") throw error;
+    throw new HttpError(0, "No se pudo conectar con la API local.");
+  }
+  if (!respuesta.ok) {
+    if (respuesta.status === 401 && typeof window !== "undefined") window.dispatchEvent(new Event("foodsave:sesion-vencida"));
+    const body = await respuesta.json().catch(() => null) as ApiErrorBody | null;
+    throw new HttpError(respuesta.status, mensajeError(body, respuesta.status), body?.error?.codigo);
+  }
+  if (!respuesta.headers.get("Content-Type")?.startsWith("text/csv")) throw new HttpError(respuesta.status, "La API no devolvió un archivo CSV.");
+  return respuesta.blob();
 }
 
 /**

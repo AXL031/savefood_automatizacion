@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**30-09-2026 · Completar piloto:** `registrar_catalogo(..., completar_piloto=True)` permite al coordinador E03 adoptar códigos legibles/nombres/demostrar del mismo catálogo técnico bakery, con SKU activos uno a uno y sin colisiones. Conserva IDs y mapeos. El modo habitual comprueba código→SKU, no solo el conjunto de códigos; un intercambio se rechaza. Escritura bajo bloqueo de productos en la sesión compartida, sin commit. Condiciones en el contrato de importaciones.
+
 E01 parcial implementa `producto` y `sku_producto` en `0002_e01_ventas`. `cargar_catalogo_bakery(sesion, lista)` lee la lista curada de nombres y crea mapeos explícitos; `resolver_sku(sesion, origen, sku_externo)` devuelve el ID local o falla con `SKU_DESCONOCIDO`. `listar_skus_bakery(sesion)` y `nombres_productos(sesion, ids)` son lecturas públicas para Kevin y otros consumidores. Ninguna función confirma la transacción. Los precios de la lista son referencia del dataset y no forman parte del catálogo operativo de la demo. API y pantalla de productos siguen pendientes. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Trabajo en esta carpeta

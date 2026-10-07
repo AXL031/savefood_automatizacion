@@ -96,6 +96,7 @@ def crear_programacion(
         producto_ids=datos.producto_ids,
         clave_idempotencia=datos.clave_idempotencia,
         creado_por=usuario.id,
+        modo_envio_pedidos=datos.modo_envio_pedidos,
     )
     sesion.commit()
     return {"datos": serializar_programacion(sesion, programacion)}

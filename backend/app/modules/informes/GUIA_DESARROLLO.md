@@ -1,40 +1,25 @@
-# Guía de desarrollo — Informes operativos futuros
+# Guía de desarrollo — Dashboard y reportes de lectura
 
-**Carpeta:** `backend/app/modules/informes`.
-
-**Responsable:** Kevin Bohorquez. Custodia documental de una función posterior.
-
-**Bloque:** Modelo predictivo, evaluación histórica y dashboard.
+**Responsable:** Kevin Bohorquez (K04). Integración transversal por Codex para Axel; no se atribuye autoría personal a otros integrantes.
 
 ## Leer antes de trabajar
 
-- [Instrucciones para IA](../../../../AGENTS.md).
-- [Reparto vigente y criterios de entrega](../../../../docs/equipo/responsabilidades.md).
-- [Dependencias entre integrantes](../../../../docs/equipo/dependencias.md).
-- [Alcance de la demo](../../../../docs/guia-inicio-desarrollo.md).
+Leer guías padre, [responsabilidades](../../../../docs/equipo/responsabilidades.md), [dependencias](../../../../docs/equipo/dependencias.md), [alcance](../../../../docs/guia-inicio-desarrollo.md) y [contrato de reportes](../../../../docs/api/contrato-informes.md).
 
-## Punto de partida
+## Ampliación expresa y fuentes
 
-La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Kevin Bohorquez](../../../../docs/equipo/avances/bohorquez.md) para el último estado.
+Solicitud del usuario del 01-10-2026: gráficos en Inicio y módulo Reportes. Este corte consulta ventas actuales, evaluación histórica K03 y estados de pedidos por fecha del escenario; las consultas y exportaciones son de lectura. No incluye dinero, desperdicio, recepción de compras o impacto inventado.
 
-## Alcance de esta carpeta
+## Interfaces y reglas
 
-El dashboard histórico de la demo vive en Pronósticos y /panel; aquí se reserva la evolución operativa.
+Backend: `rutas.py` registra `/informes/resumen` y `/informes/exportar`; `servicio.py` coordina interfaces públicas de ventas, compras y evaluación sin repositorios privados. No hay entidades propias ni migraciones. Fecha inicial/final inclusivas, máximo 366 días. El rango inicial termina en la última venta conocida. Pedidos cuenta cada pedido una sola vez, sin multiplicarlo por intentos.
 
-## Trabajo permitido en esta etapa
+Frontend: `/informes` (etiqueta Reportes) usa `services/informes.ts`, `types/informes.ts`, gráficos compartidos, TablaPaginada y PanelDetalle. Descarga CSV autenticada sin token en URL. Todas las filas agregadas del período se exportan, con fuentes y filtros; nunca solo la página visible. Inicio usa el mismo resumen sin evaluación para evitar trabajo ML innecesario.
 
-1. Mantener referencia y guía alineadas con el alcance.
-2. No crear rutas, tablas o acciones operativas por la sola existencia de este directorio.
-3. Si se amplía el alcance, actualizar contrato, reparto y dependencias antes de implementar.
+## Verificación y entrega
 
-## Contrato necesario al ampliar
+`backend/tests/integration/test_informes.py` verifica permisos, filtros, ausencias/cero, revisión vigente, cobertura, agregados completos, CSV y conteo sin duplicar intentos. Typecheck/build verifican consumidor web. Evidencia final y limitaciones en [Bohorquez](../../../../docs/equipo/avances/bohorquez.md) y coordinación en [Cueva](../../../../docs/equipo/avances/cueva.md). Una prueba con fixtures no equivale a entrenamiento ni envío real.
 
-Definir indicadores, periodos y fuentes antes de crear informes económicos; no duplicar la evaluación histórica aquí. Dependencias previstas: Lecturas públicas de los dominios y métricas existentes de Pronósticos.
+## Documentar cada avance
 
-## Criterio de entrega actual
-
-La función se presenta como futura/no implementada y no altera datos ni expone un éxito ficticio. El trabajo futuro no se suma a la carga de la demo.
-
-## Documentar el avance y entregar al siguiente
-
-Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/bohorquez.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+Actualizar resumen vigente y bitácora del responsable, contrato y guía cuando cambie una frontera. Mantener las limitaciones reales del entorno y los indicadores económicos como evolución futura.

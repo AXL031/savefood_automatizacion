@@ -20,6 +20,8 @@ Archivos técnicos observados al preparar esta guía: `__init__.py`, `modelos.py
 
 ## Trabajo en esta carpeta
 
+**Ampliación local A01 · 30-09-2026:** usuarios.py publica /usuarios para listado, creación y edición administrativa. Rol/activo se consultan en cada petición. Locks ordenados evitan perder el último administrador; correo único y contraseñas protegidas. No necesita migración. UI /usuarios; prueba test_usuarios.py (concurrencia PostgreSQL con E03_POSTGRES_TEST=1). Ver contrato A01 de gestión en contratos.md.
+
 **Entrega A01:** inicio de sesión y perfil usan el sobre `datos`; credenciales erróneas responden `401 CREDENCIALES_INVALIDAS`. Las dependencias públicas están en `app.core.identidad` y los códigos exactos en [contratos HTTP](../../../../docs/api/contratos.md#contrato-a01-disponible-acceso-y-configuración). El token vence en 30 minutos y no existe renovación. La prueba reproducible es `python -m pytest backend/tests/integration/test_acceso_configuracion.py -q` desde la raíz.
 
 1. Completar validación de credenciales y perfil usando el núcleo existente.
