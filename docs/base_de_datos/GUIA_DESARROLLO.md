@@ -23,7 +23,7 @@ Archivos técnicos observados al preparar esta guía: `diagrama-entidad-relacion
 1. Cada dueño define columnas, nulabilidad, precisión, FK, CHECK e índices de sus entidades.
 2. Axel coordina consistencia ER/diccionario/esquema y orden de migración.
 3. Edu posee producto/venta/inicialización; Max receta/plan; Kevin ML; Vera stock/promoción; Aguirre compra.
-4. No declarar listo 0002 hasta revisar constraints y estrategia de migración entre los seis.
+4. Cada tabla nueva va en una revisión al final de la cadena; no se reescriben migraciones aplicadas.
 
 ## Límites y coordinación
 

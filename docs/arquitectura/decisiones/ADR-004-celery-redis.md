@@ -1,6 +1,6 @@
 # ADR-004: Celery y Redis para automatizaciones
 
-**Estado:** Propuesto en el README principal.
+**Estado:** Aceptado e implementado.
 
 ## Decisión
 

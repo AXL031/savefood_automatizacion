@@ -1,7 +1,5 @@
 # Arquitectura
 
-> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**. Tareas, dependencias y avances se detallan en la guía local.
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**.
 
-Descripción del monolito modular, sus contenedores y decisiones técnicas.
-
-Aquí se conserva y actualiza la documentación de esta área.
+[Visión general](vision_general.md), vistas [C4](c4/README.md), [decisiones (ADR)](decisiones/README.md) e [índice de diagramas](diagramas/README.md).

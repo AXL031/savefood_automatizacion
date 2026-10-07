@@ -50,7 +50,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### K01–K04 · Intento de arranque en Docker Desktop
 
-- **Fecha/hora y zona:** 2026-09-29 15:01 (America/Bogota).
+- **Fecha/hora y zona:** 2026-09-29 15:01 (America/Lima).
 - **Autor y responsable del bloque:** Codex, verificando el bloque de Kevin Bohorquez a pedido del usuario; no atribuye esta prueba a Kevin.
 - **Tareas:** verificación de despliegue de K01–K04 y dependencia A04.
 - **Estado:** EN_CURSO; arranque de Compose bloqueado por configuración del host Windows.
@@ -66,7 +66,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### K03 · Comandos locales verificados y cobertura consistente
 
-- **Fecha/hora y zona:** 2026-09-29 14:47 (America/Bogota).
+- **Fecha/hora y zona:** 2026-09-29 14:47 (America/Lima).
 - **Autor y responsable del bloque:** Codex, trabajando por solicitud del usuario en el bloque de Kevin Bohorquez; no atribuye este ajuste a Kevin.
 - **Tareas:** K01/K03, verificación para la demo local.
 - **Estado:** LISTO_PARA_INTEGRAR; CLI local ejecutado, Compose pendiente.
@@ -82,7 +82,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### K01–K04 · Backend, evaluación persistida y panel del piloto
 
-- **Fecha/hora y zona:** 2026-09-29 14:27 (America/Bogota).
+- **Fecha/hora y zona:** 2026-09-29 14:27 (America/Lima).
 - **Autor y responsable del bloque:** Codex, trabajando por solicitud del usuario en el bloque de Kevin Bohorquez; no atribuye estos cambios a Kevin.
 - **Tareas:** K01, K02, K03 y K04; coordinación con el corte E01 de Edu.
 - **Estado:** LISTO_PARA_INTEGRAR en entorno local; integración externa parcial.

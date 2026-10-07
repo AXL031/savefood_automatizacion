@@ -27,7 +27,7 @@ Consultar el [reparto detallado](responsabilidades.md), las [dependencias](depen
 | Leonardo Aguirre | Proveedores, pedidos y Telegram. Tareas L01–L04 del reparto vigente. |
 | Max Rojas | Ingredientes, recetas y planificación. Tareas M01–M04 del reparto vigente. |
 
-Cada cambio de dominio incluye modelo, migración, API, interfaz necesaria y prueba de la frontera que modifica. El [esquema `0002`](../base_de_datos/esquema-objetivo-mvp.md) tiene claves cruzadas: acordar primero nombres y restricciones en una revisión conjunta. No reescribir una migración que otro integrante ya haya aplicado.
+Cada cambio de dominio incluye modelo, migración, API, interfaz necesaria y prueba de la frontera que modifica. El [esquema](../base_de_datos/esquema-objetivo-mvp.md) tiene claves cruzadas: acordar nombres y restricciones con el consumidor antes de migrar. No reescribir una migración que otro integrante ya haya aplicado.
 
 ## Recorrido mínimo integrado
 

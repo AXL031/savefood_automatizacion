@@ -6,27 +6,23 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Estado L01 (2026-09-30):** proveedor y oferta persistidos y API integrada localmente por Codex para Axel a partir de `59305f6`. Usa infraestructura común, autenticación, Administrador en escrituras, FK a ingrediente, restricciones de conversión y migración 0007. Contrato de consulta para Compras probado; Telegram usa solo adaptador falso en pruebas y no hay adaptador real ni pantalla nueva. L01 parcial; L02–L04 pendientes.
+- **Estado (30-09-2026):** L01 `PARCIAL`. Proveedor y oferta persistidos (`0007_l01_proveedores`) con API protegida e integrada localmente (Codex para Axel, desde `59305f6`). Faltan pantalla de proveedores y adaptador real de Telegram (las pruebas usan uno falso). L02–L04 pendientes.
+- **Contrato:** [L01 en contratos.md](../../api/contratos.md#l01-integrado-proveedores-y-ofertas-30-09-2026). Compras consulta `GET /proveedores/ofertas/preferida/{ingrediente_id}`.
+- **Bloqueo:** regla de recompra entre planes de la misma fecha, a cerrar con Max antes de L02.
+- **Siguiente paso:** pantalla `/proveedores` (cierra L01) y L02 sobre las necesidades de M03.
 
-- **Estado:** definición documental disponible; implementación del bloque por verificar/completar.
-- **Punto de partida observado:** Existen contratos y carpetas de proveedores/compras. No existe integración Telegram ni pedido persistido. La política de recompra entre planes está pendiente de cerrar con Max.
-- **Contrato disponible:** [reparto y tareas](../responsabilidades.md); las guías de [mapa-carpetas](../mapa-carpetas.md) enlazan contratos de dominio.
-- **Entrega a consumidores:** todavía no se certifica una nueva API integrada en este registro.
-- **Bloqueos:** consultar las entregas necesarias en [dependencias](../dependencias.md); registrar aquí el ID exacto cuando se materialice una espera.
-- **Siguiente paso:** cerrar cuerpos de API, tipos/restricciones y ejemplos del primer corte del bloque; después implementar contra esos contratos.
-
-| Tarea | Estado de seguimiento |
+| Tarea | Estado |
 |---|---|
-| L01 · Implementar proveedores y ofertas | PENDIENTE DE VERIFICAR / COMPLETAR |
-| L02 · Generar pedidos desde necesidades | PENDIENTE DE VERIFICAR / COMPLETAR |
-| L03 · Implementar aprobación y canal | PENDIENTE DE VERIFICAR / COMPLETAR |
-| L04 · Resolver fallos y entregar UI | PENDIENTE DE VERIFICAR / COMPLETAR |
+| L01 · Implementar proveedores y ofertas | PARCIAL: API y datos listos; falta UI |
+| L02 · Generar pedidos desde necesidades | PENDIENTE |
+| L03 · Implementar aprobación y canal | PENDIENTE |
+| L04 · Resolver fallos y entregar UI | PENDIENTE |
 
 ## Bitácora
 
 ### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
 
-- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Fecha/zona y autor:** 2026-09-30, America/Lima. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
 - **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
 - **Comportamiento:** proveedor y oferta persistidos y API integrada localmente por Codex para Axel a partir de `59305f6`. Usa infraestructura común, autenticación, Administrador en escrituras, FK a ingrediente, restricciones de conversión y migración 0007. Contrato de consulta para Compras probado; Telegram usa solo adaptador falso en pruebas y no hay adaptador real ni pantalla nueva. L01 parcial; L02–L04 pendientes.
 - **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).

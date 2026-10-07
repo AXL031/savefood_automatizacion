@@ -2,6 +2,5 @@
 
 > Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**. Tareas, dependencias y avances se detallan en la guía local.
 
-Contratos de [flujos](flujos.md), [programación](programacion.md) y [reintentos](politica-de-reintentos.md) del prototipo universitario. La demostración usa Beat para programar pronóstico/plan y una evaluación que **sugiere** promoción; no envía pedidos ni activa descuentos. Véase el [alcance vigente](../guia-inicio-desarrollo.md).
+Contratos de [flujos](flujos.md), [programación](programacion.md) y [reintentos](politica-de-reintentos.md) del prototipo universitario. Beat despacha la propuesta (pronóstico → plan → pedidos) y la evaluación que **sugiere** promoción; los pedidos se envían por Telegram a un chat de pruebas según el modo de aprobación ([ADR-008](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md)) y no se activan descuentos. Véase el [alcance vigente](../guia-inicio-desarrollo.md).
 
-Aquí se conserva y actualiza la documentación de esta área.

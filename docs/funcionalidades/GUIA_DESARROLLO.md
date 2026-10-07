@@ -21,7 +21,7 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 ## Trabajo en esta carpeta
 
 1. Mantener recorrido de usuario y criterios de aceptación por bloque.
-2. Aplicar reparto vigente aunque una pantalla futura conserve la visión amplia.
+2. Documentar solo pantallas de la demo; lo posterior va en `docs/vision-futura.md`.
 3. Cada dueño documenta acciones, entradas, permisos y estados de su dominio.
 4. No presentar recepción, descuentos publicados o impacto económico como parte de la demo.
 

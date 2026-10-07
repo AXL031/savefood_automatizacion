@@ -1,6 +1,6 @@
 # Esquema objetivo del prototipo universitario
 
-**Estado:** `0002_e01_ventas` implementa catálogo y ventas sobre `0001c_motor`; `0003_pronosticos` añade `artefacto_modelo`, `corrida_pronostico`, `pronostico` y `evaluacion_pronostico`. Las demás tablas de este esquema siguen pendientes y deben venir en revisiones posteriores de la misma cadena. `programacion_demo`, `ejecucion_automatizacion` e `intento_automatizacion` ya existen en `0001b_automatizaciones`, ampliadas por `0001c_motor`. `0001_nucleo` crea `negocio` y `usuario`; `0001a_configuracion` agrega `negocio.modo_envio_pedidos`. FoodSave guardará ventas diarias y stock en PostgreSQL tras la primera carga. Los archivos de primera inicialización son **carga de arranque**, no fuentes externas permanentes. El [alcance](../guia-inicio-desarrollo.md) manda sobre documentos históricos del producto amplio.
+**Estado (06-10-2026):** tablas implementadas por revisión: `0001_nucleo` (`negocio`, `usuario`), `0001a_configuracion` (`negocio.modo_envio_pedidos`), `0001b`/`0001c` (`programacion_demo`, `ejecucion_automatizacion`, `intento_automatizacion`), `0002_e01_ventas` (catálogo y ventas), `0003_pronosticos`, `0004_e03_inicializacion` (`configuracion_inicial`), `0005_m01_ingredientes_recetas`, `0006_v01_inventario`, `0007_l01_proveedores` (`proveedor`, `oferta_ingrediente`). Pendientes: plan, pedidos, envíos y promoción; cada uno en una revisión nueva al final de la cadena. Tras la primera carga, PostgreSQL es la fuente de ventas y stock.
 
 ## Convenciones
 
@@ -10,15 +10,15 @@
 
 ## Primera inicialización y catálogo
 
-`0001a_configuracion` añade a `negocio` `modo_envio_pedidos` con valor inicial `REQUIERE_APROBACION` y valores permitidos `REQUIERE_APROBACION`/`AUTOMATICO`. La futura `0002` añade los campos textuales `comercio_externo` y `sucursal_externa`, configurados juntos durante la primera carga. Los identificadores externos son metadatos del archivo/modelo, no IDs de otros registros locales. El dataset `bakery` puede usar `piloto`/`principal`; se rechaza un archivo que declare otro par.
+`0001a_configuracion` añade a `negocio` `modo_envio_pedidos` con valor inicial `REQUIERE_APROBACION` y valores permitidos `REQUIERE_APROBACION`/`AUTOMATICO`. **Pendiente:** campos textuales `comercio_externo` y `sucursal_externa` en `negocio`; hoy la identidad externa llega por `ML_COMERCIO_ID` y `ML_SUCURSAL_ID`. Los identificadores externos son metadatos del archivo/modelo, no IDs de otros registros locales. El dataset `bakery` puede usar `piloto`/`principal`; se rechaza un archivo que declare otro par.
 
 | Tabla | Campos mínimos | Claves y reglas |
 |---|---|---|
 | `configuracion_inicial` | `id = 1`, `estado`, `huella_ventas`, `huella_catalogo`, `huella_solicitud`, `fecha_objetivo_demo`, `fecha_referencia_stock`, `iniciada_en`, `completada_en NULL`, `mensaje_error NULL`. | Estados `PENDIENTE`, `DATOS_CARGADOS`, `ENTRENANDO`, `MODELO_LISTO`, `FALLIDA`. `huella_solicitud` cubre ambos archivos y las dos fechas; `fecha_referencia_stock < fecha_objetivo_demo`, y objetivo dentro del tramo reservado de prueba. Reintento idéntico no duplica; otra solicitud tras completar requiere reinicialización explícita de desarrollo. |
 | `producto` | `id`, `codigo`, `nombre`, `demostrar boolean`, `activo`, `creado_en`. | `UNIQUE(codigo)`; nombre y código no vacíos. En demo se seleccionan 3–5 productos con historial y receta. |
 | `sku_producto` | `id`, `producto_id FK`, `origen`, `sku_externo`, `activo`. | `UNIQUE(origen, sku_externo)`; `article` del dataset se resuelve aquí. Un SKU usado no se reasigna sin revisión explícita. |
-| `ingrediente` | `id`, `codigo`, `nombre`, `unidad_base`, `activo`. | `UNIQUE(codigo)`; unidad base `g`, `kg`, `ml`, `l` o `unidad` según la plantilla. No cambiarla después de movimientos. |
-| `receta` | `id`, `producto_id FK`, `version`, `activo`, `creado_en`. | `UNIQUE(producto_id, version)` e índice único parcial para una sola versión `activo=true` por producto. Una versión usada por un plan no se edita en sitio. |
+| `ingrediente` | `id`, `codigo`, `nombre`, `unidad_base`, `activo`, `creado_en`. | `UNIQUE(codigo)`; unidad base `g`, `kg`, `ml`, `l` o `unidad` según la plantilla. No cambia si una receta o un lote la usa. |
+| `receta` | `id`, `producto_id FK`, `version`, `activo`, `motivo NULL`, `creado_por FK NULL`, `creado_en`. | `UNIQUE(producto_id, version)` e índice único parcial para una sola versión `activo=true` por producto. Ninguna versión se edita: un cambio crea la siguiente y desactiva la anterior. |
 | `receta_ingrediente` | `id`, `receta_id FK`, `ingrediente_id FK`, `cantidad_por_unidad numeric(14,3)`. | `UNIQUE(receta_id, ingrediente_id)`; cantidad `> 0` en unidad base. |
 
 La inicialización valida **todos** los archivos y mapeos antes de confirmar cada carga. El entrenamiento a demanda pasa por `ENTRENANDO`; si falla, registra error y vuelve a `DATOS_CARGADOS` para reintentar sin cargar dos veces. La UI no ofrece «Generar plan» hasta `MODELO_LISTO`. El dataset completo puede quedar en ventas diarias; solo los 3–5 productos configurados para demo participan en recetas y plan.
@@ -39,7 +39,7 @@ La ausencia de una fecha/producto no crea fila. Las cantidades negativas y devol
 |---|---|---|
 | `lote_ingrediente` | `id`, `ingrediente_id FK`, `codigo_lote`, `lote_informado boolean`, `fecha_caducidad NULL`, `saldo_disponible numeric(14,3)`, `actualizado_en`. | `UNIQUE(ingrediente_id, codigo_lote)`; saldo `>= 0`. Un código técnico único identifica la fila si la carga inicial no conoce lote real; se muestra como «lote no informado». |
 | `lote_producto` | `id`, `producto_id FK`, `codigo_lote`, `lote_informado boolean`, `fecha_caducidad NULL`, `fecha_limite_venta NULL`, `saldo_disponible integer`, `actualizado_en`. | `UNIQUE(producto_id, codigo_lote)`; saldo `>= 0`; límite de venta `<=` caducidad cuando ambas existen. |
-| `movimiento_inventario` | `id`, `lote_ingrediente_id FK NULL`, `lote_producto_id FK NULL`, `delta numeric(14,3)`, `tipo`, `clave_operacion`, `motivo`, `usuario_id FK NULL`, `efectivo_en_demo`, `creado_en`. | Exactamente una FK de lote; delta distinto de cero e integral para producto. `UNIQUE(clave_operacion)`; tipos de demo `APERTURA`, `AJUSTE`. `efectivo_en_demo` es hora local simulada, distinta del instante UTC de auditoría. Misma clave con otro lote/delta/tipo es conflicto. |
+| `movimiento_inventario` | `id`, `lote_ingrediente_id FK NULL`, `lote_producto_id FK NULL`, `delta numeric(14,3)`, `saldo_resultante numeric(14,3)`, `tipo`, `clave_operacion`, `motivo`, `usuario_id FK NULL`, `efectivo_en_demo`, `creado_en`. | Exactamente una FK de lote; delta distinto de cero e integral para producto. `UNIQUE(clave_operacion)`; tipos de demo `APERTURA`, `AJUSTE`. `efectivo_en_demo` es hora local simulada, distinta del instante UTC de auditoría. Misma clave con otro lote/delta/tipo es conflicto. |
 
 La apertura positiva y cada ajuste bloquean el lote, comprueban saldo final no negativo, insertan movimiento y actualizan saldo **en una transacción**. Una fila inicial de cantidad explícita `0` crea la referencia de stock conocido con saldo cero y **sin movimiento de delta cero**. Una entrega repetida de la misma operación no vuelve a cambiarlo. Disponibilidad para `fecha_objetivo` suma lotes elegibles y muestra unidad. Un lote caducado antes de esa fecha no cuenta. Un lote sin fecha sigue visible como «vigencia desconocida» y obliga a advertirlo en el plan; no se usa para promociones por vencimiento. La demo no simula consumo real por producción ni resta stock al generar un plan: una sugerencia no es un movimiento físico. `INVENTARIO`, `inventario_ingrediente` y `existencia_producto` son lecturas, no tablas.
 
@@ -77,21 +77,21 @@ La apertura tiene hora efectiva del escenario anterior al objetivo. Un ajuste de
 
 ## Proveedores y pedidos de la demo
 
-La decisión de [pedidos desde el plan](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) amplió el prototipo. La `0002` debe incluir estas entidades y sus relaciones en el ER antes de escribir la migración:
+La decisión de [pedidos desde el plan](../arquitectura/decisiones/ADR-008-pedidos-desde-el-plan.md) amplió el prototipo. `proveedor` y `oferta_ingrediente` existen desde `0007`; las demás son pendientes (L02–L04):
 
 | Tabla | Campos mínimos | Claves y reglas |
 |---|---|---|
-| `proveedor` | `id`, `codigo`, `nombre`, `telegram_chat_id NULL`, `telegram_verificado_en NULL`, `activo`, `creado_en`. | `UNIQUE(codigo)`; chat verificado para envío. El destino de la exposición es un chat propio que simula al proveedor. |
-| `oferta_ingrediente` | `id`, `proveedor_id FK`, `ingrediente_id FK`, `unidad_compra`, `factor_a_unidad_base`, `multiplo_compra`, `minimo_compra`, `preferida`, `activo`. | Factor y múltiplo positivos, mínimo no negativo; una sola oferta preferida activa por ingrediente en la demo. Todas las conversiones son explícitas. |
+| `proveedor` | `id`, `codigo`, `nombre`, `activo`, `chat_id_pruebas NULL`, `destino_verificado`, `destino_verificado_en NULL`. | `UNIQUE(codigo)`; chat verificado para envío. El destino de la exposición es un chat propio que simula al proveedor. |
+| `oferta_ingrediente` | `id`, `proveedor_id FK`, `ingrediente_id FK`, `descripcion`, `unidad_compra`, `factor_conversion numeric(14,4)`, `minimo`, `multiplo`, `preferida`, `activa`. | Factor y múltiplo positivos, mínimo no negativo; una sola oferta preferida activa por ingrediente en la demo. Todas las conversiones son explícitas. |
 | `pedido_compra` | `id`, `plan_id FK`, `proveedor_id FK`, `clave_idempotencia`, `huella_entrada`, `modo_envio`, `estado`, `aprobado_por FK NULL`, `aprobado_en NULL`, `creado_en`, `actualizado_en`. | `UNIQUE(plan_id, proveedor_id)` y `UNIQUE(clave_idempotencia)`; modo copiado del negocio al crear; estados según el [contrato de pedidos](../api/contrato-pedidos.md). |
-| `linea_pedido` | `id`, `pedido_id FK`, `necesidad_ingrediente_id FK`, `oferta_ingrediente_id FK`, `faltante_base`, `cantidad_compra`, `unidad_compra`, `factor_a_unidad_base`, `multiplo_compra`, `minimo_compra`. | `UNIQUE(necesidad_ingrediente_id)`; cantidades positivas; una necesidad no se asigna a dos proveedores; copia inmutable del cálculo y la oferta usada. |
+| `linea_pedido` | `id`, `pedido_id FK`, `necesidad_ingrediente_id FK`, `oferta_ingrediente_id FK`, `faltante_base`, `cantidad_compra`, `unidad_compra`, `factor_conversion`, `multiplo`, `minimo`. | `UNIQUE(necesidad_ingrediente_id)`; cantidades positivas; una necesidad no se asigna a dos proveedores; copia inmutable del cálculo y la oferta usada. |
 | `envio_pedido` | `id`, `pedido_id FK`, `numero_intento`, `estado`, `iniciado_en`, `finalizado_en NULL`, `telegram_message_id NULL`, `mensaje_enviado NULL`, `error NULL`. | `UNIQUE(pedido_id, numero_intento)`; `message_id` solo con respuesta exitosa; un resultado incierto queda pendiente de conciliación y no se reenvía solo. Nunca guarda el token del bot. |
 
 El [contrato de pedidos](../api/contrato-pedidos.md) fija fórmula, transiciones, aprobación opcional y evidencia del envío. El mensaje de prueba lleva la marca «DEMOSTRACIÓN — NO SURTIR» y la fecha histórica. Crear o enviar un pedido no altera inventario.
 
-## No crear en `0002` del prototipo
+## Fuera del prototipo
 
-`recepcion_pedido`, factura, pago, publicación de descuentos, predicción intradía de excedentes y Google Sheets pertenecen a la visión futura. `programacion_demo` ya existe en `0001b`; pedidos y evaluación de promoción siguen previstos para `0002`. El [ER](diagrama-entidad-relacion.mmd) del prototipo debe reflejar estas tablas junto a las dos existentes de `0001`.
+`recepcion_pedido`, factura, pago, publicación de descuentos, predicción intradía de excedentes y Google Sheets pertenecen a la visión futura. 
 
 ## Corte M01 y V01/V02 (30-09-2026)
 

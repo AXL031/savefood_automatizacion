@@ -27,7 +27,7 @@ Cada persona implementa interfaz, backend, API, datos y pruebas de su bloque. La
 - Pedidos por faltantes, aprobación configurable y Telegram real a un chat propio de pruebas. Mensajes históricos rotulados como demostración. No enviar mensajes externos sin autorización expresa de la tarea en curso.
 - Un envío incierto no se reintenta a ciegas. Cerrar la regla entre planes de la misma fecha antes de habilitar compras automáticas.
 - No implementar producción física, pagos, recepción, promoción publicada o informes de impacto a partir de carpetas futuras o maquetas.
-- El alcance vigente y ADR-008 prevalecen sobre la visión histórica extensa del README. Para responsables prevalece `docs/equipo/responsabilidades.md`.
+- El alcance vigente (`docs/guia-inicio-desarrollo.md`) y los ADR prevalecen; `docs/vision-futura.md` no es contrato. Para responsables prevalece `docs/equipo/responsabilidades.md`.
 
 ## Implementación y entrega
 

@@ -1,13 +1,16 @@
-# Decisiones arquitectónicas
+# Decisiones arquitectónicas (ADR)
 
-> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**. Tareas, dependencias y avances se detallan en la guía local.
+> Guía vigente: [GUIA_DESARROLLO.md](GUIA_DESARROLLO.md). Responsable de coordinación: **Axel Cueva**.
 
-Registros de decisiones arquitectónicas para explicar cada elección técnica y sus consecuencias. Las siglas `ADR` se conservan en los nombres de archivo por convención.
+| ADR | Decisión |
+|---|---|
+| [001](ADR-001-monolito-modular.md) | Monolito modular |
+| [002](ADR-002-fastapi.md) | FastAPI, Pydantic, SQLAlchemy y Alembic |
+| [003](ADR-003-postgresql.md) | PostgreSQL |
+| [004](ADR-004-celery-redis.md) | Celery, Redis y Beat |
+| [005](ADR-005-instalacion-local-mvp.md) | Una instalación local por comercio y sucursal |
+| [006](ADR-006-identidades-lotes-pronosticos.md) | Ventas diarias, lotes locales e identidad de pronósticos |
+| [007](ADR-007-automatizaciones-demo.md) | Disparadores programados, ejecución durable y promoción sugerida |
+| [008](ADR-008-pedidos-desde-el-plan.md) | Pedidos desde el plan y envío por Telegram |
 
-Aquí se conserva y actualiza la documentación de esta área.
-
-Decisión del prototipo: [ADR-006 — ventas diarias, lotes locales e identidad de pronósticos](ADR-006-identidades-lotes-pronosticos.md).
-
-Automatizaciones de la exposición: [ADR-007 — disparadores programados, ejecución durable y promoción sugerida](ADR-007-automatizaciones-demo.md).
-
-Pedidos desde el plan: [ADR-008 — faltantes, proveedor y frontera de Telegram](ADR-008-pedidos-desde-el-plan.md).
+Ante contradicción, prevalece el ADR de número mayor sobre el tema que trata.

@@ -6,9 +6,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **Coordinación verificada (2026-09-30):** entrega V01/V02 de `rojas` integrada localmente por Codex para Axel. Apertura real en sesión de Edu, cero conocido, caducidad, ajuste idempotente y rechazo de saldo negativo verificados por API en SQLite. Misma clave con otro motivo/hora ahora es conflicto. Pruebas PostgreSQL añadidas para CI; no se declara verificada concurrencia en SQLite. V03 y detalle de promociones siguen pendientes.
-
-- **Estado:** V01 y V02 `LISTO_PARA_INTEGRAR`, implementadas por **Max Rojas por encargo** de Leonardo Vera. V03 y V04 (promociones) pendientes.
+- **Estado (30-09-2026):** V01 y V02 `LISTO_PARA_INTEGRAR`, implementadas por **Max Rojas por encargo** de Leonardo Vera e integradas localmente por Codex para Axel (probado en SQLite; concurrencia solo en CI con PostgreSQL). V03 pendiente; V04 parcial.
 - **Disponible:** lotes de producto e ingrediente, apertura en la sesión de la primera carga, ajustes con bloqueo y clave idempotente, disponibilidad por fecha con la regla de vida útil de pastelería. Pantalla `/inventario` con disponibilidad, lotes, ajuste y movimientos.
 - **Contrato:** [V01/V02 en contratos.md](../../api/contratos.md#v01v02-disponibles-apertura-ajustes-y-stock-por-fecha-30-09-2026).
 - **Vida útil:** producto 5 días máximo; días 1–3 óptimo, 4–5 prioridad, 6+ merma. Ver [vigencia.py](../../../backend/app/modules/inventario/vigencia.py).
@@ -26,7 +24,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ### Integración coordinada de entregas Rojas/Aguirre · 30-09-2026
 
-- **Fecha/zona y autor:** 2026-09-30, America/Bogota. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
+- **Fecha/zona y autor:** 2026-09-30, America/Lima. Codex a solicitud de Axel Cueva, coordinación transversal A04; se conserva autoría original de Max/Leonardo y la entrega delegada registrada en [Vera](vera.md).
 - **Estado:** integración local verificada en SQLite; LISTO_PARA_INTEGRAR en Git, PostgreSQL/Redis y revisión remota pendientes. No declara completa la demo.
 - **Comportamiento:** entrega V01/V02 de `rojas` integrada localmente por Codex para Axel. Apertura real en sesión de Edu, cero conocido, caducidad, ajuste idempotente y rechazo de saldo negativo verificados por API en SQLite. Misma clave con otro motivo/hora ahora es conflicto. Pruebas PostgreSQL añadidas para CI; no se declara verificada concurrencia en SQLite. V03 y detalle de promociones siguen pendientes.
 - **Archivos/contrato:** [contratos](../../api/contratos.md), [importaciones](../../api/contrato-importaciones.md), [pedidos](../../api/contrato-pedidos.md), rutas de inicialización/ingredientes/recetas/inventario/proveedores, `backend/migrations/env.py`, nuevas revisiones 0005/0006/0007 y `backend/tests/integration/test_api_inicializacion_ventas.py`, `test_proveedores_l01.py`, `test_migraciones_entregas.py`, `test_inventario_concurrencia_pg.py`. Enlaces de coordinación: [Axel](cueva.md), [Max](rojas.md), [Vera](vera.md), [Aguirre](aguirre.md), [Edu](sanchez.md).

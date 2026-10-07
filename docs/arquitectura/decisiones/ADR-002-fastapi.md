@@ -1,6 +1,6 @@
 # ADR-002: FastAPI para la API
 
-**Estado:** Propuesto en el README principal.
+**Estado:** Aceptado e implementado.
 
 ## Decisión
 
@@ -8,4 +8,4 @@ Usar Python y FastAPI para las rutas HTTP; Pydantic para validación, SQLAlchemy
 
 ## Consecuencias
 
-Los contratos HTTP podrán documentarse con OpenAPI. La implementación debe mantener la autorización por negocio y las respuestas de error acordadas.
+Los contratos HTTP podrán documentarse con OpenAPI. La autorización es por rol (Administrador/Operador) sobre el único negocio de la instalación ([ADR-005](ADR-005-instalacion-local-mvp.md)), con el sobre de error acordado.

@@ -129,7 +129,7 @@ Edu conserva el normalizador de archivos de entrada; Kevin conserva característ
 4. **Integración principal:** Beat → inferencia → plan → necesidades → pedido → aprobación opcional → Telegram de pruebas. Evaluación histórica y dashboard consultan resultados persistidos.
 5. **Recuperación:** ajustes y promoción; reinicio de worker, entrega duplicada, fallo transitorio y envío incierto. Cada dueño demuestra su parte y otra persona reproduce el recorrido.
 
-Antes de conectar compras, Aguirre y Max deben cerrar la regla de recompra entre planes de la misma fecha; la unicidad por plan no evita por sí sola una segunda compra. Antes de escribir 0002, todos cierran tipos/FK/CHECK en el esquema objetivo. Antes de conectar una pantalla, su dueño entrega el cuerpo exacto de la API. Estos son pendientes de definición asignados, no funciones ya implementadas.
+Antes de conectar compras, Aguirre y Max deben cerrar la regla de recompra entre planes de la misma fecha; la unicidad por plan no evita por sí sola una segunda compra. Antes de escribir una migración, su dueño cierra tipos/FK/CHECK en el esquema con los consumidores. Antes de conectar una pantalla, su dueño entrega el cuerpo exacto de la API. Estos son pendientes de definición asignados, no funciones ya implementadas.
 
 ## Criterio común de terminado
 
