@@ -33,6 +33,7 @@ ESTADOS = (
 class ConfiguracionInicial(Base):
     __tablename__ = "configuracion_inicial"
     __table_args__ = (
+        CheckConstraint("preparacion_numero >= 0", name="ck_inicializacion_preparacion_numero"),
         CheckConstraint(f"id = {FILA_UNICA}", name="ck_configuracion_inicial_fila_unica"),
         CheckConstraint(
             "estado in ('PENDIENTE', 'DATOS_CARGADOS', 'ENTRENANDO', 'MODELO_LISTO', 'FALLIDA')",
@@ -45,6 +46,12 @@ class ConfiguracionInicial(Base):
         ),
     )
 
+    preparacion_ejecucion_id: Mapped[int | None] = mapped_column(
+        ForeignKey("ejecucion_automatizacion.id", name="fk_inicializacion_preparacion", ondelete="RESTRICT"))
+    modelo_id: Mapped[int | None] = mapped_column(
+        ForeignKey("artefacto_modelo.id", name="fk_inicializacion_modelo", ondelete="RESTRICT"))
+    preparacion_numero: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0", default=0)
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
     estado: Mapped[str] = mapped_column(String(20), nullable=False, server_default=ESTADO_PENDIENTE)
 
@@ -53,10 +60,6 @@ class ConfiguracionInicial(Base):
     huella_ventas: Mapped[str | None] = mapped_column(String(64))
     huella_catalogo: Mapped[str | None] = mapped_column(String(64))
     huella_solicitud: Mapped[str | None] = mapped_column(String(64))
-    preparacion_ejecucion_id: Mapped[int | None] = mapped_column(
-        ForeignKey("ejecucion_automatizacion.id", ondelete="RESTRICT",
-                   name="fk_inicializacion_preparacion"), nullable=True
-    )
 
     # Fechas del escenario simulado, en hora local del comercio.
     fecha_objetivo_demo: Mapped[date | None] = mapped_column(Date)

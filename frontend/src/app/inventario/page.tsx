@@ -5,12 +5,14 @@ import { BotonEnviar } from "@/components/forms/BotonEnviar";
 import { CampoFecha } from "@/components/forms/CampoFecha";
 import { CampoSelect } from "@/components/forms/CampoSelect";
 import { CampoTexto } from "@/components/forms/CampoTexto";
+import { PanelDetalle } from "@/components/ui/PanelDetalle";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { TablaDatos, type Columna } from "@/components/tables/TablaDatos";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { obtenerEstadoInicial } from "@/services/inicializacion";
 import { consultarDisponibilidad, listarMovimientos, registrarAjuste } from "@/services/inventario";
 import type { DisponibilidadItem, EstadoLote, LoteDisponible, Movimiento, TipoItem } from "@/types/inventario";
+import { aUnidadBase, cantidadVisible, unidadesEntrada } from "@/utils/unidades";
 
 const ETIQUETA_ESTADO: Record<EstadoLote, string> = {
   OPTIMO: "Óptimo",
@@ -37,7 +39,7 @@ function BadgeLote({ lote }: { lote: LoteDisponible }) {
 
 /** Producto en unidades enteras (`u.`); ingrediente en su unidad base. */
 function cantidad(valor: string, unidad: string): string {
-  return unidad === "unidad" ? `${valor} u.` : `${valor} ${unidad}`;
+  return cantidadVisible(valor, unidad);
 }
 
 function nuevaClave(): string {
@@ -58,6 +60,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [unidadAjuste, setUnidadAjuste] = useState("");
   const [ajuste, setAjuste] = useState<Ajuste>({ loteClave: "", delta: "", motivo: "", fecha: "", hora: "17:45", clave: nuevaClave() });
 
   // La fecha por defecto es la fecha objetivo del escenario, no el día real.
@@ -65,11 +68,14 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     const control = new AbortController();
     obtenerEstadoInicial(token, control.signal)
       .then((estado) => {
+        if (control.signal.aborted) return;
         const objetivo = estado.fecha_objetivo_demo ?? new Date().toISOString().slice(0, 10);
         setFecha((actual) => actual || objetivo);
         setAjuste((actual) => ({ ...actual, fecha: actual.fecha || objetivo }));
       })
-      .catch(() => setFecha((actual) => actual || new Date().toISOString().slice(0, 10)));
+      .catch(() => {
+        if (!control.signal.aborted) setFecha((actual) => actual || new Date().toISOString().slice(0, 10));
+      });
     return () => control.abort();
   }, [token]);
 
@@ -116,11 +122,18 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     [items],
   );
   const loteElegido = lotes.find((opcion) => opcion.clave === ajuste.loteClave);
+  const unidadEntrada = unidadAjuste || (loteElegido ? unidadesEntrada(loteElegido.item.unidad)[0] : "unidad");
+  function cantidadMovimiento(valor: string, movimiento: Movimiento) {
+    const unidad = lotes.find((l) => l.clave === `${movimiento.tipo}:${movimiento.lote_id}`)?.item.unidad;
+    return unidad ? cantidad(valor, unidad) : `${valor} (unidad base)`;
+  }
 
   async function enviarAjuste(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     if (!loteElegido) return setError("Elige el lote que vas a ajustar.");
-    const delta = ajuste.delta.trim();
+    let delta: string;
+    try { delta = aUnidadBase(ajuste.delta, unidadEntrada, loteElegido.item.unidad); }
+    catch (fallo) { return setError(fallo instanceof Error ? fallo.message : "Revisa la cantidad y su unidad."); }
     const patron = loteElegido.item.tipo === "producto" ? /^-?\d+$/ : /^-?\d+(\.\d{1,3})?$/;
     if (!patron.test(delta) || Number(delta) === 0) {
       return setError(
@@ -225,8 +238,8 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     { clave: "efectivo", encabezado: "Hora del escenario", celda: (m) => <span className="mono-corto">{m.efectivo_en_demo.replace("T", " ").slice(0, 16)}</span> },
     { clave: "item", encabezado: "Ítem y lote", celda: (m) => `${m.item_nombre}, ${m.codigo_lote}` },
     { clave: "tipo", encabezado: "Tipo", celda: (m) => <span className={`badge badge-${m.tipo_movimiento === "APERTURA" ? "info" : "neutral"}`}>{m.tipo_movimiento === "APERTURA" ? "Apertura" : "Ajuste"}</span> },
-    { clave: "delta", encabezado: "Cambio", numerica: true, celda: (m) => <strong>{m.delta.startsWith("-") ? m.delta : `+${m.delta}`}</strong> },
-    { clave: "saldo", encabezado: "Saldo después", numerica: true, celda: (m) => m.saldo_resultante },
+    { clave: "delta", encabezado: "Cambio", numerica: true, celda: (m) => <strong>{m.delta.startsWith("-") ? "" : "+"}{cantidadMovimiento(m.delta, m)}</strong> },
+    { clave: "saldo", encabezado: "Saldo después", numerica: true, celda: (m) => cantidadMovimiento(m.saldo_resultante, m) },
     { clave: "motivo", encabezado: "Motivo", celda: (m) => m.motivo },
   ];
 
@@ -267,10 +280,10 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           vacioDescripcion="La primera carga abre los lotes con el archivo de stock inicial."
         />
         {itemAbierto ? (
-          <div className="section-space">
+          <PanelDetalle titulo={`Lotes de ${itemAbierto.nombre}`} onCerrar={() => setAbierto(null)}>
             <h3>Lotes de {itemAbierto.nombre}</h3>
             <TablaDatos columnas={columnasLotes} filas={itemAbierto.lotes} idFila={(l) => l.lote_id} vacioTitulo="Sin lotes" />
-          </div>
+          </PanelDetalle>
         ) : null}
       </section>
 
@@ -287,17 +300,18 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
                 id="ajuste-lote"
                 etiqueta="Lote"
                 valor={ajuste.loteClave}
-                onCambio={(valor) => setAjuste({ ...ajuste, loteClave: valor })}
+                onCambio={(valor) => { setAjuste({ ...ajuste, loteClave: valor, delta: "" }); setUnidadAjuste(""); }}
                 opciones={[{ valor: "", texto: "Elige un lote" }, ...lotes.map((opcion) => ({ valor: opcion.clave, texto: opcion.texto }))]}
                 ancho="completo"
               />
               <CampoTexto
                 id="ajuste-delta"
-                etiqueta={`Cambio${loteElegido ? ` (${loteElegido.item.unidad})` : ""}`}
+                etiqueta="Cantidad a sumar o restar"
                 valor={ajuste.delta}
                 onCambio={(valor) => setAjuste({ ...ajuste, delta: valor })}
-                ayuda="Ejemplo: -2 para retirar dos unidades."
+                ayuda="Ejemplo: -0,5 kg para retirar medio kilo o +2 u. para añadir dos productos."
               />
+              {loteElegido && <CampoSelect id="ajuste-unidad" etiqueta="Unidad del ajuste" valor={unidadEntrada} deshabilitado={guardando} opciones={unidadesEntrada(loteElegido.item.unidad).map((u) => ({ valor: u, texto: u === "l" ? "Litros (L)" : u === "kg" ? "Kilogramos (kg)" : u === "unidad" ? "Unidades" : u }))} onCambio={setUnidadAjuste} />}
               <CampoFecha id="ajuste-fecha" etiqueta="Fecha del escenario" valor={ajuste.fecha} onCambio={(valor) => setAjuste({ ...ajuste, fecha: valor })} />
               <div className="field">
                 <label htmlFor="ajuste-hora">Hora del escenario</label>
@@ -313,7 +327,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       ) : null}
 
       <section className="card main-card section-space">
-        <h2>Últimos movimientos</h2>
+        <h2>Últimos movimientos</h2><p className="helper-text">Últimos 50 movimientos registrados.</p>
         <TablaDatos
           columnas={columnasMovimientos}
           filas={movimientos}

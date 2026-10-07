@@ -125,7 +125,8 @@ def detalle_evaluacion(sesion: Session, corrida: CorridaPronostico) -> dict:
     return resultado
 
 
-def resumen_evaluacion(sesion: Session, modelo_id: int | None = None) -> dict:
+def resumen_evaluacion(sesion: Session, modelo_id: int | None = None, *,
+                       desde: date | None = None, hasta: date | None = None) -> dict:
     preparar_ruta_ml()
     from evaluador import consolidar_evaluacion_tramo
     from metricas import ParEvaluacion
@@ -133,11 +134,18 @@ def resumen_evaluacion(sesion: Session, modelo_id: int | None = None) -> dict:
     modelo = (sesion.get(ArtefactoModelo, modelo_id) if modelo_id is not None else
               sesion.scalar(select(ArtefactoModelo).order_by(ArtefactoModelo.id.desc()).limit(1)))
     if modelo is None:
+        if modelo_id is not None:
+            raise ErrorAPI(404, "MODELO_NO_ENCONTRADO", "El modelo seleccionado no existe.")
         raise ErrorAPI(503, "MODELO_NO_LISTO", "No hay modelo para evaluar.")
-    corridas = list(sesion.scalars(select(CorridaPronostico).where(
+    consulta = select(CorridaPronostico).where(
         CorridaPronostico.modelo_id == modelo.id, CorridaPronostico.tipo == "BACKTEST",
         CorridaPronostico.clave_ejecucion.like(f"backtest-{modelo.id}-%"),
-    ).order_by(CorridaPronostico.fecha_objetivo)))
+    )
+    if desde is not None:
+        consulta = consulta.where(CorridaPronostico.fecha_objetivo >= desde)
+    if hasta is not None:
+        consulta = consulta.where(CorridaPronostico.fecha_objetivo <= hasta)
+    corridas = list(sesion.scalars(consulta.order_by(CorridaPronostico.fecha_objetivo)))
     pares = []
     dias = []
     trazas = []
@@ -151,8 +159,8 @@ def resumen_evaluacion(sesion: Session, modelo_id: int | None = None) -> dict:
             pares.append(ParEvaluacion(producto["producto_id"], detalle["fecha_local"],
                                        producto["previsto"], producto["real"]))
     resultado = consolidar_evaluacion_tramo(
-        modelo.version_modelo, modelo.particion_json["inicio_prueba"],
-        modelo.particion_json["fin_prueba"], pares,
+        modelo.version_modelo, desde.isoformat() if desde else modelo.particion_json["inicio_prueba"],
+        hasta.isoformat() if hasta else modelo.particion_json["fin_prueba"], pares,
     ).as_dict()
     resultado["serie_diaria"] = dias
     resultado["fechas_evaluadas"] = sum(dia["productos_evaluables"] > 0 for dia in dias)

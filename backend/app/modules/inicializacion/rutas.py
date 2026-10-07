@@ -4,20 +4,20 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.base_datos import obtener_sesion
 from app.core.errores import ErrorAPI
 from app.core.identidad import identidad_actual, requiere_administrador
 from app.modules.autenticacion.modelos import Usuario
 from app.modules.inicializacion.modelos import ConfiguracionInicial
-from app.modules.inicializacion.preparacion import resumir_preparacion, solicitar_preparacion_modelo
 from app.modules.inventario.servicio import ServicioInventarioV01
 from app.modules.recetas.servicio import ServicioRecetasM01
 from app.modules.inicializacion.servicio import (
     VistaPrevia,
     confirmar_carga,
     leer_estado,
+    detalle_preparacion,
+    solicitar_preparacion,
     preparar_vista_previa,
     skus_curados,
 )
@@ -31,6 +31,7 @@ LIMITE_BYTES = 64 * 1024 * 1024
 
 def _estado(fila: ConfiguracionInicial, sesion: Session) -> dict:
     return {
+        **detalle_preparacion(sesion, fila),
         "estado": fila.estado,
         "huella_ventas": fila.huella_ventas,
         "huella_catalogo": fila.huella_catalogo,
@@ -42,7 +43,6 @@ def _estado(fila: ConfiguracionInicial, sesion: Session) -> dict:
         "iniciada_en": fila.iniciada_en.isoformat() if fila.iniciada_en else None,
         "completada_en": fila.completada_en.isoformat() if fila.completada_en else None,
         "mensaje_error": fila.mensaje_error,
-        "preparacion_modelo": resumir_preparacion(sesion, fila),
     }
 
 
@@ -113,22 +113,6 @@ def consultar_estado(
     return {"datos": _estado(leer_estado(sesion), sesion)}
 
 
-class ReintentoModelo(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    clave_idempotencia: str = Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9._:-]+$")
-
-
-@router.post("/reintentar-modelo", status_code=202)
-def reintentar_modelo(
-    entrada: ReintentoModelo,
-    _admin: Usuario = Depends(requiere_administrador),
-    sesion: Session = Depends(obtener_sesion),
-):
-    solicitar_preparacion_modelo(sesion, entrada.clave_idempotencia)
-    sesion.commit()
-    return {"datos": resumir_preparacion(sesion, leer_estado(sesion))}
-
-
 @router.post("/vista-previa")
 async def validar_entrega_sin_guardar(
     fecha_objetivo_demo: date = Form(...),
@@ -177,6 +161,15 @@ async def confirmar(
             "lineas_receta": informe.recetas,
             "movimientos_apertura": informe.movimientos_apertura,
             "pendiente_de": informe.pendiente_de,
-            "ejecucion_id": informe.ejecucion_id,
         }
     }
+
+
+@router.post("/reintentar-preparacion", status_code=202)
+def reintentar_preparacion(
+    _admin: Usuario = Depends(requiere_administrador),
+    sesion: Session = Depends(obtener_sesion),
+):
+    estado = solicitar_preparacion(sesion)
+    sesion.commit()
+    return {"datos": _estado(estado, sesion)}

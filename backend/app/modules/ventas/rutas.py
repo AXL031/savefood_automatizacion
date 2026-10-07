@@ -3,7 +3,7 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.base_datos import obtener_sesion
@@ -26,6 +26,7 @@ def listar_ventas(
     desde: date | None = Query(None),
     hasta: date | None = Query(None, description="Inclusive."),
     limite: int = Query(100, ge=1, le=LIMITE_MAXIMO),
+    desplazamiento: int = Query(0, ge=0),
     _usuario: Usuario = Depends(identidad_actual),
     sesion: Session = Depends(obtener_sesion),
 ):
@@ -50,8 +51,7 @@ def listar_ventas(
         )
         .join(Producto, Producto.id == VentaDiaria.producto_id)
         .join(SkuProducto, SkuProducto.producto_id == VentaDiaria.producto_id, isouter=True)
-        .order_by(VentaDiaria.fecha_local.desc(), VentaDiaria.producto_id)
-        .limit(limite)
+        .order_by(VentaDiaria.fecha_local.desc(), VentaDiaria.producto_id, VentaDiaria.id)
     )
     if producto_id is not None:
         consulta = consulta.where(VentaDiaria.producto_id == producto_id)
@@ -60,7 +60,8 @@ def listar_ventas(
     if hasta is not None:
         consulta = consulta.where(VentaDiaria.fecha_local <= hasta)
 
-    filas = sesion.execute(consulta).all()
+    total = sesion.scalar(select(func.count()).select_from(consulta.order_by(None).subquery()))
+    filas = sesion.execute(consulta.offset(desplazamiento).limit(limite)).all()
     return {
         "datos": [
             {
@@ -75,7 +76,7 @@ def listar_ventas(
             }
             for fila in filas
         ],
-        "metadatos": {"limite": limite, "total_devuelto": len(filas)},
+        "metadatos": {"limite": limite, "desplazamiento": desplazamiento, "total": total, "total_devuelto": len(filas)},
     }
 
 

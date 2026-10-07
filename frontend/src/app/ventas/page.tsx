@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { PanelDetalle } from "@/components/ui/PanelDetalle";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
 import { TablaDatos, type Columna } from "@/components/tables/TablaDatos";
@@ -8,11 +9,9 @@ import { CampoFecha } from "@/components/forms/CampoFecha";
 import { CampoSelect } from "@/components/forms/CampoSelect";
 import { CampoTexto } from "@/components/forms/CampoTexto";
 import { BotonEnviar } from "@/components/forms/BotonEnviar";
-import { corregirVenta, listarProductos, listarRevisiones, listarVentas } from "@/services/catalogo";
+import { corregirVenta, listarProductos, listarRevisiones, listarPaginaVentas } from "@/services/catalogo";
 import type { Producto, RevisionVenta, VentaDiaria } from "@/types/catalogo";
 import { formatearFechaHora } from "@/utils/fechas";
-
-const LIMITE = 200;
 
 type Correccion = { venta: VentaDiaria; unidades: string; motivo: string };
 
@@ -64,6 +63,9 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [detalle, setDetalle] = useState<VentaDiaria | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const [tamano, setTamano] = useState(10);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const control = new AbortController();
@@ -75,17 +77,18 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     (signal?: AbortSignal) => {
       setCargando(true);
       setError("");
-      listarVentas(
+      listarPaginaVentas(
         token,
         {
           productoId: productoId ? Number(productoId) : undefined,
           desde: desde || undefined,
           hasta: hasta || undefined,
-          limite: LIMITE,
+          limite: tamano,
+          desplazamiento: (pagina - 1) * tamano,
         },
         signal,
       )
-        .then(setVentas)
+        .then((resultado) => { if (!signal?.aborted) { setVentas(resultado.filas); setTotal(resultado.total); } })
         .catch((fallo: unknown) => {
           if (signal?.aborted) return;
           setError(fallo instanceof Error ? fallo.message : "No se pudieron cargar las ventas.");
@@ -94,7 +97,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           if (!signal?.aborted) setCargando(false);
         });
     },
-    [token, productoId, desde, hasta],
+    [token, productoId, desde, hasta, pagina, tamano],
   );
 
   useEffect(() => {
@@ -189,14 +192,14 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
             id="filtro-producto"
             etiqueta="Producto"
             valor={productoId}
-            onCambio={setProductoId}
+            onCambio={(valor) => { setProductoId(valor); setPagina(1); }}
             opciones={[
               { valor: "", texto: "Todos" },
               ...productos.map((fila) => ({ valor: String(fila.id), texto: fila.nombre })),
             ]}
           />
-          <CampoFecha id="filtro-desde" etiqueta="Desde" valor={desde} onCambio={setDesde} max={hasta || undefined} />
-          <CampoFecha id="filtro-hasta" etiqueta="Hasta" valor={hasta} onCambio={setHasta} min={desde || undefined} />
+          <CampoFecha id="filtro-desde" etiqueta="Desde" valor={desde} onCambio={(valor) => { setDesde(valor); setPagina(1); }} max={hasta || undefined} />
+          <CampoFecha id="filtro-hasta" etiqueta="Hasta" valor={hasta} onCambio={(valor) => { setHasta(valor); setPagina(1); }} min={desde || undefined} />
         </div>
 
         {mensaje ? <p className="inline-success">{mensaje}</p> : null}
@@ -209,12 +212,12 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           cargando={cargando}
           vacioTitulo="No hay ventas para este filtro"
           vacioDescripcion="Completa la primera carga o amplía el rango de fechas."
-          pie={ventas.length === LIMITE ? `Se muestran las ${LIMITE} más recientes; acota el rango para ver el resto.` : undefined}
+          paginacion={{ pagina, tamano, total, cargando, onCambio: (p, t) => { setPagina(p); setTamano(t); } }}
         />
       </section>
 
       {detalle ? (
-        <section className="card">
+        <PanelDetalle titulo={`Historial de ${detalle.producto}`} onCerrar={() => setDetalle(null)}><section className="card">
           <div className="section-heading">
             <div>
               <h2>Historial de {detalle.producto}</h2>
@@ -222,11 +225,11 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
             </div>
           </div>
           <PanelRevisiones token={token} venta={detalle} />
-        </section>
+        </section></PanelDetalle>
       ) : null}
 
       {correccion ? (
-        <section className="card">
+        <PanelDetalle titulo="Corregir venta" onCerrar={() => setCorreccion(null)} ocupado={guardando}><section className="card">
           <div className="section-heading">
             <div>
               <h2>Corregir venta</h2>
@@ -236,13 +239,14 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               </p>
             </div>
           </div>
+          {error && <EstadoPanel tono="alerta" titulo="Revisa la corrección" descripcion={error} />}
           <form onSubmit={guardarCorreccion} className="form-grid">
             <CampoTexto
               id="correccion-unidades"
               etiqueta="Unidades vendidas"
               valor={correccion.unidades}
               onCambio={(valor) => setCorreccion({ ...correccion, unidades: valor })}
-              ayuda="Entero no negativo."
+              ayuda="Unidades completas; escribe 0 solo si sabes que no hubo ventas."
             />
             <CampoTexto
               id="correccion-motivo"
@@ -254,12 +258,12 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
             />
             <div className="form-actions">
               <BotonEnviar enviando={guardando} textoEnviando="Guardando…">Guardar corrección</BotonEnviar>
-              <button type="button" className="button-secondary" onClick={() => setCorreccion(null)}>
+              <button type="button" className="button-secondary" disabled={guardando} onClick={() => setCorreccion(null)}>
                 Cancelar
               </button>
             </div>
           </form>
-        </section>
+        </section></PanelDetalle>
       ) : null}
     </>
   );
@@ -269,7 +273,7 @@ export default function PaginaVentas() {
   return (
     <ProtectedShell
       titulo="Ventas"
-      descripcion="Historial diario que alimenta el pronóstico, con revisiones auditables."
+      descripcion="Unidades vendidas por día y producto, con historial de correcciones."
     >
       {(contexto) => <Contenido contexto={contexto} />}
     </ProtectedShell>

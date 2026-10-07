@@ -15,7 +15,7 @@ from app.modules.negocios.modelos import Negocio  # noqa: F401
 from app.modules.automatizaciones.modelos import EjecucionAutomatizacion, IntentoAutomatizacion, ProgramacionDemo
 from app.modules.automatizaciones.servicio import finalizar_intento, iniciar_intento
 from app.workers.retry.politica import ErrorDatos, es_transitorio, siguiente_intento
-from app.workers.tasks.manejadores import contexto_ejecucion, notificar_inicio, notificar_fallo, obtener_manejador
+from app.workers.tasks.manejadores import ContextoEjecucion, obtener_manejador, notificar_inicio, notificar_fallo
 
 logger = logging.getLogger(__name__)
 LEASE_SEGUNDOS = 120
@@ -25,11 +25,20 @@ def _ahora() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _utc(fecha: datetime) -> datetime:
+    # SQLite de pruebas devuelve sin tz las fechas UTC persistidas.
+    return fecha.replace(tzinfo=timezone.utc) if fecha.tzinfo is None else fecha.astimezone(timezone.utc)
+
+
 def _liberar(sesion, ejecucion):
     ejecucion.lease_hasta = None
     ejecucion.token_despacho = None
     if ejecucion.programacion_id is not None:
         sesion.get(ProgramacionDemo, ejecucion.programacion_id).lease_hasta = None
+
+
+def _contexto(ejecucion):
+    return ContextoEjecucion(ejecucion.id, ejecucion.tipo, ejecucion.clave_idempotencia, ejecucion.datos_entrada_json)
 
 
 def _cerrar_fallo(sesion, intento, mensaje: str, transitorio: bool, ahora: datetime):
@@ -38,7 +47,7 @@ def _cerrar_fallo(sesion, intento, mensaje: str, transitorio: bool, ahora: datet
         sesion, intento.id, "REINTENTANDO" if proximo else "FALLIDA",
         mensaje_error=mensaje, proximo_intento_en=proximo,
     )
-    notificar_fallo(sesion, ejecucion, mensaje)
+    notificar_fallo(sesion, _contexto(ejecucion), mensaje)
     _liberar(sesion, ejecucion)
 
 
@@ -74,6 +83,7 @@ def despachar_pendientes(publicar: Callable[[int, str], None], *, ahora: datetim
                     ejecucion.estado = "FALLIDA"
                     ejecucion.fin_en = ahora
                     ejecucion.mensaje_error = "Ejecución inconsistente: no existe intento activo."
+                    notificar_fallo(sesion, _contexto(ejecucion), ejecucion.mensaje_error)
                     _liberar(sesion, ejecucion)
                 else:
                     _cerrar_fallo(sesion, intento, "El worker se interrumpió antes de confirmar el resultado.", True, ahora)
@@ -113,20 +123,21 @@ def ejecutar(ejecucion_id: int, token: str) -> dict:
         if ejecucion is None or ejecucion.token_despacho != token or ejecucion.estado not in ("PENDIENTE", "REINTENTANDO"):
             return {"resultado": "IGNORADA"}
         ahora = _ahora()
-        if ejecucion.proximo_intento_en is not None and ejecucion.proximo_intento_en > ahora:
+        if ejecucion.proximo_intento_en is not None and _utc(ejecucion.proximo_intento_en) > ahora:
             return {"resultado": "NO_VENCIDA"}
         if ejecucion.programacion_id is not None:
             programacion = sesion.get(ProgramacionDemo, ejecucion.programacion_id)
-            if programacion.estado == "CANCELADA" or programacion.ejecutar_desde_utc > ahora:
+            if programacion.estado == "CANCELADA" or _utc(programacion.ejecutar_desde_utc) > ahora:
                 return {"resultado": "NO_VENCIDA"}
         intento = iniciar_intento(sesion, ejecucion_id)
         intento_id = intento.id
         try:
             with sesion.begin_nested():
-                notificar_inicio(sesion, ejecucion)
-        except ErrorDatos as error:
-            _cerrar_fallo(sesion, intento, str(error), False, ahora)
-            return {"resultado": "FALLIDA", "ejecucion_id": ejecucion_id}
+                notificar_inicio(sesion, _contexto(ejecucion))
+        except Exception as error:
+            mensaje = str(error) if isinstance(error, ErrorDatos) else "No se pudo iniciar la preparación del servicio."
+            _cerrar_fallo(sesion, intento, mensaje, es_transitorio(error), ahora)
+            return {"resultado": ejecucion.estado, "ejecucion_id": ejecucion_id}
         ejecucion.lease_hasta = ahora + timedelta(seconds=LEASE_SEGUNDOS)
         if ejecucion.programacion_id is not None:
             programacion.lease_hasta = ejecucion.lease_hasta
@@ -137,7 +148,7 @@ def ejecutar(ejecucion_id: int, token: str) -> dict:
             if ejecucion is None or ejecucion.token_despacho != token or ejecucion.estado != "EN_EJECUCION":
                 return {"resultado": "IGNORADA"}
             intento = sesion.get(IntentoAutomatizacion, intento_id)
-            contexto = contexto_ejecucion(ejecucion)
+            contexto = ContextoEjecucion(ejecucion.id, ejecucion.tipo, ejecucion.clave_idempotencia, ejecucion.datos_entrada_json)
             try:
                 # El bloqueo se mantiene durante el handler. El despachador omite esa fila,
                 # incluso si vence el lease durante un cálculo largo.

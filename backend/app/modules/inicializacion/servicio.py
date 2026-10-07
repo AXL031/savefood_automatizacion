@@ -18,6 +18,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errores import ErrorAPI
+from app.modules.automatizaciones.servicio import consultar_ejecucion, crear_o_recuperar_ejecucion
 from app.modules.inicializacion import lectores
 from app.modules.inicializacion.adaptador_bakery import (
     ResumenAdaptacion,
@@ -75,7 +76,6 @@ class InformeCarga:
     movimientos_apertura: int = 0
     pendiente_de: list[str] = field(default_factory=list)
     ya_estaba_cargada: bool = False
-    ejecucion_id: int | None = None
 
 
 def skus_curados() -> set[str] | None:
@@ -87,12 +87,9 @@ def skus_curados() -> set[str] | None:
     return set(leer_nombres_bakery(LISTA_CURADA))
 
 
-def leer_estado(sesion: Session, *, bloquear: bool = False) -> ConfiguracionInicial:
+def leer_estado(sesion: Session) -> ConfiguracionInicial:
     """Devuelve la fila única, creándola en `PENDIENTE` si la migración no la dejó."""
-    consulta = select(ConfiguracionInicial).where(ConfiguracionInicial.id == FILA_UNICA)
-    if bloquear:
-        consulta = consulta.with_for_update().execution_options(populate_existing=True)
-    estado = sesion.scalar(consulta)
+    estado = sesion.get(ConfiguracionInicial, FILA_UNICA)
     if estado is None:
         estado = ConfiguracionInicial(id=FILA_UNICA, estado=ESTADO_PENDIENTE)
         sesion.add(estado)
@@ -164,7 +161,7 @@ def confirmar_carga(
     El llamador confirma o revierte. Repetir la misma solicitud sobre una
     instalación ya cargada devuelve el resultado anterior en lugar de duplicar.
     """
-    estado = leer_estado(sesion, bloquear=True)
+    estado = bloquear_estado(sesion)
     vista = preparar_vista_previa(
         archivos, fecha_objetivo_demo, fecha_referencia_stock, skus_permitidos
     )
@@ -176,7 +173,6 @@ def confirmar_carga(
             ventas_diarias=0,
             importacion_id=0,
             ya_estaba_cargada=True,
-            ejecucion_id=estado.preparacion_ejecucion_id,
         )
     if estado.estado in (ESTADO_DATOS_CARGADOS, ESTADO_ENTRENANDO, ESTADO_MODELO_LISTO):
         raise ErrorAPI(
@@ -203,6 +199,7 @@ def confirmar_carga(
             )
             for fila in entrada.productos
         ],
+        completar_piloto=estado.estado == ESTADO_PENDIENTE and estado.huella_solicitud is None,
     )
 
     sku_a_id = {fila.sku_externo: producto_por_codigo[fila.codigo] for fila in entrada.productos}
@@ -217,6 +214,7 @@ def confirmar_carga(
         huella_contenido=vista.huella_ventas,
         filas_aceptadas=len(entrada.ventas),
         motivo="Primera carga",
+        reutilizar_identicas=True,
     )
 
     pendiente: list[str] = []
@@ -257,10 +255,8 @@ def confirmar_carga(
     estado.mensaje_error = None if completa else "Falta la entrega de: " + "; ".join(pendiente)
     estado.actualizado_en = ahora
     sesion.flush()
-
     if completa:
-        from app.modules.inicializacion.preparacion import solicitar_preparacion_modelo
-        solicitar_preparacion_modelo(sesion)
+        solicitar_preparacion(sesion)
 
     return InformeCarga(
         estado=estado.estado,
@@ -271,7 +267,6 @@ def confirmar_carga(
         recetas=recetas,
         movimientos_apertura=movimientos,
         pendiente_de=pendiente,
-        ejecucion_id=estado.preparacion_ejecucion_id,
     )
 
 
@@ -320,3 +315,73 @@ def hay_datos_cargados(sesion: Session) -> bool:
     """Frontera de lectura para Kevin y Axel."""
     estado = sesion.scalar(select(ConfiguracionInicial.estado).where(ConfiguracionInicial.id == FILA_UNICA))
     return estado in (ESTADO_DATOS_CARGADOS, ESTADO_ENTRENANDO, ESTADO_MODELO_LISTO)
+
+
+def bloquear_estado(sesion: Session) -> ConfiguracionInicial:
+    """Serializa confirmación/reintento en la fila única de la instalación."""
+    leer_estado(sesion)
+    return sesion.scalar(select(ConfiguracionInicial).where(ConfiguracionInicial.id == FILA_UNICA)
+                         .with_for_update().execution_options(populate_existing=True))
+
+
+def detalle_preparacion(sesion: Session, estado: ConfiguracionInicial) -> dict:
+    ejecucion = consultar_ejecucion(sesion, estado.preparacion_ejecucion_id)
+    salida = (ejecucion.datos_salida_json or {}) if ejecucion else {}
+    evaluacion = consultar_ejecucion(sesion, salida.get("evaluacion_ejecucion_id"))
+    def resumen(fila):
+        return ({"id": fila.id, "estado": fila.estado, "mensaje_error": fila.mensaje_error}
+                if fila else None)
+    return {"modelo_id": estado.modelo_id, "preparacion_numero": estado.preparacion_numero,
+            "preparacion": resumen(ejecucion), "evaluacion": resumen(evaluacion)}
+
+
+def solicitar_preparacion(sesion: Session) -> ConfiguracionInicial:
+    """Reserva/reutiliza ML bajo bloqueo; jamás vuelve a importar ni confirma."""
+    estado = bloquear_estado(sesion)
+    if not estado.huella_solicitud or estado.estado not in (
+        ESTADO_DATOS_CARGADOS, ESTADO_ENTRENANDO, ESTADO_MODELO_LISTO):
+        raise ErrorAPI(409, "DATOS_NO_CARGADOS", "Primero confirma la carga completa.")
+    actual = consultar_ejecucion(sesion, estado.preparacion_ejecucion_id)
+    if actual is not None:
+        if actual.estado != "FALLIDA":
+            evaluacion = detalle_preparacion(sesion, estado)["evaluacion"]
+            if actual.estado != "COMPLETADA" or not evaluacion or evaluacion["estado"] != "FALLIDA":
+                return estado
+    estado.preparacion_numero += 1
+    version = f"inicial-q65v2-{estado.huella_solicitud[:24]}"
+    ejecucion = crear_o_recuperar_ejecucion(
+        sesion, "PREPARAR_MODELO", f"{version}-preparacion-{estado.preparacion_numero}",
+        {"version_modelo": version, "huella_inicializacion": estado.huella_solicitud},
+    )
+    estado.preparacion_ejecucion_id = ejecucion.id
+    estado.estado = ESTADO_DATOS_CARGADOS
+    estado.mensaje_error = None
+    estado.actualizado_en = datetime.now(timezone.utc)
+    sesion.flush()
+    return estado
+
+
+def _es_preparacion_actual(estado: ConfiguracionInicial, ejecucion_id: int, huella: str) -> bool:
+    return estado.preparacion_ejecucion_id == ejecucion_id and estado.huella_solicitud == huella
+
+
+def iniciar_preparacion(sesion: Session, ejecucion_id: int, huella: str) -> None:
+    estado = bloquear_estado(sesion)
+    if _es_preparacion_actual(estado, ejecucion_id, huella):
+        # Recuperación después de caída: ENTRENANDO puede pertenecer al intento anterior.
+        if estado.estado != ESTADO_ENTRENANDO:
+            marcar_entrenando(sesion)
+
+
+def completar_preparacion(sesion: Session, ejecucion_id: int, huella: str, modelo_id: int) -> None:
+    estado = bloquear_estado(sesion)
+    if not _es_preparacion_actual(estado, ejecucion_id, huella):
+        raise ErrorAPI(409, "PREPARACION_ANTIGUA", "La preparación ya no corresponde a la carga actual.")
+    estado.modelo_id = modelo_id
+    marcar_modelo_listo(sesion)
+
+
+def fallar_preparacion(sesion: Session, ejecucion_id: int, huella: str, mensaje: str) -> None:
+    estado = bloquear_estado(sesion)
+    if _es_preparacion_actual(estado, ejecucion_id, huella) and estado.estado == ESTADO_ENTRENANDO:
+        marcar_fallo_entrenamiento(sesion, mensaje)

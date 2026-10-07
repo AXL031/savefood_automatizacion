@@ -17,7 +17,9 @@
 
 ## Punto de partida
 
-`page.tsx` implementa el asistente de primera carga de Sánchez: dos XLSX o cinco CSV, vista previa y confirmación. `piloto/page.tsx` conserva la carga rápida del CSV bakery para la base local existente y reserva la preparación del modelo. Son flujos distintos. La carga completa sigue parcialmente pendiente de los servicios de Max y Vera. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
+**Paso 1 · 30-09-2026:** El asistente completo muestra preparación y backtest, refresca cada tres segundos, enlaza ejecución/modelo/panel y ofrece reintento administrativo sin archivos; no vuelve a mostrar carga aceptada. MODELO_LISTO y evaluación COMPLETADA son estados distintos. Servicios y tipos usan el estado ampliado del contrato E03.
+
+`page.tsx` implementa el asistente de primera carga de Sánchez: dos XLSX o cinco CSV, vista previa y confirmación. `piloto/page.tsx` conserva la carga rápida del CSV bakery para la base local existente y reserva la preparación del modelo. Son flujos distintos. La carga completa consume recetas y lotes reales, y reserva entrenamiento. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md).
 
 ## Integración E03/K01
 

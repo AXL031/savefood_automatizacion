@@ -5,7 +5,17 @@ export type EstadoInicializacion =
   | "MODELO_LISTO"
   | "FALLIDA";
 
+export type EstadoTareaInicial = {
+  id: number;
+  estado: "PENDIENTE" | "EN_EJECUCION" | "REINTENTANDO" | "COMPLETADA" | "FALLIDA";
+  mensaje_error: string | null;
+};
+
 export type ConfiguracionInicial = {
+  modelo_id: number | null;
+  preparacion_numero: number;
+  preparacion: EstadoTareaInicial | null;
+  evaluacion: EstadoTareaInicial | null;
   estado: EstadoInicializacion;
   huella_ventas: string | null;
   huella_catalogo: string | null;
@@ -14,15 +24,6 @@ export type ConfiguracionInicial = {
   fecha_referencia_stock: string | null;
   iniciada_en: string | null;
   completada_en: string | null;
-  mensaje_error: string | null;
-  preparacion_modelo: PreparacionModelo | null;
-};
-
-export type PreparacionModelo = {
-  ejecucion_id: number;
-  estado: "PENDIENTE" | "EN_EJECUCION" | "REINTENTANDO" | "COMPLETADA" | "FALLIDA";
-  version_modelo: string;
-  modelo_id: number | null;
   mensaje_error: string | null;
 };
 
@@ -70,7 +71,6 @@ export type InformeCarga = {
   movimientos_apertura: number;
   /** Dominios que aún no tienen servicio; la instalación no queda inicializada. */
   pendiente_de: string[];
-  ejecucion_id: number | null;
 };
 
 export type ResultadoCargaPiloto = {

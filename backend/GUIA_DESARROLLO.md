@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**30-09-2026 · Paso 5: cryptography es dependencia de runtime para cifrar token Telegram configurable desde Proveedores. API/worker comparten volumen telegram_secrets; clave derivada del JWT_SECRET de instalación. Token no se incorpora a imágenes, base de negocio o logs.**
+
 Archivos técnicos observados al preparar esta guía: `.dockerignore`, `Dockerfile`, `alembic.ini`, `pyproject.toml`. Su presencia no certifica que el recorrido esté completo. Consultar el resumen vigente de [Axel Cueva](../docs/equipo/avances/cueva.md) para el último estado.
 
 ## Trabajo en esta carpeta

@@ -118,7 +118,7 @@ def cargar(entorno):
     respuesta = cliente.post("/api/v1/inicializacion/confirmar", data=FECHAS,
                              files=archivos(), headers=cabeceras["ADMINISTRADOR"])
     assert respuesta.status_code == 201, respuesta.text
-    return respuesta.json()["datos"]["ejecucion_id"]
+    return cliente.get("/api/v1/inicializacion/estado", headers=cabeceras["ADMINISTRADOR"]).json()["datos"]["preparacion"]["id"]
 
 
 def reclamar():
@@ -135,20 +135,20 @@ def contar(sesiones):
 
 def test_carga_reserva_una_sola_tarea_y_rechaza_reintento_sin_permisos(entorno):
     cliente, sesiones, cabeceras = entorno
-    assert cliente.post("/api/v1/inicializacion/reintentar-modelo", json={"clave_idempotencia": "r1"},
+    assert cliente.post("/api/v1/inicializacion/reintentar-preparacion", json={"clave_idempotencia": "r1"},
                         headers=cabeceras["ADMINISTRADOR"]).status_code == 409
     id_ = cargar(entorno)
     antes = contar(sesiones)
     assert cargar(entorno) == id_
     assert contar(sesiones) == antes
-    respuesta = cliente.post("/api/v1/inicializacion/reintentar-modelo", json={"clave_idempotencia": "r1"},
+    respuesta = cliente.post("/api/v1/inicializacion/reintentar-preparacion", json={"clave_idempotencia": "r1"},
                              headers=cabeceras["ADMINISTRADOR"])
-    assert respuesta.json()["datos"]["ejecucion_id"] == id_
-    assert cliente.post("/api/v1/inicializacion/reintentar-modelo", json={"clave_idempotencia": "r1"},
+    assert respuesta.json()["datos"]["preparacion"]["id"] == id_
+    assert cliente.post("/api/v1/inicializacion/reintentar-preparacion", json={"clave_idempotencia": "r1"},
                         headers=cabeceras["OPERADOR"]).status_code == 403
     estado = cliente.get("/api/v1/inicializacion/estado", headers=cabeceras["OPERADOR"]).json()["datos"]
     assert estado["estado"] == "DATOS_CARGADOS"
-    assert estado["preparacion_modelo"]["estado"] == "PENDIENTE"
+    assert estado["preparacion"]["estado"] == "PENDIENTE"
 
 
 def test_catboost_real_y_evaluacion_sin_reimportar(entorno, monkeypatch):
@@ -169,7 +169,7 @@ def test_catboost_real_y_evaluacion_sin_reimportar(entorno, monkeypatch):
     assert motor.ejecutar(*mensaje)["resultado"] == "IGNORADA"
     estado = cliente.get("/api/v1/inicializacion/estado", headers=cabeceras["ADMINISTRADOR"]).json()["datos"]
     assert estado["estado"] == "MODELO_LISTO"
-    assert estado["preparacion_modelo"]["modelo_id"] is not None
+    assert estado["modelo_id"] is not None
     assert cargar(entorno) == id_
     evaluacion = reclamar()[0]
     assert motor.ejecutar(*evaluacion)["resultado"] == "COMPLETADA"
@@ -194,16 +194,17 @@ def test_fallo_definitivo_reintenta_con_nueva_clave_sin_cargar(entorno, monkeypa
         assert estado.estado == "DATOS_CARGADOS"
         assert "insuficiente" in estado.mensaje_error
     datos = {"clave_idempotencia": "corregido-1"}
-    nuevo = cliente.post("/api/v1/inicializacion/reintentar-modelo", json=datos,
-                         headers=cabeceras["ADMINISTRADOR"]).json()["datos"]["ejecucion_id"]
-    assert cliente.post("/api/v1/inicializacion/reintentar-modelo", json=datos,
-                        headers=cabeceras["ADMINISTRADOR"]).json()["datos"]["ejecucion_id"] == nuevo
+    nuevo = cliente.post("/api/v1/inicializacion/reintentar-preparacion", json=datos,
+                         headers=cabeceras["ADMINISTRADOR"]).json()["datos"]["preparacion"]["id"]
+    assert cliente.post("/api/v1/inicializacion/reintentar-preparacion", json=datos,
+                        headers=cabeceras["ADMINISTRADOR"]).json()["datos"]["preparacion"]["id"] == nuevo
     assert contar(sesiones) == (antes[0], antes[1], antes[2] + 1)
     assert motor.ejecutar(*reclamar()[0])["resultado"] == "FALLIDA"
-    # Repetir la clave fallida tampoco crea otra tarea.
-    assert cliente.post("/api/v1/inicializacion/reintentar-modelo", json=datos,
-                        headers=cabeceras["ADMINISTRADOR"]).json()["datos"]["estado"] == "FALLIDA"
-    assert contar(sesiones) == (antes[0], antes[1], antes[2] + 1)
+    # El contrato conciliado reserva un intento nuevo tras cada fallo;
+    # mientras siga activo, repetir lo recupera sin duplicar.
+    tercero = cliente.post("/api/v1/inicializacion/reintentar-preparacion", headers=cabeceras["ADMINISTRADOR"]).json()["datos"]["preparacion"]["id"]
+    assert tercero != nuevo
+    assert contar(sesiones) == (antes[0], antes[1], antes[2] + 2)
 
 
 def test_fallo_transitorio_y_recuperacion_de_worker_conservan_datos(entorno, monkeypatch):
@@ -227,7 +228,8 @@ def test_fallo_transitorio_y_recuperacion_de_worker_conservan_datos(entorno, mon
     with sesiones.begin() as s:
         e = s.get(EjecucionAutomatizacion, id_)
         iniciar_intento(s, id_)
-        notificar_inicio(s, e)
+        from app.workers.tasks.manejadores import ContextoEjecucion
+        notificar_inicio(s, ContextoEjecucion(e.id, e.tipo, e.clave_idempotencia, e.datos_entrada_json))
         e.lease_hasta = datetime.now(timezone.utc) - timedelta(seconds=1)
     assert motor.despachar_pendientes(lambda *_: None)["recuperadas"] == 1
     with sesiones() as s:
@@ -240,7 +242,7 @@ def test_fallo_transitorio_y_recuperacion_de_worker_conservan_datos(entorno, mon
 
 def test_rollback_de_reserva_no_deja_carga_ni_tarea(entorno, monkeypatch):
     cliente, sesiones, cabeceras = entorno
-    from app.modules.inicializacion import preparacion
+    from app.modules.inicializacion import servicio as preparacion
 
     def fallar(*args, **kwargs):
         raise ErrorAPI(503, "RESERVA_NO_DISPONIBLE", "Fallo inducido antes de confirmar.")
@@ -327,7 +329,7 @@ def test_carga_dispara_worker_y_beat_reales(entorno):
                     pytest.fail("Beat y worker no completaron preparación y backtest en 90 segundos")
                 estado = cliente.get("/api/v1/inicializacion/estado", headers=cabeceras["ADMINISTRADOR"]).json()["datos"]
                 assert estado["estado"] == "MODELO_LISTO"
-                assert estado["preparacion_modelo"]["estado"] == "COMPLETADA"
+                assert estado["preparacion"]["estado"] == "COMPLETADA"
                 with sesiones() as s:
                     assert s.scalar(select(func.count()).select_from(EvaluacionPronostico)) > 0
                 # Siguiente frontera real: HTTP → Beat → inferencia → plan → evaluación.
@@ -358,7 +360,7 @@ def test_carga_dispara_worker_y_beat_reales(entorno):
                 detalle = cliente.get(f'/api/v1/planes/{salida["plan_id"]}', headers=cabeceras["OPERADOR"])
                 assert detalle.status_code == 200
                 assert len(detalle.json()["datos"]["elementos"]) == 3
-                assert salida["pedidos_estado"] == "PENDIENTE_IMPLEMENTACION"
+                assert salida["pedidos_estado"] == "BLOQUEADA"
                 with sesiones() as s:
                     assert s.scalar(select(func.count()).select_from(PlanProduccion)) == 1
                     assert s.scalar(select(func.count()).select_from(MovimientoInventario)) == movimientos

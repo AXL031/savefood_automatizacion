@@ -1,4 +1,6 @@
 "use client";
+import { TablaPaginada } from "@/components/tables/TablaPaginada";
+
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -50,27 +52,27 @@ function Contenido({ token }: { token: string }) {
   const traza = reporte?.trazas.find((item) => item.fecha_local === fecha);
   return <>
     {error && <div className="inline-error" role="alert">{error}</div>}
-    {cargando ? <p role="status">Cargando evaluación histórica…</p> : !reporte ? <EstadoPanel titulo="Sin evaluación" descripcion="Prepara un modelo y ejecuta su backtest para consultar esta vista." /> : <>
-      <section className="card"><div className="section-heading"><div><h2>Comprobación histórica exploratoria</h2><p>Pronósticos de un día adelante con ventas anteriores a cada fecha. WAPE mide error.</p></div><label className="filter-label">Versión<select value={modeloId ?? ""} onChange={(e) => setModeloId(Number(e.target.value))}>{modelos.map((item) => <option key={item.id} value={item.id}>{item.version_modelo}</option>)}</select></label></div>
+    {cargando ? <p role="status">Cargando evaluación histórica…</p> : !reporte ? <EstadoPanel titulo="Sin evaluación" descripcion="Revisa Datos iniciales: la evaluación se prepara automáticamente después del modelo." /> : <>
+      <section className="card"><div className="section-heading"><div><h2>Comparar pronóstico y ventas reales</h2><p>Pronósticos de un día adelante con ventas anteriores a cada fecha. Los indicadores de abajo explican el error y los datos que pudieron compararse.</p></div><label className="filter-label">Versión<select value={modeloId ?? ""} onChange={(e) => setModeloId(Number(e.target.value))}>{modelos.map((item) => <option key={item.id} value={item.id}>{item.version_modelo}</option>)}</select></label></div>
         <p className="helper-text">Entrenamiento {reporte.particion.inicio_entrenamiento}–{reporte.particion.fin_entrenamiento} · Validación {reporte.particion.inicio_validacion}–{reporte.particion.fin_validacion} · Prueba {reporte.fecha_inicio}–{reporte.fecha_fin}</p>
       </section>
       <div className="stats-grid section-space">
-        <div className="card stat"><span>MAE</span><strong>{valor(reporte.metricas_globales.mae)}</strong><small>Unidades por par evaluable</small></div>
-        <div className="card stat"><span>WAPE</span><strong>{valor(reporte.metricas_globales.wape_pct, "%")}</strong><small>Error sobre ventas reales conocidas</small></div>
-        <div className="card stat"><span>Dentro de ±20 %</span><strong>{valor(reporte.metricas_globales.dentro_mas_menos_20_pct, "%")}</strong><small>Convención max(real, 1)</small></div>
-        <div className="card stat"><span>Cobertura</span><strong>{valor(reporte.metricas_globales.cobertura_pct, "%")}</strong><small>{reporte.total_pares_evaluables} pares evaluables</small></div>
+        <div className="card stat"><span>Error medio (MAE)</span><strong>{valor(reporte.metricas_globales.mae)}</strong><small>Unidades de diferencia media por producto y día; menor es mejor</small></div>
+        <div className="card stat"><span>Error relativo (WAPE)</span><strong>{valor(reporte.metricas_globales.wape_pct, "%")}</strong><small>Error sobre ventas reales conocidas</small></div>
+        <div className="card stat"><span>Dentro de ±20 %</span><strong>{valor(reporte.metricas_globales.dentro_mas_menos_20_pct, "%")}</strong><small>Porcentaje de pronósticos cercanos a la venta real</small></div>
+        <div className="card stat"><span>Cobertura</span><strong>{valor(reporte.metricas_globales.cobertura_pct, "%")}</strong><small>{reporte.total_pares_evaluables} comparaciones de producto y día</small></div>
       </div>
-      <section className="card"><div className="section-heading"><div><h2>Serie del tramo reservado</h2><p>Verde: previsto evaluable. Azul: real conocido de los mismos productos. Elige una fecha.</p></div></div>
-        {reporte.serie_diaria.length ? <SerieHistorica dias={reporte.serie_diaria} seleccion={fecha} alSeleccionar={setFecha} /> : <EstadoPanel titulo="Sin corridas de backtest" descripcion="La evaluación automática aún no ha guardado fechas para esta versión." />}
+      <section className="card"><div className="section-heading"><div><h2>Comparación por día del periodo de prueba</h2><p>Verde: previsto evaluable. Azul: real conocido de los mismos productos. Elige una fecha.</p></div></div>
+        {reporte.serie_diaria.length ? <SerieHistorica dias={reporte.serie_diaria} seleccion={fecha} alSeleccionar={setFecha} /> : <EstadoPanel titulo="Evaluación aún sin resultados" descripcion="La evaluación automática aún no ha guardado fechas para esta versión." />}
       </section>
-      {dia && <section className="card section-space"><div className="section-heading"><div><h2>{dia.fecha_local} · {dia.productos_evaluables} productos evaluables</h2><p>{dia.productos_excluidos} con pronóstico pero sin venta real conocida; {traza?.pronosticos_no_disponibles.length ?? 0} sin pronóstico disponible.</p></div>{traza && <Link href={`/pronosticos?corrida_id=${traza.corrida_id}`}>Corrida #{traza.corrida_id}</Link>}</div>
-        <div className="pronostico-meta"><div><span>Previsto evaluable</span><strong>{dia.total_previsto_evaluable}</strong></div><div><span>Real conocido</span><strong>{dia.total_real_conocido}</strong></div><div><span>MAE</span><strong>{valor(dia.metricas.mae)}</strong></div><div><span>WAPE</span><strong>{valor(dia.metricas.wape_pct, "%")}</strong></div><div><span>Cobertura</span><strong>{valor(dia.metricas.cobertura_pct, "%")}</strong></div></div>
-        <div className="table-wrap section-space"><table><thead><tr><th>Producto</th><th>Previsto</th><th>Real</th><th>Diferencia absoluta</th><th>Dentro ±20 %</th></tr></thead><tbody>{dia.desglose_productos.map((item) => <tr key={item.producto_id}><td>{item.producto ?? `#${item.producto_id}`}</td><td>{item.previsto}</td><td>{item.real ?? "Desconocido"}</td><td>{item.diferencia_absoluta ?? "—"}</td><td>{item.dentro_mas_menos_20 === null ? "—" : item.dentro_mas_menos_20 ? "Sí" : "No"}</td></tr>)}</tbody></table></div>
+      {dia && <section className="card section-space"><div className="section-heading"><div><h2>{dia.fecha_local} · {dia.productos_evaluables} productos evaluables</h2><p>{dia.productos_excluidos} con pronóstico pero sin venta real conocida; {traza?.pronosticos_no_disponibles.length ?? 0} sin pronóstico disponible.</p></div>{traza && <Link href={`/pronosticos?corrida_id=${traza.corrida_id}`}>Ver pronóstico #{traza.corrida_id}</Link>}</div>
+        <div className="pronostico-meta"><div><span>Previsto evaluable</span><strong>{dia.total_previsto_evaluable}</strong></div><div><span>Real conocido</span><strong>{dia.total_real_conocido}</strong></div><div><span>Error medio (MAE)</span><strong>{valor(dia.metricas.mae)}</strong></div><div><span>Error relativo (WAPE)</span><strong>{valor(dia.metricas.wape_pct, "%")}</strong></div><div><span>Cobertura</span><strong>{valor(dia.metricas.cobertura_pct, "%")}</strong></div></div>
+        <TablaPaginada><thead><tr><th>Producto</th><th>Previsto</th><th>Real</th><th>Diferencia absoluta</th><th>Dentro ±20 %</th></tr></thead><tbody>{dia.desglose_productos.map((item) => <tr key={item.producto_id}><td>{item.producto ?? `#${item.producto_id}`}</td><td>{item.previsto}</td><td>{item.real ?? "Desconocido"}</td><td>{item.diferencia_absoluta ?? "—"}</td><td>{item.dentro_mas_menos_20 === null ? "—" : item.dentro_mas_menos_20 ? "Sí" : "No"}</td></tr>)}</tbody></TablaPaginada>
       </section>}
     </>}
   </>;
 }
 
 export default function PanelPage() {
-  return <ProtectedShell titulo="Panel histórico" descripcion="Evaluación del modelo con cobertura, errores y fechas del escenario.">{({ token }) => <Suspense fallback={<p role="status">Cargando panel…</p>}><Contenido token={token} /></Suspense>}</ProtectedShell>;
+  return <ProtectedShell titulo="Evaluación histórica" descripcion="Evaluación del modelo con cobertura, errores y fechas del escenario.">{({ token }) => <Suspense fallback={<p role="status">Cargando panel…</p>}><Contenido token={token} /></Suspense>}</ProtectedShell>;
 }

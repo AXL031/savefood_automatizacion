@@ -34,3 +34,8 @@ Se puede corregir un dato inválido y volver a enviar sin perder el contexto.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+
+## Filtros de fecha · 30-09-2026
+
+CampoFecha atiende input y change para que seleccionar/escribir una fecha nativa actualice el estado del consumidor. Ventas vuelve a página 1 al cambiar fecha/producto. En QA, fecha 2022-08-21 devuelve tres ventas y conserva un cero explícito.

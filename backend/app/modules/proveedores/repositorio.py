@@ -9,7 +9,10 @@ class RepositorioProveedores:
     def __init__(self, db: Session):
         self.db = db
 
-    def proveedor_por_id(self, proveedor_id: int) -> Proveedor | None:
+    def proveedor_por_id(self, proveedor_id: int, bloquear: bool = False) -> Proveedor | None:
+        if bloquear:
+            return self.db.scalar(select(Proveedor).where(Proveedor.id == proveedor_id)
+                                  .with_for_update().execution_options(populate_existing=True))
         return self.db.get(Proveedor, proveedor_id)
 
     def proveedor_por_codigo(self, codigo: str) -> Proveedor | None:

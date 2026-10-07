@@ -1,4 +1,10 @@
 .git
+.env
+.env.*
+telegram_secrets
+**/telegram_secrets
+**/.env
+**/.env.*
 .venv
 .venv*
 .tmp
@@ -7,9 +13,11 @@ backend/*.egg-info
 **/__pycache__
 **/*.pyc
 **/.pytest_cache
+**/.cache
 frontend
 docs
 scripts
 foodsave-ml/*.csv
 foodsave-ml/notebooks
 model_artifacts
+backend/build/

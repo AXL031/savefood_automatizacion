@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**Paso 1 · 30-09-2026:** consultar_ejecucion y consultar_ejecucion_por_clave son fronteras públicas de lectura para E03/ML; no confirman sesiones.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Axel Cueva](../../../../docs/equipo/avances/cueva.md) para el último estado.
 
 ## Integración E03/K01
@@ -55,3 +57,7 @@ Crear archivos al necesitarlos: `esquemas.py` para entrada/salida y validación,
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+## Claridad y flujo completo · 30-09-2026
+
+programar_propuesta admite modo_envio_pedidos opcional y lo conserva en parámetros/huella. Omitir conserva comportamiento previo; null no añade snapshot de modo. Validar literal manual/automático. La UI administra una ejecución única para el objetivo histórico.

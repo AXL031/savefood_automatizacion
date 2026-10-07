@@ -30,6 +30,7 @@ export type CrearProgramacionDemo = {
   fecha_hora_simulada_local: string;
   fecha_objetivo_demo: string;
   producto_ids: number[];
+  modo_envio_pedidos?: "REQUIERE_APROBACION" | "AUTOMATICO";
   clave_idempotencia: string;
 };
 

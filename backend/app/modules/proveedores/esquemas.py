@@ -1,5 +1,7 @@
 """Entrada/salida y validación."""
 from decimal import Decimal
+from datetime import datetime
+import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -9,6 +11,16 @@ class ProveedorCrear(BaseModel):
     nombre: str = Field(min_length=1, max_length=120)
     chat_id_pruebas: str | None = Field(default=None, min_length=1, max_length=64)
     activo: bool = True
+
+    @field_validator("chat_id_pruebas")
+    @classmethod
+    def _chat_numerico(cls, valor: str | None) -> str | None:
+        if valor is None:
+            return valor
+        valor = valor.strip()
+        if not re.fullmatch(r"-?[1-9][0-9]{0,18}", valor):
+            raise ValueError("usa el identificador numérico del chat de pruebas")
+        return valor
 
     @field_validator("codigo", "nombre")
     @classmethod
@@ -27,6 +39,7 @@ class ProveedorSalida(BaseModel):
     activo: bool
     chat_id_pruebas: str | None
     destino_verificado: bool
+    destino_verificado_en: datetime | None
 
 
 class OfertaCrear(BaseModel):
@@ -67,6 +80,10 @@ class OfertaPreferidaCompras(BaseModel):
     oferta_id: int
     proveedor_id: int
     proveedor_codigo: str
+    proveedor_nombre: str
+    proveedor_activo: bool
+    chat_id_pruebas: str | None
+    destino_verificado: bool
     ingrediente_id: int
     unidad_compra: str
     factor_conversion: Decimal
@@ -79,3 +96,4 @@ class OfertaPreferidaCompras(BaseModel):
 class VerificacionDestino(BaseModel):
     verificado: bool
     detalle: str
+    codigo: str = "DESTINO_NO_VERIFICADO"

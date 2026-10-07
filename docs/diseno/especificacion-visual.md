@@ -1,6 +1,14 @@
 # Especificación visual de FoodSave
 
-Reglas de interfaz de la demo. Qué hace cada pantalla: [especificación funcional](../funcionalidades/especificacion-modulos.md). Referencias gráficas: [mockups](mockups/README.md); si un mockup contradice este documento, manda este documento.
+## Implementación de claridad transversal · 30-09-2026
+
+ProtectedShell y GuiaPantalla orientan todas las rutas disponibles con propósito, pasos, términos y enlace siguiente. Menú agrupado en preparación, catálogo/inventario, planificación/compras, resultados y administración; menú móvil desplegable accesible y navegación activa por ruta. Inicio muestra un recorrido de cuatro pasos. No se llama backend futuro desde Notificaciones: ofrece enlaces a pedidos y ejecuciones reales. La carga completa está implementada y no se describe como pendiente.
+
+Las páginas distinguen hora real/escenario, cálculo/pedido/envío, stock desconocido/cero y modelo/evaluación. Etiquetas humanas reemplazan códigos internos; claves/JSON/huellas y acciones de rechazo/cancelación están en detalles desplegables. Programación elige productos por nombre y guarda el modo; compras explica bloqueos y siguiente acción, revisión del chat y evidencia. Proveedores separa conectar bot, vincular/verificar chat y registrar ofertas. Evaluación explica MAE/WAPE/cobertura. Formularios, textos y tablas tienen mayor tamaño; tablas anchas se desplazan horizontalmente sin partir encabezados en letras.
+
+utils/unidades.ts convierte decimales mediante cadenas: >=1000 g/ml → kg/L, entradas kg/g y L/ml en ajustes/ofertas, conservando unidad base/API. No hay migración de unidades ni fórmulas ML nuevas. Esta sección describe código actual; maquetas más amplias que siguen mantienen carácter de referencia.
+
+## Identidad y propósito de la interfaz
 
 Estilo: aplicación de gestión sobria, superficies claras, pocos acentos, datos en tarjetas. Cada pantalla responde **qué pasa, qué hará el sistema, cómo se verificó y qué debe hacer la persona**.
 
@@ -110,8 +118,9 @@ Todo control interactivo muestra foco, carga, deshabilitado, éxito y error.
 
 ## Accesibilidad
 
-Contraste AA, verificado especialmente en textos de 10–11 px e insignias. Foco visible y navegación completa por teclado. Íconos con nombre accesible; interruptores exponen su estado; avisos críticos con `role="alert"`.
+Los iconos llevan etiqueta textual o nombre accesible. Los interruptores exponen su estado. Foco visible y navegación por teclado alcanzan menús, botones, campos, tablas y opciones de recuperación. Los avisos críticos se anuncian sin depender únicamente de color. El contraste de texto secundario, insignias y estados debe verificarse al implementar, especialmente en tamaños de 10 y 11 px.
 
-## Pendiente en el código
 
-Alinear `styles.css` y `ProtectedShell` con este documento: cargar Inter; reemplazar colores sueltos (`#2563eb`, `#9ca3af`, `#4b5563`) por tokens; agrupar la navegación como en la especificación funcional y añadir íconos; miga real en lugar de «FoodSave / Sistema»; acción principal en el encabezado; quitar Notificaciones del menú.
+## Navegación y consulta implementadas · 30-09-2026
+
+Marco/sesión persistentes en layout raíz; Link cambia contenido y conserva menú. Tablas paginadas con rango, tamaño y salto, sin alterar decimales ni orden de dominio. Ventas pagina el historial en servidor; listas recientes de otros contratos se identifican. PanelDetalle sustituye los detalles añadidos al pie en recetas, ventas, inventario, planes, compras, pronósticos y edición de ingredientes/usuarios; foco nativo, Escape, encabezado visible y regreso a lista sin perder página.

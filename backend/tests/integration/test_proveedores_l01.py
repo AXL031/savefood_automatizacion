@@ -1,5 +1,6 @@
 """Fixtures de ejemplo (datos de prueba, no reales)."""
 from decimal import Decimal
+import hashlib
 
 import pytest
 from pydantic import ValidationError
@@ -14,6 +15,7 @@ from app.modules.proveedores.servicio import Conflicto, ServicioProveedores
 
 
 class TelegramFalso:
+    huella = hashlib.sha256(b"123:token-falso-para-pruebas-locales").hexdigest()
     def __init__(self, ok=True):
         self.ok = ok
 
@@ -22,7 +24,9 @@ class TelegramFalso:
 
 
 @pytest.fixture
-def db():
+def db(monkeypatch, tmp_path):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:token-falso-para-pruebas-locales")
+    monkeypatch.setenv("TELEGRAM_CONFIG_DIR", str(tmp_path / "secretos"))
     e = create_engine("sqlite://")
     @event.listens_for(e, "connect")
     def funciones(c, _):

@@ -4,6 +4,8 @@ Cada carpeta fuente o documental tiene una GUIA_DESARROLLO.md. Se excluyen Git, 
 
 El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [dependencias](dependencias.md) y [avances](avances/README.md) antes de integrar.
 
+El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../iniciar-foodsave.cmd) usa [iniciar-foodsave.ps1](../../iniciar-foodsave.ps1). Contrato y opciones en la [guía raíz](../../GUIA_DESARROLLO.md).
+
 | Carpeta | Responsable | Alcance | Guía |
 |---|---|---|---|
 | `.` | Axel Cueva | Compartida; coordinación | [Abrir](../../GUIA_DESARROLLO.md) |
@@ -23,7 +25,7 @@ El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [depende
 | `backend/app/modules/compras` | Leonardo Aguirre | Demo · Pedidos, aprobación y envío | [Abrir](../../backend/app/modules/compras/GUIA_DESARROLLO.md) |
 | `backend/app/modules/desperdicio` | Leonardo Vera | Futuro; custodia | [Abrir](../../backend/app/modules/desperdicio/GUIA_DESARROLLO.md) |
 | `backend/app/modules/excedentes` | Leonardo Vera | Futuro; custodia | [Abrir](../../backend/app/modules/excedentes/GUIA_DESARROLLO.md) |
-| `backend/app/modules/informes` | Kevin Bohorquez | Futuro; custodia | [Abrir](../../backend/app/modules/informes/GUIA_DESARROLLO.md) |
+| `backend/app/modules/informes` | Kevin Bohorquez | K04; reportes de lectura | [Abrir](../../backend/app/modules/informes/GUIA_DESARROLLO.md) |
 | `backend/app/modules/ingredientes` | Max Rojas | Demo · Ingredientes y unidades | [Abrir](../../backend/app/modules/ingredientes/GUIA_DESARROLLO.md) |
 | `backend/app/modules/inicializacion` | Edu Sanchez | Demo · Asistente y primera carga | [Abrir](../../backend/app/modules/inicializacion/GUIA_DESARROLLO.md) |
 | `backend/app/modules/inventario` | Leonardo Vera | Demo · Inventario por lotes y movimientos | [Abrir](../../backend/app/modules/inventario/GUIA_DESARROLLO.md) |
@@ -78,7 +80,7 @@ El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [depende
 | `frontend/src/app/compras` | Leonardo Aguirre | Demo · Pedidos, aprobación y envío | [Abrir](../../frontend/src/app/compras/GUIA_DESARROLLO.md) |
 | `frontend/src/app/configuracion` | Axel Cueva | Demo · Negocio y configuración | [Abrir](../../frontend/src/app/configuracion/GUIA_DESARROLLO.md) |
 | `frontend/src/app/excedentes` | Leonardo Vera | Futuro; custodia | [Abrir](../../frontend/src/app/excedentes/GUIA_DESARROLLO.md) |
-| `frontend/src/app/informes` | Kevin Bohorquez | Futuro; custodia | [Abrir](../../frontend/src/app/informes/GUIA_DESARROLLO.md) |
+| `frontend/src/app/informes` | Kevin Bohorquez | K04; reportes de lectura | [Abrir](../../frontend/src/app/informes/GUIA_DESARROLLO.md) |
 | `frontend/src/app/ingredientes` | Max Rojas | Demo · Ingredientes y unidades | [Abrir](../../frontend/src/app/ingredientes/GUIA_DESARROLLO.md) |
 | `frontend/src/app/inicializacion` | Edu Sanchez | Demo · Asistente y primera carga | [Abrir](../../frontend/src/app/inicializacion/GUIA_DESARROLLO.md) |
 | `frontend/src/app/inicializacion/piloto` | Edu Sanchez, coordinación de Axel | Demo · Carga rápida del CSV bakery | [Abrir](../../frontend/src/app/inicializacion/piloto/GUIA_DESARROLLO.md) |
@@ -124,3 +126,6 @@ El [reparto](responsabilidades.md) es la fuente de propiedad. Consultar [depende
 | `frontend/src/types` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/types/GUIA_DESARROLLO.md) |
 | `frontend/src/utils` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/utils/GUIA_DESARROLLO.md) |
 | `scripts` | Axel Cueva | Compartida; coordinación | [Abrir](../../scripts/GUIA_DESARROLLO.md) |
+## Ampliación local · Gestión de usuarios
+
+- [frontend/src/app/usuarios](../../frontend/src/app/usuarios/GUIA_DESARROLLO.md): A01 de Axel, cuentas/roles/activación, API bajo autenticacion/usuarios.py.

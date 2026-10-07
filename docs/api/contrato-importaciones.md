@@ -1,16 +1,6 @@
 # Contrato de primera inicialización
 
-**Estado:** asistente completo implementado con recetas y apertura reales. La integración E03/K01 reserva entrenamiento durable al confirmar la carga completa. Los archivos se solicitan **solo la primera vez** y PostgreSQL queda como fuente de ventas y stock. El CSV piloto conserva su flujo independiente.
-
-## Preparación automática E03/K01
-
-`POST /inicializacion/confirmar` conserva HTTP 201 y añade `datos.ejecucion_id` nullable. Una carga completa reserva `PREPARAR_MODELO` en la misma transacción que catálogo, ventas, recetas, apertura y estado; una carga parcial no reserva entrenamiento. La revisión `0008_e03_modelo` añade `configuracion_inicial.preparacion_ejecucion_id`, FK nullable a ejecución con `ON DELETE RESTRICT`. Las revisiones anteriores se conservan.
-
-`GET /inicializacion/estado` añade `preparacion_modelo`, null o `{ejecucion_id, estado, version_modelo, modelo_id, mensaje_error}`. Tras la carga queda `DATOS_CARGADOS` con ejecución `PENDIENTE`. El motor guarda `ENTRENANDO` al iniciar un intento, antes del cálculo largo. Éxito confirma artefacto, reserva de `EVALUAR_MODELO`, resultado y `MODELO_LISTO` juntos. El backtest tiene su ejecución independiente: modelo listo no significa evaluación terminada. Fallo o interrupción recuperada devuelve la instalación a `DATOS_CARGADOS` con mensaje, sin borrar ni cargar otra vez ventas o lotes.
-
-`POST /inicializacion/reintentar-modelo` (Administrador) recibe `{ "clave_idempotencia": "reintento-1" }`, 1–64 caracteres `[A-Za-z0-9._:-]`, y responde 202 con el resumen de preparación. Sin carga completa devuelve `409 INICIALIZACION_NO_PREPARADA`. Una ejecución pendiente/activa/en reintento o un modelo listo se recupera sin reservar otra tarea. Tras un fallo definitivo, una clave nueva crea una ejecución y versión nuevas; repetir esa clave recupera su resultado. La instalación se bloquea al confirmar/reservar para serializar solicitudes concurrentes. Los callbacks comprueban ID de ejecución y huella de inicialización antes de cambiar estado; el piloto no cambia esta fila.
-
-El asistente consulta el progreso periódicamente, enlaza la ejecución y ofrece reintento sin archivos cuando la preparación falla. Las cinco muestras CSV de `backend/tests/fixtures/primera_carga/` son sintéticas y cubren enero–septiembre de 2022; no acreditan calidad comercial del modelo.
+**Estado:** asistente completo implementado: XLSX/CSV, vista previa, carga atómica de catálogos/ventas/recetas/lotes y preparación ML automática. PostgreSQL es la fuente después de aceptar. Ver contrato E03 de este corte y registros de Edu/Kevin/Axel; plan/pedidos/promociones no se declaran completos.
 
 ## Acceso rápido del piloto implementado
 
@@ -19,6 +9,30 @@ El asistente consulta el progreso periódicamente, enlaza la ejecución y ofrece
 El CSV no se guarda en tablas ni se copia a la imagen Docker; se usa un archivo temporal que se borra al terminar la solicitud. Este acceso es solo para el dataset bakery y no establece el estado de primera inicialización completa.
 
 `version_modelo` incorpora la política de entrenamiento (`piloto-q65v2-<huella>`). Una nueva política puede reservar otra preparación para el mismo archivo sin repetir las ventas; la idempotencia de ejecución aplica dentro de cada versión. Las versiones y evaluaciones anteriores se conservan.
+
+## E03 disponible: carga completa y preparación automática de ML
+
+### Completar una instalación que ya cargó el piloto (30-09-2026)
+
+Mientras la primera carga siga `PENDIENTE` y sin huella aceptada, confirmar los cinco archivos puede completar el piloto existente sin reinicializar. Deben contener exactamente los mismos SKU bakery, activos y con correspondencia uno a uno. Se reconocen los códigos técnicos `bakery-<hash del SKU>` del piloto; se adoptan los códigos legibles, nombres y selección `demostrar` de `productos.csv`, conservando `producto.id` y `sku_producto`. Un catálogo ordinario debe coincidir también en código→SKU; no se intercambian identidades ni se fusionan catálogos distintos.
+
+Las ventas ya cargadas del periodo entregado deben aparecer con el mismo valor. Se conservan su ID, importación y revisiones; solo se insertan los pares nuevos explícitos del archivo y su revisión inicial. Cambiar u omitir un par conocido devuelve `409 HISTORIAL_DIFERENTE`; catálogo incompatible devuelve `409 CATALOGO_DIFERENTE`. No se generan ceros por ausencia: un cero nuevo solo se acepta cuando el archivo lo declara. La nueva importación conserva su propia clave/huella; `ventas_diarias` cuenta filas creadas, no las reutilizadas. La carga rápida del piloto sigue rechazando periodos superpuestos bajo otra clave.
+
+Los servicios públicos `registrar_catalogo(..., completar_piloto=True)` y `registrar_ventas_diarias(..., reutilizar_identicas=True)` son opciones explícitas del coordinador de primera carga. Ninguno confirma la sesión. Catálogo, filas nuevas, recetas, apertura y reserva ML siguen en una sola transacción: un conflicto o fallo de stock revierte también el cambio de códigos y selección. No se eliminan modelos/evaluaciones anteriores ni se modifica una inicialización completa aceptada; la carga completa reserva su propia versión ML. Repetir la misma entrega aceptada no duplica importaciones, movimientos ni preparación.
+
+La confirmación completa reserva PREPARAR_MODELO en la misma sesión que catálogo, ventas, recetas, apertura y estado DATOS_CARGADOS. No publica a Redis antes del commit: Beat reclama la ejecución durable. Repetir los mismos archivos recupera la carga y no crea otra preparación. El piloto mantiene su contrato separado y no modifica la fila de inicialización.
+
+`GET /api/v1/inicializacion/estado` (Bearer) añade `preparacion_numero`, `modelo_id`, `preparacion` y `evaluacion`. Los dos últimos son null o `{id, estado, mensaje_error}`; sus estados son PENDIENTE, EN_EJECUCION, REINTENTANDO, COMPLETADA o FALLIDA. `modelo_id` referencia el artefacto persistido; MODELO_LISTO significa artefacto disponible, no evaluación terminada. El dashboard debe consultar ese modelo y comprobar `evaluacion.estado`.
+
+`POST /api/v1/inicializacion/reintentar-preparacion` requiere Administrador, no recibe archivos ni cuerpo y responde 202 con el mismo estado ampliado. Sin carga completa devuelve 409 DATOS_NO_CARGADOS. Si la preparación/evaluación está activa o completada correctamente, recupera la reserva actual. Tras fallo definitivo reserva una generación nueva bajo bloqueo de la fila única; dos solicitudes simultáneas recuperan la misma nueva ejecución. Un backtest fallido reutiliza el modelo ya entrenado y reserva otra evaluación, sin importar ni entrenar nuevamente.
+
+La versión del modelo es `inicial-q65v2-<24 caracteres de huella_solicitud>`; cada generación conserva su ejecución anterior e intentos. El motor confirma ENTRENANDO junto con el inicio durable del intento, antes del cálculo largo. El handler confirma MODELO_LISTO, modelo y reserva del backtest junto con su resultado; fallo o recuperación por lease conserva la carga y vuelve a DATOS_CARGADOS con mensaje. Los reintentos automáticos permanecen visibles en REINTENTANDO. Error por menos de seis meses completos se explica sin marcar un modelo listo.
+
+Servicios públicos: `inicializacion.servicio.solicitar_preparacion`, `iniciar_preparacion`, `completar_preparacion` y `fallar_preparacion`; `automatizaciones.servicio.consultar_ejecucion`/`consultar_ejecucion_por_clave`. No hacen commit/rollback. Los callbacks AL_INICIAR y AL_FALLAR reciben `(sesion, contexto)` y `(sesion, contexto, mensaje)`; el motor los invoca en sus transacciones de inicio/fallo y recuperación. Solo el adaptador PREPARAR_MODELO con huella_inicializacion enlaza el estado E03; preparaciones manuales/piloto mantienen su comportamiento.
+
+Migración aditiva `0008_e03_preparacion_ml` sobre 0007: preparacion_ejecucion_id y modelo_id nullable con FK RESTRICT, preparacion_numero no negativo con default 0. Conserva cargas previas; una carga completa anterior sin reserva puede usar el endpoint de preparación sin subir archivos. UI `/inicializacion` refresca estado cada tres segundos, muestra ejecución/evaluación, ofrece reintento y enlace al panel, y oculta la carga cuando ya está aceptada.
+
+Prueba real del corte: PostgreSQL/Redis/CatBoost y Beat con seis meses de ventas de fixture; entrenamiento, fallo controlado de evaluación, reintento que conserva un único modelo y dashboard con pares persistidos. No acredita calidad comercial ni implementa plan, pedidos o promociones.
 
 ## Entrega
 

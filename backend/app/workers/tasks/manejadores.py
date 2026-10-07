@@ -25,39 +25,21 @@ AL_FALLAR: dict[str, Callable[[Session, ContextoEjecucion, str], None]] = {}
 
 
 def _registrar_pronosticos() -> None:
-    from app.modules.pronosticos.manejadores import preparar, backtest, evaluacion_programada
-    from app.modules.inicializacion.preparacion import iniciar_preparacion, fallar_preparacion
+    from app.modules.pronosticos.manejadores import preparar, backtest, evaluacion_programada, iniciar, fallar
 
+    AL_INICIAR["PREPARAR_MODELO"] = iniciar
+    AL_FALLAR["PREPARAR_MODELO"] = fallar
     MANEJADORES.update({
         "PREPARAR_MODELO": preparar,
         "EVALUAR_MODELO": backtest,
         "EVALUAR_PRONOSTICO": evaluacion_programada,
     })
-    AL_INICIAR["PREPARAR_MODELO"] = iniciar_preparacion
-    AL_FALLAR["PREPARAR_MODELO"] = fallar_preparacion
-
-
-def contexto_ejecucion(ejecucion) -> ContextoEjecucion:
-    return ContextoEjecucion(ejecucion.id, ejecucion.tipo, ejecucion.clave_idempotencia,
-                            ejecucion.datos_entrada_json)
-
-
-def notificar_inicio(sesion, ejecucion):
-    callback = AL_INICIAR.get(ejecucion.tipo)
-    if callback is not None:
-        callback(sesion, contexto_ejecucion(ejecucion))
-
-
-def notificar_fallo(sesion, ejecucion, mensaje):
-    callback = AL_FALLAR.get(ejecucion.tipo)
-    if callback is not None:
-        callback(sesion, contexto_ejecucion(ejecucion), mensaje)
 
 
 _registrar_pronosticos()
 
 
-def _registrar_planificacion():
+def _registrar_planificacion() -> None:
     from app.modules.planificacion.manejadores import generar_propuesta
     MANEJADORES["GENERAR_PROPUESTA"] = generar_propuesta
 
@@ -70,3 +52,13 @@ def obtener_manejador(tipo: str) -> Manejador:
         return MANEJADORES[tipo]
     except KeyError:
         raise ErrorDatos(f"El servicio {tipo} está pendiente de integración.") from None
+
+
+def notificar_inicio(sesion: Session, contexto: ContextoEjecucion) -> None:
+    if callback := AL_INICIAR.get(contexto.tipo):
+        callback(sesion, contexto)
+
+
+def notificar_fallo(sesion: Session, contexto: ContextoEjecucion, mensaje: str) -> None:
+    if callback := AL_FALLAR.get(contexto.tipo):
+        callback(sesion, contexto, mensaje)

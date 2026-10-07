@@ -6,7 +6,7 @@
 
 Cada instalación conserva juntos `catboost_model.cbm` y `metadata.json` en un directorio local de solo lectura para la API. El entrenamiento es un **paso separado de la primera inicialización**; el botón «Generar» nunca entrena ni descarga un modelo. El archivo de metadatos debe contener:
 
-**Infraestructura A04/K01:** API y worker reciben `MODEL_ARTIFACT_DIR=/code/model_artifacts`, respaldado por el volumen persistente `model_artifacts` de Compose. El worker escribe cada versión en un directorio `version-huella` y lo publica al terminar CBM y metadata; la API monta el volumen en solo lectura. La identidad externa del piloto se configura explícitamente con `ML_COMERCIO_ID`/`ML_SUCURSAL_ID` y se valida al cargar. La primera carga completa reserva PREPARAR_MODELO en su transacción; `0008_e03_modelo` enlaza el progreso y permite recuperación sin reimportar.
+**Infraestructura A04/K01:** API y worker reciben `MODEL_ARTIFACT_DIR=/code/model_artifacts`, respaldado por el volumen persistente `model_artifacts` de Compose. El worker escribe cada versión en un directorio `version-huella` y lo publica al terminar CBM y metadata; la API monta el volumen en solo lectura. La identidad externa del piloto se configura explícitamente con `ML_COMERCIO_ID`/`ML_SUCURSAL_ID` y se valida al cargar. La primera carga completa reserva PREPARAR_MODELO en su transacción; `0008_e03_preparacion_ml` enlaza el progreso y permite recuperación sin reimportar.
 
 | Campo | Regla |
 |---|---|

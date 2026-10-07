@@ -19,6 +19,11 @@ celery_app.conf.update(
     broker_transport_options={"socket_connect_timeout": 5, "socket_timeout": 5},
     task_publish_retry=False,  # El lease durable gobierna las publicaciones inciertas.
     beat_schedule={
+        "despachar-pedidos-aprobados": {
+            "task": "foodsave.despachar_envios_pedidos",
+            "schedule": 30.0,
+            "options": {"expires": 30},
+        },
         "despachar-programaciones-demo": {
             "task": "foodsave.despachar_pendientes",
             "schedule": 30.0,
@@ -45,3 +50,15 @@ def ejecutar_automatizacion(ejecucion_id: int, token: str):
 @celery_app.task(name="foodsave.prueba")
 def tarea_prueba(valor: str) -> dict[str, str]:
     return {"resultado": valor}
+
+
+@celery_app.task(name="foodsave.despachar_envios_pedidos", ignore_result=True)
+def despachar_envios_pedidos():
+    from app.modules.compras.envios import despachar_envios
+    return despachar_envios(lambda id_, token: enviar_pedido.delay(id_, token))
+
+
+@celery_app.task(name="foodsave.enviar_pedido", ignore_result=True)
+def enviar_pedido(envio_id: int, token: str):
+    from app.modules.compras.envios import ejecutar_envio
+    return ejecutar_envio(envio_id, token)

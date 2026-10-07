@@ -1,11 +1,5 @@
 import { enviarFormulario, solicitar } from "@/services/http";
-import type { ConfiguracionInicial, InformeCarga, PreparacionModelo, ResultadoCargaPiloto, VistaPrevia } from "@/types/inicializacion";
-
-export function reintentarModeloInicial(token: string, clave: string): Promise<PreparacionModelo> {
-  return solicitar<PreparacionModelo>("/inicializacion/reintentar-modelo", {
-    token, method: "POST", body: { clave_idempotencia: clave },
-  });
-}
+import type { ConfiguracionInicial, InformeCarga, ResultadoCargaPiloto, VistaPrevia } from "@/types/inicializacion";
 
 export function obtenerEstadoInicial(token: string, signal?: AbortSignal): Promise<ConfiguracionInicial> {
   return solicitar<ConfiguracionInicial>("/inicializacion/estado", { token, signal });
@@ -61,4 +55,10 @@ export function cargarCsvPiloto(token: string, archivo: File): Promise<Resultado
   const datos = new FormData();
   datos.append("archivo", archivo, archivo.name);
   return enviarFormulario<ResultadoCargaPiloto>("/inicializacion/piloto-bakery", datos, { token });
+}
+
+
+/** Reutiliza una tarea activa o reserva otro intento tras fallo, sin archivos. */
+export function reintentarPreparacion(token: string): Promise<ConfiguracionInicial> {
+  return solicitar<ConfiguracionInicial>("/inicializacion/reintentar-preparacion", { token, method: "POST" });
 }
