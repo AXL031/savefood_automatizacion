@@ -70,3 +70,11 @@ GENERAR_PROPUESTA pasa modo_envio_pedidos conservado a generar_pedidos; sin valo
 ## Conciliación de cueva
 
 Conciliación 06-10-2026: prevalece el contrato que consume compras (elementos nullable con estados y necesidades conservadas). Las fechas de lectura/creación se serializan siempre en UTC; las pruebas del corte local se conservan adaptadas en test_planificacion_conciliada.py y usan cinco CSV sintéticos.
+
+## Corte vigente · 11-10-2026 · Flujo y promociones
+
+Codex para Axel implementó configuración reutilizable, comprobación de requisitos por interfaces públicas, calendario histórico diario de 1–31 días, modelo/modo conservados y pausa/cancelación/reprogramación de tareas sin despacho. Promociones tienen regla inmutable versionada, reserva transaccional después de cada ajuste nuevo de producto y evaluación idempotente con snapshot/motivo; API y pantalla reales. Se conserva la propiedad de cada dominio.
+
+[Contrato vigente, APIs y límites](../../../../docs/api/contrato-flujo-promociones.md). Aplicar `0015_flujo_promociones` antes de actualizar API/worker/Beat. El diagnóstico no ejecuta inferencia ni envía mensajes; guardar configuración no agenda. Consultas de tareas/evaluaciones admiten paginación real con total. La pausa no recupera horas perdidas: reprogramar antes de reanudar. Deshabilitar promociones afecta ajustes nuevos; tareas ya reservadas conservan su versión. Hora simulada de evaluación avanza por el tiempo real transcurrido desde el ajuste para comprobar frescura.
+
+Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.

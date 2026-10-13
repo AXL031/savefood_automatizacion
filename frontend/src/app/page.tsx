@@ -33,12 +33,15 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     return () => control.abort();
   }, [contexto.token, revision]);
   const pedidos = propuestas?.flatMap((propuesta) => propuesta.pedidos);
+  const porRevisar = pedidos?.filter((p) => p.estado === "PENDIENTE_APROBACION").length ?? 0;
+  const siguiente = !inicial?.modelo_id ? { titulo: "Preparar datos y modelo", detalle: "Completa la primera carga y sigue la preparación automática.", enlace: "/inicializacion" } : porRevisar ? { titulo: "Revisar pedidos pendientes", detalle: `${porRevisar} pedido(s) esperan tu revisión en la consulta reciente.`, enlace: "/compras" } : { titulo: "Configurar mi automatización", detalle: "El asistente te muestra qué está listo, qué falta y cuándo se ejecutará el recorrido.", enlace: "/automatizaciones" };
   return <>
     <section className="card"><div className="section-heading"><div><h2>Bienvenido, {contexto.perfil.nombre}</h2><p>Consulta el estado de {contexto.negocio.nombre} y continúa el recorrido de la demostración.</p></div><button className="button-secondary" disabled={cargando} onClick={() => setRevision((r) => r + 1)}>Actualizar</button></div>
       <p>Los planes y pedidos del escenario conservan su fecha histórica. Revisar o enviar un pedido no cambia el inventario.</p>
     </section>
     {errores.length > 0 && <EstadoPanel tono="alerta" titulo="Algunas secciones no están disponibles" descripcion={[...new Set(errores)].join(" ")} />}
     {cargando && <p role="status">Consultando el estado de la instalación…</p>}
+    {!cargando && inicial && <section className="card next-action section-space"><h2>Tu siguiente paso: {siguiente.titulo}</h2><p>{siguiente.detalle}</p><Link href={siguiente.enlace} className="button-primary">Continuar →</Link><p className="helper-text"><Link href="/promociones">Configurar promociones sugeridas</Link></p></section>}
     <DashboardInicio token={contexto.token} revision={revision} />
     <div className="home-grid section-space">
       <section className="card"><h2>Datos y modelo</h2><strong className="home-stat">{inicial ? estados[inicial.estado] : cargando ? "Consultando…" : "Sin consulta disponible"}</strong><p>{inicial?.modelo_id ? `Modelo #${inicial.modelo_id}` : "Primera carga y preparación del modelo."}</p><Link href="/inicializacion">Abrir primera carga</Link>{inicial?.modelo_id && <p><Link href="/pronosticos">Ver pronósticos</Link></p>}</section>

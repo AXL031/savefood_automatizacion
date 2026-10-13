@@ -66,7 +66,7 @@ def despachar_pendientes(publicar: Callable[[int, str], None], *, ahora: datetim
                 or_(EjecucionAutomatizacion.proximo_intento_en.is_(None), EjecucionAutomatizacion.proximo_intento_en <= ahora),
                 or_(
                     EjecucionAutomatizacion.programacion_id.is_(None),
-                    (ProgramacionDemo.estado != "CANCELADA") & (ProgramacionDemo.ejecutar_desde_utc <= ahora),
+                    (ProgramacionDemo.estado.in_(["PROGRAMADA", "DESPACHADA"])) & (ProgramacionDemo.ejecutar_desde_utc <= ahora),
                 ),
             )
             .order_by(EjecucionAutomatizacion.id)
@@ -74,6 +74,12 @@ def despachar_pendientes(publicar: Callable[[int, str], None], *, ahora: datetim
             .with_for_update(of=EjecucionAutomatizacion, skip_locked=True)
         ).all()
         for ejecucion in candidatas:
+            if ejecucion.programacion_id is not None:
+                programacion = sesion.scalar(select(ProgramacionDemo).where(
+                    ProgramacionDemo.id == ejecucion.programacion_id).with_for_update().execution_options(populate_existing=True))
+                # Una pausa puede confirmarse mientras SELECT espera el bloqueo de ejecución.
+                if programacion.estado in ("PAUSADA", "CANCELADA") or _utc(programacion.ejecutar_desde_utc) > ahora:
+                    continue
             if ejecucion.estado == "EN_EJECUCION":
                 intento = sesion.scalar(select(IntentoAutomatizacion).where(
                     IntentoAutomatizacion.ejecucion_id == ejecucion.id,
@@ -127,7 +133,7 @@ def ejecutar(ejecucion_id: int, token: str) -> dict:
             return {"resultado": "NO_VENCIDA"}
         if ejecucion.programacion_id is not None:
             programacion = sesion.get(ProgramacionDemo, ejecucion.programacion_id)
-            if programacion.estado == "CANCELADA" or _utc(programacion.ejecutar_desde_utc) > ahora:
+            if programacion.estado in ("CANCELADA", "PAUSADA") or _utc(programacion.ejecutar_desde_utc) > ahora:
                 return {"resultado": "NO_VENCIDA"}
         intento = iniciar_intento(sesion, ejecucion_id)
         intento_id = intento.id

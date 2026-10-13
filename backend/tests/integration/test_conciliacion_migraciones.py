@@ -63,14 +63,14 @@ def test_concilia_y_conserva_inicializacion_catalogo_y_enlace(entorno, revision)
         anterior = c.execute(text("SELECT huella_solicitud,fecha_objetivo_demo FROM configuracion_inicial")).all()
         c.execute(text("UPDATE configuracion_inicial SET preparacion_ejecucion_id = :id"), {'id': ejecucion_id})
     with engine.begin() as c:
-        assert puente.conciliar(c) == "0014_l04_recuperacion"
+        assert puente.conciliar(c) == "0015_flujo_promociones"
     with engine.begin() as c:
         assert c.execute(text("SELECT huella_solicitud,fecha_objetivo_demo FROM configuracion_inicial")).all() == anterior
         assert c.execute(text("SELECT codigo,nombre FROM producto")).one() == ('conservar','Conservar')
         assert c.execute(text("SELECT count(*) FROM plan_produccion")).scalar_one() == 0
         assert c.execute(text("SELECT count(*) FROM envio_pedido")).scalar_one() == 0
         assert c.execute(text("SELECT preparacion_ejecucion_id,modelo_id,preparacion_numero FROM configuracion_inicial")).one() == (ejecucion_id, modelo_id, 1)
-        assert puente.conciliar(c) == "0014_l04_recuperacion"
+        assert puente.conciliar(c) == "0015_flujo_promociones"
 
 
 def test_fallo_intermedio_revierte_ddl_revision_y_datos(entorno, monkeypatch):

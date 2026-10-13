@@ -4,9 +4,13 @@ Fecha: 30-09-2026, America/Bogota. Coordinación: Axel Cueva. Preparado por Code
 
 Actualización 01-10-2026: el usuario pidió avanzar con lo pendiente después de recibir el corte visual. Se implementa ahora la recuperación L04 del paso 7: API/UI de conciliación y nuevo intento explícito, auditoría e historial, migración 0014. La pausa inicial aplica al avance visual anterior y deja de bloquear este trabajo autorizado. Falta la demostración automática real autorizada; los pasos 8–10 y recurrencia siguen pendientes.
 
-## Regla de avance solicitada
+## Regla histórica de avance · sustituida por solicitud del 11-10-2026
 
 Primero entregar el ajuste transversal de interfaz: navegación persistente, tablas paginadas y detalles visibles. **Detenerse al terminar y verificar ese corte.** Los pasos siguientes están planificados y no se implementan en este avance. No cambiar de rama, integrar ni publicar sin la tarea correspondiente. Conservar los cambios locales y los datos de la instalación.
+
+## Solicitud vigente · 11-10-2026
+
+Axel autoriza corregir los pendientes del informe: promociones, configuración del recorrido y mejoras de comodidad. Implementación local del asistente/configuración/calendario/gestión y promociones en [contrato](../api/contrato-flujo-promociones.md), migración 0015. La regla antigua de detenerse tras el corte visual no limita esta solicitud. Los pasos 8 y parte del 9 ya tienen implementación y pruebas locales; el cierre requiere comprobar cada límite registrado.
 
 ## Base disponible
 
@@ -48,6 +52,8 @@ Cierre: evidencia persistida del automático real y recuperación humana utiliza
 
 ## Paso 8: promociones sugeridas integradas
 
+**Estado 11-10-2026:** implementado y aplicado localmente con migración 0015; consumidor ajuste→motor→evaluación y reentrega concurrente verificados con PostgreSQL/Redis. Pantalla comprobada en QA de escritorio/móvil. Los puntos siguientes describen el contrato implementado; no constituyen pendientes nuevos.
+
 Responsable V03/V04 de Vera; A02/A03 de Axel entrega motor. Dependencias: ajustes V02 y regla pura existente en promociones/reglas.py.
 
 1. Contrato de regla versionada y evaluación: parámetros, vigencia, fecha/hora simulada, lote/movimiento, lectura de stock, aceptación/rechazo y motivo. Migración aditiva, sin reescribir revisiones anteriores.
@@ -81,10 +87,23 @@ Responsables: A04 de Axel y revisión de consumidores según flujo-git.md.
 
 Cierre: otro integrante puede instalar, iniciar y demostrar el prototipo sin depender del chat ni de fixtures confundidas con operación.
 
-## Ampliación posterior: ejecución diaria recurrente
+## Ejecución diaria histórica disponible; operación diaria posterior
 
-Petición previa del usuario, todavía pendiente y distinta del criterio de cierre histórico. Planificarla después de los pasos 7–10: horario y zona del negocio, días activos, pausa/reanudación, siguiente ejecución, unicidad por día y política ante reinicio/horas perdidas. Primero acordar fuente de ventas/stock actualizados y fecha objetivo dinámica; el modelo y el historial de 2022 no acreditan pronóstico operativo de hoy. En una demo recurrente histórica, definir avance y fin del calendario sin reutilizar una fecha con compra enviada. Requiere contratos, migración, API/UI y pruebas de horario/idempotencia antes de habilitar envíos diarios.
+Desde 11-10-2026 está implementado un calendario histórico finito de 1–31 días, con horario del negocio, avance diario del escenario, snapshots de modelo/modo y pausa/reprogramación/cancelación de tareas pendientes. Cada pausa conserva el horario y exige una nueva hora si venció. La operación diaria con datos actuales sigue pendiente y requiere: horario y zona del negocio, días activos, pausa/reanudación, siguiente ejecución, unicidad por día y política ante reinicio/horas perdidas. Primero acordar fuente de ventas/stock actualizados y fecha objetivo dinámica; el modelo y el historial de 2022 no acreditan pronóstico operativo de hoy. En una demo recurrente histórica, definir avance y fin del calendario sin reutilizar una fecha con compra enviada. Requiere contratos, migración, API/UI y pruebas de horario/idempotencia antes de habilitar envíos diarios.
 
 ## Ampliación disponible: dashboard y Reportes · 01-10-2026
 
 Solicitud expresa incorporada a K04: gráficos en Inicio y `/informes` de ventas/evaluación/estados de pedidos, filtros por fecha/modelo y CSV completo. [Contrato](../api/contrato-informes.md) y [evidencia/límites](avances/bohorquez.md#dashboard-en-inicio-y-reportes--01-10-2026). 34 pruebas correctas; typecheck/build web y lecturas reales correctas. API/frontend activos, validación visual aislada bloqueada por navegador en 3001. Esta ampliación no marca promociones, demostración automática real o despliegue reproducible en otra PC como terminados.
+
+## Comprobación del cierre nuevo
+
+1. Verificar contrato de promociones y consumidor ajuste→motor→resultado sin duplicar stock.
+2. Verificar asistente y requisitos, autorización explícita automática y calendario finito.
+3. Verificar migración 0014→0015, permisos, controles y carreras reales PostgreSQL.
+4. Mantener pendientes otra PC, CI remoto y nuevo envío automático real autorizado si no hay evidencia.
+
+## Resultado del corte · 11-10-2026
+
+Asistente y promociones implementados localmente. Fronteras finales: 72 pruebas correctas, 2 omitidas y 6 subpruebas; revisión de promoción/puente: 12 correctas y 6 omitidas por PostgreSQL. QA aislada Edge comprobó calendario de tres días, pausa, reglas/detalle, carga Excel/CSV y móvil sin errores. Se conservan datos habituales y no se enviaron mensajes.
+
+Continuación con Docker abierto por Axel: imágenes construidas, PostgreSQL/Redis aislados verificados (24 pruebas de promoción/motor/inventario y 3 casos CatBoost/Beat/plan reales), migración habitual 0015 aplicada y metadatos correctos. Copia privada y datos conservados; servicios activos y modelo existente compatible. Suite completa final: **283 pruebas y 6 subpruebas correctas**, sin fallos ni omisiones, con PostgreSQL/Redis e imagen final. Pendientes concretos: CI remoto, demo conjunta en otra PC y prueba automática Telegram con autorización concreta. El calendario diario disponible es histórico y finito; operación comercial diaria con datos actuales queda fuera.

@@ -6,6 +6,40 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **11-10-2026 · Codex para Axel, A02/A03, A04 y coordinación E04/V03/V04:** Asistente de cinco pasos, configuración reutilizable, comprobación de requisitos por interfaces públicas, calendario histórico de 1 a 31 días, modelo/modo conservados y gestión administrativa de tareas pendientes. Promociones conectadas al ajuste y al motor; navegación, siguiente acción y carga inicial simplificadas.
+- **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
+- **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
+- **Coordinación/dependencias:** Sanchez, Vera, Aguirre, Rojas y Bohorquez. [Registro transversal](cueva.md) y [plan vigente](../plan-cierre-prototipo.md). Autor real de este corte: Codex para la solicitud de Axel; no se atribuye a integrantes.
+- **Publicación solicitada · 12-10-2026:** Axel autoriza publicar en `origin/cueva` y verificar compatibilidad con `main`. La consulta remota confirma `main` en `a1ebb51` (PR #11) y `cueva` en `15ca51a`, con el mismo árbol de archivos; no hay cambios de dominio nuevos que conciliar. Se conserva la instalación habitual activa.
+- **Siguiente paso:** publicar este corte, actualizar `cueva` desde `origin/main` y verificar CI remoto antes de la revisión del equipo. Otra PC y prueba Telegram real autorizada siguen pendientes. No integrar `main` sin revisión de otra persona.
+
+## Bitácora
+
+### 12-10-2026 20:10 America/Lima — Publicación y preparación para integrar
+
+- **Autor/tareas/estado:** Codex para Axel; A04 y coordinación A02/A03/E04/V03/V04. LISTO_PARA_INTEGRAR local; publicación y compatibilidad solicitadas expresamente por Axel. No se atribuye autoría a integrantes.
+- **Entrega/contrato:** mismo comportamiento verificado en el corte anterior: promociones sugeridas y flujo configurable, con calendario histórico limitado. [Contrato y ejemplos](../../api/contrato-flujo-promociones.md); archivos clave y consumidores en la entrada del 11-10-2026.
+- **Base remota:** `fetch` confirma `origin/main=a1ebb51` y `origin/cueva=15ca51a`, sin diferencia de archivos entre esas bases. `main` ya integró el corte anterior por PR #11. Se actualizará la rama personal conservando ambos historiales, sin modificar `main`.
+- **Migración/configuración:** aditiva `0015_flujo_promociones` sobre 0014; ninguna revisión publicada reescrita. Configuración privada, copias y capturas QA permanecen ignoradas por Git.
+- **Pruebas:** evidencia del mismo código: suite final Docker PostgreSQL/Redis 283 passed y 6 subtests passed; typecheck, build Next, QA escritorio/móvil, migración y alembic check correctos. En este corte `git diff --check` correcto y comparación remota sin cambios de contenido; CI del nuevo commit aún pendiente.
+- **Dependencias/límites:** consumidores de los seis bloques enlazados en [dependencias](../dependencias.md). Reproducción en otra PC, demo conjunta y nuevo envío Telegram real requieren su validación específica. Esta publicación no activa tareas ni envía mensajes.
+- **Git/siguiente:** commit y push en `cueva`, comprobación de conflictos y CI remoto, y solicitud de incorporación para revisión del equipo. No ejecutar merge hacia `main`; registrar a continuación los identificadores y resultados obtenidos.
+
+### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
+
+- **Autor/responsabilidad/tareas:** Codex para Axel; A02/A03, A04 y coordinación E04/V03/V04. Coordinación transversal en Cueva, dominios afectados enlazados desde dependencias.md.
+- **Estado/comportamiento:** implementación LOCAL real. Asistente de cinco pasos, configuración reutilizable, comprobación de requisitos por interfaces públicas, calendario histórico de 1 a 31 días, modelo/modo conservados y gestión administrativa de tareas pendientes. Promociones conectadas al ajuste y al motor; navegación, siguiente acción y carga inicial simplificadas.
+- **Archivos clave:** [flujo.py](../../../backend/app/modules/automatizaciones/flujo.py); [motor.py](../../../backend/app/workers/motor.py); [AsistenteFlujo.tsx](../../../frontend/src/features/automatizaciones/AsistenteFlujo.tsx). [Contrato y ejemplos públicos](../../api/contrato-flujo-promociones.md).
+- **API/ejemplo:** guardar parámetros no agenda ni autoriza envíos. POST /flujo-automatizacion/programar conserva modelo/modo y crea calendario finito. PUT /promociones/regla habilita una versión; un ajuste nuevo reserva evaluación en su misma sesión. GET /promociones/evaluaciones devuelve motivo y referencias; acciones de gestión requieren Administrador, motivo y tarea sin despacho.
+- **Migración/configuración:** `0015_flujo_promociones`; aplicar antes de reiniciar API/worker/Beat; ya aplicada en la instalación habitual. No reescribe 0014 ni tablas de otros cortes. Configuración sin tokens; no altera datos habituales ni ejecuta envíos reales.
+- **Pruebas realmente ejecutadas:** suite amplia Windows: 255 passed, 24 skipped, 6 subtests passed, con una expectativa antigua de cabeza Alembic fallida y corregida; después 21 pruebas de flujo/migración/programación correctas. Build Next correcto (incluye /promociones). Corte final de fronteras: 72 passed, 2 skipped, 6 subtests passed. Revisión posterior de promociones/puente: 12 passed, 6 skipped (concurrencia/DDL PostgreSQL). Typecheck final correcto. QA Edge aislada verificó calendario de tres días, pausa, regla versionada, detalle/Escape, dos Excel/cinco CSV y móvil, sin errores JavaScript. Se corrigió una referencia visual de fecha detectada por build y se repitió QA correctamente; build final correcto, 23 páginas generadas; QA final también pasó contra la interfaz compilada, con datos cargados en escritorio y móvil. Después de que Axel abrió Docker, migración y alembic check correctos en PostgreSQL aislado. Corte amplio PostgreSQL/Redis inicial: 125 passed y 4 fallos; una prueba antigua del manejador ausente se aisló explícitamente, y los tres fallos ML se debían a escribir catboost_info en el montaje de código de solo lectura. Revalidación con imagen reconstruida: 24 passed de promociones/motor/inventario, incluida concurrencia, y 3 passed de CatBoost/Beat/plan real desde /tmp escribible. CI incorpora la nueva prueba concurrente. Suite completa final con imagen reconstruida y PostgreSQL/Redis: **283 passed, 6 subtests passed**, sin fallos ni omisiones (290,91 s). Advertencias existentes de dependencias y reflexión SQLite; migración y comparación PostgreSQL correctas. No se enviaron mensajes reales.
+- **Dependencias y siguiente paso:** Sanchez, Vera, Aguirre, Rojas y Bohorquez. Imágenes reconstruidas, 0015 aplicada y servicios habituales activos. Suite final completa correcta. Pendientes: CI remoto y demo conjunta/otra PC. La prueba Telegram automática requiere autorización concreta. No interpretar fixtures del modelo/Telegram como evidencia comercial ni de envío real.
+- **Instalación verificada:** copia privada .tmp/foodsave-antes-0015-20261011.dump; migración habitual 0014→0015 y alembic check sin diferencias. Conservados 139 productos, 27 740 ventas, 2 modelos, 0 movimientos/planes/envíos/tareas activas. API/web/worker/Beat activos; worker pong y HTTP Inicio/Automatización/Promociones correctos. Artefacto guardado del modelo #2 cargado y verificado, sin reentrenar.
+- **Lanzador:** ahora abre Inicio para que FoodSave indique la siguiente acción; su sintaxis PowerShell fue validada, arranque completo no ejecutado. Bridge de bases locales actualizado a 0015; bases publicadas 0014 usan upgrade normal. Servidores desechables, bases PostgreSQL/Redis aisladas y procesos de diagnóstico propios retirados; cero esquemas temporales al finalizar. Servicios habituales quedan activos; capturas QA (datos simulados) conservadas en .tmp/qa-flujo-desktop.png y .tmp/qa-promociones-desktop.png, ignoradas por Git.
+- **Git:** cambios locales en cueva, sin commit/push/PR.
+
+<details><summary>Resumen anterior conservado como historial; no es el estado vigente</summary>
+
 - **Conciliación local 06-10-2026, Codex para Axel:** rama cueva integra el remoto b0996e6 y el avance local b72ce0c/dd65a82, conservando los historiales y bitácoras. Implementación remota de E03/K01, M02/M03, L02–L04, usuarios, interfaz, Dashboard y Reportes; muestras y pruebas locales adaptadas al mismo contrato. Los responsables de dominio y las autorías registradas se conservan.
 - **Estado:** código y base local conciliados; conciliación guardada en commit local, publicación manual de Axel pendiente. No se publica, fuerza push ni abre PR. Promoción programada, Telegram automático real autorizado, revisión visual del corte y reproducción en otra PC no quedan acreditados por esta conciliación.
 - **Base:** cabeza publicada 0014_l04_recuperacion, sin reescribir revisiones. Las revisiones locales originales se conservan fuera de versions/ y el puente transaccional adopta la cadena publicada solo con planes vacíos y motor sin tareas activas. Datos habituales conservados: 139 productos, 27 740 ventas, 2 modelos; 0 planes, movimientos y envíos. Copia de seguridad local ignorada por Git en .tmp/foodsave-antes-conciliacion-cueva.sql.
@@ -14,7 +48,9 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Entrega transversal:** registros de [Sanchez](sanchez.md), [Bohorquez](bohorquez.md), [Rojas](rojas.md), [Vera](vera.md) y [Aguirre](aguirre.md) conservados y enlazados. No se hicieron mensajes externos.
 - **Siguiente paso:** Axel revisa y publica con git push origin cueva; después verificar CI remoto. El cierre funcional restante está en [plan de cierre](../plan-cierre-prototipo.md).
 
-## Bitácora
+</details>
+
+
 
 ### 06-10-2026 23:42 America/Lima — Conciliación de cueva para push manual
 

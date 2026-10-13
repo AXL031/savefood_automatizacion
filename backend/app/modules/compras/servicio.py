@@ -15,6 +15,13 @@ from .modelos import EnvioPedido, LineaPedido, PedidoCompra, PropuestaCompra, Re
 
 ESTADOS_CANCELABLES = {"BLOQUEADO", "PENDIENTE_APROBACION", "RECHAZADO"}
 
+
+def fechas_con_compra_activa(sesion: Session, desde: date, hasta: date) -> list[str]:
+    """Frontera de lectura para diagnóstico del calendario, sin cancelar ni reservar."""
+    return [fecha.isoformat() for fecha in sesion.scalars(select(PropuestaCompra.fecha_objetivo).where(
+        PropuestaCompra.activa.is_(True), PropuestaCompra.fecha_objetivo >= desde,
+        PropuestaCompra.fecha_objetivo <= hasta).order_by(PropuestaCompra.fecha_objetivo))]
+
 ESTADOS_REPORTE = ("BLOQUEADO", "PENDIENTE_APROBACION", "CANCELADO", "RECHAZADO",
                    "PENDIENTE_ENVIO", "ENVIANDO", "ENVIADO", "FALLIDO", "PENDIENTE_VERIFICACION")
 

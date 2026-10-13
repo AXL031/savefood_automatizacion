@@ -5,8 +5,8 @@ export type TipoAutomatizacion =
   | "EVALUAR_PRONOSTICO"
   | "EVALUAR_PROMOCION";
 
-export type EstadoProgramacion = "PROGRAMADA" | "DESPACHADA" | "CANCELADA";
-export type EstadoEjecucion = "PENDIENTE" | "EN_EJECUCION" | "REINTENTANDO" | "COMPLETADA" | "FALLIDA";
+export type EstadoProgramacion = "PROGRAMADA" | "DESPACHADA" | "PAUSADA" | "CANCELADA";
+export type EstadoEjecucion = "PENDIENTE" | "EN_EJECUCION" | "REINTENTANDO" | "COMPLETADA" | "FALLIDA" | "CANCELADA";
 export type EstadoIntento = "EN_EJECUCION" | "COMPLETADA" | "FALLIDA";
 
 export type ProgramacionDemo = {
@@ -22,6 +22,7 @@ export type ProgramacionDemo = {
   creado_por: number | null;
   creado_en: string;
   ejecucion_id: number | null;
+  cambios?: { accion: string; motivo: string; fecha: string; usuario_id: number }[];
 };
 
 export type CrearProgramacionDemo = {

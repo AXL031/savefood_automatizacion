@@ -1,5 +1,23 @@
 # Dependencias y orden de entregas
 
+## Estado vigente · 11-10-2026
+
+Coordinación Codex para Axel. Cada responsable conserva sus dominios y autoría. [Contrato nuevo](../api/contrato-flujo-promociones.md), [plan de cierre](plan-cierre-prototipo.md) y [evidencia transversal](avances/cueva.md).
+
+| Frontera | Entrega y consumidor actual | Pendiente real |
+|---|---|---|
+| Primera carga → recetas/stock → ML | Edu orquesta; Max/Vera exponen servicios; Kevin y Axel preparan/evalúan modelo. Implementación y pruebas locales existentes. | Reproducción por otro integrante; no reimportar tras fallo ML. |
+| Pronóstico → plan → faltantes → compras | Kevin, Max, Vera y Aguirre conectados por interfaces públicas y transacción común. | Demo conjunta final y CI remoto. |
+| Programaciones y gestión | Axel: configuración reusable, diagnóstico, calendario histórico acotado, pausa/cancelación/reprogramación pendientes y trazas. | Corte PostgreSQL/Redis y suite completa final (283 + 6 subpruebas) verificados; CI remoto y otra PC pendientes. |
+| Ajuste → promoción | Vera/Axel: regla versionada, reserva atómica, handler, persistencia y pantalla real; pruebas del consumidor local. | Concurrencia PostgreSQL comprobada; demo conjunta en otra PC pendiente. |
+| Pedidos → Telegram | Aguirre: manual/automático, recuperación con evidencia, protección de recompra. | Nuevo automático real solo bajo autorización concreta; ofertas reales según configuración del usuario. |
+| Interfaz común | Edu coordina; cada dominio mantiene su pantalla. Asistente, regreso, menú y carga simplificados. | QA final documentada y reproducción en otra computadora. |
+
+La recurrencia disponible es un calendario histórico de 1–31 días reales con avance del escenario, misma zona del negocio y fin explícito. No acredita operación diaria con ventas actuales. No trasladar las pruebas de cada frontera al coordinador.
+
+<details><summary>Cortes anteriores conservados como historial</summary>
+
+
 ## Entrega transversal vigente · 30-09-2026 · Codex para Axel
 
 A02/A03 y L03: envío AUTOMATICO conectado, modo opcional conservado por programación, outbox transaccional y worker revalida destinos sin aprobación ficticia. 54 pruebas PostgreSQL correctas; envío manual real pedido #1 confirmado en chat propio, message_id=2. E04: orientación, etiquetas y menú comunes en todas las pantallas. V01/V04: entradas kg/L y presentación exacta, 14 ajustes reales auditados para stock pequeño. M02/M03: consumidor conserva unidades base y modo elegido. K02/K04: etiquetas/métricas explicadas; predicción no cambia su política histórica.
@@ -83,3 +101,5 @@ Axel solicita gráficos en Inicio y Reportes de lectura. Contrato previo: [Dashb
 ## Conciliación de cueva
 
 Conciliación 06-10-2026: E03/K01 y M02/M03 usan los contratos publicados que consumen L02–L04. Se conservan muestras y suites locales adaptadas; no se vuelve a declarar compras pendiente ni se atribuye el trabajo remoto a otro integrante. Evidencia y migración de la base local en avances/cueva.md y la guía de backend/migrations. Publicación reservada a Axel.
+
+</details>

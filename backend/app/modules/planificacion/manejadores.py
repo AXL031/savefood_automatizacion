@@ -30,7 +30,7 @@ def generar_propuesta(sesion: Session, contexto: ContextoEjecucion) -> dict:
             raise ValueError("Se necesitan de uno a cinco productos únicos.")
         corrida = generar_corrida(sesion, ejecucion_id=contexto.id,
                                   clave_ejecucion=f"propuesta-{contexto.id}", fecha_objetivo=objetivo,
-                                  producto_ids=productos)
+                                  producto_ids=productos, modelo_id=parametros.get("modelo_id"))
         plan = generar_plan(sesion, corrida_id=corrida.id, clave_ejecucion=f"plan-propuesta-{contexto.id}")
         try:
             propuesta = generar_pedidos(sesion, plan.id, modo_envio=parametros.get("modo_envio_pedidos"))

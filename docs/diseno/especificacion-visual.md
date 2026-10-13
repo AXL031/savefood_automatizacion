@@ -124,3 +124,7 @@ Los iconos llevan etiqueta textual o nombre accesible. Los interruptores exponen
 ## Navegación y consulta implementadas · 30-09-2026
 
 Marco/sesión persistentes en layout raíz; Link cambia contenido y conserva menú. Tablas paginadas con rango, tamaño y salto, sin alterar decimales ni orden de dominio. Ventas pagina el historial en servidor; listas recientes de otros contratos se identifican. PanelDetalle sustituye los detalles añadidos al pie en recetas, ventas, inventario, planes, compras, pronósticos y edición de ingredientes/usuarios; foco nativo, Escape, encabezado visible y regreso a lista sin perder página.
+
+## Claridad vigente · 11-10-2026
+
+Menú por grupos desplegables con el grupo activo abierto; Inicio destaca una siguiente acción según carga/modelo/pedidos recientes. Asistente de cinco pasos con progreso compacto, diagnóstico por requisito y enlace para corregir/regresar conservando selección. Horarios en zona del negocio y resumen antes de programar. Carga inicial elige dos Excel o cinco CSV; identificador automático en detalles. Promociones muestran regla/version y sugerencias o descartes con motivo, lote y referencias. Tareas y evaluaciones tienen paginación remota; pantalla móvil conserva acciones, estados y desplazamiento de tablas.

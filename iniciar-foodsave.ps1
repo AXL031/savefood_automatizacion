@@ -57,7 +57,7 @@ try {
         do {
             try {
                 $apiFoodSave = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:8000/salud' -TimeoutSec 3
-                $webFoodSave = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:3000/inicializacion/piloto' -TimeoutSec 3
+                $webFoodSave = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:3000/' -TimeoutSec 3
                 $listoFoodSave = $apiFoodSave.StatusCode -eq 200 -and $webFoodSave.StatusCode -eq 200
             } catch {
                 $listoFoodSave = $false
@@ -68,7 +68,7 @@ try {
             throw 'Los servicios no respondieron a tiempo. Consulta docker compose ps y docker compose logs --tail 50 api frontend migraciones.'
         }
         if (-not $NoBrowser) {
-            Start-Process 'http://localhost:3000/inicializacion/piloto'
+            Start-Process 'http://localhost:3000/'
         }
         Write-Host 'FoodSave esta listo en http://localhost:3000. Puedes cerrar esta ventana.'
     }

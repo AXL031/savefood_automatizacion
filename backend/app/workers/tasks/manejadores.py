@@ -46,6 +46,9 @@ def _registrar_planificacion() -> None:
 
 _registrar_planificacion()
 
+from app.modules.promociones.servicio import evaluar_programada
+MANEJADORES["EVALUAR_PROMOCION"] = evaluar_programada
+
 
 def obtener_manejador(tipo: str) -> Manejador:
     try:

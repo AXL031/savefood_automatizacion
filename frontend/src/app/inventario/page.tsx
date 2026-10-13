@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { BotonEnviar } from "@/components/forms/BotonEnviar";
 import { CampoFecha } from "@/components/forms/CampoFecha";
@@ -59,6 +61,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [promocionEn, setPromocionEn] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [unidadAjuste, setUnidadAjuste] = useState("");
   const [ajuste, setAjuste] = useState<Ajuste>({ loteClave: "", delta: "", motivo: "", fecha: "", hora: "17:45", clave: nuevaClave() });
@@ -161,6 +164,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           ? "Este ajuste ya estaba registrado; el saldo no cambió otra vez."
           : `Ajuste registrado. Saldo del lote: ${cantidad(resultado.saldo_resultante, loteElegido.item.unidad)}.`,
       );
+      setPromocionEn(resultado.evaluacion_promocion_ejecucion_id ?? null);
       // Una clave nueva solo después de confirmar: reintentar el mismo envío no duplica.
       setAjuste({ ...ajuste, loteClave: "", delta: "", motivo: "", clave: nuevaClave() });
       cargar();
@@ -271,6 +275,8 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         </div>
         {error ? <EstadoPanel tono="alerta" titulo="Revisa la operación" descripcion={error} /> : null}
         {mensaje ? <p className="inline-success" role="status">{mensaje}</p> : null}
+        {promocionEn && <p>Evaluación de promoción programada. <Link href={`/automatizaciones/ejecuciones/${promocionEn}`}>Seguir tarea →</Link></p>}
+        <p className="helper-text"><Link href="/promociones">Configurar la regla y consultar promociones sugeridas →</Link></p>
         <TablaDatos
           columnas={columnas}
           filas={items}

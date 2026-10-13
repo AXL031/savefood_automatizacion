@@ -6,6 +6,7 @@ const etiquetas: Record<EstadoEjecucion, string> = {
   COMPLETADA: "Completada",
   REINTENTANDO: "Reintentando",
   FALLIDA: "Fallida",
+  CANCELADA: "Cancelada",
 };
 
 export function etiquetaEstado(estado: EstadoEjecucion): string {

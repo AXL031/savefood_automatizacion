@@ -185,6 +185,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 
   const [estado, setEstado] = useState<ConfiguracionInicial | null>(null);
   const [archivos, setArchivos] = useState<Record<string, File | null>>({});
+  const [formato, setFormato] = useState("csv");
   const [objetivo, setObjetivo] = useState("");
   const [referencia, setReferencia] = useState("");
   const [clave, setClave] = useState("");
@@ -194,6 +195,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState("");
   const [reintentando, setReintentando] = useState(false);
+  useEffect(() => { setClave(`carga-${crypto.randomUUID()}`); }, []);
 
   useEffect(() => {
     const control = new AbortController();
@@ -274,7 +276,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   async function aceptar() {
     if (!vista?.aceptable) return;
     if (clave.trim().length < 3) {
-      setError("Escribe una clave de importación estable, por ejemplo primera-carga-1.");
+      setError("No se pudo generar el identificador de la carga. Actualiza la pantalla.");
       return;
     }
     setConfirmando(true);
@@ -318,17 +320,18 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         ) : null}
 
         <p className="helper-text"><Link href="/inicializacion/piloto">Carga rápida del CSV bakery (solo ventas del piloto) →</Link></p><h3 className="section-space">Archivos</h3>
+        <label className="field">Formato de tus archivos<select value={formato} disabled={!administrador || validando || confirmando} onChange={(e) => { setFormato(e.target.value); setArchivos({}); setVista(null); setInforme(null); setClave(`carga-${crypto.randomUUID()}`); }}><option value="csv">Cinco archivos CSV</option><option value="xlsx">Dos archivos Excel</option></select></label>
         <div className="form-grid">
-          {RANURAS.map((ranura) => (
+          {(formato === "xlsx" ? [{ clave: "ventas", etiqueta: "Ventas", ayuda: "ventas.xlsx" }, { clave: "productos", etiqueta: "Catálogo", ayuda: "catalogo.xlsx con hojas productos, ingredientes, recetas y stock_inicial." }] : RANURAS).map((ranura) => (
             <CampoArchivo
               key={ranura.clave}
               id={`archivo-${ranura.clave}`}
               etiqueta={ranura.etiqueta}
-              acepta=".csv,.xlsx"
+              acepta={formato === "xlsx" ? ".xlsx" : ".csv"}
               ayuda={ranura.ayuda}
               archivo={archivos[ranura.clave] ?? null}
               onCambio={(archivo) => cambiarArchivo(ranura.clave, archivo)}
-              deshabilitado={!administrador}
+              deshabilitado={!administrador || validando || confirmando}
             />
           ))}
         </div>
@@ -387,16 +390,17 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           {vista.aceptable && !informe ? (
             <>
               <h3 className="section-space">Aceptar la carga</h3>
-              <div className="form-grid">
+              <details><summary>Detalles de esta carga</summary><div className="form-grid">
                 <CampoTexto
                   id="clave-importacion"
                   etiqueta="Identificador de esta carga"
                   valor={clave}
                   onCambio={setClave}
-                  ayuda="Estable: repetirla con los mismos archivos no vuelve a cargar."
+                  deshabilitado
+                  ayuda="Se genera automáticamente y se conserva si reintentas esta carga."
                   ancho="completo"
                 />
-              </div>
+              </div></details>
               <div className="form-actions">
                 <BotonEnviar
                   type="button"

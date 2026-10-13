@@ -18,7 +18,7 @@ LOCALES = ("0008_e03_modelo", "0009_m02_planes")
 PUBLICADAS = (
     "0008_e03_preparacion_ml", "0009_m02_planificacion", "0010_m03_necesidades",
     "0011_l02_compras", "0012_l03_telegram_config", "0013_l03_aprobacion_envio",
-    "0014_l04_recuperacion",
+    "0014_l04_recuperacion", "0015_flujo_promociones",
 )
 
 
@@ -36,6 +36,10 @@ def conciliar(conexion):
     conexion.execute(text("SELECT pg_advisory_xact_lock(7040062026)"))
     revision = conexion.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
     if revision == PUBLICADAS[-1]:
+        return revision
+    if revision == "0014_l04_recuperacion":
+        # Una base publicada usa la migración normal; el puente solo convierte
+        # las revisiones locales originales y no actualiza instalaciones activas.
         return revision
     if revision not in LOCALES:
         raise RuntimeError(f"Revisión no compatible con este puente: {revision}.")

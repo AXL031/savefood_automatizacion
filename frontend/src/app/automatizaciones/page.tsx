@@ -1,152 +1,51 @@
 "use client";
-import { TablaPaginada } from "@/components/tables/TablaPaginada";
-
-
 import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { ProtectedShell } from "@/components/layout/ProtectedShell";
+import { PanelDetalle } from "@/components/ui/PanelDetalle";
 import { EstadoBadge } from "@/components/ui/EstadoBadge";
-import { EstadoPanel } from "@/components/ui/EstadoPanel";
-import { crearProgramacion, listarEjecuciones, listarProgramaciones } from "@/services/automatizaciones";
-import type { EjecucionAutomatizacion, EstadoEjecucion, ProgramacionDemo } from "@/types/automatizacion";
-import { formatearFechaHora } from "@/utils/fechas";
+import { TablaPaginada } from "@/components/tables/TablaPaginada";
+import { AsistenteFlujo } from "@/features/automatizaciones/AsistenteFlujo";
+import { ejecucionesPaginadas, programacionesPaginadas } from "@/services/automatizaciones";
+import { gestionarProgramacion, reprogramar } from "@/services/flujo";
+import type { EjecucionAutomatizacion, ProgramacionDemo } from "@/types/automatizacion";
+import { formatearFechaHora, formatearEscenario } from "@/utils/fechas";
 import { etiquetaDato } from "@/utils/etiquetas";
-import { listarProductos } from "@/services/catalogo";
-import { obtenerEstadoInicial } from "@/services/inicializacion";
-import type { Producto } from "@/types/catalogo";
-
-function fechaLocalParaInput(fecha: Date): string {
-  return new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
-}
-
-function Contenido({ token, zonaHoraria, administrador, modoInicial }: { token: string; zonaHoraria: string; administrador: boolean; modoInicial: "REQUIERE_APROBACION" | "AUTOMATICO" }) {
-  const [programaciones, setProgramaciones] = useState<ProgramacionDemo[]>([]);
-  const [ejecuciones, setEjecuciones] = useState<EjecucionAutomatizacion[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [guardando, setGuardando] = useState(false);
-  const [error, setError] = useState("");
-  const [errorCarga, setErrorCarga] = useState("");
-  const [mensaje, setMensaje] = useState("");
-  const [filtro, setFiltro] = useState<EstadoEjecucion | "TODAS">("TODAS");
-  const [horaReal, setHoraReal] = useState("");
-  const [horaSimulada, setHoraSimulada] = useState("2022-08-24T10:00");
-  const [catalogo, setCatalogo] = useState<Producto[]>([]);
-  const [productos, setProductos] = useState<number[]>([]);
-  const [modo, setModo] = useState(modoInicial);
-  const [confirmado, setConfirmado] = useState(false);
-  const [errorCatalogo, setErrorCatalogo] = useState("");
-  const [clave, setClave] = useState("");
-
+function Contenido({ token, zona, admin }: { token: string; zona: string; admin: boolean }) {
+  const [programaciones, setProgramaciones] = useState<ProgramacionDemo[]>([]), [ejecuciones, setEjecuciones] = useState<EjecucionAutomatizacion[]>([]);
+  const [paginaP, setPaginaP] = useState(1), [tamanoP, setTamanoP] = useState(25), [totalP, setTotalP] = useState(0);
+  const [paginaE, setPaginaE] = useState(1), [tamanoE, setTamanoE] = useState(25), [totalE, setTotalE] = useState(0);
+  const [revision, setRevision] = useState(0), [error, setError] = useState(""), [cargando, setCargando] = useState(true);
+  const [seleccion, setSeleccion] = useState<ProgramacionDemo | null>(null), [accion, setAccion] = useState("PAUSAR"), [motivo, setMotivo] = useState(""), [hora, setHora] = useState("");
+  const [ocupado, setOcupado] = useState(false), [errorGestion, setErrorGestion] = useState("");
   useEffect(() => {
-    setHoraReal(fechaLocalParaInput(new Date(Date.now() + 5 * 60_000)));
-    setClave(`propuesta-${crypto.randomUUID()}`);
-  }, []);
-  useEffect(() => {
-    const control = new AbortController();
-    listarProductos(token, { soloDemo: true }, control.signal).then((datos) => {
-      if (!control.signal.aborted) setCatalogo(datos.filter((p) => p.activo));
-    }).catch((fallo: unknown) => { if (!control.signal.aborted) setErrorCatalogo(fallo instanceof Error ? fallo.message : "No se pudo consultar el catálogo."); });
-    obtenerEstadoInicial(token, control.signal).then((estado) => {
-      if (!control.signal.aborted && estado.fecha_objetivo_demo) setHoraSimulada(`${estado.fecha_objetivo_demo}T10:00`);
-    }).catch(() => { /* La fecha sigue siendo elegible manualmente. */ });
-    return () => control.abort();
-  }, [token]);
-
-  useEffect(() => {
-    const control = new AbortController();
-    let temporizador: ReturnType<typeof setTimeout>;
+    const control = new AbortController(); let temporizador: ReturnType<typeof setTimeout>;
     async function actualizar() {
-      try {
-        const [programadas, registradas] = await Promise.all([listarProgramaciones(token, control.signal), listarEjecuciones(token, control.signal)]);
-        if (control.signal.aborted) return;
-        setProgramaciones(programadas);
-        setEjecuciones(registradas);
-        setErrorCarga("");
-      } catch (fallo) {
-        if (!control.signal.aborted) setErrorCarga(fallo instanceof Error ? fallo.message : "No se pudieron actualizar las automatizaciones.");
-      } finally {
-        if (!control.signal.aborted) {
-          setCargando(false);
-          temporizador = setTimeout(actualizar, 5000);
-        }
-      }
+      try { const [p, e] = await Promise.all([programacionesPaginadas(token, paginaP, tamanoP, control.signal), ejecucionesPaginadas(token, paginaE, tamanoE, control.signal)]); if (!control.signal.aborted) { setProgramaciones(p.datos); setEjecuciones(e.datos); setTotalP(Number(p.metadatos?.total ?? 0)); setTotalE(Number(e.metadatos?.total ?? 0)); setError(""); } }
+      catch (e) { if (!control.signal.aborted) setError(e instanceof Error ? e.message : "No se pudieron consultar las tareas."); }
+      finally { if (!control.signal.aborted) { setCargando(false); temporizador = setTimeout(actualizar, 5000); } }
     }
-    void actualizar();
-    return () => { control.abort(); clearTimeout(temporizador); };
-  }, [token]);
-
-  async function guardar(evento: FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-    setError("");
-    setMensaje("");
-    const ids = productos;
-    if (!horaReal || !horaSimulada || !clave || ids.length < 1 || ids.length > 5 || ids.some((id) => !Number.isInteger(id) || id <= 0)) {
-      setError("Elige entre uno y cinco productos e indica la hora real y la fecha del escenario.");
-      return;
-    }
-    if (modo === "AUTOMATICO" && !confirmado) { setError("Confirma el envío automático a tu propio chat de pruebas."); return; }
-    setGuardando(true);
+    void actualizar(); return () => { control.abort(); clearTimeout(temporizador); };
+  }, [token, revision, paginaP, tamanoP, paginaE, tamanoE]);
+  async function gestionar() {
+    if (!seleccion) return; setOcupado(true); setErrorGestion("");
     try {
-      const creada = await crearProgramacion(token, {
-        tipo: "GENERAR_PROPUESTA",
-        ejecutar_desde_utc: new Date(horaReal).toISOString(),
-        fecha_hora_simulada_local: `${horaSimulada}:00`,
-        fecha_objetivo_demo: horaSimulada.slice(0, 10),
-        producto_ids: ids,
-        modo_envio_pedidos: modo,
-        clave_idempotencia: clave,
-      });
-      const [programadas, registradas] = await Promise.all([listarProgramaciones(token), listarEjecuciones(token)]);
-      setProgramaciones(programadas);
-      setEjecuciones(registradas);
-      setMensaje(`Programación #${creada.id} guardada. El motor la recogerá al llegar la hora real; el estado se actualiza automáticamente.`);
-      setClave(`propuesta-${crypto.randomUUID()}`);
-    } catch (fallo) {
-      setError(fallo instanceof Error ? fallo.message : "No se pudo guardar la programación.");
-    } finally {
-      setGuardando(false);
-    }
+      if (accion === "REPROGRAMAR") await reprogramar(token, seleccion.id, new Date(hora).toISOString(), motivo);
+      else await gestionarProgramacion(token, seleccion.id, accion, motivo);
+      setSeleccion(null); setRevision((r) => r + 1);
+    } catch (e) { setErrorGestion(e instanceof Error ? e.message : "No se pudo guardar el cambio."); }
+    finally { setOcupado(false); }
   }
-
-  const visibles = useMemo(
-    () => filtro === "TODAS" ? ejecuciones : ejecuciones.filter((item) => item.estado === filtro),
-    [ejecuciones, filtro],
-  );
-
   return <>
-    <EstadoPanel tono="info" titulo="Pronóstico → plan → faltantes → pedido → Telegram" descripcion="Programa una ejecución para el escenario histórico. En modo automático se envía al chat verificado si todos los faltantes tienen oferta; en modo manual espera tu aprobación. Una fecha con compra activa no genera otro pedido." />
-    {errorCarga && <div className="inline-error" role="alert">No se pudo actualizar: {errorCarga}</div>}
-    {error && <div className="inline-error" role="alert">{error}</div>}
-    {mensaje && <div className="inline-success" role="status">{mensaje}</div>}
-    <div className="page-grid section-space">
-      <section className="card main-card">
-        <div className="section-heading"><div><h2>Programar propuesta demostrativa</h2><p>La hora real fija cuándo se despachará; la hora simulada identifica el escenario histórico.</p></div></div>
-        <form className="form-grid" onSubmit={guardar}>
-          <label className="field">Cuándo ejecutar (fecha y hora de este equipo)<input type="datetime-local" value={horaReal} onChange={(e) => setHoraReal(e.target.value)} disabled={!administrador || guardando} required /><small>Es una ejecución única. El motor comienza en el siguiente ciclo de 30 segundos.</small></label>
-          <label className="field">Día y hora del escenario histórico<input type="datetime-local" value={horaSimulada} onChange={(e) => setHoraSimulada(e.target.value)} disabled={!administrador || guardando} required /><small>Usa una fecha del historial. Si ya se envió un pedido para esa fecha, el sistema impedirá otra compra.</small></label>
-          <fieldset className="product-picker field-full" disabled={!administrador || guardando}><legend>Productos a planificar · {productos.length} de 5</legend>{catalogo.map((p) => <label key={p.id}><input type="checkbox" checked={productos.includes(p.id)} disabled={!productos.includes(p.id) && productos.length >= 5} onChange={(e) => setProductos((actual) => e.target.checked ? [...actual, p.id] : actual.filter((id) => id !== p.id))} />{p.nombre}</label>)}</fieldset>
-          {errorCatalogo && <p role="alert" className="inline-error field-full">{errorCatalogo}</p>}
-          {!catalogo.length && !errorCatalogo && <p className="field-full">No hay productos disponibles para elegir. <Link href="/inicializacion">Revisa la carga inicial</Link>.</p>}
-          <label className="field field-full">Qué hacer con los pedidos<select value={modo} disabled={!administrador || guardando} onChange={(e) => { setModo(e.target.value as typeof modo); setConfirmado(false); }}><option value="REQUIERE_APROBACION">Revisarlos y aprobarlos antes de enviar</option><option value="AUTOMATICO">Enviar automáticamente a mi chat de pruebas</option></select><small>Este modo queda guardado en la programación y en los pedidos que produzca.</small></label>
-          {modo === "AUTOMATICO" && <label className="review-checkbox field-full"><input type="checkbox" checked={confirmado} disabled={!administrador || guardando} onChange={(e) => setConfirmado(e.target.checked)} />Autorizo el envío automático de los faltantes al chat propio verificado del proveedor. El mensaje llevará DEMOSTRACIÓN — NO SURTIR.</label>}
-          <details className="field-full"><summary>Identificador técnico de la solicitud</summary><label className="field">Clave para evitar duplicados<input value={clave} onChange={(e) => setClave(e.target.value)} maxLength={128} disabled={!administrador || guardando} required /><small>Se genera sola; consérvala al reintentar esta misma solicitud.</small></label></details>
-          <div className="form-actions field-full"><button className="button-primary" type="submit" disabled={!administrador || guardando || !productos.length || (modo === "AUTOMATICO" && !confirmado)}>{guardando ? "Guardando…" : modo === "AUTOMATICO" ? "Programar flujo completo" : "Programar plan con revisión manual"}</button></div>
-        </form>
-        {!administrador && <p className="helper-text">Solo un administrador puede crear programaciones.</p>}
-      </section>
-      <aside className="card aside-card"><h2>Seguimiento automático</h2><p>El motor revisa tareas cada 30 segundos. Un fallo interno temporal permite hasta tres intentos. Consulta el detalle para ver el resultado o el motivo del fallo.</p><p className="helper-text">La vista se actualiza cada 5 segundos y muestra hasta 50 registros recientes. Las horas reales de las tablas se muestran en {zonaHoraria}.</p><div className="fact"><span>Programaciones recientes</span><strong>{programaciones.length}</strong></div><div className="fact"><span>Ejecuciones recientes</span><strong>{ejecuciones.length}</strong></div></aside>
-    </div>
-    <section className="card section-space">
-      <div className="section-heading"><div><h2>Programaciones guardadas</h2><p className="helper-text">Últimas 50 programaciones.</p><p>Se muestran por separado la hora real y el reloj del escenario.</p></div></div>
-      {cargando ? <p role="status">Cargando programaciones…</p> : programaciones.length ? <TablaPaginada><thead><tr><th>Tarea</th><th>Hora real</th><th>Escenario histórico</th><th>Envío de pedidos</th><th>Estado</th><th>Ejecución</th></tr></thead><tbody>{programaciones.map((item) => <tr key={item.id}><td>{etiquetaDato(item.tipo)}</td><td>{formatearFechaHora(item.ejecutar_desde_utc, zonaHoraria)}</td><td>{item.fecha_hora_simulada_local.replace("T", " ")}</td><td>{item.parametros.modo_envio_pedidos === "AUTOMATICO" ? "Automático" : item.parametros.modo_envio_pedidos === "REQUIERE_APROBACION" ? "Con aprobación" : "Configuración del negocio al ejecutar"}</td><td><span className={`badge badge-${item.estado === "CANCELADA" ? "alerta" : item.estado === "DESPACHADA" ? "info" : "neutral"}`}>{etiquetaDato(item.estado)}</span></td><td>{item.ejecucion_id ? <Link href={`/automatizaciones/ejecuciones/${item.ejecucion_id}`}>Ver #{item.ejecucion_id}</Link> : "—"}</td></tr>)}</tbody></TablaPaginada> : <EstadoPanel titulo="Sin programaciones" descripcion="Elige productos y horarios para crear tu primera tarea." />}
+    <AsistenteFlujo token={token} zona={zona} admin={admin} alProgramar={() => { setPaginaP(1); setPaginaE(1); setRevision((r) => r + 1); }} />
+    {error && <p className="inline-error" role="alert">{error}</p>}
+    <section className="card section-space"><h2>Próximas tareas y programaciones recientes</h2><p>Actualización automática. Las horas reales se muestran en {zona}; el escenario conserva su fecha histórica.</p>
+      {cargando ? <p role="status">Consultando tareas…</p> : <TablaPaginada remota={{ pagina: paginaP, tamano: tamanoP, total: totalP, cargando, onCambio: (p, t) => { setPaginaP(p); setTamanoP(t); } }}><thead><tr><th>Tarea</th><th>Cuándo ejecutar</th><th>Escenario</th><th>Estado</th><th>Resultado</th>{admin && <th>Gestionar</th>}</tr></thead><tbody>{programaciones.map((p) => <tr key={p.id}><td>{etiquetaDato(p.tipo)}</td><td>{formatearFechaHora(p.ejecutar_desde_utc, zona)}</td><td>{formatearEscenario(p.fecha_hora_simulada_local)}</td><td><span className="badge badge-neutral">{p.estado === "PAUSADA" ? "Pausada" : etiquetaDato(p.estado)}</span></td><td>{p.ejecucion_id && <Link href={`/automatizaciones/ejecuciones/${p.ejecucion_id}`}>Ver tarea #{p.ejecucion_id}</Link>}</td>{admin && <td>{p.tipo === "GENERAR_PROPUESTA" && ["PROGRAMADA", "PAUSADA"].includes(p.estado) && <button className="button-link" onClick={() => { setSeleccion(p); setAccion(p.estado === "PAUSADA" ? "REANUDAR" : "PAUSAR"); setMotivo(""); setHora(""); setErrorGestion(""); }}>Gestionar</button>}</td>}</tr>)}</tbody></TablaPaginada>}
+      {!cargando && !programaciones.length && <p>Al confirmar el asistente aparecerá tu primera programación aquí.</p>}
+      <p className="helper-text">Las tareas pendientes aparecen primero. Puedes recorrer todo el historial. Pausar o cancelar conserva el historial; las tareas despachadas mantienen su resultado.</p>
     </section>
-    <section className="card section-space">
-      <div className="section-heading"><div><h2>Ejecuciones e intentos</h2><p>El resultado aparecerá cuando el servicio de dominio complete la ejecución.</p></div><label className="filter-label">Estado<select value={filtro} onChange={(e) => setFiltro(e.target.value as EstadoEjecucion | "TODAS")}><option value="TODAS">Todas</option><option value="PENDIENTE">Pendiente</option><option value="EN_EJECUCION">En ejecución</option><option value="REINTENTANDO">Reintentando</option><option value="COMPLETADA">Completada</option><option value="FALLIDA">Fallida</option></select></label></div>
-      {cargando ? <p role="status">Cargando ejecuciones…</p> : visibles.length ? <TablaPaginada><thead><tr><th>ID</th><th>Tipo</th><th>Inicio real</th><th>Estado</th><th>Intentos</th><th></th></tr></thead><tbody>{visibles.map((item) => <tr key={item.id}><td>#{item.id}</td><td>{etiquetaDato(item.tipo)}</td><td>{formatearFechaHora(item.inicio_en, zonaHoraria)}</td><td><EstadoBadge estado={item.estado} /></td><td>{item.intentos.length}/3</td><td><Link href={`/automatizaciones/ejecuciones/${item.id}`}>Ver detalle</Link></td></tr>)}</tbody></TablaPaginada> : <EstadoPanel titulo="Sin ejecuciones para este filtro" descripcion="Cambia el filtro o crea una programación." />}
-    </section>
+    <section className="card section-space"><h2>Actividad e historial</h2><TablaPaginada remota={{ pagina: paginaE, tamano: tamanoE, total: totalE, cargando, onCambio: (p, t) => { setPaginaE(p); setTamanoE(t); } }}><thead><tr><th>Tarea</th><th>Estado</th><th>Intentos</th><th>Detalle</th></tr></thead><tbody>{ejecuciones.map((e) => <tr key={e.id}><td>{etiquetaDato(e.tipo)}</td><td><EstadoBadge estado={e.estado} /></td><td>{e.intentos.length}</td><td><Link href={`/automatizaciones/ejecuciones/${e.id}`}>Ver resultado</Link></td></tr>)}</tbody></TablaPaginada><p className="helper-text">Historial completo de ejecuciones. Las tareas pausadas esperan tu decisión.</p></section>
+    {seleccion && <PanelDetalle titulo={`Gestionar programación #${seleccion.id}`} ocupado={ocupado} onCerrar={() => setSeleccion(null)}><p>Hora actual: {formatearFechaHora(seleccion.ejecutar_desde_utc, zona)}. Escenario: {formatearEscenario(seleccion.fecha_hora_simulada_local)}.</p><form onSubmit={(e) => { e.preventDefault(); void gestionar(); }}><fieldset disabled={ocupado}><label className="field">Qué quieres hacer<select value={accion} onChange={(e) => setAccion(e.target.value)}><option value={seleccion.estado === "PAUSADA" ? "REANUDAR" : "PAUSAR"}>{seleccion.estado === "PAUSADA" ? "Reanudar" : "Pausar"}</option><option value="REPROGRAMAR">Cambiar horario</option><option value="CANCELAR">Cancelar esta tarea</option></select></label>{accion === "REPROGRAMAR" && <label className="field">Nuevo horario · hora de este equipo<input type="datetime-local" required value={hora} onChange={(e) => setHora(e.target.value)} /></label>}<label className="field">Motivo<input required minLength={3} maxLength={300} value={motivo} onChange={(e) => setMotivo(e.target.value)} /></label>{errorGestion && <p role="alert" className="inline-error">{errorGestion}</p>}<button type="submit" className="button-primary">{ocupado ? "Guardando…" : "Confirmar cambio"}</button></fieldset></form><p>Si una tarea pausada perdió su horario, cambia la hora antes de reanudarla.</p>{!!seleccion.cambios?.length && <details><summary>Historial de cambios</summary><ul>{seleccion.cambios.map((c, i) => <li key={i}>{c.accion} · {c.motivo} · {c.fecha}</li>)}</ul></details>}</PanelDetalle>}
   </>;
 }
-
-export default function AutomatizacionesPage() {
-  return <ProtectedShell titulo="Programar tareas" descripcion="Programa el flujo de pronóstico, faltantes y envío a Telegram.">{({ token, negocio, perfil }) => <Contenido token={token} zonaHoraria={negocio.zona_horaria} modoInicial={negocio.modo_envio_pedidos} administrador={perfil.rol === "ADMINISTRADOR"} />}</ProtectedShell>;
-}
+export default function AutomatizacionesPage() { return <ProtectedShell titulo="Automatización" descripcion="Configura el recorrido, comprueba lo necesario y sigue sus resultados.">{({ token, negocio, perfil }) => <Contenido token={token} zona={negocio.zona_horaria} admin={perfil.rol === "ADMINISTRADOR"} />}</ProtectedShell>; }

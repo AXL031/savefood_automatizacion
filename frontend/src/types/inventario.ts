@@ -74,4 +74,5 @@ export type ResultadoAjuste = {
   saldo_resultante: string;
   efectivo_en_demo: string;
   repetido: boolean;
+  evaluacion_promocion_ejecucion_id?: number | null;
 };

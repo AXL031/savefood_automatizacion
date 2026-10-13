@@ -5,6 +5,28 @@
 Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este archivo se actualiza al terminar cada avance significativo.
 
 ## Resumen vigente
+
+- **11-10-2026 · Codex para Axel, V03/V04 con frontera V02/A03:** Reglas versionadas habilitables, reserva atómica EVALUAR_PROMOCION tras cada ajuste nuevo de producto, lectura pública del inventario, evaluación idempotente con descuento o rechazo explicado y pantalla real con historial paginado/detalle. La lectura sustituida, vencida, sin fecha, antigua o fuera de horario se descarta. Evaluar no publica precios ni modifica stock.
+- **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
+- **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
+- **Coordinación/dependencias:** Cueva entrega motor; se conserva autoría previa V01/V02 por Max por encargo. [Registro transversal](cueva.md) y [plan vigente](../plan-cierre-prototipo.md). Autor real de este corte: Codex para la solicitud de Axel; no se atribuye a integrantes.
+- **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
+
+## Bitácora
+
+### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
+
+- **Autor/responsabilidad/tareas:** Codex para Axel; V03/V04 con frontera V02/A03. Coordinación transversal en Cueva, dominios afectados enlazados desde dependencias.md.
+- **Estado/comportamiento:** implementación LOCAL real. Reglas versionadas habilitables, reserva atómica EVALUAR_PROMOCION tras cada ajuste nuevo de producto, lectura pública del inventario, evaluación idempotente con descuento o rechazo explicado y pantalla real con historial paginado/detalle. La lectura sustituida, vencida, sin fecha, antigua o fuera de horario se descarta. Evaluar no publica precios ni modifica stock.
+- **Archivos clave:** [servicio.py](../../../backend/app/modules/promociones/servicio.py); [servicio.py](../../../backend/app/modules/inventario/servicio.py); [page.tsx](../../../frontend/src/app/promociones/page.tsx). [Contrato y ejemplos públicos](../../api/contrato-flujo-promociones.md).
+- **API/ejemplo:** guardar parámetros no agenda ni autoriza envíos. POST /flujo-automatizacion/programar conserva modelo/modo y crea calendario finito. PUT /promociones/regla habilita una versión; un ajuste nuevo reserva evaluación en su misma sesión. GET /promociones/evaluaciones devuelve motivo y referencias; acciones de gestión requieren Administrador, motivo y tarea sin despacho.
+- **Migración/configuración:** `0015_flujo_promociones`; aplicar antes de reiniciar API/worker/Beat; ya aplicada en la instalación habitual. No reescribe 0014 ni tablas de otros cortes. Configuración sin tokens; no altera datos habituales ni ejecuta envíos reales.
+- **Pruebas realmente ejecutadas:** suite amplia Windows: 255 passed, 24 skipped, 6 subtests passed, con una expectativa antigua de cabeza Alembic fallida y corregida; después 21 pruebas de flujo/migración/programación correctas. Build Next correcto (incluye /promociones). Corte final de fronteras: 72 passed, 2 skipped, 6 subtests passed. Revisión posterior de promociones/puente: 12 passed, 6 skipped (concurrencia/DDL PostgreSQL). Typecheck final correcto. QA Edge aislada verificó calendario de tres días, pausa, regla versionada, detalle/Escape, dos Excel/cinco CSV y móvil, sin errores JavaScript. Se corrigió una referencia visual de fecha detectada por build y se repitió QA correctamente; build final correcto, 23 páginas generadas; QA final también pasó contra la interfaz compilada, con datos cargados en escritorio y móvil. Después de que Axel abrió Docker, migración y alembic check correctos en PostgreSQL aislado. Corte amplio PostgreSQL/Redis inicial: 125 passed y 4 fallos; una prueba antigua del manejador ausente se aisló explícitamente, y los tres fallos ML se debían a escribir catboost_info en el montaje de código de solo lectura. Revalidación con imagen reconstruida: 24 passed de promociones/motor/inventario, incluida concurrencia, y 3 passed de CatBoost/Beat/plan real desde /tmp escribible. CI incorpora la nueva prueba concurrente. Suite completa final con imagen reconstruida y PostgreSQL/Redis: **283 passed, 6 subtests passed**, sin fallos ni omisiones (290,91 s). Advertencias existentes de dependencias y reflexión SQLite; migración y comparación PostgreSQL correctas. No se enviaron mensajes reales.
+- **Dependencias y siguiente paso:** Cueva entrega motor; se conserva autoría previa V01/V02 por Max por encargo. Imágenes reconstruidas, 0015 aplicada y servicios habituales activos. Suite final completa correcta. Pendientes: CI remoto y demo conjunta/otra PC. La prueba Telegram automática requiere autorización concreta. No interpretar fixtures del modelo/Telegram como evidencia comercial ni de envío real.
+- **Git:** cambios locales en cueva, sin commit/push/PR.
+
+<details><summary>Resumen anterior conservado como historial; no es el estado vigente</summary>
+
 - **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Stock pequeño real: 5 lotes de producto en 2 u.; ingredientes g/ml en 500 g/ml y huevo en 2 u. 14 movimientos explícitos (17–30), sin reemplazar apertura/historial. Inventario admite kg/g y L/ml y muestra grandes cantidades en kg/L, incluidos movimientos. Conversión exacta, typecheck y 17 comprobaciones correctas; formulario 0,5 kg→500 g verificado en fixture aislada.
 
 - **Consumidor V02 verificado en paso 2 local (2026-09-30, Codex para Axel):** M02 guarda disponibilidad, lotes, saldo y motivos en snapshots y conserva la lectura anterior tras un ajuste. Caducidad/límite, cero conocido, ausencia y vigencia desconocida probados. [Entrega M02](rojas.md); no cambia código de inventario ni atribuye nueva implementación a Vera.
@@ -27,7 +49,9 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | V03 · Integrar regla de promoción | PENDIENTE |
 | V04 · Entregar inventario y promoción en UI | PARCIAL: inventario hecho; falta detalle de promoción |
 
-## Bitácora
+</details>
+
+
 
 ### Flujo completo, unidades y claridad · 30-09-2026
 
