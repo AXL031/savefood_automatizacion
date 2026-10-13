@@ -14,6 +14,8 @@ Axel autoriza corregir los pendientes del informe: promociones, configuración d
 
 ## Base disponible
 
+**Publicación 12-10-2026:** promociones y flujo configurable publicados en `cueva` (`3c9ae72` / integración de base `93d5c26`). `main=a1ebb51` incorporado sin conflictos ni cambios de contenido; GitHub confirma compatibilidad. [CI remoto correcto](https://github.com/AXL031/savefood_automatizacion/actions/runs/38330972748), incluidos migración/arranque y 166 pruebas PostgreSQL/Redis. [PR #14 en borrador](https://github.com/AXL031/savefood_automatizacion/pull/14): revisar las comprobaciones del último commit y obtener revisión de otro integrante antes de merge. No se integró `main`; otra PC, demo conjunta y nuevo automático Telegram real siguen pendientes.
+
 | Paso | Comportamiento disponible | Estado |
 |---|---|---|
 | 1 | Primera carga completa, preparación ML durable, backtest y recuperación sin reimportar | Implementado local; prueba previa con CatBoost/PostgreSQL/Beat |

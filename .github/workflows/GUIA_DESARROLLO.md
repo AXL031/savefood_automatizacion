@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**Estado vigente · 12-10-2026:** [CI del corte publicado 93d5c26](https://github.com/AXL031/savefood_automatizacion/actions/runs/38330972748) correcto: Python 258 passed, 25 skipped y 6 subtests passed; segundo corte PostgreSQL/Redis 166 passed. Construcción/arranque, cabeza 0015, metadatos, volumen de modelos y API/frontend/Celery correctos. Incluye promociones y concurrencia. [PR #14](https://github.com/AXL031/savefood_automatizacion/pull/14) permite comprobar el último commit y su integración; sigue pendiente revisión humana antes de merge. Las notas de CI pendiente de abajo son historial.
+
 **30-09-2026 · Paso 5: suite Python descubre test_telegram_config_l03.py; el corte Docker PostgreSQL incluye el mismo archivo y prueba cifrado/API sin Telegram real. CI remoto pendiente; cambios sin publicar.**
 
 **Paso 2 local · 30-09-2026:** base-ci.yml añade test_planificacion_m02.py al corte PostgreSQL/Redis y el test real E03 incluye la propuesta M02. Cambio solo local; no se ha publicado ni ejecutado CI remoto para este paso.

@@ -1,14 +1,14 @@
 # Dependencias y orden de entregas
 
-## Estado vigente · 11-10-2026
+## Estado vigente · 12-10-2026
 
-Coordinación Codex para Axel. Cada responsable conserva sus dominios y autoría. [Contrato nuevo](../api/contrato-flujo-promociones.md), [plan de cierre](plan-cierre-prototipo.md) y [evidencia transversal](avances/cueva.md).
+Coordinación Codex para Axel. Cada responsable conserva sus dominios y autoría. [Contrato nuevo](../api/contrato-flujo-promociones.md), [plan de cierre](plan-cierre-prototipo.md) y [evidencia transversal](avances/cueva.md). Publicado en `cueva`, actualizado desde `main` sin conflictos: [PR #14](https://github.com/AXL031/savefood_automatizacion/pull/14), [CI del corte publicado correcto](https://github.com/AXL031/savefood_automatizacion/actions/runs/38330972748). Revisión del equipo pendiente antes de integrar.
 
 | Frontera | Entrega y consumidor actual | Pendiente real |
 |---|---|---|
 | Primera carga → recetas/stock → ML | Edu orquesta; Max/Vera exponen servicios; Kevin y Axel preparan/evalúan modelo. Implementación y pruebas locales existentes. | Reproducción por otro integrante; no reimportar tras fallo ML. |
-| Pronóstico → plan → faltantes → compras | Kevin, Max, Vera y Aguirre conectados por interfaces públicas y transacción común. | Demo conjunta final y CI remoto. |
-| Programaciones y gestión | Axel: configuración reusable, diagnóstico, calendario histórico acotado, pausa/cancelación/reprogramación pendientes y trazas. | Corte PostgreSQL/Redis y suite completa final (283 + 6 subpruebas) verificados; CI remoto y otra PC pendientes. |
+| Pronóstico → plan → faltantes → compras | Kevin, Max, Vera y Aguirre conectados por interfaces públicas y transacción común. CI remoto del corte publicado correcto. | Demo conjunta final y revisión del equipo. |
+| Programaciones y gestión | Axel: configuración reusable, diagnóstico, calendario histórico acotado, pausa/cancelación/reprogramación pendientes y trazas. | Corte PostgreSQL/Redis y suite completa final (283 + 6 subpruebas) verificados; CI remoto correcto; revisión y otra PC pendientes. |
 | Ajuste → promoción | Vera/Axel: regla versionada, reserva atómica, handler, persistencia y pantalla real; pruebas del consumidor local. | Concurrencia PostgreSQL comprobada; demo conjunta en otra PC pendiente. |
 | Pedidos → Telegram | Aguirre: manual/automático, recuperación con evidencia, protección de recompra. | Nuevo automático real solo bajo autorización concreta; ofertas reales según configuración del usuario. |
 | Interfaz común | Edu coordina; cada dominio mantiene su pantalla. Asistente, regreso, menú y carga simplificados. | QA final documentada y reproducción en otra computadora. |
