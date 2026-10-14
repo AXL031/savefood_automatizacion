@@ -74,7 +74,7 @@ function Contenido({ token }: { token: string }) {
   const evaluacion = informe?.evaluacion;
   const detalle = evaluacion?.serie_diaria.find((d) => d.fecha_local === diaDetalle);
   return <>
-    <section className="card"><h2>Elige el período del escenario</h2><p>Los filtros se aplican al pulsar Consultar. El CSV contiene el período completo, aunque las tablas se muestren por páginas.</p>
+    <section className="card"><h2>Elige el período</h2><p>Los filtros se aplican al pulsar Consultar. El CSV contiene el período completo, aunque las tablas se muestren por páginas.</p>
       <form className="report-filters" onSubmit={aplicar}>
         <label>Desde<input type="date" required value={borrador.desde} disabled={cargando || descargando} onChange={(e) => setBorrador({ ...borrador, desde: e.target.value })} /></label>
         <label>Hasta, inclusive<input type="date" required value={borrador.hasta} disabled={cargando || descargando} onChange={(e) => setBorrador({ ...borrador, hasta: e.target.value })} /></label>

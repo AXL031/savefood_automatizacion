@@ -9,12 +9,6 @@ import type { CambioNegocio } from "@/types/autenticacion";
 import { HttpError } from "@/services/http";
 import { borrarToken } from "@/services/sesion";
 
-const preferenciasPrevistas = [
-  { titulo: "Planificación nocturna", detalle: "Generar demanda y plan al finalizar el día." },
-  { titulo: "Control de excedentes", detalle: "Revisar riesgo durante la jornada." },
-  { titulo: "Promociones preventivas", detalle: "Activar una acción dentro del descuento permitido." },
-];
-
 function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
   const router = useRouter();
   const { token, negocio, perfil, actualizarNegocioLocal } = contexto;
@@ -77,7 +71,7 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
 
   return <>
     <div className="page-grid">
-      <section className="card main-card"><div className="section-heading"><div><h2>Datos del comercio</h2><p>Estos datos identifican a la instalación local.</p></div><span className="badge badge-ok">Activo</span></div>
+      <section className="card main-card"><div className="section-heading"><div><h2>Datos del comercio</h2><p>Estos datos identifican a tu comercio.</p></div><span className="badge badge-ok">Activo</span></div>
         <form onSubmit={guardar} className="form-grid">
           <label className="field field-full">Nombre del comercio<input value={formulario.nombre} onChange={(e) => cambiar("nombre", e.target.value)} maxLength={160} disabled={!administrador || guardando} required /></label>
           <label className="field">Zona horaria<input value={formulario.zona_horaria} onChange={(e) => cambiar("zona_horaria", e.target.value)} placeholder="America/Lima" disabled={!administrador || guardando} required /><small>Define cómo se muestran las fechas y horas.</small></label>
@@ -95,11 +89,8 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
         </form>
         {!administrador && <p className="helper-text">Tu rol puede consultar esta información; solo un administrador puede editarla.</p>}
       </section>
-      <aside className="card aside-card"><h2>Estado de la instalación</h2><div className="fact"><span>Comercio</span><strong>{negocio.nombre}</strong></div><div className="fact"><span>Sucursales</span><strong>1 en este MVP</strong></div><div className="fact"><span>Tipo de instalación</span><strong>Local</strong></div><p className="helper-text">Cada comercio conserva su propia base de datos y configuración.</p></aside>
+      <aside className="card aside-card"><h2>Tu comercio</h2><div className="fact"><span>Comercio</span><strong>{negocio.nombre}</strong></div><div className="fact"><span>Sucursales</span><strong>1</strong></div><p className="helper-text">Cada comercio conserva su propia base de datos y configuración.</p></aside>
     </div>
-    <details className="card section-space"><summary>Funciones futuras (todavía no disponibles)</summary><p>Estas opciones no se aplican a las tareas actuales.</p>
-    <div className="preference-grid">{preferenciasPrevistas.map((item) => <div className="card preference" key={item.titulo}><div><strong>{item.titulo}</strong><p>{item.detalle}</p></div><span className="badge badge-neutral">Pendiente de API</span></div>)}</div>
-    </details>
   </>;
 }
 

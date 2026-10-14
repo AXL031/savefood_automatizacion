@@ -18,7 +18,6 @@ export function TarjetasMetricas({ metricas, titulo, subtitulo }: Props) {
               "Cálculo conjunto sobre todos los pares producto-día evaluables (sin promediar porcentajes)."}
           </p>
         </div>
-        <span className="badge badge-neutral">Demostración histórica</span>
       </div>
 
       <div className="stats-grid">

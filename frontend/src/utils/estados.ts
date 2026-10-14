@@ -13,9 +13,10 @@ export function etiquetaEstado(estado: EstadoEjecucion): string {
   return etiquetas[estado] ?? estado;
 }
 
-export function tonoEstado(estado: EstadoEjecucion): "neutral" | "info" | "ok" | "alerta" {
+export function tonoEstado(estado: EstadoEjecucion): "neutral" | "info" | "ok" | "alerta" | "advertencia" {
   if (estado === "COMPLETADA") return "ok";
   if (estado === "FALLIDA") return "alerta";
-  if (estado === "EN_EJECUCION" || estado === "REINTENTANDO") return "info";
+  if (estado === "EN_EJECUCION") return "info";
+  if (estado === "PENDIENTE" || estado === "REINTENTANDO") return "advertencia";
   return "neutral";
 }

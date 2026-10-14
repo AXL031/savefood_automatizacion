@@ -6,6 +6,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **14-10-2026 · Max Rojas (frontend y UX/UI temporal):** paleta hoja/yema y tipografía Bricolage + Manrope aplicadas en todo el frontend, login rediseñado con ilustración de panadería y textos de demostración/escenario/manual retirados de la interfaz. Ver bitácora del 14-10-2026.
 - **11-10-2026 · Codex para Axel, M02/M04 y consumo K02/V02/L02:** M01–M04 están implementadas localmente; el flujo consume corrida, recetas y stock, conserva plan/necesidades y enlaza pedidos. El manejador usa el modelo elegido por el asistente. Margen cero, cantidades desconocidas nullable, versiones e inventario conservados.
 - **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
 - **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
@@ -13,6 +14,16 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 14-10-2026 America/Lima — Identidad visual, login y textos de producto
+
+- **Autor/responsabilidad/tareas:** Max Rojas, a cargo temporal del frontend y UX/UI. Toca la estructura visual compartida (Edu Sanchez) y la pantalla de acceso (Axel Cueva): coordinar antes de integrar.
+- **Estado/comportamiento:** real, solo interfaz. Paleta en variables `:root`; fuentes autoalojadas; `badge-advertencia` y tonos de estado corregidos; login nuevo con `public/imagenes/panaderia-login.jpg` y `MarcaFoodSave`; se eliminó `GuiaPantalla` y se reescribieron textos de demostración, escenario, piloto, instalación local y API. Sin cambios en contratos, campos ni rutas de API.
+- **Archivos clave:** [styles.css](../../../frontend/src/app/styles.css), [iniciar-sesion](../../../frontend/src/app/iniciar-sesion/page.tsx), [ProtectedShell](../../../frontend/src/components/layout/ProtectedShell.tsx), [MarcaFoodSave](../../../frontend/src/components/ui/MarcaFoodSave.tsx), [estados.ts](../../../frontend/src/utils/estados.ts), [especificación visual](../../diseno/especificacion-visual.md).
+- **Configuración:** nuevas dependencias `@fontsource-variable/manrope` y `@fontsource-variable/bricolage-grotesque` (reconstruir la imagen del frontend con `iniciar-foodsave.cmd -Build`). Sin migraciones.
+- **Pruebas realmente ejecutadas:** `npm ci` y `next build` correctos (compila y valida tipos); capturas Playwright de `/iniciar-sesion` (escritorio, móvil y error) e `/ingredientes` con API simulada. `tsc --noEmit` mantiene el error previo TS2882 sobre `./styles.css`. No se probó contra la API real ni en Docker.
+- **Pendiente:** el backend sigue anteponiendo «DEMOSTRACIÓN — NO SURTIR» a los mensajes de Telegram (regla de seguridad del equipo); quitarlo requiere acuerdo y cambio en backend.
+- **Git:** cambios locales, sin commit/push/PR.
 
 ### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
 

@@ -46,7 +46,7 @@ export function GraficosOperacion({ informe }: { informe: Informe }) {
   return <div className="report-charts">
     <section className="card report-wide"><GraficoVentas informe={informe} /></section>
     <section className="card"><GraficoBarras titulo="Productos más vendidos" descripcion="Primeros 8 por unidades; ranking completo en Reportes" filas={informe.ventas.por_producto.slice(0, 8).map((p) => ({ etiqueta: `${p.producto} · #${p.producto_id}`, cantidad: p.unidades }))} /></section>
-    <section className="card"><GraficoBarras titulo="Estado de pedidos" descripcion="Estado actual; seleccionados por fecha del escenario" tono="pedidos" filas={informe.pedidos.por_estado.filter((p) => p.cantidad > 0).map((p) => ({ etiqueta: etiquetasEstado[p.estado] ?? p.estado, cantidad: p.cantidad }))} />
+    <section className="card"><GraficoBarras titulo="Estado de pedidos" descripcion="Estado actual; seleccionados por fecha planificada" tono="pedidos" filas={informe.pedidos.por_estado.filter((p) => p.cantidad > 0).map((p) => ({ etiqueta: etiquetasEstado[p.estado] ?? p.estado, cantidad: p.cantidad }))} />
       <p className="helper-text">{informe.pedidos.total} pedidos · {informe.pedidos.propuestas} propuestas · {informe.pedidos.propuestas_sin_pedidos} propuestas sin pedidos.</p>
     </section>
   </div>;

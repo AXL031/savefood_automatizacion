@@ -104,7 +104,7 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
       </section></PanelDetalle>}
     </>}
     {administrador && <section className="card section-space"><h2>Entrenar una nueva versión</h2><p>El sistema entrena con las ventas ya guardadas. La solicitud no vuelve a importar archivos.</p>
-      <form className="form-grid" onSubmit={(evento) => void entrenar(evento)}><label className="field">Versión del modelo<input value={version} onChange={(e) => setVersion(e.target.value)} placeholder="demo-catboost-1" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" maxLength={80} required /></label><div className="form-actions"><button className="button-primary" disabled={preparando}>{preparando ? "Solicitando…" : "Solicitar entrenamiento"}</button></div></form>
+      <form className="form-grid" onSubmit={(evento) => void entrenar(evento)}><label className="field">Versión del modelo<input value={version} onChange={(e) => setVersion(e.target.value)} placeholder="catboost-1" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" maxLength={80} required /></label><div className="form-actions"><button className="button-primary" disabled={preparando}>{preparando ? "Solicitando…" : "Solicitar entrenamiento"}</button></div></form>
     </section>}
   </>;
 }

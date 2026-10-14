@@ -29,7 +29,7 @@ function mensajeError(body: ApiErrorBody | null, status: number): string {
   if (status === 401) return "Tu sesión venció. Vuelve a iniciar sesión.";
   if (status === 403) return "No tienes permiso para realizar esta acción.";
   if (status === 404) return "La ruta o el registro solicitado no existe.";
-  if (status === 501) return "Este módulo aún no está conectado a la API.";
+  if (status === 501) return "Esta función no está disponible por ahora.";
   return `No se pudo completar la solicitud (${status}).`;
 }
 
@@ -48,7 +48,7 @@ export async function solicitarSobre<T>(ruta: string, opciones: Opciones = {}): 
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") throw error;
-    throw new HttpError(0, "No se pudo conectar con la API local.");
+    throw new HttpError(0, "No se pudo conectar con el servidor. Revisa tu conexión e inténtalo otra vez.");
   }
 
   const texto = await respuesta.text();
@@ -57,7 +57,7 @@ export async function solicitarSobre<T>(ruta: string, opciones: Opciones = {}): 
     try {
       body = JSON.parse(texto) as ApiEnvelope<T> | ApiErrorBody;
     } catch {
-      throw new HttpError(respuesta.status, "La API devolvió una respuesta inválida.");
+      throw new HttpError(respuesta.status, "El servidor devolvió una respuesta inesperada. Inténtalo otra vez.");
     }
   }
   if (!respuesta.ok) {
@@ -72,7 +72,7 @@ export async function solicitarSobre<T>(ruta: string, opciones: Opciones = {}): 
       errorBody?.error?.detalles ?? [],
     );
   }
-  if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "La API no devolvió datos.");
+  if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "El servidor no devolvió datos. Inténtalo otra vez.");
   return body;
 }
 
@@ -89,14 +89,14 @@ export async function solicitarArchivo(ruta: string, opciones: { token: string; 
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") throw error;
-    throw new HttpError(0, "No se pudo conectar con la API local.");
+    throw new HttpError(0, "No se pudo conectar con el servidor. Revisa tu conexión e inténtalo otra vez.");
   }
   if (!respuesta.ok) {
     if (respuesta.status === 401 && typeof window !== "undefined") window.dispatchEvent(new Event("foodsave:sesion-vencida"));
     const body = await respuesta.json().catch(() => null) as ApiErrorBody | null;
     throw new HttpError(respuesta.status, mensajeError(body, respuesta.status), body?.error?.codigo);
   }
-  if (!respuesta.headers.get("Content-Type")?.startsWith("text/csv")) throw new HttpError(respuesta.status, "La API no devolvió un archivo CSV.");
+  if (!respuesta.headers.get("Content-Type")?.startsWith("text/csv")) throw new HttpError(respuesta.status, "No se pudo generar el archivo CSV. Inténtalo otra vez.");
   return respuesta.blob();
 }
 
@@ -122,7 +122,7 @@ export async function enviarFormulario<T>(
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") throw error;
-    throw new HttpError(0, "No se pudo conectar con la API local.");
+    throw new HttpError(0, "No se pudo conectar con el servidor. Revisa tu conexión e inténtalo otra vez.");
   }
 
   const texto = await respuesta.text();
@@ -131,7 +131,7 @@ export async function enviarFormulario<T>(
     try {
       body = JSON.parse(texto) as ApiEnvelope<T> | ApiErrorBody;
     } catch {
-      throw new HttpError(respuesta.status, "La API devolvió una respuesta inválida.");
+      throw new HttpError(respuesta.status, "El servidor devolvió una respuesta inesperada. Inténtalo otra vez.");
     }
   }
   if (!respuesta.ok) {
@@ -146,6 +146,6 @@ export async function enviarFormulario<T>(
       errorBody?.error?.detalles ?? [],
     );
   }
-  if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "La API no devolvió datos.");
+  if (!body || !("datos" in body)) throw new HttpError(respuesta.status, "El servidor no devolvió datos. Inténtalo otra vez.");
   return body.datos;
 }

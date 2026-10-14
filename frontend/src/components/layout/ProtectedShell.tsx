@@ -7,7 +7,7 @@ import { obtenerNegocio, obtenerPerfil } from "@/services/autenticacion";
 import { borrarToken, leerToken } from "@/services/sesion";
 import type { Negocio, Perfil } from "@/types/autenticacion";
 import { HttpError } from "@/services/http";
-import { GuiaPantalla } from "./GuiaPantalla";
+import { MarcaFoodSave } from "@/components/ui/MarcaFoodSave";
 
 export type ContextoSesion = { token: string; perfil: Perfil; negocio: Negocio; actualizarNegocioLocal: (valor: Negocio) => void; actualizarPerfilLocal: (valor: Perfil) => void };
 const SesionContext = createContext<ContextoSesion | null>(null);
@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <SesionContext.Provider value={{ token, perfil, negocio, actualizarNegocioLocal: setNegocio, actualizarPerfilLocal: setPerfil }}><div className="app-layout">
       <aside className="sidebar" aria-label="Navegación principal">
-        <Link href="/" className="brand"><span className="brand-mark">F</span><span>FoodSave<small>Operación local</small></span></Link>
+        <Link href="/" className="brand"><MarcaFoodSave /><span className="brand-name">FoodSave</span></Link>
         <button type="button" className="button-secondary mobile-menu" aria-expanded={menuAbierto} aria-controls="menu-principal" onClick={() => setMenuAbierto(!menuAbierto)}>{menuAbierto ? "Cerrar menú" : "Ver menú de pantallas"}</button>
         <div id="menu-principal" className={`sidebar-menu ${menuAbierto ? "menu-open" : ""}`} tabIndex={0} role="region" aria-label="Opciones del menú">
         {grupos.map((grupo) => (
@@ -166,8 +166,7 @@ export function ProtectedShell({ titulo, descripcion, children }: Props) {
   const grupoActual = grupos.find((grupo) => grupo.enlaces.some((enlace) => ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`))));
   if (!contexto) return null;
   return <>
-    <div className="page-heading"><div><div className="eyebrow">{grupoActual?.titulo ?? "FoodSave"}</div><h1>{titulo}</h1><p>{descripcion}</p></div><span className="badge badge-info">Escenario de demostración</span></div>
-    <GuiaPantalla ruta={ruta} />
+    <div className="page-heading"><div><div className="eyebrow">{grupoActual?.titulo ?? "FoodSave"}</div><h1>{titulo}</h1><p>{descripcion}</p></div></div>
     {volverFlujo && <p className="return-flow"><Link href="/automatizaciones">← Continuar configurando mi automatización</Link><span>Tu selección está guardada.</span></p>}
     {children(contexto)}
   </>;

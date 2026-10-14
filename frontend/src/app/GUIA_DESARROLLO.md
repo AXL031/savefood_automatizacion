@@ -45,7 +45,7 @@ Menú de escritorio dentro de sidebar-menu: altura disponible, min-height:0, ove
 
 ## Claridad y flujo completo · 30-09-2026
 
-Todas las rutas disponibles consumen GuiaPantalla. Menú por etapas con desplegable móvil; Inicio orienta el recorrido. No usar mensajes de funciones pendientes si la ruta/API ya está implementada. Labels técnicos en detalles. Tablas anchas con scroll horizontal. Ver especificacion-visual.md y registro Sanchez.
+Menú por etapas con desplegable móvil; Inicio destaca la siguiente acción. Los textos visibles se redactan como producto en funcionamiento: sin «demostración», «escenario», «piloto», «local» ni guías tipo manual. No usar mensajes de funciones pendientes si la ruta/API ya está implementada. Labels técnicos en detalles. Tablas anchas con scroll horizontal. Ver especificacion-visual.md y registro Sanchez.
 
 
 ## Navegación, páginas y detalles · 30-09-2026

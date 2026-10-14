@@ -65,15 +65,14 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     <section className="card main-card">
       <div className="section-heading">
         <div>
-          <h2>Catálogo local</h2>
+          <h2>Catálogo</h2>
           <p>
-            Los productos se registran en la primera carga. El Código del archivo (SKU) es el nombre del artículo del
-            dataset y se resuelve al identificador interno; no se crean productos implícitos.
+            Los productos se registran en la carga inicial. El SKU identifica cada producto en tus ventas.
           </p>
         </div>
         <label className="filter-label">
           <input type="checkbox" checked={soloDemo} onChange={(evento) => setSoloDemo(evento.target.checked)} />
-          Solo los de la demo
+          Solo los planificados
         </label>
       </div>
 
@@ -88,7 +87,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         vacioDescripcion="Completa la primera carga para registrar productos y sus SKU."
         pie={
           productos.length
-            ? `${productos.length} productos; ${enDemo} participan en el plan de la demostración.`
+            ? `${productos.length} productos; ${enDemo} participan en la planificación.`
             : undefined
         }
       />

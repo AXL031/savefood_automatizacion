@@ -68,11 +68,11 @@ export function GraficoSerieHistorica({
         </div>
         <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.78rem" }}>
-            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#0f766e", display: "inline-block" }} />
+            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#17604E", display: "inline-block" }} />
             <span>Previsto evaluable</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.78rem" }}>
-            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#f59e0b", display: "inline-block" }} />
+            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#2F6DB5", display: "inline-block" }} />
             <span>Real conocido</span>
           </div>
         </div>
@@ -96,11 +96,11 @@ export function GraficoSerieHistorica({
                   y1={y}
                   x2={ancho - padDer}
                   y2={y}
-                  stroke="#e2e8f0"
+                  stroke="#DCE3DF"
                   strokeDasharray={p === 0 ? undefined : "3 3"}
                   strokeWidth="1"
                 />
-                <text x={padIzq - 8} y={y + 4} textAnchor="end" fontSize="10" fill="#64748b">
+                <text x={padIzq - 8} y={y + 4} textAnchor="end" fontSize="10" fill="#5B6863">
                   {val}
                 </text>
               </g>
@@ -108,10 +108,10 @@ export function GraficoSerieHistorica({
           })}
 
           {/* Línea previsto (verde azulado) */}
-          <path d={pathPrevisto} fill="none" stroke="#0f766e" strokeWidth="2.5" />
+          <path d={pathPrevisto} fill="none" stroke="#17604E" strokeWidth="2.5" />
 
-          {/* Línea real (ámbar) */}
-          <path d={pathReal} fill="none" stroke="#f59e0b" strokeWidth="2.5" />
+          {/* Línea real (azul) */}
+          <path d={pathReal} fill="none" stroke="#2F6DB5" strokeWidth="2.5" />
 
           {/* Puntos y selectores */}
           {serie.map((d, idx) => {
@@ -133,7 +133,7 @@ export function GraficoSerieHistorica({
                     y1={padSup}
                     x2={x}
                     y2={alto - padInf}
-                    stroke="#0f766e"
+                    stroke="#17604E"
                     strokeWidth="1.5"
                     strokeDasharray="4 2"
                     opacity="0.6"
@@ -145,7 +145,7 @@ export function GraficoSerieHistorica({
                   cx={x}
                   cy={yPrev}
                   r={esSeleccionado ? "6" : "4"}
-                  fill="#0f766e"
+                  fill="#17604E"
                   stroke="#fff"
                   strokeWidth="2"
                 />
@@ -155,7 +155,7 @@ export function GraficoSerieHistorica({
                   cx={x}
                   cy={yReal}
                   r={esSeleccionado ? "6" : "4"}
-                  fill="#f59e0b"
+                  fill="#2F6DB5"
                   stroke="#fff"
                   strokeWidth="2"
                 />
@@ -167,7 +167,7 @@ export function GraficoSerieHistorica({
                   textAnchor="middle"
                   fontSize={esSeleccionado ? "11" : "9.5"}
                   fontWeight={esSeleccionado ? "bold" : "normal"}
-                  fill={esSeleccionado ? "#0f766e" : "#64748b"}
+                  fill={esSeleccionado ? "#17604E" : "#5B6863"}
                 >
                   {d.fecha_local.slice(5)}
                 </text>
@@ -179,7 +179,7 @@ export function GraficoSerieHistorica({
                     y={alto - padInf + 28}
                     textAnchor="middle"
                     fontSize="8"
-                    fill="#ef4444"
+                    fill="#B42318"
                   >
                     -{d.productos_excluidos} excl.
                   </text>
@@ -189,7 +189,7 @@ export function GraficoSerieHistorica({
           })}
         </svg>
       </div>
-      <p style={{ marginTop: "10px", fontSize: "0.75rem", color: "#64748b" }}>
+      <p style={{ marginTop: "10px", fontSize: "0.75rem", color: "#5B6863" }}>
         * Las fechas con productos excluidos (en rojo) reflejan ventas no registradas en el CSV, contabilizadas como desconocidas sin imputar ceros.
       </p>
     </div>

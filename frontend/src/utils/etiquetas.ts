@@ -6,7 +6,7 @@ const etiquetas: Record<string, string> = {
   DISPONIBLE: "Disponible", LISTO: "Listo", ENTRENANDO: "Preparando modelo", EVALUANDO: "Evaluando modelo", EVALUADO: "Evaluado", PARCIAL: "Resultado parcial",
   HISTORIAL_INSUFICIENTE: "No hay suficiente historial", PRODUCTO_NO_CUBIERTO: "Producto fuera del modelo", CALCULADO: "Calculado",
   PREPARAR_MODELO: "Preparar modelo", EVALUAR_MODELO: "Evaluar modelo", GENERAR_PROPUESTA: "Generar plan y pedidos", EVALUAR_PRONOSTICO: "Comparar pronóstico y venta", EVALUAR_PROMOCION: "Evaluar sugerencia de promoción",
-  BACKTEST: "Evaluación histórica", DEMO: "Escenario de demostración", DEMOSTRACION: "Escenario de demostración", DIARIO: "Pronóstico diario", MANUAL: "Solicitud manual",
+  BACKTEST: "Evaluación histórica", DEMO: "Planificación programada", DEMOSTRACION: "Planificación programada", DIARIO: "Pronóstico diario", MANUAL: "Solicitud manual",
   PROGRAMADA: "Programada", DESPACHADA: "Enviada a ejecución", DATOS_CARGADOS: "Datos cargados", MODELO_LISTO: "Modelo listo",
 };
 export function etiquetaDato(valor: string): string { return etiquetas[valor] ?? valor.replaceAll("_", " ").toLocaleLowerCase("es"); }

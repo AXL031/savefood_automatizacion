@@ -66,7 +66,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [unidadAjuste, setUnidadAjuste] = useState("");
   const [ajuste, setAjuste] = useState<Ajuste>({ loteClave: "", delta: "", motivo: "", fecha: "", hora: "17:45", clave: nuevaClave() });
 
-  // La fecha por defecto es la fecha objetivo del escenario, no el día real.
+  // La fecha por defecto es el día que se planifica.
   useEffect(() => {
     const control = new AbortController();
     obtenerEstadoInicial(token, control.signal)
@@ -146,7 +146,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       );
     }
     if (ajuste.motivo.trim().length < 3) return setError("Indica el motivo del ajuste.");
-    if (!ajuste.fecha || !ajuste.hora) return setError("Indica la fecha y hora del escenario.");
+    if (!ajuste.fecha || !ajuste.hora) return setError("Indica la fecha y hora del ajuste.");
 
     setGuardando(true);
     setError("");
@@ -239,7 +239,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   ];
 
   const columnasMovimientos: Columna<Movimiento>[] = [
-    { clave: "efectivo", encabezado: "Hora del escenario", celda: (m) => <span className="mono-corto">{m.efectivo_en_demo.replace("T", " ").slice(0, 16)}</span> },
+    { clave: "efectivo", encabezado: "Fecha y hora", celda: (m) => <span className="mono-corto">{m.efectivo_en_demo.replace("T", " ").slice(0, 16)}</span> },
     { clave: "item", encabezado: "Ítem y lote", celda: (m) => `${m.item_nombre}, ${m.codigo_lote}` },
     { clave: "tipo", encabezado: "Tipo", celda: (m) => <span className={`badge badge-${m.tipo_movimiento === "APERTURA" ? "info" : "neutral"}`}>{m.tipo_movimiento === "APERTURA" ? "Apertura" : "Ajuste"}</span> },
     { clave: "delta", encabezado: "Cambio", numerica: true, celda: (m) => <strong>{m.delta.startsWith("-") ? "" : "+"}{cantidadMovimiento(m.delta, m)}</strong> },
@@ -260,7 +260,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           </div>
         </div>
         <div className="form-grid">
-          <CampoFecha id="fecha-disponibilidad" etiqueta="Fecha del escenario" valor={fecha} onCambio={setFecha} />
+          <CampoFecha id="fecha-disponibilidad" etiqueta="Fecha de consulta" valor={fecha} onCambio={setFecha} />
           <CampoSelect
             id="tipo-disponibilidad"
             etiqueta="Mostrar"
@@ -318,9 +318,9 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
                 ayuda="Ejemplo: -0,5 kg para retirar medio kilo o +2 u. para añadir dos productos."
               />
               {loteElegido && <CampoSelect id="ajuste-unidad" etiqueta="Unidad del ajuste" valor={unidadEntrada} deshabilitado={guardando} opciones={unidadesEntrada(loteElegido.item.unidad).map((u) => ({ valor: u, texto: u === "l" ? "Litros (L)" : u === "kg" ? "Kilogramos (kg)" : u === "unidad" ? "Unidades" : u }))} onCambio={setUnidadAjuste} />}
-              <CampoFecha id="ajuste-fecha" etiqueta="Fecha del escenario" valor={ajuste.fecha} onCambio={(valor) => setAjuste({ ...ajuste, fecha: valor })} />
+              <CampoFecha id="ajuste-fecha" etiqueta="Fecha del ajuste" valor={ajuste.fecha} onCambio={(valor) => setAjuste({ ...ajuste, fecha: valor })} />
               <div className="field">
-                <label htmlFor="ajuste-hora">Hora del escenario</label>
+                <label htmlFor="ajuste-hora">Hora del ajuste</label>
                 <input id="ajuste-hora" type="time" value={ajuste.hora} onChange={(evento) => setAjuste({ ...ajuste, hora: evento.target.value })} />
               </div>
               <CampoTexto id="ajuste-motivo" etiqueta="Motivo" valor={ajuste.motivo} onCambio={(valor) => setAjuste({ ...ajuste, motivo: valor })} ancho="completo" requerido />
@@ -348,7 +348,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 
 export default function PaginaInventario() {
   return (
-    <ProtectedShell titulo="Inventario" descripcion="Saldos por lote, vida útil y ajustes del escenario simulado.">
+    <ProtectedShell titulo="Inventario" descripcion="Saldos por lote, vida útil y ajustes de stock.">
       {(contexto) => <Contenido contexto={contexto} />}
     </ProtectedShell>
   );

@@ -105,7 +105,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     {error && <EstadoPanel tono="alerta" titulo="Revisa el plan" descripcion={error} />}
     {!plan && !error && <EstadoPanel titulo="Abriendo plan" descripcion="Leyendo el cálculo conservado…" />}
     {plan && <section className="card section-space">
-      <h2>Plan #{plan.id} · escenario {plan.fecha_objetivo}</h2>
+      <h2>Plan #{plan.id} · para el {plan.fecha_objetivo}</h2>
       <p>Pedidos: {etiquetaDato(plan.pedidos_estado)} · <Link href={`/compras?plan_id=${plan.id}`}>Revisar pedidos de este plan →</Link></p>
       <h3>Ingredientes necesarios · {etiquetaDato(plan.necesidades_estado)}</h3>
       {plan.necesidades_estado === "PENDIENTE_M03" && perfil.rol === "ADMINISTRADOR" && <button type="button" className="button-secondary" disabled={guardando} onClick={async () => {

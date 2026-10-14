@@ -136,7 +136,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   }
 
   const columnas: Columna<VentaDiaria>[] = [
-    { clave: "fecha", encabezado: "Fecha local", celda: (fila) => <span className="mono-corto">{fila.fecha_local}</span> },
+    { clave: "fecha", encabezado: "Fecha", celda: (fila) => <span className="mono-corto">{fila.fecha_local}</span> },
     { clave: "producto", encabezado: "Producto", celda: (fila) => fila.producto },
     { clave: "unidades", encabezado: "Unidades", numerica: true, celda: (fila) => <strong>{fila.unidades_vendidas}</strong> },
     { clave: "revision", encabezado: "Revisión", numerica: true, celda: (fila) => fila.revision_actual },

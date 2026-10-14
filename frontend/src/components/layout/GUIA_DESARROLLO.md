@@ -56,7 +56,7 @@ Menú de escritorio dentro de sidebar-menu: altura disponible, min-height:0, ove
 
 ## Claridad y flujo completo · 30-09-2026
 
-GuiaPantalla aporta propósito/pasos/términos/enlace según ruta, incluidos detalle de ejecución y piloto. ProtectedShell conserva autenticación/permisos y usa menú agrupado, indicador de ruta y botón móvil con aria-expanded/controls. Piloto se abre desde Datos iniciales; Notificaciones futura no aparece en navegación principal.
+Desde el 14-10-2026 no hay guía por pantalla (GuiaPantalla se eliminó): la interfaz no muestra textos de demostración, escenario ni instrucciones tipo manual. ProtectedShell conserva autenticación/permisos y usa menú agrupado, indicador de ruta y botón móvil con aria-expanded/controls. Piloto se abre desde Datos iniciales; Notificaciones futura no aparece en navegación principal.
 
 
 ## Navegación, páginas y detalles · 30-09-2026

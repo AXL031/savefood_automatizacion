@@ -62,7 +62,7 @@ function Contenido({ token }: { token: string }) {
         <div className="card stat"><span>Dentro de ±20 %</span><strong>{valor(reporte.metricas_globales.dentro_mas_menos_20_pct, "%")}</strong><small>Porcentaje de pronósticos cercanos a la venta real</small></div>
         <div className="card stat"><span>Cobertura</span><strong>{valor(reporte.metricas_globales.cobertura_pct, "%")}</strong><small>{reporte.total_pares_evaluables} comparaciones de producto y día</small></div>
       </div>
-      <section className="card"><div className="section-heading"><div><h2>Comparación por día del periodo de prueba</h2><p>Verde: previsto evaluable. Azul: real conocido de los mismos productos. Elige una fecha.</p></div></div>
+      <section className="card"><div className="section-heading"><div><h2>Comparación por día del periodo evaluado</h2><p>Verde: previsto evaluable. Azul: real conocido de los mismos productos. Elige una fecha.</p></div></div>
         {reporte.serie_diaria.length ? <SerieHistorica dias={reporte.serie_diaria} seleccion={fecha} alSeleccionar={setFecha} /> : <EstadoPanel titulo="Evaluación aún sin resultados" descripcion="La evaluación automática aún no ha guardado fechas para esta versión." />}
       </section>
       {dia && <section className="card section-space"><div className="section-heading"><div><h2>{dia.fecha_local} · {dia.productos_evaluables} productos evaluables</h2><p>{dia.productos_excluidos} con pronóstico pero sin venta real conocida; {traza?.pronosticos_no_disponibles.length ?? 0} sin pronóstico disponible.</p></div>{traza && <Link href={`/pronosticos?corrida_id=${traza.corrida_id}`}>Ver pronóstico #{traza.corrida_id}</Link>}</div>
@@ -74,5 +74,5 @@ function Contenido({ token }: { token: string }) {
 }
 
 export default function PanelPage() {
-  return <ProtectedShell titulo="Evaluación histórica" descripcion="Evaluación del modelo con cobertura, errores y fechas del escenario.">{({ token }) => <Suspense fallback={<p role="status">Cargando panel…</p>}><Contenido token={token} /></Suspense>}</ProtectedShell>;
+  return <ProtectedShell titulo="Evaluación histórica" descripcion="Evaluación del modelo con cobertura, errores y fechas evaluadas.">{({ token }) => <Suspense fallback={<p role="status">Cargando panel…</p>}><Contenido token={token} /></Suspense>}</ProtectedShell>;
 }
