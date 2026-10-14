@@ -1,5 +1,13 @@
 # Contrato de pedidos derivados del pronóstico
 
+**Formato vigente · 14-10-2026:** por solicitud expresa de Axel, pedidos nuevos usan el nombre configurado del comercio y textos comerciales. Las referencias de los cortes anteriores a demostración/no surtir son historial y no se aplican a pedidos nuevos. Mensajes ya autorizados permanecen congelados. Ver la ampliación del 14-10 al final; WhatsApp todavía está pendiente de integración.
+
+## Registro de proveedor · ampliación 14-10-2026
+
+`POST /api/v1/proveedores` administrativo recibe `nombre` y asigna `codigo` automáticamente si se omite o es null; devuelve 201 con el proveedor y su código definitivo. Ejemplo: `{ "nombre": "Distribuidora de harinas" }` → `codigo: "PROV-001"` en el primer registro sin colisiones. Se usa el ID reservado por la base, con al menos tres dígitos; no es una numeración contigua garantizada. Si un código heredado ya ocupa ese valor, añade un sufijo (`PROV-002-1`) sin renombrar el anterior. La restricción UNIQUE y un savepoint resuelven también una colisión concurrente. El servicio no confirma la sesión del consumidor.
+
+Clientes existentes pueden seguir proporcionando un código explícito válido; vacíos/espacios y duplicados siguen rechazándose. La UI nueva pide solo nombre y muestra el código devuelto en el selector. No altera proveedores previos, ofertas, snapshots ni permisos. No requiere migración ni envía mensajes.
+
 ## Contrato L04 · Recuperación administrativa · 01-10-2026
 
 Frontera del siguiente corte: `POST /pedidos/{id}/conciliar` recibe clave_idempotencia,
@@ -185,7 +193,7 @@ Transiciones del envío: `PENDIENTE_ENVIO → ENVIANDO → ENVIADO | FALLIDO | P
 | Ruta | Acción | Acceso |
 |---|---|---|
 | `GET /proveedores` | Listar proveedor, vínculo de chat y ofertas, sin exponer el token del bot. | Bearer |
-| `POST /proveedores` | Crear proveedor de la demo con código y nombre. | Administrador |
+| `POST /proveedores` | Crear proveedor con nombre y código automático. | Administrador |
 | `POST /proveedores/{id}/ofertas` | Asociar ingrediente, unidad, factor, múltiplo y mínimo. | Administrador |
 | `PUT /proveedores/{id}/chat`, `POST /proveedores/{id}/verificar-destino` | Vincular y verificar por separado un chat propio de pruebas. | Administrador |
 | `GET /pedidos?plan_id={id}` | Listar pedidos y necesidades sin proveedor de un plan. | Bearer |
@@ -206,3 +214,9 @@ Las rutas nuevas siguen [convenciones HTTP](contratos.md): sobre `datos`, errore
 - El `chat_id` es un identificador técnico, no un número telefónico. El usuario del chat de pruebas inicia conversación con el bot o lo agrega al grupo antes de vincularlo. La vinculación se prueba antes de habilitar modo automático.
 
 Fuentes del canal: [Telegram Bot API](https://core.telegram.org/bots/api), [introducción oficial a bots](https://core.telegram.org/bots).
+
+## Ampliación expresa · 14-10-2026 · Identidad del comercio
+
+Por solicitud de Axel, los pedidos nuevos usan el nombre configurado del comercio, fecha de planificación, proveedor y cantidades; se retiran los rótulos de demostración, proveedor simulado y no surtir. Se solicita confirmar disponibilidad/precio antes de coordinar entrega. Compras obtiene el nombre mediante nombre_negocio(sesion), interfaz pública de Negocios; el texto se congela al autorizar el envío, como antes. No reescribir mensajes ya autorizados/enviados ni sus evidencias. Aprobación, deduplicación, resultado incierto y stock conservan su contrato. Esta ampliación prevalece sobre el formato de texto de los cortes históricos anteriores.
+
+WhatsApp todavía no está implementado: [preparación de cuenta, primera prueba y cambios necesarios](configurar-whatsapp.md). Telegram continúa siendo el canal disponible; no presentar sus estados como entregas de WhatsApp.

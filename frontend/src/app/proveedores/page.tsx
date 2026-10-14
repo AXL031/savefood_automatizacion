@@ -21,7 +21,7 @@ function Contenido({ contexto: { token, perfil } }: { contexto: ContextoSesion }
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
   const [seleccionado, setSeleccionado] = useState("");
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
-  const [nuevo, setNuevo] = useState({ codigo: "", nombre: "" });
+  const [nuevo, setNuevo] = useState({ nombre: "" });
   const [oferta, setOferta] = useState<NuevaOferta>(ofertaVacia);
   const [unidadContenido, setUnidadContenido] = useState("");
   const [chat, setChat] = useState("");
@@ -89,7 +89,7 @@ function Contenido({ contexto: { token, perfil } }: { contexto: ContextoSesion }
     catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo guardar la operación."); }
     finally { setGuardando(false); }
   }
-  function registrar(evento: FormEvent<HTMLFormElement>) { evento.preventDefault(); void operar(async () => { const creado = await crearProveedor(token, nuevo); setSeleccionado(String(creado.id)); setNuevo({ codigo: "", nombre: "" }); }, "Proveedor registrado."); }
+  function registrar(evento: FormEvent<HTMLFormElement>) { evento.preventDefault(); void operar(async () => { const creado = await crearProveedor(token, nuevo); setSeleccionado(String(creado.id)); setNuevo({ nombre: "" }); }, "Proveedor registrado con código automático."); }
   function registrarOferta(evento: FormEvent<HTMLFormElement>) { evento.preventDefault(); void operar(async () => { await crearOferta(token, Number(seleccionado), { ...oferta, factor_conversion: aUnidadBase(oferta.factor_conversion, unidadFactor, baseOferta) }); setOferta({ ...ofertaVacia, ingrediente_id: oferta.ingrediente_id }); }, "Oferta registrada. Cambiar la oferta no altera los pedidos anteriores."); }
   return <>
     {error && <EstadoPanel tono="alerta" titulo="Revisa la operación" descripcion={error} />}{mensaje && <p role="status" className="inline-success">{mensaje}</p>}
@@ -129,7 +129,7 @@ function Contenido({ contexto: { token, perfil } }: { contexto: ContextoSesion }
         </div>}
       </>}
     </section>
-    {admin && <section className="card section-space"><h2>Registrar proveedor</h2><form onSubmit={registrar}><div className="form-grid"><CampoTexto id="proveedor-codigo" etiqueta="Código" requerido valor={nuevo.codigo} deshabilitado={guardando} onCambio={(codigo) => setNuevo({ ...nuevo, codigo })} /><CampoTexto id="proveedor-nombre" etiqueta="Nombre" requerido valor={nuevo.nombre} deshabilitado={guardando} onCambio={(nombre) => setNuevo({ ...nuevo, nombre })} /></div><BotonEnviar enviando={guardando} textoEnviando="Registrando…">Registrar proveedor</BotonEnviar></form></section>}
+    {admin && <section className="card section-space"><h2>Registrar proveedor</h2><p>El código se asigna automáticamente al guardar.</p><form onSubmit={registrar}><div className="form-grid"><CampoTexto id="proveedor-nombre" etiqueta="Nombre" requerido valor={nuevo.nombre} deshabilitado={guardando} onCambio={(nombre) => setNuevo({ nombre })} /></div><BotonEnviar enviando={guardando} textoEnviando="Registrando…">Registrar proveedor</BotonEnviar></form></section>}
     {admin && proveedor && ingredientes.some((i) => i.activo) && <section className="card section-space"><h2>Registrar oferta para {proveedor.nombre}</h2><form onSubmit={registrarOferta}><div className="form-grid">
       <CampoSelect id="oferta-ingrediente" etiqueta="Ingrediente" valor={String(oferta.ingrediente_id)} deshabilitado={guardando} opciones={ingredientes.filter((i) => i.activo).map((i) => ({ valor: String(i.id), texto: i.nombre }))} onCambio={(id) => { setOferta({ ...oferta, ingrediente_id: Number(id), factor_conversion: "" }); setUnidadContenido(""); }} />
       {([['descripcion','Nombre de la oferta'],['unidad_compra','Presentación que compras (kg, bolsa, caja…)'],['factor_conversion','Contenido de una presentación'],['minimo','Cantidad mínima de presentaciones'],['multiplo','Comprar en grupos de']] as const).map(([campo, etiqueta]) => <CampoTexto key={campo} id={`oferta-${campo}`} etiqueta={etiqueta} requerido valor={oferta[campo]} deshabilitado={guardando} onCambio={(valor) => setOferta({ ...oferta, [campo]: valor })} />)}

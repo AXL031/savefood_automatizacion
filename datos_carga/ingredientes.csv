@@ -1,0 +1,56 @@
+codigo,nombre,unidad_base
+harina_trigo,Harina de trigo,g
+agua,Agua,ml
+levadura,Levadura panadera,g
+sal,Sal,g
+mantequilla,Mantequilla,g
+leche,Leche,ml
+azucar,Azúcar,g
+huevo,Huevo,unidad
+chocolate,Chocolate,g
+harina_integral,Harina de trigo integral,g
+harina_centeno,Harina de centeno,g
+semillas_mezcladas,"Mezcla de semillas (sésamo, girasol, lino)",g
+avena,Copos de avena,g
+almendra_molida,Almendra molida,g
+almendra_laminada,Almendra laminada,g
+nueces,Nueces,g
+avellana,Avellanas,g
+pistacho,Pistachos,g
+azucar_glass,Azúcar glas,g
+azucar_moreno,Azúcar moreno,g
+nata,Nata para montar / crema de leche,ml
+vainilla,Extracto de vainilla,ml
+polvo_hornear,Polvo de hornear,g
+cacao,Cacao en polvo,g
+maicena,Almidón de maíz,g
+manzana,Manzana,g
+pera,Pera,g
+fresa,Fresa,g
+frambuesa,Frambuesa,g
+albaricoque,Albaricoque,g
+frutas_mixtas,Frutas variadas,g
+mango,Mango,g
+limon,Limón,g
+pasas,Pasas,g
+caramelo,Caramelo preparado,g
+chocolate_blanco,Chocolate blanco,g
+jamon,Jamón cocido,g
+queso_emmental,Queso emmental,g
+lechuga,Lechuga,g
+tomate,Tomate fresco,g
+pollo,Pollo,g
+mayonesa,Mayonesa,g
+pasta_seca,Pasta seca,g
+arroz,Arroz crudo,g
+verduras,Mezcla de verduras,g
+salsa_tomate,Salsa de tomate,g
+aceite,Aceite vegetal,ml
+cafe_molido,Café molido,g
+te_bolsita,Bolsa de té,unidad
+bebida_330ml,Bebida envasada 330 ml,unidad
+jarabe_glucosa,Jarabe de glucosa,g
+esencia_fruta,Aroma frutal,ml
+gelatina,Gelatina,g
+miel,Miel,g
+bolsa_empaque,Bolsa / empaque,unidad

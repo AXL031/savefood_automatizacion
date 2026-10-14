@@ -108,3 +108,7 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
 
 El puente de revisiones locales ahora adopta la cadena hasta 0015 y compara los metadatos actuales. Una base publicada en 0014 se conserva sin cambio por el puente y debe usar `alembic upgrade head` normalmente; una base 0015 es lectura idempotente. No usar el puente para actualizar una instalación activa. Tests del puente PostgreSQL adaptados a la nueva cabeza, aún pendientes de ejecución en este entorno.
+
+## Corte solicitado · 14-10-2026
+
+Codex para Axel. Cabeza 0016_nombre_comercio sobre 0015: normaliza exclusivamente el nombre inicial heredado a Mi comercio. No reemplaza nombres personalizados ni restaura rótulos antiguos en downgrade. Cadena aplicada previamente intacta; puente local adopta 0016 y bases publicadas 0014/0015 usan upgrade normal.

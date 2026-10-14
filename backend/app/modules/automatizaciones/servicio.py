@@ -102,13 +102,13 @@ def programar_propuesta(
 ) -> ProgramacionDemo:
     """Reserva programación y ejecución pendiente en la misma transacción."""
     if fecha_hora_simulada_local.tzinfo is not None:
-        raise ValueError("La hora simulada debe ser local y no llevar zona")
+        raise ValueError("La hora de planificación debe ser local y no llevar zona")
     if fecha_hora_simulada_local.date().isoformat() != fecha_objetivo_demo:
-        raise ValueError("La fecha objetivo y el reloj simulado deben coincidir")
-    if not 1 <= len(producto_ids) <= 5 or len(set(producto_ids)) != len(producto_ids) or any(
+        raise ValueError("La fecha objetivo y el día de planificación deben coincidir")
+    if not producto_ids or len(set(producto_ids)) != len(producto_ids) or any(
         producto_id <= 0 for producto_id in producto_ids
     ):
-        raise ValueError("Se requieren entre 1 y 5 productos únicos con IDs positivos")
+        raise ValueError("Se requiere al menos un producto, con IDs positivos y únicos")
     parametros = {"fecha_objetivo_demo": fecha_objetivo_demo, "producto_ids": sorted(producto_ids)}
     if modelo_id is not None:
         parametros["modelo_id"] = modelo_id
@@ -137,7 +137,7 @@ def programar_ejecucion(
     if tipo not in ("GENERAR_PROPUESTA", "EVALUAR_PROMOCION"):
         raise ValueError("Tipo de programación no admitido")
     if fecha_hora_simulada_local.tzinfo is not None:
-        raise ValueError("La hora simulada debe ser local y no llevar zona")
+        raise ValueError("La hora de planificación debe ser local y no llevar zona")
     if not clave_idempotencia or len(clave_idempotencia) > 128:
         raise ValueError("La clave idempotente debe tener entre 1 y 128 caracteres")
     parametros = _json_normalizado(parametros)

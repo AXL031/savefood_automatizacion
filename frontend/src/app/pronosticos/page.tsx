@@ -77,7 +77,7 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
     {error && <div className="inline-error" role="alert">{error}</div>}
     {mensaje && <div className="inline-success" role="status">{mensaje}</div>}
     {cargando ? <p role="status">Cargando modelos…</p> : modelos.length === 0 ?
-      <EstadoPanel titulo="Sin modelo preparado" descripcion="Carga ventas y solicita el entrenamiento para crear la primera versión demostrativa." /> : <>
+      <EstadoPanel titulo="Sin modelo preparado" descripcion="Carga ventas y solicita el entrenamiento para preparar la primera versión del modelo." /> : <>
       <section className="card">
         <div className="section-heading"><div><h2>Modelo y fechas utilizadas</h2><p>Comprobación histórica exploratoria; no acredita rendimiento comercial.</p></div>
           <label className="filter-label">Versión<select value={modeloId ?? ""} onChange={(e) => { setModeloId(Number(e.target.value)); setDetalle(null); }}>

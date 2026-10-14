@@ -29,10 +29,10 @@ def test_automatico_reserva_outbox_sin_aprobar_y_no_duplica(compra):
     entorno = compra[0]
     http, sesiones, admin, _, _, _ = entorno
     stock = saldos(sesiones)
-    assert http.patch('/api/v1/negocios/actual', headers=admin, json={'modo_envio_pedidos':'AUTOMATICO'}).status_code == 200
+    assert http.patch('/api/v1/negocios/actual', headers=admin, json={'modo_envio_pedidos':'AUTOMATICO', 'nombre':'Pastelería Maria Juanita'}).status_code == 200
     propuesta, pedido = borrador(compra)
     assert pedido['estado'] == 'PENDIENTE_ENVIO' and pedido['decision'] is None
-    assert pedido['envio']['chat_id'] == '123' and 'DEMOSTRACIÓN — NO SURTIR' in pedido['mensaje']
+    assert pedido['envio']['chat_id'] == '123' and pedido['mensaje'].startswith('Pastelería Maria Juanita · Pedido #')
     assert '4 kg' in pedido['mensaje'] and '1,503 kg' in pedido['mensaje']
     assert aprobar(entorno, pedido).status_code == 409
     assert generar(entorno, propuesta['plan_id']).json()['datos']['pedidos'][0]['envio']['id'] == pedido['envio']['id']
@@ -68,7 +68,7 @@ def test_automatico_bloqueado_corregir_chat_no_envia_sorpresivamente(compra):
     entorno, proveedor_id, _, _ = compra
     http, sesiones, admin, _, _, _ = entorno
     with sesiones.begin() as sesion: ServicioProveedores(sesion).vincular_chat(proveedor_id,'456')
-    http.patch('/api/v1/negocios/actual',headers=admin,json={'modo_envio_pedidos':'AUTOMATICO'})
+    http.patch('/api/v1/negocios/actual',headers=admin,json={'modo_envio_pedidos':'AUTOMATICO', 'nombre':'Pastelería Maria Juanita'})
     propuesta, _ = borrador(compra)
     assert propuesta['estado'] == 'BLOQUEADA' and publicar(sesiones)[0] == []
     with sesiones.begin() as sesion: ServicioProveedores(sesion,TelegramFalso()).verificar_destino(proveedor_id)
@@ -167,7 +167,8 @@ def test_aprobar_auditoria_idempotencia_permisos_y_envio_confirmado(compra):
     assert aprobado["decision"]["accion"] == "APROBAR" and aprobado["decision"]["usuario_id"]
     assert aprobado["decision"]["nombre_usuario"] and aprobado["decision"]["fecha"]
     assert aprobado["envio"]["chat_id"] == "123" and aprobado["envio"]["message_id"] is None
-    assert aprobado["mensaje"].startswith("DEMOSTRACIÓN — NO SURTIR\n")
+    assert "Proveedor: Proveedor uno" in aprobado["mensaje"]
+    assert "DEMOSTRACIÓN" not in aprobado["mensaje"] and "simulado" not in aprobado["mensaje"]
     assert "2022-08-24" in aprobado["mensaje"] and "1,503 kg" in aprobado["mensaje"]
     assert TOKEN not in respuesta.text and "credencial_huella" not in respuesta.text
     assert aprobar(entorno, pedido).json()["datos"] == aprobado
@@ -193,7 +194,7 @@ def test_aprobar_auditoria_idempotencia_permisos_y_envio_confirmado(compra):
     conflicto_enviado = generar(entorno, nuevo["id"])
     assert conflicto_enviado.status_code == 409
     assert "Su mensaje ya fue enviado a Telegram" in conflicto_enviado.text
-    assert "otra fecha del escenario histórico" in conflicto_enviado.text
+    assert "para una nueva planificación elige otra fecha" in conflicto_enviado.text
     assert "Cancélala explícitamente" not in conflicto_enviado.text
     assert len(fake.llamadas) == 1 and saldos(sesiones) == stock
 
@@ -387,7 +388,7 @@ def test_sendmessage_sanitizado_sin_retry(monkeypatch,caplog,respuesta,estado):
             if isinstance(respuesta,Exception): raise respuesta
             return io.BytesIO(json.dumps(respuesta).encode())
     monkeypatch.setattr(canal,"build_opener",lambda *_:Opener())
-    resultado = canal.ClienteTelegram(SecretStr(TOKEN)).enviar_mensaje("123","DEMOSTRACIÓN — NO SURTIR\nFixture")
+    resultado = canal.ClienteTelegram(SecretStr(TOKEN)).enviar_mensaje("123","Pedido de prueba\nFixture")
     assert resultado.estado == estado and len(llamadas)==1
     assert "parse_mode" not in llamadas[0] and llamadas[0]["chat_id"]=="123"
     assert TOKEN not in str(resultado)+caplog.text

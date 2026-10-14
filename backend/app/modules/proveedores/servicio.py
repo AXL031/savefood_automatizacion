@@ -2,7 +2,9 @@
 from datetime import datetime, timezone
 from typing import Protocol
 import re
+from uuid import uuid4
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.modules.ingredientes.servicio import obtener_ingredientes
@@ -44,11 +46,32 @@ class ServicioProveedores:
 
     # --- Proveedores ---
     def crear_proveedor(self, datos: ProveedorCrear) -> Proveedor:
-        if self.repo.proveedor_por_codigo(datos.codigo):
+        if datos.codigo is not None and self.repo.proveedor_por_codigo(datos.codigo):
             raise Conflicto(f"Ya existe un proveedor con código {datos.codigo}")
-        p = Proveedor(**datos.model_dump())
+        entrada = datos.model_dump()
+        automatico = datos.codigo is None
+        # El ID lo reserva la base; no calcular MAX(codigo)+1 entre solicitudes.
+        entrada["codigo"] = datos.codigo if not automatico else "TMP-" + uuid4().hex[:24]
+        p = Proveedor(**entrada)
         self.repo.guardar(p)
         self.db.flush()
+        if automatico:
+            base = f"PROV-{p.id:03d}"
+            sufijo = 0
+            while True:
+                codigo = base if not sufijo else f"{base}-{sufijo}"
+                if self.repo.proveedor_por_codigo(codigo) is not None:
+                    sufijo += 1
+                    continue
+                try:
+                    with self.db.begin_nested():
+                        p.codigo = codigo
+                        self.db.flush()
+                    break
+                except IntegrityError:
+                    # Un cliente anterior puede registrar ese código manualmente
+                    # entre la consulta y el UPDATE; conservar la transacción.
+                    sufijo += 1
         return p
 
     def _proveedor(self, proveedor_id: int, bloquear: bool = False) -> Proveedor:

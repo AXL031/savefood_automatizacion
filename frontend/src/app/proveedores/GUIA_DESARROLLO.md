@@ -22,6 +22,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**14-10-2026 · Código automático:** Registrar proveedor solicita solo Nombre; informa que el código se asigna al guardar. crearProveedor omite el código y el selector muestra el definitivo devuelto por la API. No genera identificadores en navegador ni registra proveedores ficticios para QA de la instalación habitual. API mantiene compatibilidad con códigos explícitos anteriores.
+
 1. Construir proveedor y oferta por ingrediente con factor, mínimo y múltiplo.
 2. Vincular chat de pruebas y mostrar estado verificado/bloqueado.
 3. El formulario administrativo acepta un token nuevo en campo password y lo limpia tras la operación; nunca precargar ni devolver el token guardado.

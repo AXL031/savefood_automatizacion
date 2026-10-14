@@ -49,7 +49,7 @@ export interface ParticionInfo {
 }
 
 export interface EvaluacionTramoCompleto {
-  estado: string; // "demostracion_historica"
+  estado: string; // Estado del procesamiento.
   version_modelo: string;
   fecha_inicio: string;
   fecha_fin: string;

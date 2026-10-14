@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ProveedorCrear(BaseModel):
-    codigo: str = Field(min_length=1, max_length=30)
+    codigo: str | None = Field(default=None, min_length=1, max_length=30)
     nombre: str = Field(min_length=1, max_length=120)
     chat_id_pruebas: str | None = Field(default=None, min_length=1, max_length=64)
     activo: bool = True
@@ -24,7 +24,9 @@ class ProveedorCrear(BaseModel):
 
     @field_validator("codigo", "nombre")
     @classmethod
-    def _sin_espacios(cls, v: str) -> str:
+    def _sin_espacios(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
         v = v.strip()
         if not v:
             raise ValueError("no puede estar vacío")

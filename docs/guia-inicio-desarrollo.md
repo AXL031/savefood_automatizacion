@@ -1,4 +1,6 @@
-# Alcance congelado: prototipo universitario FoodSave
+# Alcance vigente de FoodSave
+
+**Ampliación expresa · 14-10-2026:** Axel solicita configurar el negocio como **Pastelería Maria Juanita**, retirar rótulos de demostración del producto y pedidos nuevos y conservar ejecución a demanda para pruebas. El texto de mensajes nuevos cambia según contrato-pedidos.md; EJECUTAR_AHORA según contrato-flujo-promociones.md. Los cortes anteriores se conservan como historial y sus textos de presentación quedan sustituidos por esta solicitud. No se trasladó todavía el CSV ni se amplió la ventana temporal de inferencia; WhatsApp está pendiente de integración, con primera prueba prevista al teléfono propio. Estos cambios no implementan recepción, pagos, publicación de promociones ni descuento automático de stock.
 
 **Estado vigente 11-10-2026:** el código local incluye carga/ML, planes/necesidades, compras/aprobación/recuperación, dashboard/reportes y ahora promociones sugeridas y flujo configurable con calendario histórico acotado. El corte nuevo requiere migración 0015. Ver [contrato](api/contrato-flujo-promociones.md) y [evidencia/límites](equipo/avances/cueva.md). La demo conjunta, automático Telegram real autorizado, CI remoto y otra PC se acreditan por pruebas concretas, no por presencia de código.
 
@@ -50,5 +52,7 @@ Partiendo solo de la migración inicial, una persona puede completar la carga de
 Se añade Dashboard en Inicio y Reportes de lectura con filtros por fecha y CSV: ventas observadas, evaluación histórica existente y estados actuales de pedidos por fecha del escenario. [Contrato](api/contrato-informes.md). Reutiliza fuentes públicas, sin entrenar, enviar ni cambiar stock; indicadores económicos e impacto siguen fuera de alcance. Responsabilidad K04 de Kevin, integración coordinada por Axel.
 
 ## Ampliación expresa · 11-10-2026
+
+**14-10-2026 · Planificación de todo el catálogo:** solicitud expresa de Axel, posterior al límite inicial de 3–5 productos. Primera carga, programaciones y manejador de propuesta admiten uno o más productos sin ese máximo. El asistente permite elegir todos los activos; no excluye por el flag técnico heredado. Mantener recetas/stock/cobertura explícitos por producto, fechas de la prueba reservada, ausencia distinta de cero, planes versionados y stock únicamente por apertura/ajustes. [Contrato de carga](api/contrato-importaciones.md) y [contrato de flujo](api/contrato-flujo-promociones.md).
 
 Axel pide corregir los pendientes y simplificar el uso. Se incorpora configuración reutilizable del recorrido, comprobación previa, control de tareas pendientes, calendario histórico diario finito y promociones sugeridas tras ajustes. El margen sigue siendo cero y los planes/pedidos no mueven stock. La recurrencia histórica termina en 1–31 días y conserva modelo/modo; datos operativos actuales siguen fuera del prototipo. [Contrato](api/contrato-flujo-promociones.md).

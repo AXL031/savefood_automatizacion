@@ -92,7 +92,7 @@ def programar_flujo(sesion, datos: ProgramarFlujo, usuario_id):
             raise ErrorAPI(409, "CLAVE_REUTILIZADA", "Esta solicitud pertenece a otro calendario.")
         return anteriores
     if datos.modo_envio_pedidos == "AUTOMATICO" and not datos.autorizar_envio:
-        raise ErrorAPI(422, "ENVIO_NO_AUTORIZADO", "Confirma el envío a tu chat propio de pruebas.")
+        raise ErrorAPI(422, "ENVIO_NO_AUTORIZADO", "Confirma el envío al chat verificado.")
     diagnostico = comprobar(sesion, datos)
     if not diagnostico["listo"]:
         raise ErrorAPI(409, "FLUJO_INCOMPLETO", "Corrige los requisitos pendientes antes de programar.")
@@ -131,7 +131,13 @@ def gestionar(sesion, programacion_id, usuario_id, motivo, *, accion=None, horar
         raise ErrorAPI(422, "HORA_NO_FUTURA", "Elige un horario futuro antes de continuar.")
     cambio = {"accion": accion or "REPROGRAMAR", "usuario_id": usuario_id, "motivo": motivo,
               "fecha": ahora.isoformat(), "estado_anterior": programacion.estado, "hora_anterior": vigente.isoformat()}
-    if horario is not None:
+    if accion == "EJECUTAR_AHORA":
+        cambios = programacion.cambios_json or []
+        if programacion.estado == "PROGRAMADA" and cambios and cambios[-1]["accion"] == accion:
+            return programacion
+        programacion.ejecutar_desde_utc = ahora
+        programacion.estado = "PROGRAMADA"
+    elif horario is not None:
         programacion.ejecutar_desde_utc = horario
     else:
         programacion.estado = destino

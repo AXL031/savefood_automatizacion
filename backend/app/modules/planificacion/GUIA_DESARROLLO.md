@@ -23,6 +23,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**14-10-2026 · Catálogo completo solicitado por Axel:** GENERAR_PROPUESTA admite uno o más productos únicos sin máximo de cinco. Consume los IDs elegidos por la programación, aunque el flag heredado del catálogo sea false. Conserva cobertura nullable, receta/stock por elemento, necesidades agregadas y pedidos bajo aprobación. Verificación del consumidor con 139 pronósticos/elementos y 55 necesidades en PostgreSQL aislado; no cambia stock ni envía mensajes. Coordinación en el registro de Cueva.
+
 1. Consumir pronóstico de Kevin y stock por fecha de Vera mediante interfaces públicas.
 2. Calcular producción con margen cero y guardar receta/stock/pronóstico de referencia.
 3. Sumar necesidades por ingrediente antes del redondeo final y calcular faltantes.

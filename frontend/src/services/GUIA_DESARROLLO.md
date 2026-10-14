@@ -17,6 +17,8 @@
 
 ## Punto de partida
 
+**14-10-2026 · L01:** crearProveedor(token,{nombre,codigo?}) permite omitir código; el backend asigna el definitivo y lo devuelve en Proveedor. Los clientes anteriores conservan el código explícito opcional. Frontend no calcula secuencias ni modifica registros previos.
+
 **30-09-2026 · Paso 5: compras.ts consume configuración Telegram (GET/POST/DELETE), comprobar bot, buscar chats y verificar destino usando cliente común. Credencial solo en body administrativo, sin URL ni almacenamiento del navegador.**
 
 **Paso 2 local · 30-09-2026:** planificacion.ts usa el cliente HTTP común para listado/detalle/generación de planes M02. Mismo sobre, Bearer, abort y códigos de error.

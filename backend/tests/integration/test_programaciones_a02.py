@@ -145,6 +145,48 @@ def test_programacion_permisos_y_validacion(entorno):
     assert cliente.get(f"{ruta}/999", headers=_cabecera(administrador)).status_code == 404
 
 
+def test_programar_catalogo_completo_y_guardar_seleccion_sin_duplicados(entorno):
+    cliente, _motor = entorno
+    cabecera = _cabecera(_token(cliente, "admin@example.com", "clave-segura-admin"))
+    datos = {**_programacion(), "producto_ids": list(range(139, 0, -1))}
+    creada = cliente.post("/api/v1/programaciones-demo", headers=cabecera, json=datos)
+    assert creada.status_code == 200, creada.text
+    registro = creada.json()["datos"]
+    assert registro["parametros"]["producto_ids"] == list(range(1, 140))
+    repetida = cliente.post("/api/v1/programaciones-demo", headers=cabecera,
+                            json={**datos, "producto_ids": list(range(1, 140))})
+    assert repetida.json()["datos"]["id"] == registro["id"]
+    configuracion = {"producto_ids": datos["producto_ids"], "modelo_id": None,
+                     "fecha_objetivo_demo": "2022-08-24", "hora_simulada": "10:00:00",
+                     "primera_ejecucion_local": "2027-09-27T10:00:00", "dias": 1,
+                     "modo_envio_pedidos": "REQUIERE_APROBACION"}
+    guardada = cliente.put("/api/v1/flujo-automatizacion/configuracion", headers=cabecera, json=configuracion)
+    assert guardada.status_code == 200, guardada.text
+    assert guardada.json()["datos"]["producto_ids"] == list(range(1, 140))
+    for seleccion in ([], [1, 1], [0, 1]):
+        fallo = cliente.put("/api/v1/flujo-automatizacion/configuracion", headers=cabecera,
+                            json={**configuracion, "producto_ids": seleccion})
+        assert fallo.status_code == 422, fallo.text
+    leida = cliente.get("/api/v1/flujo-automatizacion/configuracion", headers=cabecera)
+    assert leida.json()["datos"]["producto_ids"] == list(range(1, 140))
+
+
+def test_registro_proveedor_sin_codigo_por_api_y_permisos(entorno):
+    cliente, _motor = entorno
+    admin = _cabecera(_token(cliente, "admin@example.com", "clave-segura-admin"))
+    operador = _cabecera(_token(cliente, "operador@example.com", "clave-segura-operador"))
+    ruta = "/api/v1/proveedores"
+    assert cliente.post(ruta, headers=operador, json={"nombre": "Harinas"}).status_code == 403
+    for numero in (1, 2):
+        respuesta = cliente.post(ruta, headers=admin, json={"nombre": f"Proveedor {numero}"})
+        assert respuesta.status_code == 201, respuesta.text
+        assert respuesta.json()["datos"]["codigo"] == f"PROV-{numero:03d}"
+    assert cliente.post(ruta, headers=admin, json={"nombre": " ", "codigo": None}).status_code == 422
+    assert cliente.post(ruta, headers=admin, json={"nombre": "Nombre", "codigo": " "}).status_code == 422
+    assert cliente.post(ruta, headers=admin, json={"nombre": "Anterior", "codigo": "PROV-001"}).status_code == 409
+    assert len(cliente.get(ruta, headers=admin).json()["datos"]) == 2
+
+
 def test_frontera_de_eventos_no_confirma_y_guarda_intentos(entorno):
     _cliente, motor = entorno
     with Session(motor) as sesion:

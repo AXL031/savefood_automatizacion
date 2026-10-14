@@ -150,6 +150,23 @@ def test_vista_previa_no_escribe_y_resume_la_entrega(sesion):
     assert sesion.scalar(select(Producto.id)) is None
 
 
+def test_importacion_catalogo_completo_exige_receta_y_stock_del_sexto_producto(sesion):
+    productos = PRODUCTOS.replace(b"DONA,no", b"DONA,si") + b"extra1,Extra uno,EXTRA1,si\nextra2,Extra dos,EXTRA2,si\n"
+    recetas = RECETAS + b"dona,harina,100\nextra1,harina,100\nextra2,harina,100\n"
+    stock = STOCK + b"producto,dona,0,,,\nproducto,extra1,0,,,\nproducto,extra2,0,,,\n"
+    completa = preparar_vista_previa(entrega(**{"productos.csv": productos, "recetas.csv": recetas,
+                                               "stock_inicial.csv": stock}), OBJETIVO, REFERENCIA)
+    assert completa.resultado.aceptable, completa.resultado.errores
+    assert len(completa.resultado.entrada.productos_demo) == 6
+    sin_receta = preparar_vista_previa(entrega(**{"productos.csv": productos,
+        "recetas.csv": recetas.replace(b"extra2,harina,100\n", b""), "stock_inicial.csv": stock}), OBJETIVO, REFERENCIA)
+    assert not sin_receta.resultado.aceptable
+    sin_stock = preparar_vista_previa(entrega(**{"productos.csv": productos, "recetas.csv": recetas,
+        "stock_inicial.csv": stock.replace(b"producto,extra2,0,,,\n", b"")}), OBJETIVO, REFERENCIA)
+    assert not sin_stock.resultado.aceptable
+    assert sesion.scalar(select(Producto.id)) is None
+
+
 def test_carga_completa_marca_datos_cargados(sesion):
     recetas, inventario = RecetasFalsas(), InventarioFalso()
 

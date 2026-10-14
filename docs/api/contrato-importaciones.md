@@ -52,17 +52,19 @@ fecha_local,sku_externo,unidades_vendidas
 2022-08-23,CROISSANT,0
 ```
 
-Todos los SKU de ventas deben aparecer en `productos`; no se crean productos a escondidas ni se descartan filas desconocidas. El archivo puede contener todo el historial de productos; solo los 3–5 productos con receta seleccionados participan en el plan de la demostración. El entrenamiento usa únicamente días anteriores a la fecha objetivo. Las ventas históricas no descuentan stock inicial, que representa un escenario simulado posterior a esas ventas.
+Todos los SKU de ventas deben aparecer en `productos`; no se crean productos a escondidas ni se descartan filas desconocidas. El archivo puede contener todo el historial de productos. Desde la ampliación solicitada el 14-10-2026 puede planificarse todo el catálogo activo, sin máximo de cinco; la selección se hace en Automatización. El entrenamiento usa únicamente días anteriores a la fecha objetivo. Las ventas históricas no descuentan stock inicial, que representa un escenario simulado posterior a esas ventas.
 
 ## Catálogo y recetas
 
 | Hoja | Columnas obligatorias | Regla |
 |---|---|---|
-| `productos` | `codigo`, `nombre`, `sku_externo`, `demostrar` | `codigo` y `sku_externo` únicos, texto no vacío; `demostrar` es `si` o `no`. Elegir 3–5 `si` con historial y receta. |
+| `productos` | `codigo`, `nombre`, `sku_externo`, `demostrar` | `codigo` y `sku_externo` únicos, texto no vacío; `demostrar` es `si` o `no`. Al menos un `si`; puede marcarse todo el catálogo. Campo técnico conservado para cargas anteriores. |
 | `ingredientes` | `codigo`, `nombre`, `unidad_base` | Código único; unidades permitidas en la plantilla: `g`, `kg`, `ml`, `l`, `unidad`. No se convierten unidades implícitamente. |
 | `recetas` | `codigo_producto`, `codigo_ingrediente`, `cantidad_por_unidad` | Una línea por pareja; cantidad decimal positiva en la **unidad base** del ingrediente. Cada producto con `demostrar=si` necesita al menos una línea. La primera carga crea versión de receta `1`. |
 
 El catálogo inicial no incluye precios ni proveedores; después de cargarlo, el administrador configura el proveedor de prueba, sus ofertas por ingrediente y el chat de Telegram según el [contrato de pedidos](contrato-pedidos.md). No hay fórmulas de costo ni cambios automáticos de receta. Códigos repetidos, referencias inexistentes y cantidades inválidas rechazan el catálogo completo. Una receta posterior se versiona; no edita la versión usada por un plan.
+
+**Catálogo completo · 14-10-2026:** primera carga ya no exige entre tres y cinco productos seleccionados. Los marcados `si` siguen requiriendo receta y stock explícito; las copias de `datos_carga` marcan los 139 para verificar esas dependencias en todos. Una instalación que aceptó los CSV anteriores puede planificar los 139 sin recargar, cambiar flags ni reentrenar: el asistente consulta todo el catálogo activo, y la ejecución trabaja con los IDs seleccionados. Catálogo deja de presentar el flag heredado como una exclusión del plan. Las tareas ya guardadas conservan su lista original.
 
 ## Stock inicial
 

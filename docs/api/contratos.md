@@ -26,7 +26,7 @@ Respuesta exitosa: `{"datos": {...}, "metadatos": {...}}`; `metadatos` puede omi
 
 ## Contrato A02: programación y trazas persistidas
 
-`POST /programaciones-demo` (Administrador) recibe `tipo = GENERAR_PROPUESTA`, `ejecutar_desde_utc` con zona UTC y hora futura, `fecha_hora_simulada_local` sin zona, `fecha_objetivo_demo` del mismo día simulado, `producto_ids` positivos y únicos (1–5) y `clave_idempotencia` de 1–128 caracteres `[A-Za-z0-9._:-]`. Ejemplo:
+`POST /programaciones-demo` (Administrador) recibe `tipo = GENERAR_PROPUESTA`, `ejecutar_desde_utc` con zona UTC y hora futura, `fecha_hora_simulada_local` sin zona, `fecha_objetivo_demo` del mismo día simulado, uno o más `producto_ids` positivos y únicos (sin máximo de cinco desde la ampliación del 14-10-2026) y `clave_idempotencia` de 1–128 caracteres `[A-Za-z0-9._:-]`. Ejemplo:
 
 ```json
 {"tipo":"GENERAR_PROPUESTA","ejecutar_desde_utc":"2027-09-27T16:05:00Z","fecha_hora_simulada_local":"2022-08-24T10:00:00","fecha_objetivo_demo":"2022-08-24","producto_ids":[1,2,3],"clave_idempotencia":"demo-propuesta-2022-08-24-v1"}

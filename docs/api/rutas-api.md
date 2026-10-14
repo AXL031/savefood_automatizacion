@@ -101,7 +101,7 @@ GET `/api/v1/informes/resumen` y GET `/api/v1/informes/exportar?tipo=ventas|pron
 - GET/PUT `/api/v1/flujo-automatizacion/configuracion`: parámetros reutilizables; guardar no agenda.
 - POST `/api/v1/flujo-automatizacion/comprobar`: diagnóstico sin red ni inferencia.
 - POST `/api/v1/flujo-automatizacion/programar`: calendario finito y autorización automática explícita.
-- POST `/api/v1/programaciones-demo/{id}/gestionar`: PAUSAR/REANUDAR/CANCELAR con motivo.
+- POST `/api/v1/programaciones-demo/{id}/gestionar`: PAUSAR/REANUDAR/CANCELAR/EJECUTAR_AHORA con motivo.
 - PATCH `/api/v1/programaciones-demo/{id}`: horario real futuro con motivo.
 - GET/PUT `/api/v1/promociones/regla`: última versión; escritura crea versión inmutable.
 - GET `/api/v1/promociones/evaluaciones` y `/{id}`: sugerencias/rechazos con referencias.

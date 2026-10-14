@@ -68,7 +68,7 @@ function TarjetaEstado({ estado, administrador, reintentando, alReintentar }: {
       </div>
       <div className="pronostico-meta">
         <div>
-          <span>Día histórico que se va a planificar</span>
+          <span>Día que se va a planificar</span>
           <strong><ValorOpcional valor={estado.fecha_objetivo_demo} textoAusente="Sin definir" /></strong>
         </div>
         <div>

@@ -1,4 +1,4 @@
-"""Programaciones y trazas durables del motor de demostración."""
+"""Programaciones y trazas durables del motor de automatización."""
 
 from datetime import datetime
 

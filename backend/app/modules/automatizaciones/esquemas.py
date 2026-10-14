@@ -1,4 +1,4 @@
-"""Entradas públicas de las programaciones demostrativas."""
+"""Entradas públicas de las programaciones de automatización."""
 
 from datetime import date, datetime, time, timedelta
 from typing import Literal
@@ -13,7 +13,7 @@ class ProgramarPropuesta(BaseModel):
     ejecutar_desde_utc: datetime
     fecha_hora_simulada_local: datetime
     fecha_objetivo_demo: date
-    producto_ids: list[PositiveInt] = Field(min_length=1, max_length=5)
+    producto_ids: list[PositiveInt] = Field(min_length=1)
     modo_envio_pedidos: Literal["REQUIERE_APROBACION", "AUTOMATICO"] | None = None
     modelo_id: PositiveInt | None = None
     clave_idempotencia: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$")
@@ -29,7 +29,7 @@ class ProgramarPropuesta(BaseModel):
     @classmethod
     def validar_hora_local(cls, valor: datetime) -> datetime:
         if valor.tzinfo is not None:
-            raise ValueError("La hora simulada es local y no lleva zona")
+            raise ValueError("La hora de planificación es local y no lleva zona")
         return valor
 
     @field_validator("producto_ids")
@@ -42,13 +42,13 @@ class ProgramarPropuesta(BaseModel):
     @model_validator(mode="after")
     def validar_dia_simulado(self):
         if self.fecha_hora_simulada_local.date() != self.fecha_objetivo_demo:
-            raise ValueError("La fecha objetivo y el día del reloj simulado deben coincidir")
+            raise ValueError("La fecha objetivo y el día de planificación deben coincidir")
         return self
 
 
 class ConfigurarFlujo(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    producto_ids: list[PositiveInt] = Field(min_length=1, max_length=5)
+    producto_ids: list[PositiveInt] = Field(min_length=1)
     modelo_id: PositiveInt | None = None
     fecha_objetivo_demo: date
     hora_simulada: time = time(10)
@@ -73,7 +73,7 @@ class ProgramarFlujo(ConfigurarFlujo):
 
 class GestionarProgramacion(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    accion: Literal["PAUSAR", "REANUDAR", "CANCELAR"]
+    accion: Literal["PAUSAR", "REANUDAR", "CANCELAR", "EJECUTAR_AHORA"]
     motivo: str = Field(min_length=3, max_length=300)
 
 

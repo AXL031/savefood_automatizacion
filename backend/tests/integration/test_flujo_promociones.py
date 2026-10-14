@@ -200,6 +200,36 @@ def test_gestion_pendientes_y_despacho_no_recoge_pausadas(entorno, monkeypatch):
     assert c.patch(ruta, headers=admin, json={"ejecutar_desde_utc": (datetime.now(timezone.utc)+timedelta(hours=1)).isoformat(), "motivo":"No permitido"}).status_code == 409
 
 
+@pytest.mark.parametrize("pausada", [False, True])
+def test_ejecutar_ahora_conserva_entrada_y_despacha_una_vez(entorno, monkeypatch, pausada):
+    c, engine = entorno
+    admin = _cabecera(_token(c, "admin@example.com", "clave-segura-admin"))
+    operador = _cabecera(_token(c, "operador@example.com", "clave-segura-operador"))
+    original = c.post("/api/v1/programaciones-demo", headers=admin, json=_programacion()).json()["datos"]
+    ruta = f"/api/v1/programaciones-demo/{original['id']}/gestionar"
+    solicitud = {"accion": "EJECUTAR_AHORA", "motivo": "Probar automatización"}
+    assert c.post(ruta, headers=operador, json=solicitud).status_code == 403
+    if pausada:
+        assert c.post(ruta, headers=admin, json={"accion": "PAUSAR", "motivo": "Esperar"}).status_code == 200
+    antes = datetime.now(timezone.utc)
+    respuesta = c.post(ruta, headers=admin, json=solicitud)
+    assert respuesta.status_code == 200, respuesta.text
+    actual = respuesta.json()["datos"]
+    assert actual["estado"] == "PROGRAMADA"
+    assert antes <= datetime.fromisoformat(actual["ejecutar_desde_utc"]) <= datetime.now(timezone.utc)
+    for campo in ("parametros", "fecha_hora_simulada_local", "ejecucion_id", "clave_idempotencia"):
+        assert actual[campo] == original[campo]
+    assert actual["cambios"][-1]["accion"] == "EJECUTAR_AHORA"
+    assert actual["cambios"][-1]["motivo"] == solicitud["motivo"]
+    assert c.post(ruta, headers=admin, json=solicitud).json()["datos"] == actual
+    monkeypatch.setattr(motor, "SessionLocal", sessionmaker(bind=engine, expire_on_commit=False))
+    publicaciones = []
+    assert motor.despachar_pendientes(lambda *args: publicaciones.append(args))["reclamadas"] == 1
+    assert len(publicaciones) == 1
+    assert motor.despachar_pendientes(lambda *_: pytest.fail("No debe duplicar la tarea"))["reclamadas"] == 0
+    assert c.post(ruta, headers=admin, json=solicitud).status_code == 409
+
+
 def test_horarios_de_cambio_de_zona_no_se_adivinan():
     for hora in (datetime(2026,3,8,2,30), datetime(2026,11,1,1,30)):
         with pytest.raises(ErrorAPI):

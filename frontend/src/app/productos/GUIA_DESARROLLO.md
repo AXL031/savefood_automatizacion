@@ -17,11 +17,13 @@
 
 ## Punto de partida
 
+**14-10-2026 · Solicitud de usar todo el catálogo:** se retiran la columna Participa en el plan y el filtro Solo los planificados. La pantalla consulta todos los productos y cuenta los activos. El campo demostrar permanece únicamente por compatibilidad técnica; no limita el asistente actualizado.
+
 La carpeta contiene documentación o estructura de destino; su existencia no declara API, página o servicio implementado. Consultar el resumen vigente de [Edu Sanchez](../../../../docs/equipo/avances/sanchez.md) para el último estado.
 
 ## Trabajo en esta carpeta
 
-1. Mostrar catálogo, SKU externo e indicador de producto seleccionado para demo.
+1. Mostrar todo el catálogo, SKU externo y estado activo. La selección del plan corresponde a Automatización; el flag heredado no se presenta como una exclusión permanente.
 2. Presentar validaciones de identidad y estados activos sin borrar referencias históricas.
 
 ## Organización de implementación

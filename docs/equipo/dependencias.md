@@ -1,5 +1,11 @@
 # Dependencias y orden de entregas
 
+## Corte local solicitado · 14-10-2026
+
+Codex para Axel configura Pastelería Maria Juanita y retira rótulos de demostración de interfaz/pedidos nuevos. Negocios publica nombre_negocio(sesion) a Compras; texto autorizado permanece congelado. Motor/GUI conservan calendario y añaden ejecución a demanda administrativa, con consumidores comprobados en 69 pruebas Docker PostgreSQL/Redis. Cueva coordina y enlaza E04/K04/M04/L03 sin atribuir el cambio a sus integrantes. [Registro](avances/cueva.md).
+
+WhatsApp se preparará al teléfono propio de Axel: activos Meta y destinatario verificado pendientes del usuario; adaptador/contrato de evidencia (wamid), configuración cifrada y webhook pendientes de Cueva/Aguirre. [Guía de preparación](../api/configurar-whatsapp.md). Telegram sigue siendo el canal implementado. La carga inicial y el traslado de fechas del CSV no se ejecutan en este corte.
+
 ## Estado vigente · 12-10-2026
 
 Coordinación Codex para Axel. Cada responsable conserva sus dominios y autoría. [Contrato nuevo](../api/contrato-flujo-promociones.md), [plan de cierre](plan-cierre-prototipo.md) y [evidencia transversal](avances/cueva.md). Publicado en `cueva`, actualizado desde `main` sin conflictos: [PR #14](https://github.com/AXL031/savefood_automatizacion/pull/14), [CI del corte publicado correcto](https://github.com/AXL031/savefood_automatizacion/actions/runs/38330972748). Revisión del equipo pendiente antes de integrar.
