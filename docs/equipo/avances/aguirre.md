@@ -6,6 +6,27 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **11-10-2026 · Codex para Axel, L02/L04 y consumo A02/E04:** L01–L04 incluyen ofertas, compras, aprobación, outbox, envío y recuperación humana en código local. El diagnóstico del asistente señala ofertas/destinos pendientes y consulta fechas con compra activa por interfaz pública. Protección de recompra y envío incierto sin reintento ciego conservados. Telegram automático real todavía requiere una prueba concreta autorizada.
+- **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
+- **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
+- **Coordinación/dependencias:** Cueva coordina; Max entrega necesidades; no se enviaron mensajes. [Registro transversal](cueva.md) y [plan vigente](../plan-cierre-prototipo.md). Autor real de este corte: Codex para la solicitud de Axel; no se atribuye a integrantes.
+- **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
+
+## Bitácora
+
+### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
+
+- **Autor/responsabilidad/tareas:** Codex para Axel; L02/L04 y consumo A02/E04. Coordinación transversal en Cueva, dominios afectados enlazados desde dependencias.md.
+- **Estado/comportamiento:** implementación LOCAL real. L01–L04 incluyen ofertas, compras, aprobación, outbox, envío y recuperación humana en código local. El diagnóstico del asistente señala ofertas/destinos pendientes y consulta fechas con compra activa por interfaz pública. Protección de recompra y envío incierto sin reintento ciego conservados. Telegram automático real todavía requiere una prueba concreta autorizada.
+- **Archivos clave:** [servicio.py](../../../backend/app/modules/compras/servicio.py); [flujo.py](../../../backend/app/modules/automatizaciones/flujo.py). [Contrato y ejemplos públicos](../../api/contrato-flujo-promociones.md).
+- **API/ejemplo:** guardar parámetros no agenda ni autoriza envíos. POST /flujo-automatizacion/programar conserva modelo/modo y crea calendario finito. PUT /promociones/regla habilita una versión; un ajuste nuevo reserva evaluación en su misma sesión. GET /promociones/evaluaciones devuelve motivo y referencias; acciones de gestión requieren Administrador, motivo y tarea sin despacho.
+- **Migración/configuración:** `0015_flujo_promociones`; aplicar antes de reiniciar API/worker/Beat; ya aplicada en la instalación habitual. No reescribe 0014 ni tablas de otros cortes. Configuración sin tokens; no altera datos habituales ni ejecuta envíos reales.
+- **Pruebas realmente ejecutadas:** suite amplia Windows: 255 passed, 24 skipped, 6 subtests passed, con una expectativa antigua de cabeza Alembic fallida y corregida; después 21 pruebas de flujo/migración/programación correctas. Build Next correcto (incluye /promociones). Corte final de fronteras: 72 passed, 2 skipped, 6 subtests passed. Revisión posterior de promociones/puente: 12 passed, 6 skipped (concurrencia/DDL PostgreSQL). Typecheck final correcto. QA Edge aislada verificó calendario de tres días, pausa, regla versionada, detalle/Escape, dos Excel/cinco CSV y móvil, sin errores JavaScript. Se corrigió una referencia visual de fecha detectada por build y se repitió QA correctamente; build final correcto, 23 páginas generadas; QA final también pasó contra la interfaz compilada, con datos cargados en escritorio y móvil. Después de que Axel abrió Docker, migración y alembic check correctos en PostgreSQL aislado. Corte amplio PostgreSQL/Redis inicial: 125 passed y 4 fallos; una prueba antigua del manejador ausente se aisló explícitamente, y los tres fallos ML se debían a escribir catboost_info en el montaje de código de solo lectura. Revalidación con imagen reconstruida: 24 passed de promociones/motor/inventario, incluida concurrencia, y 3 passed de CatBoost/Beat/plan real desde /tmp escribible. CI incorpora la nueva prueba concurrente. Suite completa final con imagen reconstruida y PostgreSQL/Redis: **283 passed, 6 subtests passed**, sin fallos ni omisiones (290,91 s). Advertencias existentes de dependencias y reflexión SQLite; migración y comparación PostgreSQL correctas. No se enviaron mensajes reales.
+- **Dependencias y siguiente paso:** Cueva coordina; Max entrega necesidades; no se enviaron mensajes. Imágenes reconstruidas, 0015 aplicada y servicios habituales activos. Suite final completa correcta. Pendientes: CI remoto y demo conjunta/otra PC. La prueba Telegram automática requiere autorización concreta. No interpretar fixtures del modelo/Telegram como evidencia comercial ni de envío real.
+- **Git:** cambios locales en cueva, sin commit/push/PR.
+
+<details><summary>Resumen anterior conservado como historial; no es el estado vigente</summary>
+
 - **Dashboard y Reportes · 01-10-2026:** L02/L04 consumidor K04: periodo_propuestas/resumen_pedidos publican estado actual por fecha objetivo, incluyen propuestas sin pedidos y cuentan cada pedido una vez. Prueba con dos intentos, stock conservado; pedido real del 24-08 sigue ENVIADO. Sin nuevo envío.
 
 - **Recuperación L04 del paso 7 (01-10-2026, Codex para Axel):** conciliación administrativa con evidencia y reintento explícito desde fallo definitivo/conciliado, API/UI e historial de intentos/revisiones. Locks ordenados y respuestas tardías obsoletas protegidas. Migración 0014 aplicada; 57 pruebas PostgreSQL y 7 de migraciones, typecheck/build correctos. API/worker/Beat/frontend activos en instalación local. Pedido #1 ENVIADO/message_id=2 intacto, sin nuevo mensaje real. Falta demostración automática real autorizada; promociones/demo final siguen en el plan.
@@ -31,7 +52,9 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | L03 · Implementar aprobación y canal | LOCAL: aprobación/rechazo/worker/evidencia; bot real pendiente del usuario |
 | L04 · Resolver fallos y entregar UI | PARCIAL: UI/trazas locales; envío incierto y conciliación pendientes |
 
-## Bitácora
+</details>
+
+
 
 ### Dashboard y Reportes · 01-10-2026
 

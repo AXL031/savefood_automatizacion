@@ -34,26 +34,26 @@ export function BarrasProductoDia({ evaluacionDia }: Props) {
 
       {/* Resumen numérico rápido del día */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "20px" }}>
-        <div style={{ padding: "10px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-          <span style={{ fontSize: "0.72rem", color: "#64748b" }}>Total Previsto (eval.)</span>
-          <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#0f766e" }}>
+        <div style={{ padding: "10px", background: "#F5F7F4", borderRadius: "8px", border: "1px solid #DCE3DF" }}>
+          <span style={{ fontSize: "0.72rem", color: "#5B6863" }}>Total Previsto (eval.)</span>
+          <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#17604E" }}>
             {total_previsto_evaluable} u.
           </div>
         </div>
-        <div style={{ padding: "10px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-          <span style={{ fontSize: "0.72rem", color: "#64748b" }}>Total Real conocido</span>
-          <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#f59e0b" }}>
+        <div style={{ padding: "10px", background: "#F5F7F4", borderRadius: "8px", border: "1px solid #DCE3DF" }}>
+          <span style={{ fontSize: "0.72rem", color: "#5B6863" }}>Total Real conocido</span>
+          <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#2F6DB5" }}>
             {total_real_conocido} u.
           </div>
         </div>
-        <div style={{ padding: "10px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-          <span style={{ fontSize: "0.72rem", color: "#64748b" }}>MAE del día</span>
+        <div style={{ padding: "10px", background: "#F5F7F4", borderRadius: "8px", border: "1px solid #DCE3DF" }}>
+          <span style={{ fontSize: "0.72rem", color: "#5B6863" }}>MAE del día</span>
           <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
             {metricas.mae !== null ? `${metricas.mae.toFixed(2)} u.` : "—"}
           </div>
         </div>
-        <div style={{ padding: "10px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-          <span style={{ fontSize: "0.72rem", color: "#64748b" }}>WAPE del día</span>
+        <div style={{ padding: "10px", background: "#F5F7F4", borderRadius: "8px", border: "1px solid #DCE3DF" }}>
+          <span style={{ fontSize: "0.72rem", color: "#5B6863" }}>WAPE del día</span>
           <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
             {metricas.wape_pct !== null ? `${metricas.wape_pct.toFixed(1)}%` : "No def."}
           </div>
@@ -70,7 +70,7 @@ export function BarrasProductoDia({ evaluacionDia }: Props) {
             <div
               key={item.producto_id}
               style={{
-                borderBottom: "1px solid #f1f5f9",
+                borderBottom: "1px solid #ECEFED",
                 paddingBottom: "14px",
               }}
             >
@@ -79,7 +79,7 @@ export function BarrasProductoDia({ evaluacionDia }: Props) {
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                   {item.diferencia_absoluta !== null ? (
                     <>
-                      <span style={{ fontSize: "0.78rem", color: "#475569" }}>
+                      <span style={{ fontSize: "0.78rem", color: "#46524E" }}>
                         Dif: <strong>{item.diferencia_absoluta} u.</strong>
                       </span>
                       {item.dentro_mas_menos_20 ? (
@@ -96,14 +96,14 @@ export function BarrasProductoDia({ evaluacionDia }: Props) {
 
               {/* Barra de Previsto */}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                <span style={{ width: "65px", fontSize: "0.72rem", color: "#0f766e", fontWeight: "bold" }}>
+                <span style={{ width: "65px", fontSize: "0.72rem", color: "#17604E", fontWeight: "bold" }}>
                   Prev: {item.previsto} u.
                 </span>
-                <div style={{ flex: 1, background: "#f1f5f9", borderRadius: "4px", height: "12px", overflow: "hidden" }}>
+                <div style={{ flex: 1, background: "#ECEFED", borderRadius: "4px", height: "12px", overflow: "hidden" }}>
                   <div
                     style={{
                       width: `${anchoPrev}%`,
-                      background: "#0f766e",
+                      background: "#17604E",
                       height: "100%",
                       borderRadius: "4px",
                     }}
@@ -116,18 +116,18 @@ export function BarrasProductoDia({ evaluacionDia }: Props) {
                 <span style={{ width: "65px", fontSize: "0.72rem", color: "#d97706", fontWeight: "bold" }}>
                   {item.real !== null ? `Real: ${item.real} u.` : "Real: N/D"}
                 </span>
-                <div style={{ flex: 1, background: "#f1f5f9", borderRadius: "4px", height: "12px", overflow: "hidden" }}>
+                <div style={{ flex: 1, background: "#ECEFED", borderRadius: "4px", height: "12px", overflow: "hidden" }}>
                   {item.real !== null ? (
                     <div
                       style={{
                         width: `${anchoReal}%`,
-                        background: "#f59e0b",
+                        background: "#2F6DB5",
                         height: "100%",
                         borderRadius: "4px",
                       }}
                     />
                   ) : (
-                    <div style={{ height: "100%", color: "#94a3b8", fontSize: "0.65rem", paddingLeft: "6px" }}>
+                    <div style={{ height: "100%", color: "#5B6863", fontSize: "0.65rem", paddingLeft: "6px" }}>
                       Ausencia de venta (desconocida)
                     </div>
                   )}

@@ -1,5 +1,8 @@
-import { solicitar } from "./http";
+import { solicitar, solicitarSobre } from "./http";
 import type { CrearProgramacionDemo, EjecucionAutomatizacion, ProgramacionDemo } from "@/types/automatizacion";
+
+export const programacionesPaginadas = (token: string, pagina: number, tamano: number, signal?: AbortSignal) => solicitarSobre<ProgramacionDemo[]>(`/programaciones-demo?limite=${tamano}&desplazamiento=${(pagina - 1) * tamano}`, { token, signal });
+export const ejecucionesPaginadas = (token: string, pagina: number, tamano: number, signal?: AbortSignal) => solicitarSobre<EjecucionAutomatizacion[]>(`/ejecuciones-automatizacion?limite=${tamano}&desplazamiento=${(pagina - 1) * tamano}`, { token, signal });
 
 export function listarProgramaciones(token: string, signal?: AbortSignal): Promise<ProgramacionDemo[]> {
   return solicitar<ProgramacionDemo[]>("/programaciones-demo", { token, signal });

@@ -14,6 +14,12 @@ from app.modules.productos.modelos import Producto, SkuProducto
 ORIGEN_BAKERY = "bakery"
 
 
+def productos_activos(sesion: Session, producto_ids: list[int]) -> dict[int, str]:
+    """Catálogo público para comprobar selecciones."""
+    return {p.id: p.nombre for p in sesion.scalars(select(Producto).where(
+        Producto.id.in_(producto_ids), Producto.activo.is_(True)))}
+
+
 @dataclass(frozen=True)
 class EntradaCatalogo:
     """Un producto de la hoja `productos` del asistente de primera carga."""

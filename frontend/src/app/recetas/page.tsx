@@ -135,7 +135,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     { clave: "producto", encabezado: "Producto", celda: (fila) => <strong>{fila.producto_nombre}</strong> },
     {
       clave: "demo",
-      encabezado: "En la demo",
+      encabezado: "Planificado",
       celda: (fila) => <span className={`badge badge-${fila.demostrar ? "ok" : "neutral"}`}>{fila.demostrar ? "Sí" : "No"}</span>,
     },
     {

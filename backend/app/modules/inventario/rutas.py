@@ -11,6 +11,7 @@ from app.core.base_datos import obtener_sesion
 from app.core.errores import ErrorAPI
 from app.core.identidad import identidad_actual, requiere_administrador
 from app.modules.autenticacion.modelos import Usuario
+from app.modules.automatizaciones.servicio import consultar_ejecucion_por_clave
 from app.modules.inventario import vigencia
 from app.modules.inventario.esquemas import AjusteEntrada
 from app.modules.inventario.servicio import (
@@ -156,4 +157,7 @@ def ajustar(
         raise ErrorAPI(409, "CLAVE_REUTILIZADA", "La clave de operación ya se usó en otra operación.") from None
     if resultado.repetido:
         response.status_code = 200
-    return {"datos": _movimiento(resultado)}
+    salida = _movimiento(resultado)
+    evaluacion = consultar_ejecucion_por_clave(sesion, f"promocion-movimiento-{resultado.movimiento_id}")
+    salida["evaluacion_promocion_ejecucion_id"] = evaluacion.id if evaluacion else None
+    return {"datos": salida}

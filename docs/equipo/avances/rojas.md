@@ -5,6 +5,39 @@
 Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este archivo se actualiza al terminar cada avance significativo.
 
 ## Resumen vigente
+
+- **14-10-2026 · Max Rojas (frontend y UX/UI temporal):** paleta hoja/yema y tipografía Bricolage + Manrope aplicadas en todo el frontend, login rediseñado con ilustración de panadería y textos de demostración/escenario/manual retirados de la interfaz. Ver bitácora del 14-10-2026.
+- **11-10-2026 · Codex para Axel, M02/M04 y consumo K02/V02/L02:** M01–M04 están implementadas localmente; el flujo consume corrida, recetas y stock, conserva plan/necesidades y enlaza pedidos. El manejador usa el modelo elegido por el asistente. Margen cero, cantidades desconocidas nullable, versiones e inventario conservados.
+- **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
+- **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
+- **Coordinación/dependencias:** Kevin, Vera y Aguirre por interfaces públicas; Cueva coordina. [Registro transversal](cueva.md) y [plan vigente](../plan-cierre-prototipo.md). Autor real de este corte: Codex para la solicitud de Axel; no se atribuye a integrantes.
+- **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
+
+## Bitácora
+
+### 14-10-2026 America/Lima — Identidad visual, login y textos de producto
+
+- **Autor/responsabilidad/tareas:** Max Rojas, a cargo temporal del frontend y UX/UI. Toca la estructura visual compartida (Edu Sanchez) y la pantalla de acceso (Axel Cueva): coordinar antes de integrar.
+- **Estado/comportamiento:** real, solo interfaz. Paleta en variables `:root`; fuentes autoalojadas; `badge-advertencia` y tonos de estado corregidos; login nuevo con `public/imagenes/panaderia-login.jpg` y `MarcaFoodSave`; se eliminó `GuiaPantalla` y se reescribieron textos de demostración, escenario, piloto, instalación local y API. Sin cambios en contratos, campos ni rutas de API.
+- **Archivos clave:** [styles.css](../../../frontend/src/app/styles.css), [iniciar-sesion](../../../frontend/src/app/iniciar-sesion/page.tsx), [ProtectedShell](../../../frontend/src/components/layout/ProtectedShell.tsx), [MarcaFoodSave](../../../frontend/src/components/ui/MarcaFoodSave.tsx), [estados.ts](../../../frontend/src/utils/estados.ts), [especificación visual](../../diseno/especificacion-visual.md).
+- **Configuración:** nuevas dependencias `@fontsource-variable/manrope` y `@fontsource-variable/bricolage-grotesque` (reconstruir la imagen del frontend con `iniciar-foodsave.cmd -Build`). Sin migraciones.
+- **Pruebas realmente ejecutadas:** `npm ci` y `next build` correctos (compila y valida tipos); capturas Playwright de `/iniciar-sesion` (escritorio, móvil y error) e `/ingredientes` con API simulada. `tsc --noEmit` mantiene el error previo TS2882 sobre `./styles.css`. No se probó contra la API real ni en Docker.
+- **Pendiente:** el backend sigue anteponiendo «DEMOSTRACIÓN — NO SURTIR» a los mensajes de Telegram (regla de seguridad del equipo); quitarlo requiere acuerdo y cambio en backend.
+- **Git:** cambios locales, sin commit/push/PR.
+
+### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
+
+- **Autor/responsabilidad/tareas:** Codex para Axel; M02/M04 y consumo K02/V02/L02. Coordinación transversal en Cueva, dominios afectados enlazados desde dependencias.md.
+- **Estado/comportamiento:** implementación LOCAL real. M01–M04 están implementadas localmente; el flujo consume corrida, recetas y stock, conserva plan/necesidades y enlaza pedidos. El manejador usa el modelo elegido por el asistente. Margen cero, cantidades desconocidas nullable, versiones e inventario conservados.
+- **Archivos clave:** [manejadores.py](../../../backend/app/modules/planificacion/manejadores.py); [flujo.py](../../../backend/app/modules/automatizaciones/flujo.py). [Contrato y ejemplos públicos](../../api/contrato-flujo-promociones.md).
+- **API/ejemplo:** guardar parámetros no agenda ni autoriza envíos. POST /flujo-automatizacion/programar conserva modelo/modo y crea calendario finito. PUT /promociones/regla habilita una versión; un ajuste nuevo reserva evaluación en su misma sesión. GET /promociones/evaluaciones devuelve motivo y referencias; acciones de gestión requieren Administrador, motivo y tarea sin despacho.
+- **Migración/configuración:** `0015_flujo_promociones`; aplicar antes de reiniciar API/worker/Beat; ya aplicada en la instalación habitual. No reescribe 0014 ni tablas de otros cortes. Configuración sin tokens; no altera datos habituales ni ejecuta envíos reales.
+- **Pruebas realmente ejecutadas:** suite amplia Windows: 255 passed, 24 skipped, 6 subtests passed, con una expectativa antigua de cabeza Alembic fallida y corregida; después 21 pruebas de flujo/migración/programación correctas. Build Next correcto (incluye /promociones). Corte final de fronteras: 72 passed, 2 skipped, 6 subtests passed. Revisión posterior de promociones/puente: 12 passed, 6 skipped (concurrencia/DDL PostgreSQL). Typecheck final correcto. QA Edge aislada verificó calendario de tres días, pausa, regla versionada, detalle/Escape, dos Excel/cinco CSV y móvil, sin errores JavaScript. Se corrigió una referencia visual de fecha detectada por build y se repitió QA correctamente; build final correcto, 23 páginas generadas; QA final también pasó contra la interfaz compilada, con datos cargados en escritorio y móvil. Después de que Axel abrió Docker, migración y alembic check correctos en PostgreSQL aislado. Corte amplio PostgreSQL/Redis inicial: 125 passed y 4 fallos; una prueba antigua del manejador ausente se aisló explícitamente, y los tres fallos ML se debían a escribir catboost_info en el montaje de código de solo lectura. Revalidación con imagen reconstruida: 24 passed de promociones/motor/inventario, incluida concurrencia, y 3 passed de CatBoost/Beat/plan real desde /tmp escribible. CI incorpora la nueva prueba concurrente. Suite completa final con imagen reconstruida y PostgreSQL/Redis: **283 passed, 6 subtests passed**, sin fallos ni omisiones (290,91 s). Advertencias existentes de dependencias y reflexión SQLite; migración y comparación PostgreSQL correctas. No se enviaron mensajes reales.
+- **Dependencias y siguiente paso:** Kevin, Vera y Aguirre por interfaces públicas; Cueva coordina. Imágenes reconstruidas, 0015 aplicada y servicios habituales activos. Suite final completa correcta. Pendientes: CI remoto y demo conjunta/otra PC. La prueba Telegram automática requiere autorización concreta. No interpretar fixtures del modelo/Telegram como evidencia comercial ni de envío real.
+- **Git:** cambios locales en cueva, sin commit/push/PR.
+
+<details><summary>Resumen anterior conservado como historial; no es el estado vigente</summary>
+
 - **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Planificación y recetas muestran cantidades grandes en kg/L y etiquetas claras. Manejador consume el modo conservado de programación al generar compras. Mantiene snapshots, unidades base y política de stock/recetas; flujo completo verificado con PostgreSQL dentro de 54 pruebas correctas.
 - **Paso 4 local (30-09-2026, Codex para Axel):** L01/L02 con UI /proveedores y /compras, generación desde necesidades M03, agrupación/conversión exacta, snapshots y política de una propuesta activa por fecha con cancelación explícita. GENERAR_PROPUESTA real llega a pedidos; API y motor consumen la entrega. Docker: 159 pruebas y 6 subpruebas correctas, más prueba adicional de recompra del motor correcta. Migración 0011/reversibilidad/alembic check y frontend typecheck/build correctos. Aprobación/Telegram siguen pendientes, sin envíos externos. Cambios locales sin commit ni remoto. [Contrato](../../api/contrato-pedidos.md#corte-l02-del-paso-4-local--30-09-2026).
 - **Paso 3 local (30-09-2026, Codex para Axel):** M03 implementado: necesidades agregadas, faltantes nullable, trazas de recetas/lotes y API/UI. Consumido por API y GENERAR_PROPUESTA real; compras aún pendiente. Docker: 145 pruebas y 6 subpruebas correctas; migración 0010/reversibilidad/alembic check y frontend typecheck/build correctos. Cambios locales sin commit ni remoto. [Contrato M03](../../api/contratos.md#m03--paso-3-local-necesidades-y-faltantes-conservados).
@@ -27,7 +60,9 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | M03 · Calcular necesidades y faltantes | LISTO_PARA_INTEGRAR LOCAL; API/motor verificados |
 | M04 · Entregar pantalla y contrato del plan | LISTO_PARA_INTEGRAR LOCAL; trazas y enlace a pedidos reales |
 
-## Bitácora
+</details>
+
+
 
 ### Flujo completo, unidades y claridad · 30-09-2026
 

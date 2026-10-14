@@ -18,11 +18,6 @@ const columnas: Columna<Producto>[] = [
   },
   { clave: "origen", encabezado: "Origen", celda: (fila) => <ValorOpcional valor={fila.origen} /> },
   {
-    clave: "demostrar",
-    encabezado: "Participa en el plan",
-    celda: (fila) => <span className={`badge badge-${fila.demostrar ? "ok" : "neutral"}`}>{fila.demostrar ? "Sí" : "No"}</span>,
-  },
-  {
     clave: "activo",
     encabezado: "Estado",
     celda: (fila) => <span className={`badge badge-${fila.activo ? "ok" : "alerta"}`}>{fila.activo ? "Activo" : "Inactivo"}</span>,
@@ -32,7 +27,6 @@ const columnas: Columna<Producto>[] = [
 function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const { token } = contexto;
   const [productos, setProductos] = useState<Producto[]>([]);
-  const [soloDemo, setSoloDemo] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
 
@@ -40,7 +34,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     (signal: AbortSignal) => {
       setCargando(true);
       setError("");
-      listarProductos(token, { soloDemo }, signal)
+      listarProductos(token, {}, signal)
         .then(setProductos)
         .catch((fallo: unknown) => {
           if (signal.aborted) return;
@@ -50,7 +44,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           if (!signal.aborted) setCargando(false);
         });
     },
-    [token, soloDemo],
+    [token],
   );
 
   useEffect(() => {
@@ -59,22 +53,17 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     return () => control.abort();
   }, [cargar]);
 
-  const enDemo = productos.filter((fila) => fila.demostrar).length;
+  const activos = productos.filter((fila) => fila.activo).length;
 
   return (
     <section className="card main-card">
       <div className="section-heading">
         <div>
-          <h2>Catálogo local</h2>
+          <h2>Catálogo</h2>
           <p>
-            Los productos se registran en la primera carga. El Código del archivo (SKU) es el nombre del artículo del
-            dataset y se resuelve al identificador interno; no se crean productos implícitos.
+            Los productos se registran en la carga inicial. El SKU identifica cada producto en tus ventas.
           </p>
         </div>
-        <label className="filter-label">
-          <input type="checkbox" checked={soloDemo} onChange={(evento) => setSoloDemo(evento.target.checked)} />
-          Solo los de la demo
-        </label>
       </div>
 
       {error ? <EstadoPanel tono="alerta" titulo="No se pudo cargar" descripcion={error} /> : null}
@@ -88,7 +77,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         vacioDescripcion="Completa la primera carga para registrar productos y sus SKU."
         pie={
           productos.length
-            ? `${productos.length} productos; ${enDemo} participan en el plan de la demostración.`
+            ? `${productos.length} productos; ${activos} activos. Puedes elegirlos en Automatización.`
             : undefined
         }
       />

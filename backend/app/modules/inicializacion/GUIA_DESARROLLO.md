@@ -45,6 +45,8 @@ E03/K01 conciliado: servicio.py mantiene reserva, progreso y callbacks durables;
 
 ## Trabajo en esta carpeta
 
+**14-10-2026 · Catálogo completo, ampliación expresa de Axel:** validacion.py exige al menos un producto marcado si, sin límite superior de selección. Receta/stock siguen obligatorios para los marcados y no se generan ceros por ausencia. CSV de datos_carga marca los 139; una carga previa puede usar todos mediante el asistente sin reimportar. Campo técnico demostrar conservado; contrato de importaciones y prueba de sexto producto sin receta/stock actualizados.
+
 1. Validar dos XLSX o cinco CSV con errores por archivo/hoja/fila y vista previa.
 2. Calcular huellas y aplicar idempotencia antes de confirmar la carga.
 3. Orquestar productos/ventas propios y servicios públicos de recetas de Max y apertura de Vera en una transacción.

@@ -12,6 +12,7 @@ from app.core.base import Base
 from app.principal import app  # registra todos los modelos del núcleo
 from app.modules.ingredientes.servicio import crear_ingrediente
 from app.modules.proveedores.servicio import Conflicto, ServicioProveedores
+from test_motor_a03 import entorno_pg
 
 
 class TelegramFalso:
@@ -63,6 +64,43 @@ def test_servicio_no_confirma_transaccion_del_consumidor(db):
     proveedor_id = p.id
     db.rollback()
     assert s.repo.proveedor_por_id(proveedor_id) is None
+
+
+def test_codigo_automatico_conserva_codigos_previos_y_rollback(db, monkeypatch):
+    servicio = ServicioProveedores(db)
+    anterior = _prov(servicio, "PROV-002")
+    db.commit()
+    # Simula una colisión después de consultar y antes del UPDATE; el UNIQUE
+    # debe recuperar solo el savepoint, sin perder el proveedor nuevo.
+    consulta_real = servicio.repo.proveedor_por_codigo
+    monkeypatch.setattr(servicio.repo, "proveedor_por_codigo",
+                        lambda codigo: None if codigo == "PROV-002" else consulta_real(codigo))
+    creado = servicio.crear_proveedor(ProveedorCrear(nombre="  Harinas  "))
+    assert creado.codigo == "PROV-002-1" and creado.nombre == "Harinas"
+    assert anterior.codigo == "PROV-002"
+    proveedor_id = creado.id
+    db.rollback()
+    assert servicio.repo.proveedor_por_id(proveedor_id) is None
+    assert servicio.repo.proveedor_por_id(anterior.id).codigo == "PROV-002"
+
+
+def test_codigos_automaticos_unicos_con_creaciones_concurrentes(entorno_pg):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    sesiones = entorno_pg
+    barrera = Barrier(2)
+
+    def crear(numero):
+        with sesiones.begin() as sesion:
+            barrera.wait(timeout=10)
+            proveedor = ServicioProveedores(sesion, TelegramFalso()).crear_proveedor(
+                ProveedorCrear(nombre=f"Proveedor {numero}"))
+            return proveedor.id, proveedor.codigo
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        resultados = list(pool.map(crear, range(2)))
+    assert len({codigo for _, codigo in resultados}) == 2
+    assert all(codigo == f"PROV-{id_:03d}" for id_, codigo in resultados)
 
 
 def test_oferta_rechaza_ingrediente_ajeno(db):

@@ -24,11 +24,33 @@ def cargar_revision(nombre):
     return modulo
 
 
+def test_nombre_inicial_se_normaliza_sin_reemplazar_comercio_configurado():
+    from sqlalchemy import text
+    from app.modules.negocios.modelos import Negocio
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor, "connect")
+    def funciones(conexion, _):
+        conexion.create_function("char_length", 1, len)
+    Negocio.__table__.create(motor)
+    revision = cargar_revision("0016_nombre_comercio")
+    with motor.begin() as conexion:
+        conexion.execute(text("INSERT INTO negocio (id,nombre,zona_horaria,moneda,creado_en,actualizado_en) "
+                              "VALUES (1,'Comercio de demostración','America/Lima','PEN',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)"))
+        with Operations.context(MigrationContext.configure(conexion)):
+            revision.upgrade()
+            assert conexion.execute(text("SELECT nombre FROM negocio")).scalar_one() == "Mi comercio"
+            conexion.execute(text("UPDATE negocio SET nombre = 'Pastelería Maria Juanita'"))
+            revision.upgrade()
+            revision.downgrade()
+            assert conexion.execute(text("SELECT nombre FROM negocio")).scalar_one() == "Pastelería Maria Juanita"
+    motor.dispose()
+
+
 def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0014_l04_recuperacion"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0016_nombre_comercio"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")

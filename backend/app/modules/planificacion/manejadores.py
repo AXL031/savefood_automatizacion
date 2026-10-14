@@ -25,12 +25,12 @@ def generar_propuesta(sesion: Session, contexto: ContextoEjecucion) -> dict:
     try:
         objetivo = date.fromisoformat(parametros["fecha_objetivo_demo"])
         productos = parametros["producto_ids"]
-        if (not isinstance(productos, list) or not 1 <= len(productos) <= 5 or
+        if (not isinstance(productos, list) or not productos or
                 any(type(p) is not int or p <= 0 for p in productos) or len(set(productos)) != len(productos)):
-            raise ValueError("Se necesitan de uno a cinco productos únicos.")
+            raise ValueError("Se necesita al menos un producto, con IDs positivos y únicos.")
         corrida = generar_corrida(sesion, ejecucion_id=contexto.id,
                                   clave_ejecucion=f"propuesta-{contexto.id}", fecha_objetivo=objetivo,
-                                  producto_ids=productos)
+                                  producto_ids=productos, modelo_id=parametros.get("modelo_id"))
         plan = generar_plan(sesion, corrida_id=corrida.id, clave_ejecucion=f"plan-propuesta-{contexto.id}")
         try:
             propuesta = generar_pedidos(sesion, plan.id, modo_envio=parametros.get("modo_envio_pedidos"))

@@ -1,4 +1,4 @@
-"""Carga directa del CSV bakery para la demostración local."""
+"""Carga directa de ventas desde el CSV bakery."""
 
 import hashlib
 import tempfile

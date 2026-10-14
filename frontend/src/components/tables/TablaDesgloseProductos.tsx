@@ -42,10 +42,10 @@ export function TablaDesgloseProductos({ desglose, fecha }: Props) {
                   <td>
                     <strong>{item.producto_id}</strong>
                   </td>
-                  <td style={{ textAlign: "right", color: "#0f766e", fontWeight: "bold" }}>
+                  <td style={{ textAlign: "right", color: "#17604E", fontWeight: "bold" }}>
                     {item.previsto} u.
                   </td>
-                  <td style={{ textAlign: "right", color: item.real !== null ? "#b45309" : "#94a3b8" }}>
+                  <td style={{ textAlign: "right", color: item.real !== null ? "#2F6DB5" : "#5B6863" }}>
                     {item.real !== null ? `${item.real} u.` : "—"}
                   </td>
                   <td style={{ textAlign: "right", fontWeight: "600" }}>

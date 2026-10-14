@@ -83,7 +83,7 @@ function CargaPiloto({ token, administrador }: { token: string; administrador: b
   return <>
     {!administrador && <EstadoPanel titulo="Solo para administradores" descripcion="La carga de ventas requiere una cuenta de Administrador." />}
     {administrador && <section className="card">
-      <div className="section-heading"><div><h2>Cargar ventas del piloto bakery</h2><p>Selecciona el CSV original con columnas date, article y Quantity. El catálogo curado se agrega automáticamente.</p></div></div>
+      <div className="section-heading"><div><h2>Cargar historial de ventas</h2><p>Selecciona el CSV original con columnas date, article y Quantity. El catálogo curado se agrega automáticamente.</p></div></div>
       <form className="form-grid" onSubmit={(evento) => void subir(evento)}>
         <label className="field field-full">Archivo CSV
           <input type="file" accept=".csv,text/csv" required onChange={(evento) => { setArchivo(evento.target.files?.[0] ?? null); setError(""); }} />
@@ -112,10 +112,10 @@ function CargaPiloto({ token, administrador }: { token: string; administrador: b
       <p className="helper-text"><Link href={`/automatizaciones/ejecuciones/${ejecucion.id}`}>Ver ejecución #{ejecucion.id}</Link> · <Link href="/pronosticos">Ver modelos</Link> · <Link href="/panel">Ver panel histórico</Link></p>
       {ejecucion.estado === "FALLIDA" && <button className="button-secondary" disabled={reintentando} onClick={() => void reintentar()}>{reintentando ? "Solicitando…" : "Reintentar preparación sin subir el CSV"}</button>}
     </section>}
-    <section className="card section-space"><h2>Alcance de esta carga</h2><p>Este acceso carga el CSV del piloto y solicita el modelo. La carga completa con recetas y stock está disponible en Datos iniciales. Este acceso rápido prepara el piloto de ventas.</p></section>
+    <section className="card section-space"><h2>Alcance de esta carga</h2><p>Esta carga registra el historial de ventas y prepara el modelo. Para cargar también recetas y stock, usa Datos iniciales.</p></section>
   </>;
 }
 
 export default function InicializacionPage() {
-  return <ProtectedShell titulo="Cargar CSV piloto" descripcion="Carga las ventas históricas y prepara el modelo desde FoodSave.">{({ token, perfil }) => <CargaPiloto token={token} administrador={perfil.rol === "ADMINISTRADOR"} />}</ProtectedShell>;
+  return <ProtectedShell titulo="Carga rápida de ventas" descripcion="Carga las ventas históricas y prepara el modelo desde FoodSave.">{({ token, perfil }) => <CargaPiloto token={token} administrador={perfil.rol === "ADMINISTRADOR"} />}</ProtectedShell>;
 }

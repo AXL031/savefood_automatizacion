@@ -6,6 +6,27 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **11-10-2026 · Codex para Axel, K02/K04 y consumo A02/M02:** K01–K04, carga→modelo/evaluación y pronóstico→plan tienen implementación local y consumidores comprobados. El asistente elige un modelo preparado y conserva su ID para todas las fechas del calendario. La inferencia mantiene historia anterior al objetivo; partición y cobertura no se sustituyen por valores inventados.
+- **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
+- **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
+- **Coordinación/dependencias:** Cueva y Rojas consumen K02; no atribuye nuevas reglas ML a Kevin. [Registro transversal](cueva.md) y [plan vigente](../plan-cierre-prototipo.md). Autor real de este corte: Codex para la solicitud de Axel; no se atribuye a integrantes.
+- **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
+
+## Bitácora
+
+### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
+
+- **Autor/responsabilidad/tareas:** Codex para Axel; K02/K04 y consumo A02/M02. Coordinación transversal en Cueva, dominios afectados enlazados desde dependencias.md.
+- **Estado/comportamiento:** implementación LOCAL real. K01–K04, carga→modelo/evaluación y pronóstico→plan tienen implementación local y consumidores comprobados. El asistente elige un modelo preparado y conserva su ID para todas las fechas del calendario. La inferencia mantiene historia anterior al objetivo; partición y cobertura no se sustituyen por valores inventados.
+- **Archivos clave:** [manejadores.py](../../../backend/app/modules/planificacion/manejadores.py); [flujo.py](../../../backend/app/modules/automatizaciones/flujo.py); [AsistenteFlujo.tsx](../../../frontend/src/features/automatizaciones/AsistenteFlujo.tsx). [Contrato y ejemplos públicos](../../api/contrato-flujo-promociones.md).
+- **API/ejemplo:** guardar parámetros no agenda ni autoriza envíos. POST /flujo-automatizacion/programar conserva modelo/modo y crea calendario finito. PUT /promociones/regla habilita una versión; un ajuste nuevo reserva evaluación en su misma sesión. GET /promociones/evaluaciones devuelve motivo y referencias; acciones de gestión requieren Administrador, motivo y tarea sin despacho.
+- **Migración/configuración:** `0015_flujo_promociones`; aplicar antes de reiniciar API/worker/Beat; ya aplicada en la instalación habitual. No reescribe 0014 ni tablas de otros cortes. Configuración sin tokens; no altera datos habituales ni ejecuta envíos reales.
+- **Pruebas realmente ejecutadas:** suite amplia Windows: 255 passed, 24 skipped, 6 subtests passed, con una expectativa antigua de cabeza Alembic fallida y corregida; después 21 pruebas de flujo/migración/programación correctas. Build Next correcto (incluye /promociones). Corte final de fronteras: 72 passed, 2 skipped, 6 subtests passed. Revisión posterior de promociones/puente: 12 passed, 6 skipped (concurrencia/DDL PostgreSQL). Typecheck final correcto. QA Edge aislada verificó calendario de tres días, pausa, regla versionada, detalle/Escape, dos Excel/cinco CSV y móvil, sin errores JavaScript. Se corrigió una referencia visual de fecha detectada por build y se repitió QA correctamente; build final correcto, 23 páginas generadas; QA final también pasó contra la interfaz compilada, con datos cargados en escritorio y móvil. Después de que Axel abrió Docker, migración y alembic check correctos en PostgreSQL aislado. Corte amplio PostgreSQL/Redis inicial: 125 passed y 4 fallos; una prueba antigua del manejador ausente se aisló explícitamente, y los tres fallos ML se debían a escribir catboost_info en el montaje de código de solo lectura. Revalidación con imagen reconstruida: 24 passed de promociones/motor/inventario, incluida concurrencia, y 3 passed de CatBoost/Beat/plan real desde /tmp escribible. CI incorpora la nueva prueba concurrente. Suite completa final con imagen reconstruida y PostgreSQL/Redis: **283 passed, 6 subtests passed**, sin fallos ni omisiones (290,91 s). Advertencias existentes de dependencias y reflexión SQLite; migración y comparación PostgreSQL correctas. No se enviaron mensajes reales.
+- **Dependencias y siguiente paso:** Cueva y Rojas consumen K02; no atribuye nuevas reglas ML a Kevin. Imágenes reconstruidas, 0015 aplicada y servicios habituales activos. Suite final completa correcta. Pendientes: CI remoto y demo conjunta/otra PC. La prueba Telegram automática requiere autorización concreta. No interpretar fixtures del modelo/Telegram como evidencia comercial ni de envío real.
+- **Git:** cambios locales en cueva, sin commit/push/PR.
+
+<details><summary>Resumen anterior conservado como historial; no es el estado vigente</summary>
+
 - **Dashboard y Reportes (01-10-2026, Codex para Axel):** gráficos reales en Inicio y `/informes` con ventas, evaluación K03 y estados de pedidos, filtros inclusivos por fecha/modelo, tablas paginadas, detalle en diálogo y CSV completo. 34 pruebas de reportes/ventas/ML correctas; typecheck y build web correctos. API/web activas; lectura real de septiembre: 13.383 unidades, 139 productos, 4.170 pares evaluables. Revisión visual aislada pendiente por ERR_BLOCKED_BY_CLIENT en puerto 3001. [Contrato](../../api/contrato-informes.md); integración transversal en [Cueva](cueva.md). Cambios locales, sin commit ni migración nueva.
 - **Flujo completo y claridad transversal (30-09-2026, Codex para Axel):** Pronósticos y panel explican cálculo, modelo, partición, MAE/WAPE y cobertura en lenguaje legible; huellas/JSON técnicos en detalles. Automatización completa conserva pronóstico anterior al objetivo y evaluación posterior. No se cambia modelo, entrenamiento ni política cronológica.
 
@@ -27,7 +48,9 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 | K03 · Implementar evaluación histórica | LISTO_PARA_INTEGRAR; backtest PostgreSQL con 4 047 pares |
 | K04 · Construir dashboard y vistas de pronóstico | LISTO_PARA_INTEGRAR; API respondió en PostgreSQL y frontend compiló |
 
-## Bitácora
+</details>
+
+
 
 ### Dashboard en Inicio y Reportes · 01-10-2026
 

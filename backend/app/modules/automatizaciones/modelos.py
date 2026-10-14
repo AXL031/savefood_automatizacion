@@ -1,4 +1,4 @@
-"""Programaciones y trazas durables del motor de demostración."""
+"""Programaciones y trazas durables del motor de automatización."""
 
 from datetime import datetime
 
@@ -16,7 +16,7 @@ class ProgramacionDemo(Base):
     __table_args__ = (
         UniqueConstraint("clave_idempotencia", name="uq_programacion_demo_clave"),
         CheckConstraint("tipo IN ('GENERAR_PROPUESTA', 'EVALUAR_PROMOCION')", name="ck_programacion_demo_tipo"),
-        CheckConstraint("estado IN ('PROGRAMADA', 'DESPACHADA', 'CANCELADA')", name="ck_programacion_demo_estado"),
+        CheckConstraint("estado IN ('PROGRAMADA', 'DESPACHADA', 'PAUSADA', 'CANCELADA')", name="ck_programacion_demo_estado"),
         Index("ix_programacion_demo_vencimientos", "estado", "ejecutar_desde_utc"),
     )
 
@@ -32,6 +32,7 @@ class ProgramacionDemo(Base):
     lease_hasta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     creado_por: Mapped[int | None] = mapped_column(ForeignKey("usuario.id", ondelete="RESTRICT"))
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    cambios_json: Mapped[list] = mapped_column(JsonPersistido, nullable=False, default=list, server_default="[]")
 
 
 class EjecucionAutomatizacion(Base):
@@ -44,7 +45,7 @@ class EjecucionAutomatizacion(Base):
             name="ck_ejecucion_automatizacion_tipo",
         ),
         CheckConstraint(
-            "estado IN ('PENDIENTE', 'EN_EJECUCION', 'REINTENTANDO', 'COMPLETADA', 'FALLIDA')",
+            "estado IN ('PENDIENTE', 'EN_EJECUCION', 'REINTENTANDO', 'COMPLETADA', 'FALLIDA', 'CANCELADA')",
             name="ck_ejecucion_automatizacion_estado",
         ),
         Index("ix_ejecucion_automatizacion_estado", "estado"),
@@ -66,6 +67,15 @@ class EjecucionAutomatizacion(Base):
     token_despacho: Mapped[str | None] = mapped_column(String(36))
     datos_salida_json: Mapped[dict | None] = mapped_column(JsonPersistido)
     mensaje_error: Mapped[str | None] = mapped_column(Text)
+
+
+class ConfiguracionFlujo(Base):
+    __tablename__ = "configuracion_flujo"
+    __table_args__ = (CheckConstraint("id = 1", name="ck_configuracion_flujo_unica"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    parametros: Mapped[dict] = mapped_column(JsonPersistido, nullable=False)
+    actualizado_por: Mapped[int] = mapped_column(ForeignKey("usuario.id", ondelete="RESTRICT"), nullable=False)
+    actualizado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
 
 class IntentoAutomatizacion(Base):

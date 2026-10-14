@@ -31,14 +31,14 @@ type Props<T> = {
  */
 export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, vacioDescripcion, pie, paginacion }: Props<T>) {
   if (cargando) {
-    return <EstadoPanel tono="info" titulo="Cargando datos…" descripcion="Consultando la API local." />;
+    return <EstadoPanel tono="info" titulo="Cargando datos…" descripcion="Consultando la información." />;
   }
   if (!filas.length) {
     return (
       <EstadoPanel
         tono="neutral"
         titulo={vacioTitulo ?? "Todavía no hay registros"}
-        descripcion={vacioDescripcion ?? "Cuando existan datos en la base local aparecerán en esta tabla."}
+        descripcion={vacioDescripcion ?? "Cuando existan datos aparecerán en esta tabla."}
       />
     );
   }

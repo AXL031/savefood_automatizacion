@@ -27,6 +27,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**14-10-2026 · Catálogo completo, solicitud de Axel:** ProgramarPropuesta/ConfigurarFlujo y programar_propuesta aceptan uno o más IDs positivos y únicos sin máximo de cinco. Se mantiene orden/idempotencia y validación de requisitos por producto. Asistente consulta todos los activos; selección heredada no restringe la planificación. Contrato de flujo y pruebas de persistencia de 139 IDs actualizados; coordinación en el registro de Cueva.
+
 **A02 y A03 disponibles:** `modelos.py`, `esquemas.py`, `servicio.py` y `rutas.py` reservan programación más ejecución pendiente en una transacción, exponen lecturas y permiten iniciar/finalizar intentos con sesión del consumidor sin commit. `programar_ejecucion` permite a servicios internos reservar `GENERAR_PROPUESTA` o `EVALUAR_PROMOCION` con fecha UTC, fecha simulada, parámetros y clave idempotente. `0001b_automatizaciones` crea las tres tablas y `0001c_motor` agrega token y lease a la ejecución. Beat reclama y recupera trabajos; el cálculo de cada dominio espera su adaptador público. Ver [contratos A02 y A03](../../../../docs/api/contratos.md).
 
 1. Crear consultas/acciones de programación y detalle con clave y huella de entrada.
@@ -61,3 +63,15 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](.
 ## Claridad y flujo completo · 30-09-2026
 
 programar_propuesta admite modo_envio_pedidos opcional y lo conserva en parámetros/huella. Omitir conserva comportamiento previo; null no añade snapshot de modo. Validar literal manual/automático. La UI administra una ejecución única para el objetivo histórico.
+
+## Corte vigente · 11-10-2026 · Flujo y promociones
+
+Codex para Axel implementó configuración reutilizable, comprobación de requisitos por interfaces públicas, calendario histórico diario de 1–31 días, modelo/modo conservados y pausa/cancelación/reprogramación de tareas sin despacho. Promociones tienen regla inmutable versionada, reserva transaccional después de cada ajuste nuevo de producto y evaluación idempotente con snapshot/motivo; API y pantalla reales. Se conserva la propiedad de cada dominio.
+
+[Contrato vigente, APIs y límites](../../../../docs/api/contrato-flujo-promociones.md). Aplicar `0015_flujo_promociones` antes de actualizar API/worker/Beat. El diagnóstico no ejecuta inferencia ni envía mensajes; guardar configuración no agenda. Consultas de tareas/evaluaciones admiten paginación real con total. La pausa no recupera horas perdidas: reprogramar antes de reanudar. Deshabilitar promociones afecta ajustes nuevos; tareas ya reservadas conservan su versión. Hora simulada de evaluación avanza por el tiempo real transcurrido desde el ajuste para comprobar frescura.
+
+Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
+
+## Corte solicitado · 14-10-2026
+
+Codex para Axel. Gestionar admite EJECUTAR_AHORA con motivo administrativo: adelanta una tarea pendiente/pausada, conserva entrada/clave/modelo/modo y la recoge Beat. No modifica tareas iniciadas. Contrato: docs/api/contrato-flujo-promociones.md; pruebas test_flujo_promociones.py.

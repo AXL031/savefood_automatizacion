@@ -336,7 +336,7 @@ def registrar_ajuste(sesion: Session, solicitud: SolicitudAjuste, usuario_id: in
         raise ErrorAPI(422, "HORA_INVALIDA", "efectivo_en_demo es hora local del escenario, sin zona horaria.")
 
     lote = _bloquear_lote(sesion, tipo, solicitud.lote_id)
-    return _aplicar(
+    resultado = _aplicar(
         sesion,
         tipo=tipo,
         lote=lote,
@@ -347,6 +347,27 @@ def registrar_ajuste(sesion: Session, solicitud: SolicitudAjuste, usuario_id: in
         efectivo_en_demo=efectivo,
         usuario_id=usuario_id,
     )
+    if tipo == PRODUCTO and not resultado.repetido:
+        from app.modules.promociones.servicio import reservar_tras_ajuste
+        reservar_tras_ajuste(sesion, resultado.movimiento_id, usuario_id)
+    return resultado
+
+
+def lectura_para_promocion(sesion: Session, movimiento_id: int) -> dict | None:
+    """Snapshot público del movimiento y vigencia de su lectura; no confirma."""
+    movimiento = sesion.get(MovimientoInventario, movimiento_id)
+    if movimiento is None or movimiento.lote_producto_id is None:
+        return None
+    lote = _bloquear_lote(sesion, PRODUCTO, movimiento.lote_producto_id)
+    ultimo = sesion.scalar(select(MovimientoInventario.id).where(
+        MovimientoInventario.lote_producto_id == lote.id).order_by(MovimientoInventario.id.desc()).limit(1))
+    producto = sesion.get(Producto, lote.producto_id)
+    return {"lote_id": lote.id, "codigo_lote": lote.codigo_lote, "producto_id": lote.producto_id,
+            "producto_nombre": producto.nombre, "saldo": int(movimiento.saldo_resultante),
+            "fecha_limite_venta": lote.fecha_limite_venta.isoformat() if lote.fecha_limite_venta else None,
+            "fecha_caducidad": lote.fecha_caducidad.isoformat() if lote.fecha_caducidad else None,
+            "efectivo_en_demo": movimiento.efectivo_en_demo.isoformat(), "ultimo_movimiento_id": ultimo,
+            "registrado_en": (movimiento.creado_en.replace(tzinfo=timezone.utc) if movimiento.creado_en.tzinfo is None else movimiento.creado_en).isoformat()}
 
 
 # --- V02: disponibilidad por fecha (para el plan de Max) ---------------------------

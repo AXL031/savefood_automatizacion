@@ -56,7 +56,7 @@ Menú de escritorio dentro de sidebar-menu: altura disponible, min-height:0, ove
 
 ## Claridad y flujo completo · 30-09-2026
 
-GuiaPantalla aporta propósito/pasos/términos/enlace según ruta, incluidos detalle de ejecución y piloto. ProtectedShell conserva autenticación/permisos y usa menú agrupado, indicador de ruta y botón móvil con aria-expanded/controls. Piloto se abre desde Datos iniciales; Notificaciones futura no aparece en navegación principal.
+Desde el 14-10-2026 no hay guía por pantalla (GuiaPantalla se eliminó): la interfaz no muestra textos de demostración, escenario ni instrucciones tipo manual. ProtectedShell conserva autenticación/permisos y usa menú agrupado, indicador de ruta y botón móvil con aria-expanded/controls. Piloto se abre desde Datos iniciales; Notificaciones futura no aparece en navegación principal.
 
 
 ## Navegación, páginas y detalles · 30-09-2026
@@ -66,3 +66,11 @@ AppShell vive en el layout raíz y conserva el marco y ContextoSesion. Protected
 ## Dashboard y Reportes de lectura · 01-10-2026
 
 Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` con períodos inclusivos, versión del modelo, tablas paginadas, detalle en diálogo y CSV completo del período. [Contrato](../../../../docs/api/contrato-informes.md). Ventas publica `resumen_ventas`/`periodo_ventas`; Compras `resumen_pedidos`/`periodo_propuestas` cuenta pedidos sin multiplicar intentos; K03 admite filtros `desde`/`hasta` opcionales conservando la consulta anterior sin filtros. Informes coordina únicamente interfaces públicas. No migra, entrena, modifica stock ni envía mensajes. Fechas ausentes no se rellenan con cero. Registro/evidencia en Bohorquez y coordinación Cueva.
+
+## Corte vigente · 11-10-2026 · Flujo y promociones
+
+Codex para Axel implementó configuración reutilizable, comprobación de requisitos por interfaces públicas, calendario histórico diario de 1–31 días, modelo/modo conservados y pausa/cancelación/reprogramación de tareas sin despacho. Promociones tienen regla inmutable versionada, reserva transaccional después de cada ajuste nuevo de producto y evaluación idempotente con snapshot/motivo; API y pantalla reales. Se conserva la propiedad de cada dominio.
+
+[Contrato vigente, APIs y límites](../../../../docs/api/contrato-flujo-promociones.md). Aplicar `0015_flujo_promociones` antes de actualizar API/worker/Beat. El diagnóstico no ejecuta inferencia ni envía mensajes; guardar configuración no agenda. Consultas de tareas/evaluaciones admiten paginación real con total. La pausa no recupera horas perdidas: reprogramar antes de reanudar. Deshabilitar promociones afecta ajustes nuevos; tareas ya reservadas conservan su versión. Hora simulada de evaluación avanza por el tiempo real transcurrido desde el ajuste para comprobar frescura.
+
+Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.

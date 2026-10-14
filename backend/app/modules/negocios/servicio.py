@@ -10,6 +10,20 @@ from app.modules.negocios.modelos import Negocio
 ModoEnvio = Literal["REQUIERE_APROBACION", "AUTOMATICO"]
 
 
+def nombre_negocio(sesion: Session) -> str:
+    negocio = sesion.get(Negocio, 1)
+    if negocio is None:
+        raise ErrorAPI(503, "NEGOCIO_NO_CONFIGURADO", "Configura el negocio primero.")
+    return negocio.nombre
+
+
+def zona_horaria_negocio(sesion: Session) -> str:
+    negocio = sesion.get(Negocio, 1)
+    if negocio is None:
+        raise ErrorAPI(503, "NEGOCIO_NO_CONFIGURADO", "Configura el negocio primero.")
+    return negocio.zona_horaria
+
+
 def obtener_modo_envio_pedidos(sesion: Session) -> ModoEnvio:
     """Lee el modo vigente sin confirmar la sesión del consumidor."""
     negocio = sesion.get(Negocio, 1)

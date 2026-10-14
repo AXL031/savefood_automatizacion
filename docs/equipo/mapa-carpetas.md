@@ -9,6 +9,8 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | Carpeta | Responsable | Alcance | Guía |
 |---|---|---|---|
 | `.` | Axel Cueva | Compartida; coordinación | [Abrir](../../GUIA_DESARROLLO.md) |
+| `datos_carga` | Axel Cueva, coordinación con Sanchez/Bohorquez/Vera/Rojas | Cinco CSV del usuario preparados para la primera carga | [Abrir](../../datos_carga/GUIA_DESARROLLO.md) |
+| `datos_carga/referencias` | Axel Cueva, coordinación con Rojas | Supuestos de recetas; documentación auxiliar sin importar | [Abrir](../../datos_carga/referencias/GUIA_DESARROLLO.md) |
 | `.github` | Axel Cueva | Compartida; coordinación | [Abrir](../../.github/GUIA_DESARROLLO.md) |
 | `.github/workflows` | Axel Cueva | Compartida; coordinación | [Abrir](../../.github/workflows/GUIA_DESARROLLO.md) |
 | `backend` | Axel Cueva | Compartida; coordinación | [Abrir](../../backend/GUIA_DESARROLLO.md) |

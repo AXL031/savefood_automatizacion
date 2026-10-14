@@ -95,3 +95,16 @@ Necesidades y pedidos siguen pendientes en este corte local.
 ## Reportes de lectura · 01-10-2026
 
 GET `/api/v1/informes/resumen` y GET `/api/v1/informes/exportar?tipo=ventas|pronosticos|pedidos`, para Administrador y Operador autenticados. Filtros inclusivos desde/hasta y modelo_id, máximo 366 días. CSV del período completo, sin paginación de exportación. [Contrato](contrato-informes.md). Vista `/informes` y dashboard en `/`; informes económicos/impacto siguen fuera de alcance.
+
+## Rutas disponibles · 11-10-2026
+
+- GET/PUT `/api/v1/flujo-automatizacion/configuracion`: parámetros reutilizables; guardar no agenda.
+- POST `/api/v1/flujo-automatizacion/comprobar`: diagnóstico sin red ni inferencia.
+- POST `/api/v1/flujo-automatizacion/programar`: calendario finito y autorización automática explícita.
+- POST `/api/v1/programaciones-demo/{id}/gestionar`: PAUSAR/REANUDAR/CANCELAR/EJECUTAR_AHORA con motivo.
+- PATCH `/api/v1/programaciones-demo/{id}`: horario real futuro con motivo.
+- GET/PUT `/api/v1/promociones/regla`: última versión; escritura crea versión inmutable.
+- GET `/api/v1/promociones/evaluaciones` y `/{id}`: sugerencias/rechazos con referencias.
+- GET programaciones, ejecuciones y evaluaciones: `limite`, `desplazamiento`, `metadatos.total`.
+
+[Contrato y errores](contrato-flujo-promociones.md). Solo Administrador modifica; tareas despachadas conservan sus efectos y estado.

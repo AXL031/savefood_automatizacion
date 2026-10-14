@@ -33,20 +33,21 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     return () => control.abort();
   }, [contexto.token, revision]);
   const pedidos = propuestas?.flatMap((propuesta) => propuesta.pedidos);
+  const porRevisar = pedidos?.filter((p) => p.estado === "PENDIENTE_APROBACION").length ?? 0;
+  const siguiente = !inicial?.modelo_id ? { titulo: "Preparar datos y modelo", detalle: "Completa la primera carga y sigue la preparación automática.", enlace: "/inicializacion" } : porRevisar ? { titulo: "Revisar pedidos pendientes", detalle: `${porRevisar} pedido(s) esperan tu revisión en la consulta reciente.`, enlace: "/compras" } : { titulo: "Configurar mi automatización", detalle: "El asistente te muestra qué está listo, qué falta y cuándo se ejecutará la planificación.", enlace: "/automatizaciones" };
   return <>
-    <section className="card"><div className="section-heading"><div><h2>Bienvenido, {contexto.perfil.nombre}</h2><p>Consulta el estado de {contexto.negocio.nombre} y continúa el recorrido de la demostración.</p></div><button className="button-secondary" disabled={cargando} onClick={() => setRevision((r) => r + 1)}>Actualizar</button></div>
-      <p>Los planes y pedidos del escenario conservan su fecha histórica. Revisar o enviar un pedido no cambia el inventario.</p>
+    <section className="card"><div className="section-heading"><div><h2>Bienvenido, {contexto.perfil.nombre}</h2><p>Esto es lo que necesita tu atención hoy en {contexto.negocio.nombre}.</p></div><button className="button-secondary" disabled={cargando} onClick={() => setRevision((r) => r + 1)}>Actualizar</button></div>
     </section>
     {errores.length > 0 && <EstadoPanel tono="alerta" titulo="Algunas secciones no están disponibles" descripcion={[...new Set(errores)].join(" ")} />}
-    {cargando && <p role="status">Consultando el estado de la instalación…</p>}
+    {cargando && <p role="status">Consultando el estado de tu negocio…</p>}
+    {!cargando && inicial && <section className="card next-action section-space"><h2>Tu siguiente paso: {siguiente.titulo}</h2><p>{siguiente.detalle}</p><Link href={siguiente.enlace} className="button-primary">Continuar →</Link><p className="helper-text"><Link href="/promociones">Configurar promociones sugeridas</Link></p></section>}
     <DashboardInicio token={contexto.token} revision={revision} />
     <div className="home-grid section-space">
       <section className="card"><h2>Datos y modelo</h2><strong className="home-stat">{inicial ? estados[inicial.estado] : cargando ? "Consultando…" : "Sin consulta disponible"}</strong><p>{inicial?.modelo_id ? `Modelo #${inicial.modelo_id}` : "Primera carga y preparación del modelo."}</p><Link href="/inicializacion">Abrir primera carga</Link>{inicial?.modelo_id && <p><Link href="/pronosticos">Ver pronósticos</Link></p>}</section>
-      <section className="card"><h2>Planificación</h2><strong className="home-stat">{planes ? planes.length : cargando ? "…" : "—"}</strong><p>Planes en la consulta reciente{planes?.[0] ? `. Último: #${planes[0].id}, escenario ${planes[0].fecha_objetivo}.` : "."}</p><Link href="/planificacion">Revisar planes y faltantes</Link></section>
+      <section className="card"><h2>Planificación</h2><strong className="home-stat">{planes ? planes.length : cargando ? "…" : "—"}</strong><p>Planes en la consulta reciente{planes?.[0] ? `. Último: #${planes[0].id}, para el ${planes[0].fecha_objetivo}.` : "."}</p><Link href="/planificacion">Revisar planes y faltantes</Link></section>
       <section className="card"><h2>Pedidos por revisar</h2><strong className="home-stat">{pedidos ? pedidos.filter((p) => p.estado === "PENDIENTE_APROBACION").length : cargando ? "…" : "—"}</strong><p>Pendientes de aprobación en las últimas 50 propuestas. Revisa el texto y el chat antes de decidir.</p><Link href="/compras">Abrir Compras</Link></section>
-      <section className="card"><h2>Evaluación histórica</h2><p>Consulta la comparación entre pronósticos y ventas del escenario, métricas y cobertura disponibles.</p><Link href="/panel">Abrir panel histórico</Link></section>
+      <section className="card"><h2>Evaluación histórica</h2><p>Consulta la comparación entre pronósticos y ventas reales, métricas y cobertura disponibles.</p><Link href="/panel">Abrir panel histórico</Link></section>
     </div>
-    <section className="card section-space"><h2>Recorrido de la demostración</h2><ol className="journey-grid"><li><strong>Preparar</strong><p>Carga ventas, recetas y stock; espera al modelo.</p><Link href="/inicializacion">Datos iniciales →</Link></li><li><strong>Conectar</strong><p>Asigna ofertas y verifica tu propio Telegram.</p><Link href="/proveedores">Proveedor y chat →</Link></li><li><strong>Programar</strong><p>Elige productos, horario y modo de envío.</p><Link href="/automatizaciones">Programar flujo →</Link></li><li><strong>Comprobar</strong><p>Revisa faltantes, mensajes y resultados.</p><Link href="/compras">Pedidos y envíos →</Link></li></ol></section>
   </>;
 }
-export default function Inicio() { return <ProtectedShell titulo="Inicio" descripcion="Estado de la instalación y acceso a tus tareas.">{(contexto) => <Contenido contexto={contexto} />}</ProtectedShell>; }
+export default function Inicio() { return <ProtectedShell titulo="Inicio" descripcion="Resumen de tu negocio y tareas pendientes.">{(contexto) => <Contenido contexto={contexto} />}</ProtectedShell>; }

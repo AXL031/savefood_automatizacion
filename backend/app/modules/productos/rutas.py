@@ -16,7 +16,7 @@ LIMITE = 500
 
 @router.get("")
 def listar_productos(
-    solo_demo: bool = Query(False, description="Solo los productos marcados para la demostración."),
+    solo_demo: bool = Query(False, description="Solo los productos incluidos en la planificación."),
     _usuario: Usuario = Depends(identidad_actual),
     sesion: Session = Depends(obtener_sesion),
 ):

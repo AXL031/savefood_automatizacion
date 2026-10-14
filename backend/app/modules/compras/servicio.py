@@ -7,13 +7,20 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.errores import ErrorAPI
-from app.modules.negocios.servicio import obtener_modo_envio_pedidos
+from app.modules.negocios.servicio import nombre_negocio, obtener_modo_envio_pedidos
 from app.modules.planificacion.servicio import obtener_contexto_compras
 from app.modules.proveedores.servicio import ServicioProveedores
 from .modelos import EnvioPedido, LineaPedido, PedidoCompra, PropuestaCompra, RecuperacionEnvio
 
 
 ESTADOS_CANCELABLES = {"BLOQUEADO", "PENDIENTE_APROBACION", "RECHAZADO"}
+
+
+def fechas_con_compra_activa(sesion: Session, desde: date, hasta: date) -> list[str]:
+    """Frontera de lectura para diagnóstico del calendario, sin cancelar ni reservar."""
+    return [fecha.isoformat() for fecha in sesion.scalars(select(PropuestaCompra.fecha_objetivo).where(
+        PropuestaCompra.activa.is_(True), PropuestaCompra.fecha_objetivo >= desde,
+        PropuestaCompra.fecha_objetivo <= hasta).order_by(PropuestaCompra.fecha_objetivo))]
 
 ESTADOS_REPORTE = ("BLOQUEADO", "PENDIENTE_APROBACION", "CANCELADO", "RECHAZADO",
                    "PENDIENTE_ENVIO", "ENVIANDO", "ENVIADO", "FALLIDO", "PENDIENTE_VERIFICACION")
@@ -57,9 +64,9 @@ def _conflicto_fecha(sesion, fecha):
         estados = set(sesion.scalars(select(PedidoCompra.estado).where(PedidoCompra.propuesta_id == anterior.id)))
         referencia = f"La fecha {fecha.isoformat()} ya tiene la propuesta #{anterior.id} del plan #{anterior.plan_id}."
         if "ENVIADO" in estados:
-            detalle = "Su mensaje ya fue enviado a Telegram. No se puede cancelar para enviar otro pedido de la misma fecha. Consulta la confirmación en Pedidos y envíos; para una nueva prueba elige otra fecha del escenario histórico."
+            detalle = "Su mensaje ya fue enviado a Telegram. No se puede cancelar para enviar otro pedido de la misma fecha. Consulta la confirmación en Pedidos y envíos; para una nueva planificación elige otra fecha."
         elif estados - ESTADOS_CANCELABLES:
-            detalle = "Tiene un envío autorizado o un intento registrado y no se puede cancelar. Consulta su estado en Pedidos y envíos antes de cualquier nueva compra; para otra prueba elige otra fecha del escenario histórico."
+            detalle = "Tiene un envío autorizado o un intento registrado y no se puede cancelar. Consulta su estado en Pedidos y envíos antes de cualquier nueva compra; para otra planificación elige otra fecha."
         else:
             detalle = "Todavía no se ha autorizado ningún envío. Cancélala explícitamente en Pedidos y envíos antes de usar otro plan de esta fecha."
         raise ErrorAPI(409, "RECOMPRA_FECHA", f"{referencia} {detalle}")
@@ -261,13 +268,13 @@ def construir_mensaje(sesion: Session, pedido: PedidoCompra) -> str:
         numero = format(valor, "f")
         if "." in numero: numero = numero.rstrip("0").rstrip(".")
         return f"{numero.replace('.', ',')} {linea_texto(unidad)}"
-    partes = ["DEMOSTRACIÓN — NO SURTIR", f"FoodSave · Pedido #{pedido.id}",
-        f"Fecha del escenario: {propuesta.fecha_objetivo.isoformat()}",
-        f"Proveedor simulado: {linea_texto(pedido.proveedor_json['nombre'])}", f"Plan de origen: #{pedido.plan_id}", "", "Insumos:"]
+    partes = [f"{linea_texto(nombre_negocio(sesion))} · Pedido #{pedido.id}",
+        f"Fecha de planificación: {propuesta.fecha_objetivo.isoformat()}",
+        f"Proveedor: {linea_texto(pedido.proveedor_json['nombre'])}", f"Plan de origen: #{pedido.plan_id}", "", "Insumos:"]
     for linea in sesion.scalars(select(LineaPedido).where(LineaPedido.pedido_id == pedido.id).order_by(LineaPedido.ingrediente_id)):
         partes.append(f"• {linea_texto(linea.ingrediente_json['stock']['nombre'])}: {cantidad_texto(linea.cantidad_compra, linea.unidad_compra)} "
                       f"(equivale a {cantidad_texto(linea.cantidad_base_pedida, linea.unidad_base)}; faltante {cantidad_texto(linea.faltante_base, linea.unidad_base)})")
-    partes.extend(["", "Prueba universitaria con datos de escenario. No abastecer, cobrar ni despachar mercancía."])
+    partes.extend(["", "Por favor, confirma la disponibilidad y el precio antes de coordinar la entrega."])
     return "\n".join(partes)
 
 

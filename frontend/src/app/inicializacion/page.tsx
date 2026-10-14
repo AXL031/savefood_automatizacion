@@ -16,7 +16,7 @@ import type { ConfiguracionInicial, InformeCarga, VistaPrevia } from "@/types/in
 import { formatearFechaHora } from "@/utils/fechas";
 
 const PASOS = [
-  { titulo: "Elegir archivos y fechas", detalle: "Dos libros XLSX o los cinco CSV, más las fechas del escenario." },
+  { titulo: "Elegir archivos y fechas", detalle: "Dos libros XLSX o los cinco CSV, más las fechas de planificación." },
   { titulo: "Revisar la vista previa", detalle: "Filas, productos, fechas cubiertas y errores por fila. No se guarda nada." },
   { titulo: "Aceptar la carga", detalle: "Se guardan los datos juntos; un fallo no deja una carga a medias." },
 ];
@@ -39,7 +39,7 @@ const TONOS: Record<ConfiguracionInicial["estado"], "neutral" | "info" | "ok" | 
 
 /** Los cinco CSV del contrato; con XLSX son `ventas.xlsx` y `catalogo.xlsx`. */
 const RANURAS = [
-  { clave: "ventas", etiqueta: "Ventas", ayuda: "ventas.csv o ventas.xlsx. Acepta también el CSV de tickets del piloto." },
+  { clave: "ventas", etiqueta: "Ventas", ayuda: "ventas.csv o ventas.xlsx. Acepta también un CSV de tickets." },
   { clave: "productos", etiqueta: "Productos", ayuda: "productos.csv, o la hoja del catálogo si usas XLSX." },
   { clave: "ingredientes", etiqueta: "Ingredientes", ayuda: "ingredientes.csv" },
   { clave: "recetas", etiqueta: "Recetas", ayuda: "recetas.csv" },
@@ -61,14 +61,14 @@ function TarjetaEstado({ estado, administrador, reintentando, alReintentar }: {
     <section className="card">
       <div className="section-heading">
         <div>
-          <h2>Estado de la instalación</h2>
-          <p>Una sola instalación, un comercio y una sucursal.</p>
+          <h2>Estado de los datos</h2>
+          <p>Carga inicial y preparación del modelo de pronóstico.</p>
         </div>
         <span className={`badge badge-${TONOS[estado.estado]}`}>{ETIQUETAS[estado.estado]}</span>
       </div>
       <div className="pronostico-meta">
         <div>
-          <span>Día histórico que se va a planificar</span>
+          <span>Día que se va a planificar</span>
           <strong><ValorOpcional valor={estado.fecha_objetivo_demo} textoAusente="Sin definir" /></strong>
         </div>
         <div>
@@ -119,7 +119,7 @@ function ResumenVistaPrevia({ vista }: { vista: VistaPrevia }) {
       {bakery ? (
         <EstadoPanel
           tono="info"
-          titulo="Se adaptó el CSV de tickets del piloto"
+          titulo="Se adaptó el CSV de tickets"
           descripcion={
             `${bakery.lineas_leidas} líneas leídas de ${bakery.articulos} artículos; ` +
             `${bakery.lineas_negativas_excluidas} negativas excluidas y ${bakery.lineas_invalidas} inválidas. ` +
@@ -128,7 +128,7 @@ function ResumenVistaPrevia({ vista }: { vista: VistaPrevia }) {
         />
       ) : null}
 
-      <h3 className="section-space">Productos de la demostración</h3>
+      <h3 className="section-space">Productos planificados</h3>
       <p className="helper-text">Solo estos participan en el plan; el resto queda en el historial de ventas.</p>
       <ul className="rule-list">
         {catalogo.productos_demo.map((producto) => (
@@ -158,7 +158,7 @@ function InformeFinal({ informe }: { informe: InformeCarga }) {
         titulo={informe.pendiente_de.length ? "Carga parcial aceptada" : "Primera carga completada"}
         descripcion={
           informe.pendiente_de.length
-            ? "Se guardaron catálogo y ventas. La instalación no queda inicializada hasta que lleguen los servicios que faltan."
+            ? "Se guardaron catálogo y ventas. La configuración se completará cuando se carguen los datos que faltan."
             : "Catálogo, ventas, recetas y stock de apertura quedaron persistidos. El modelo ya puede prepararse."
         }
       />
@@ -185,6 +185,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 
   const [estado, setEstado] = useState<ConfiguracionInicial | null>(null);
   const [archivos, setArchivos] = useState<Record<string, File | null>>({});
+  const [formato, setFormato] = useState("csv");
   const [objetivo, setObjetivo] = useState("");
   const [referencia, setReferencia] = useState("");
   const [clave, setClave] = useState("");
@@ -194,6 +195,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState("");
   const [reintentando, setReintentando] = useState(false);
+  useEffect(() => { setClave(`carga-${crypto.randomUUID()}`); }, []);
 
   useEffect(() => {
     const control = new AbortController();
@@ -274,7 +276,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   async function aceptar() {
     if (!vista?.aceptable) return;
     if (clave.trim().length < 3) {
-      setError("Escribe una clave de importación estable, por ejemplo primera-carga-1.");
+      setError("No se pudo generar el identificador de la carga. Actualiza la pantalla.");
       return;
     }
     setConfirmando(true);
@@ -302,7 +304,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           <div>
             <h2>Asistente de primera carga</h2>
             <p>
-              Los archivos se piden una sola vez. Después, el sistema utiliza su base local para las ventas y el inventario.
+              Los archivos se piden una sola vez. Después, FoodSave trabaja con sus propios registros de ventas e inventario.
             </p>
           </div>
         </div>
@@ -317,30 +319,31 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           />
         ) : null}
 
-        <p className="helper-text"><Link href="/inicializacion/piloto">Carga rápida del CSV bakery (solo ventas del piloto) →</Link></p><h3 className="section-space">Archivos</h3>
+        <p className="helper-text"><Link href="/inicializacion/piloto">Carga rápida solo de ventas →</Link></p><h3 className="section-space">Archivos</h3>
+        <label className="field">Formato de tus archivos<select value={formato} disabled={!administrador || validando || confirmando} onChange={(e) => { setFormato(e.target.value); setArchivos({}); setVista(null); setInforme(null); setClave(`carga-${crypto.randomUUID()}`); }}><option value="csv">Cinco archivos CSV</option><option value="xlsx">Dos archivos Excel</option></select></label>
         <div className="form-grid">
-          {RANURAS.map((ranura) => (
+          {(formato === "xlsx" ? [{ clave: "ventas", etiqueta: "Ventas", ayuda: "ventas.xlsx" }, { clave: "productos", etiqueta: "Catálogo", ayuda: "catalogo.xlsx con hojas productos, ingredientes, recetas y stock_inicial." }] : RANURAS).map((ranura) => (
             <CampoArchivo
               key={ranura.clave}
               id={`archivo-${ranura.clave}`}
               etiqueta={ranura.etiqueta}
-              acepta=".csv,.xlsx"
+              acepta={formato === "xlsx" ? ".xlsx" : ".csv"}
               ayuda={ranura.ayuda}
               archivo={archivos[ranura.clave] ?? null}
               onCambio={(archivo) => cambiarArchivo(ranura.clave, archivo)}
-              deshabilitado={!administrador}
+              deshabilitado={!administrador || validando || confirmando}
             />
           ))}
         </div>
 
-        <h3 className="section-space">Fechas del escenario</h3>
+        <h3 className="section-space">Fechas de planificación</h3>
         <div className="form-grid">
           <CampoFecha
             id="fecha-objetivo"
-            etiqueta="Día histórico que se va a planificar"
+            etiqueta="Día que se va a planificar"
             valor={objetivo}
             onCambio={(valor) => { setObjetivo(valor); setVista(null); }}
-            ayuda="Debe caer en el tramo de prueba reservado. Para el piloto se propone 2022-08-24."
+            ayuda="Debe estar dentro del periodo de evaluación del modelo."
             deshabilitado={!administrador}
           />
           <CampoFecha
@@ -349,7 +352,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
             valor={referencia}
             onCambio={(valor) => { setReferencia(valor); setVista(null); }}
             max={objetivo || undefined}
-            ayuda="Cierre simulado anterior al objetivo, por ejemplo 2022-08-23."
+            ayuda="Cierre de stock anterior al día que se planifica."
             deshabilitado={!administrador}
           />
         </div>
@@ -387,16 +390,17 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           {vista.aceptable && !informe ? (
             <>
               <h3 className="section-space">Aceptar la carga</h3>
-              <div className="form-grid">
+              <details><summary>Detalles de esta carga</summary><div className="form-grid">
                 <CampoTexto
                   id="clave-importacion"
                   etiqueta="Identificador de esta carga"
                   valor={clave}
                   onCambio={setClave}
-                  ayuda="Estable: repetirla con los mismos archivos no vuelve a cargar."
+                  deshabilitado
+                  ayuda="Se genera automáticamente y se conserva si reintentas esta carga."
                   ancho="completo"
                 />
-              </div>
+              </div></details>
               <div className="form-actions">
                 <BotonEnviar
                   type="button"

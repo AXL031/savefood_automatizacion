@@ -1,0 +1,140 @@
+codigo_producto,nombre_producto,categoria_simulada,origen_receta,supuesto_unidad_venta
+12_macaron,12 MACARON,Bollería y dulces,estimada,Caja de 12 macarons más empaque
+armoricain,ARMORICAIN,Pastelería y tartas,estimada,"Tarta Armoricaine tipo almendra, chocolate y crema (aproximación)"
+baguette,BAGUETTE,Receta original,original,Una unidad de producto terminado; se conservan cantidades originales
+baguette_apero,BAGUETTE APERO,Panes y salados,estimada,Baguette pequeña de aperitivo
+baguette_graine,BAGUETTE GRAINE,Panes y salados,estimada,Barra con semillas
+banette,BANETTE,Receta original,original,Una unidad de producto terminado; se conservan cantidades originales
+banettine,BANETTINE,Panes y salados,estimada,Barra pequeña tipo Banette
+boisson_33cl,BOISSON 33CL,"Servicios, combos y bebidas",estimada,"Producto comprado, no elaborado: descuenta una lata/botella de 330 ml"
+bottereau,BOTTEREAU,Bollería y dulces,estimada,Buñuelo/bottereau individual
+boule_200g,BOULE 200G,Panes y salados,estimada,Pan redondo de ~200 g terminado
+boule_400g,BOULE 400G,Panes y salados,estimada,Pan redondo de ~400 g terminado
+boule_polka,BOULE POLKA,Panes y salados,estimada,Hogaza redonda rústica
+brioche,BRIOCHE,Bollería y dulces,estimada,Pieza individual de brioche
+brioche_de_noel,BRIOCHE DE NOEL,Bollería y dulces,estimada,Brioche navideño entero para compartir
+briochette,BRIOCHETTE,Bollería y dulces,estimada,Brioche individual pequeña
+brownies,BROWNIES,Bollería y dulces,estimada,Brownie individual
+buche_4pers,BUCHE 4PERS,Pastelería y tartas,estimada,Tronco navideño entero de 4 porciones
+buche_6pers,BUCHE 6PERS,Pastelería y tartas,estimada,Tronco navideño entero de 6 porciones
+buche_8pers,BUCHE 8PERS,Pastelería y tartas,estimada,Tronco navideño entero de 8 porciones
+cafe_ou_eau,CAFE OU EAU,"Servicios, combos y bebidas",estimada,Se elige café solo de 190 ml (el SKU también puede significar agua)
+cake,CAKE,Bollería y dulces,estimada,Cake familiar de 5 porciones
+campagne,CAMPAGNE,Panes y salados,estimada,Pan de campo con trigo y centeno
+caramel_noix,CARAMEL NOIX,Bollería y dulces,estimada,Pastel de caramelo y nueces
+cereal_baguette,CEREAL BAGUETTE,Panes y salados,estimada,Barra multicereal
+chausson_aux_pommes,CHAUSSON AUX POMMES,Bollería y dulces,estimada,Hojaldre con manzana individual
+chocolat,CHOCOLAT,"Servicios, combos y bebidas",estimada,SKU ambiguo interpretado como chocolate caliente
+chou_chantilly,CHOU CHANTILLY,Pastelería y tartas,estimada,Chou de nata montada individual
+complet,COMPLET,Panes y salados,estimada,Pan integral
+cookie,COOKIE,Bollería y dulces,estimada,Galleta individual grande
+coupe,COUPE,Pastelería y tartas,estimada,"Copa de postre con fruta y nata, nombre ambiguo"
+croissant,CROISSANT,Receta original,original,Una unidad de producto terminado; se conservan cantidades originales
+croissant_amandes,CROISSANT AMANDES,Bollería y dulces,estimada,Croissant relleno de almendra
+crumble,CRUMBLE,Bollería y dulces,estimada,Crumble individual de manzana
+crumblecaramel_ou_pistae,CRUMBLECARAMEL OU PISTAE,Bollería y dulces,estimada,Crumble con caramelo y pistacho (dos sabores agregados)
+delicetropical,DELICETROPICAL,Pastelería y tartas,estimada,Postre tropical de mango y frutas
+demi_baguette,DEMI BAGUETTE,Panes y salados,estimada,Media baguette
+demi_pain,DEMI PAIN,Panes y salados,estimada,Medio pan
+douceur_d_hiver,DOUCEUR D HIVER,Pastelería y tartas,estimada,"Pastel de invierno con manzana y nuez, estimación"
+eclair,ECLAIR,Pastelería y tartas,estimada,Éclair de crema y chocolate
+eclair_fraise_pistache,ECLAIR FRAISE PISTACHE,Pastelería y tartas,estimada,Éclair de fresa y pistacho
+entremets,ENTREMETS,Pastelería y tartas,estimada,Entremet individual de chocolate
+ficelle,FICELLE,Panes y salados,estimada,Barra muy fina
+financier,FINANCIER,Bollería y dulces,estimada,Financier individual
+financier_x5,FINANCIER X5,Bollería y dulces,estimada,Paquete de cinco financiers
+flan,FLAN,Pastelería y tartas,estimada,Rebanada/porción individual de flan pastelero
+flan_abricot,FLAN ABRICOT,Pastelería y tartas,estimada,Porción de flan con albaricoque
+fondant_chocolat,FONDANT CHOCOLAT,Pastelería y tartas,estimada,Fondant individual de chocolate
+formule_pate,FORMULE PATE,"Servicios, combos y bebidas",estimada,Combo de pasta + bebida de 330 ml
+formule_plat_prepare,FORMULE PLAT PREPARE,"Servicios, combos y bebidas",estimada,Combo de plato preparado + bebida de 330 ml
+formule_sandwich,FORMULE SANDWICH,"Servicios, combos y bebidas",estimada,Combo sándwich + bebida de 330 ml
+fraisier,FRAISIER,Pastelería y tartas,estimada,Porción individual de fraisier
+framboisier,FRAMBOISIER,Pastelería y tartas,estimada,Porción individual de framboisier
+gache,GACHE,Bollería y dulces,estimada,Brioche vendéenne con crema
+gal_frangipane_4p,GAL FRANGIPANE 4P,Pastelería y tartas,estimada,Galette frangipane entera para 4 personas
+gal_frangipane_6p,GAL FRANGIPANE 6P,Pastelería y tartas,estimada,Galette frangipane entera para 6 personas
+gal_poire_choco_4p,GAL POIRE CHOCO 4P,Pastelería y tartas,estimada,Galette de pera y chocolate para 4 personas
+gal_poire_choco_6p,GAL POIRE CHOCO 6P,Pastelería y tartas,estimada,Galette de pera y chocolate para 6 personas
+gal_pomme_4p,GAL POMME 4P,Pastelería y tartas,estimada,Galette de manzana para 4 personas
+gal_pomme_6p,GAL POMME 6P,Pastelería y tartas,estimada,Galette de manzana para 6 personas
+galette_8_pers,GALETTE 8 PERS,Pastelería y tartas,estimada,"Galette frangipane entera para 8 personas, sabor supuesto"
+gd_far_breton,GD FAR BRETON,Bollería y dulces,estimada,Far Breton grande (~8 porciones)
+gd_kouign_amann,GD KOUIGN AMANN,Bollería y dulces,estimada,Kouign-Amann familiar de ~9 pulgadas
+gd_nantais,GD NANTAIS,Bollería y dulces,estimada,Pastel nantais grande (~6 raciones)
+gd_plateau_sale,GD PLATEAU SALE,"Servicios, combos y bebidas",estimada,Bandeja salada grande de 24 bocaditos
+grand_far_breton,GRAND FAR BRETON,Bollería y dulces,estimada,"Far Breton familiar, misma versión que GD"
+grande_sucette,GRANDE SUCETTE,Bollería y dulces,estimada,Caramelo de palo grande
+guerandais,GUERANDAIS,Bollería y dulces,estimada,"Pastel bretón con caramelo salado, estimación"
+kouign_amann,KOUIGN AMANN,Bollería y dulces,estimada,"Kouign-Amann individual, porción del pastel familiar"
+macaron,MACARON,Bollería y dulces,estimada,Macaron individual
+meringue,MERINGUE,Bollería y dulces,estimada,Merengue individual
+milles_feuilles,MILLES FEUILLES,Pastelería y tartas,estimada,Milhojas individual
+moisson,MOISSON,Panes y salados,estimada,"Pan multigrano Moisson, formulación aproximada"
+nantais,NANTAIS,Bollería y dulces,estimada,"Pastel nantais individual, cítrico de almendra"
+nid_de_poule,NID DE POULE,Bollería y dulces,estimada,"Bizcocho decorado tipo nido, estimación"
+noix_japonaise,NOIX JAPONAISE,Bollería y dulces,estimada,"Postre de nueces y merengue, interpretación"
+paille,PAILLE,Panes y salados,estimada,Palo de hojaldre dulce individual
+pain,PAIN,Panes y salados,estimada,Pan de trigo genérico
+pain_au_chocolat,PAIN AU CHOCOLAT,Receta original,original,Una unidad de producto terminado; se conservan cantidades originales
+pain_aux_raisins,PAIN AUX RAISINS,Bollería y dulces,estimada,Caracola de pasas con crema
+pain_banette,PAIN BANETTE,Panes y salados,estimada,"Pan Banette, equivalente a variante clásica"
+pain_choco_amandes,PAIN CHOCO AMANDES,Bollería y dulces,estimada,Bollo de chocolate y almendra
+pain_de_mie,PAIN DE MIE,Panes y salados,estimada,Pan de molde completo
+pain_graines,PAIN GRAINES,Panes y salados,estimada,Pan con semillas
+pain_noir,PAIN NOIR,Panes y salados,estimada,"Pan oscuro de centeno, interpretación genérica"
+pain_s_sel,PAIN S/SEL,Panes y salados,estimada,Pan sin sal (se omite deliberadamente sal)
+pain_suisse_pepito,PAIN SUISSE PEPITO,Bollería y dulces,estimada,Pain suisse con crema y gotas de chocolate
+palet_breton,PALET BRETON,Bollería y dulces,estimada,Galleta bretona individual
+palmier,PALMIER,Bollería y dulces,estimada,Palmera de hojaldre
+paris_brest,PARIS BREST,Pastelería y tartas,estimada,Paris-Brest individual de avellana
+pates,PATES,"Servicios, combos y bebidas",estimada,Porción de pasta con salsa de tomate
+plaque_tarte_25p,PLAQUE TARTE 25P,Pastelería y tartas,estimada,Bandeja completa de tarta para 25 porciones
+plat_6_50e,PLAT 6.50E,"Servicios, combos y bebidas",estimada,Plato preparado económico a base de pollo y arroz
+plat_7_00,PLAT 7.00,"Servicios, combos y bebidas",estimada,Plato preparado de pollo/arroz
+plat_7_60e,PLAT 7.60E,"Servicios, combos y bebidas",estimada,Plato preparado de pollo/arroz
+plat_8_30e,PLAT 8.30E,"Servicios, combos y bebidas",estimada,Plato preparado de pollo/arroz
+platprepare5_50,"PLATPREPARE5,50","Servicios, combos y bebidas",estimada,Plato de pasta/verdura económico
+platprepare6_00,"PLATPREPARE6,00","Servicios, combos y bebidas",estimada,Plato de pasta/verdura
+platprepare6_50,"PLATPREPARE6,50","Servicios, combos y bebidas",estimada,Plato preparado de pollo y arroz
+platprepare7_00,"PLATPREPARE7,00","Servicios, combos y bebidas",estimada,Plato preparado de pollo y arroz
+pt_nantais,PT NANTAIS,Bollería y dulces,estimada,Pastel nantais pequeño
+pt_plateau_sale,PT PLATEAU SALE,"Servicios, combos y bebidas",estimada,Bandeja salada pequeña de 12 bocaditos
+quim_bread,QUIM BREAD,Panes y salados,estimada,"Pan especial Quim, aproximación de trigo integral y semillas"
+reduction_sucrees_12,REDUCTION SUCREES 12,Bollería y dulces,estimada,Bandeja de 12 petit fours dulces
+reduction_sucrees_24,REDUCTION SUCREES 24,Bollería y dulces,estimada,Bandeja de 24 petit fours dulces
+religieuse,RELIGIEUSE,Pastelería y tartas,estimada,Religieuse de dos chouxs
+royal,ROYAL,Pastelería y tartas,estimada,Porción individual de Royal de chocolate
+royal_4p,ROYAL 4P,Pastelería y tartas,estimada,Tarta Royal completa de 4 porciones
+royal_6p,ROYAL 6P,Pastelería y tartas,estimada,Tarta Royal completa de 6 porciones
+sable_f_p,SABLE F  P,Bollería y dulces,estimada,Sablé de mantequilla individual
+sachet_de_crouton,SACHET DE CROUTON,Panes y salados,estimada,Bolsa de crutones de ~200 g
+sachet_de_viennoiserie,SACHET DE VIENNOISERIE,Bollería y dulces,estimada,Bolsa de cuatro viennoiseries surtidas equivalentes
+sachet_viennoiserie,SACHET VIENNOISERIE,Bollería y dulces,estimada,Bolsa de tres viennoiseries surtidas equivalentes
+sand_jb,SAND JB,"Servicios, combos y bebidas",estimada,Sándwich jamón-beurre
+sand_jb_emmental,SAND JB EMMENTAL,"Servicios, combos y bebidas",estimada,"Sándwich jamón, mantequilla y emmental"
+sandwich_complet,SANDWICH COMPLET,"Servicios, combos y bebidas",estimada,"Sándwich integral completo, relleno supuesto"
+savarin,SAVARIN,Pastelería y tartas,estimada,"Savarin sin alcohol (jarabe de azúcar), decisión de simulación"
+seigle,SEIGLE,Panes y salados,estimada,Pan de centeno
+special_bread,SPECIAL BREAD,Panes y salados,estimada,Pan especial de ~450 g
+special_bread_kg,SPECIAL BREAD KG,Panes y salados,estimada,Una unidad comercial equivale a 1 kg de pan especial
+st_honore,ST HONORE,Pastelería y tartas,estimada,Saint-Honoré individual
+sucette,SUCETTE,Bollería y dulces,estimada,Caramelo de palo individual
+tarte_fine,TARTE FINE,Pastelería y tartas,estimada,Tarta fina de manzana individual
+tarte_fraise_4per,TARTE FRAISE 4PER,Pastelería y tartas,estimada,Tarta de fresas completa para 4 personas
+tarte_fraise_6p,TARTE FRAISE 6P,Pastelería y tartas,estimada,Tarta de fresas completa para 6 personas
+tarte_fruits_4p,TARTE FRUITS 4P,Pastelería y tartas,estimada,Tarta de frutas para 4 personas
+tarte_fruits_6p,TARTE FRUITS 6P,Pastelería y tartas,estimada,Tarta de frutas para 6 personas
+tartelette,TARTELETTE,Pastelería y tartas,estimada,"Tartaleta de fruta estándar, sabor no especificado"
+tartelette_choc,TARTELETTE CHOC,Pastelería y tartas,estimada,Tartaleta individual de chocolate
+tartelette_cocktail,TARTELETTE COCKTAIL,Pastelería y tartas,estimada,Tartaleta de frutas mixtas
+tartelette_fraise,TARTELETTE FRAISE,Pastelería y tartas,estimada,Tartaleta individual de fresas
+the,THE,"Servicios, combos y bebidas",estimada,Té preparado con una bolsa y azúcar
+traditional_baguette,TRADITIONAL BAGUETTE,Receta original,original,Una unidad de producto terminado; se conservan cantidades originales
+triangles,TRIANGLES,Panes y salados,estimada,Triángulo salado relleno
+trois_chocolat,TROIS CHOCOLAT,Pastelería y tartas,estimada,"Postre individual de tres chocolates, mezcla referencial"
+tropezienne,TROPEZIENNE,Pastelería y tartas,estimada,Tropézienne individual de brioche y crema
+tropezienne_framboise,TROPEZIENNE FRAMBOISE,Pastelería y tartas,estimada,Tropézienne individual con frambuesa
+tulipe,TULIPE,Pastelería y tartas,estimada,Tulipa individual tipo bizcocho y crema
+viennoise,VIENNOISE,Panes y salados,estimada,Barra vienesa individual
+vik_bread,VIK BREAD,Panes y salados,estimada,"Pan especial Vik, receta referencial"

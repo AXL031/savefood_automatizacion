@@ -216,11 +216,11 @@ def _validar_productos(
             )
 
     seleccionados = [fila for fila in filas if fila.demostrar]
-    if not 3 <= len(seleccionados) <= 5:
+    if not seleccionados:
         acumulador.anotar(
             hoja.archivo,
             "demostrar",
-            f"La demo necesita entre 3 y 5 productos con demostrar='si'; hay {len(seleccionados)}.",
+            "Marca al menos un producto con demostrar='si'; puedes incluir todo el catálogo.",
         )
     return filas
 

@@ -1,5 +1,25 @@
 # Especificación visual de FoodSave
 
+## Identidad visual vigente · 14-10-2026
+
+Paleta hoja/yema y tipografía Bricolage Grotesque (títulos) + Manrope (interfaz, cifras con `tabular-nums`), autoalojadas con `@fontsource-variable` para que funcionen sin conexión. Todos los colores viven como variables en `:root` de `styles.css`; los valores de las tablas de abajo quedan reemplazados por estos:
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--color-hoja-profunda` | `#0E3B31` | Superficies oscuras, velo del login |
+| `--color-primario` | `#17604E` | Botón principal, enlaces (blanco encima 7.4:1) |
+| `--color-primario-suave` | `#E3F1EA` | Navegación activa, selección |
+| `--color-yema` | `#F2B544` | Solo marca, sobre fondo oscuro; nunca como estado |
+| `--color-texto` / `--color-texto-secundario` | `#18211E` / `#5B6863` | Texto principal / descripciones (5.4:1) |
+| `--color-fondo` / `--color-borde` / `--color-borde-campo` | `#F5F7F4` / `#DCE3DF` / `#B8C4BE` | Área de trabajo, tarjetas, campos |
+| Éxito · Advertencia · Error · Info · Neutro | `#166534` · `#8A4B00` · `#B42318` · `#1D4F86` · `#46524E` | Insignias con fondo suave de su tono, punto y texto |
+| `--color-dato-real` | `#2F6DB5` | Serie «real» en gráficos (pronóstico usa primario) |
+
+Estados: «Pendiente», «Por aprobar» y «Reintentando» usan advertencia (`badge-advertencia`); «En ejecución» usa info (azul) para no confundirse con «Completada». Tamaño mínimo de texto 12 px; etiquetas, encabezados de tabla y grupos del menú sin mayúsculas sostenidas. Campos de 44 px, foco con borde primario de 2 px y halo.
+
+Iniciar sesión: fotografía `public/imagenes/panaderia-login.jpg` (encuadre en las tortas, sin el rótulo de la imagen) con velo marrón oscuro abajo para el texto, logotipo `MarcaFoodSave`, titular y la cadena pronóstico → plan → pedidos; formulario con «Mostrar contraseña» y error enlazado a los campos. La interfaz no muestra textos de demostración, escenario, piloto ni guías tipo manual.
+
+
 ## Implementación de claridad transversal · 30-09-2026
 
 ProtectedShell y GuiaPantalla orientan todas las rutas disponibles con propósito, pasos, términos y enlace siguiente. Menú agrupado en preparación, catálogo/inventario, planificación/compras, resultados y administración; menú móvil desplegable accesible y navegación activa por ruta. Inicio muestra un recorrido de cuatro pasos. No se llama backend futuro desde Notificaciones: ofrece enlaces a pedidos y ejecuciones reales. La carga completa está implementada y no se describe como pendiente.
@@ -124,3 +144,7 @@ Los iconos llevan etiqueta textual o nombre accesible. Los interruptores exponen
 ## Navegación y consulta implementadas · 30-09-2026
 
 Marco/sesión persistentes en layout raíz; Link cambia contenido y conserva menú. Tablas paginadas con rango, tamaño y salto, sin alterar decimales ni orden de dominio. Ventas pagina el historial en servidor; listas recientes de otros contratos se identifican. PanelDetalle sustituye los detalles añadidos al pie en recetas, ventas, inventario, planes, compras, pronósticos y edición de ingredientes/usuarios; foco nativo, Escape, encabezado visible y regreso a lista sin perder página.
+
+## Claridad vigente · 11-10-2026
+
+Menú por grupos desplegables con el grupo activo abierto; Inicio destaca una siguiente acción según carga/modelo/pedidos recientes. Asistente de cinco pasos con progreso compacto, diagnóstico por requisito y enlace para corregir/regresar conservando selección. Horarios en zona del negocio y resumen antes de programar. Carga inicial elige dos Excel o cinco CSV; identificador automático en detalles. Promociones muestran regla/version y sugerencias o descartes con motivo, lote y referencias. Tareas y evaluaciones tienen paginación remota; pantalla móvil conserva acciones, estados y desplazamiento de tablas.

@@ -217,7 +217,9 @@ def test_errores_definitivos_no_reintentan(entorno_pg, monkeypatch, error):
         assert sesion.scalar(text("SELECT count(*) FROM prueba_efecto")) == 0
 
 
-def test_programaciones_respetan_hora_cancelacion_y_servicio_ausente(entorno_pg):
+def test_programaciones_respetan_hora_cancelacion_y_servicio_ausente(entorno_pg, monkeypatch):
+    # El caso prueba un adaptador ausente, aunque V03 ya esté integrado.
+    monkeypatch.delitem(MANEJADORES, "EVALUAR_PROMOCION")
     sesiones = entorno_pg
     ahora = datetime.now(timezone.utc)
     with sesiones.begin() as sesion:

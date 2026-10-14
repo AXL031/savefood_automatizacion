@@ -8,7 +8,7 @@ GENERAR_PROPUESTA ya conecta pronóstico, plan M02, necesidades M03, propuesta y
 
 Inventario/ofertas mantienen sus contratos numéricos en unidad base; solo la UI permite ingresar kg/L y convertir exactamente a g/ml. Disponibilidad, movimientos, necesidades y vista previa presentan cantidades grandes en kg/L. No se renombra la unidad persistida de ingredientes ni se reinterpretan recetas históricas.
 
-**Estado:** A01–A03 implementan acceso, programación y motor. El corte K01–K04 de pronósticos tiene rutas y servicios propios; la primera carga completa de Edu ya reserva preparación y evaluación ML; M02/M03 locales consumen corrida, recetas y stock y conservan plan/necesidades; L02 local genera borradores; paso 5 configura bot/chat Telegram sin envíos; aprobación/envío siguen pendientes. Las demás rutas de dominio son especificación de desarrollo. [Alcance del prototipo](../guia-inicio-desarrollo.md). Una instalación local tiene un comercio/sucursal (`negocio.id = 1`); no se envía `negocio_id` en cada solicitud. Las rutas de negocio requieren Bearer y los cambios de carga/stock requieren Administrador. Los servicios de un módulo exponen interfaces públicas; ningún módulo importa modelos privados de otro.
+**Estado vigente 11-10-2026:** acceso/motor, primera carga/ML, plan/necesidades, compras/aprobación/recuperación y dashboard/reportes tienen implementación local. Se añaden flujo configurable/calendario/gestión y promociones sugeridas con migración 0015. [Contrato del nuevo corte](contrato-flujo-promociones.md). Las secciones antiguas conservan su contrato por fecha; sus frases de pendiente no sustituyen el resumen vigente. Una instalación/comercio/sucursal; consultas con sesión, cambios administrativos; servicios participantes sin commit.
 
 ## Convenciones HTTP
 
@@ -26,7 +26,7 @@ Respuesta exitosa: `{"datos": {...}, "metadatos": {...}}`; `metadatos` puede omi
 
 ## Contrato A02: programación y trazas persistidas
 
-`POST /programaciones-demo` (Administrador) recibe `tipo = GENERAR_PROPUESTA`, `ejecutar_desde_utc` con zona UTC y hora futura, `fecha_hora_simulada_local` sin zona, `fecha_objetivo_demo` del mismo día simulado, `producto_ids` positivos y únicos (1–5) y `clave_idempotencia` de 1–128 caracteres `[A-Za-z0-9._:-]`. Ejemplo:
+`POST /programaciones-demo` (Administrador) recibe `tipo = GENERAR_PROPUESTA`, `ejecutar_desde_utc` con zona UTC y hora futura, `fecha_hora_simulada_local` sin zona, `fecha_objetivo_demo` del mismo día simulado, uno o más `producto_ids` positivos y únicos (sin máximo de cinco desde la ampliación del 14-10-2026) y `clave_idempotencia` de 1–128 caracteres `[A-Za-z0-9._:-]`. Ejemplo:
 
 ```json
 {"tipo":"GENERAR_PROPUESTA","ejecutar_desde_utc":"2027-09-27T16:05:00Z","fecha_hora_simulada_local":"2022-08-24T10:00:00","fecha_objetivo_demo":"2022-08-24","producto_ids":[1,2,3],"clave_idempotencia":"demo-propuesta-2022-08-24-v1"}

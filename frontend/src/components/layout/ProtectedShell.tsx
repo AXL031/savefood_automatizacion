@@ -7,7 +7,7 @@ import { obtenerNegocio, obtenerPerfil } from "@/services/autenticacion";
 import { borrarToken, leerToken } from "@/services/sesion";
 import type { Negocio, Perfil } from "@/types/autenticacion";
 import { HttpError } from "@/services/http";
-import { GuiaPantalla } from "./GuiaPantalla";
+import { MarcaFoodSave } from "@/components/ui/MarcaFoodSave";
 
 export type ContextoSesion = { token: string; perfil: Perfil; negocio: Negocio; actualizarNegocioLocal: (valor: Negocio) => void; actualizarPerfilLocal: (valor: Perfil) => void };
 const SesionContext = createContext<ContextoSesion | null>(null);
@@ -34,12 +34,13 @@ const grupos = [
       { href: "/ingredientes", texto: "Ingredientes" },
       { href: "/recetas", texto: "Recetas" },
       { href: "/inventario", texto: "Inventario" },
+      { href: "/promociones", texto: "Promociones sugeridas" },
     ],
   },
   {
     titulo: "Planificar y comprar",
     enlaces: [
-      { href: "/automatizaciones", texto: "Programar tareas" },
+      { href: "/automatizaciones", texto: "Automatización" },
       { href: "/planificacion", texto: "Planes y faltantes" },
       { href: "/proveedores", texto: "Proveedores y Telegram" },
       { href: "/compras", texto: "Pedidos y envíos" },
@@ -129,12 +130,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <SesionContext.Provider value={{ token, perfil, negocio, actualizarNegocioLocal: setNegocio, actualizarPerfilLocal: setPerfil }}><div className="app-layout">
       <aside className="sidebar" aria-label="Navegación principal">
-        <Link href="/" className="brand"><span className="brand-mark">F</span><span>FoodSave<small>Operación local</small></span></Link>
+        <Link href="/" className="brand"><MarcaFoodSave /><span className="brand-name">FoodSave</span></Link>
         <button type="button" className="button-secondary mobile-menu" aria-expanded={menuAbierto} aria-controls="menu-principal" onClick={() => setMenuAbierto(!menuAbierto)}>{menuAbierto ? "Cerrar menú" : "Ver menú de pantallas"}</button>
         <div id="menu-principal" className={`sidebar-menu ${menuAbierto ? "menu-open" : ""}`} tabIndex={0} role="region" aria-label="Opciones del menú">
         {grupos.map((grupo) => (
-          <div key={grupo.titulo}>
-            <div className="nav-group-label">{grupo.titulo}</div>
+          <details key={grupo.titulo} open={grupo.titulo === grupoActual?.titulo || grupo.titulo === "Inicio"}>
+            <summary className="nav-group-label">{grupo.titulo}</summary>
             <nav aria-label={grupo.titulo}>
               {grupo.enlaces.filter((enlace) => enlace.href !== "/usuarios" || perfil.rol === "ADMINISTRADOR").map((enlace) => (
                 <Link key={enlace.href} href={enlace.href} onClick={() => setMenuAbierto(false)} className={`nav-link ${ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`)) ? "active" : ""}`} aria-current={ruta === enlace.href ? "page" : undefined}>
@@ -142,7 +143,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </Link>
               ))}
             </nav>
-          </div>
+          </details>
         ))}
         </div>
         <div className="sidebar-bottom"><span>{perfil.nombre}</span><small>{perfil.rol === "ADMINISTRADOR" ? "Administrador" : "Operador"}</small><button className="button-link" onClick={cerrarSesion}>Cerrar sesión</button></div>
@@ -160,11 +161,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 export function ProtectedShell({ titulo, descripcion, children }: Props) {
   const contexto = useContext(SesionContext);
   const ruta = usePathname();
+  const [volverFlujo, setVolverFlujo] = useState(false);
+  useEffect(() => { setVolverFlujo(new URLSearchParams(window.location.search).get("volver") === "automatizaciones"); }, [ruta]);
   const grupoActual = grupos.find((grupo) => grupo.enlaces.some((enlace) => ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`))));
   if (!contexto) return null;
   return <>
-    <div className="page-heading"><div><div className="eyebrow">{grupoActual?.titulo ?? "FoodSave"}</div><h1>{titulo}</h1><p>{descripcion}</p></div><span className="badge badge-info">Escenario de demostración</span></div>
-    <GuiaPantalla ruta={ruta} />
+    <div className="page-heading"><div><div className="eyebrow">{grupoActual?.titulo ?? "FoodSave"}</div><h1>{titulo}</h1><p>{descripcion}</p></div></div>
+    {volverFlujo && <p className="return-flow"><Link href="/automatizaciones">← Continuar configurando mi automatización</Link><span>Tu selección está guardada.</span></p>}
     {children(contexto)}
   </>;
 }

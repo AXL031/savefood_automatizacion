@@ -48,7 +48,7 @@ def _receta(receta: RecetaLeida) -> dict:
 
 @router.get("")
 def listar(
-    solo_demo: bool = Query(False, description="Solo productos marcados para la demostración."),
+    solo_demo: bool = Query(False, description="Solo productos incluidos en la planificación."),
     _usuario: Usuario = Depends(identidad_actual),
     sesion: Session = Depends(obtener_sesion),
 ):

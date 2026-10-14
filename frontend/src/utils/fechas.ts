@@ -1,3 +1,11 @@
+/** Calendario histórico sin conversión de zona ni interpretación como instante UTC. */
+export function formatearEscenario(valor: string | null | undefined): string {
+  if (!valor) return "Sin fecha";
+  const [dia, hora] = valor.split("T");
+  const [ano, mes, fecha] = dia.split("-");
+  return `${fecha}/${mes}/${ano}${hora ? ` ${hora.slice(0, 5)}` : ""}`;
+}
+
 export function formatearFechaHora(valor: string | null | undefined, zonaHoraria = "America/Lima"): string {
   if (!valor) return "Sin fecha";
   const fecha = new Date(valor);

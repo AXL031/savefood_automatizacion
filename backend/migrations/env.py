@@ -5,6 +5,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.core.base import Base
+from app.modules.automatizaciones.modelos import ConfiguracionFlujo  # noqa: F401
+from app.modules.promociones.modelos import ReglaPromocionDemo, EvaluacionPromocion  # noqa: F401
 from app.modules.autenticacion.modelos import Usuario  # noqa: F401
 from app.modules.negocios.modelos import Negocio  # noqa: F401
 from app.modules.automatizaciones.modelos import ProgramacionDemo, EjecucionAutomatizacion, IntentoAutomatizacion  # noqa: F401

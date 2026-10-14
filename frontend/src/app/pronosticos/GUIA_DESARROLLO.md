@@ -52,3 +52,5 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](.
 ## Ajustes de interfaz · 30-09-2026
 
 Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Detalle/edición en PanelDetalle, cierre/Escape y retorno a la página de origen; conservar permisos, snapshots y unidades. Las APIs mantienen listas recientes hasta 50 registros, identificadas en la pantalla; paginar esas filas no amplía el contrato histórico.
+
+14-10-2026: el estado vacío solicita preparar una versión del modelo, sin rótulos de demostración. Codex para Axel; lógica de entrenamiento e inferencia intacta.

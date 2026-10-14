@@ -24,6 +24,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**14-10-2026 · Código automático solicitado por Axel:** ProveedorCrear.codigo pasa a opcional/nullable. Servicio crea dentro de la sesión compartida, reserva ID con identificador provisional privado y asigna PROV-ID (mínimo tres dígitos); en colisiones con códigos heredados añade sufijo mediante savepoint/UNIQUE. Códigos explícitos conservan contrato anterior y proveedores existentes no se renumeran. Sin migración ni commit interno. Contrato de pedidos y pruebas HTTP/rollback/concurrencia actualizados; coordinación en Cueva.
+
 1. Implementar proveedor activo, código, nombre y vínculo del chat de pruebas.
 2. Relacionar ingrediente con oferta, unidad de compra, factor, mínimo y múltiplo.
 3. Garantizar una oferta preferida activa por ingrediente y publicar consulta para Compras.

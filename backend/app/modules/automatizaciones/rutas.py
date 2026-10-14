@@ -2,8 +2,8 @@
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import Session
 
 from app.core.base_datos import obtener_sesion
@@ -43,6 +43,7 @@ def serializar_programacion(sesion: Session, programacion: ProgramacionDemo) -> 
         "lease_hasta": _utc(programacion.lease_hasta),
         "creado_por": programacion.creado_por,
         "creado_en": _utc(programacion.creado_en),
+        "cambios": programacion.cambios_json,
         "ejecucion_id": ejecucion_id,
     }
 
@@ -97,15 +98,21 @@ def crear_programacion(
         clave_idempotencia=datos.clave_idempotencia,
         creado_por=usuario.id,
         modo_envio_pedidos=datos.modo_envio_pedidos,
+        modelo_id=datos.modelo_id,
     )
     sesion.commit()
     return {"datos": serializar_programacion(sesion, programacion)}
 
 
 @router_programaciones.get("")
-def listar_programaciones(_usuario: Usuario = Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
-    registros = sesion.scalars(select(ProgramacionDemo).order_by(ProgramacionDemo.id.desc()).limit(50)).all()
-    return {"datos": [serializar_programacion(sesion, registro) for registro in registros]}
+def listar_programaciones(limite: int = Query(50, ge=1, le=100), desplazamiento: int = Query(0, ge=0),
+                          _usuario: Usuario = Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
+    pendiente = ProgramacionDemo.estado.in_(["PROGRAMADA", "PAUSADA"])
+    registros = sesion.scalars(select(ProgramacionDemo).order_by(
+        case((pendiente, 0), else_=1), case((pendiente, ProgramacionDemo.ejecutar_desde_utc)),
+        ProgramacionDemo.id.desc()).offset(desplazamiento).limit(limite)).all()
+    return {"datos": [serializar_programacion(sesion, registro) for registro in registros],
+            "metadatos": {"total": sesion.scalar(select(func.count()).select_from(ProgramacionDemo))}}
 
 
 @router_programaciones.get("/{programacion_id}")
@@ -121,9 +128,11 @@ def consultar_programacion(
 
 
 @router_ejecuciones.get("")
-def listar_ejecuciones(_usuario: Usuario = Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
-    registros = sesion.scalars(select(EjecucionAutomatizacion).order_by(EjecucionAutomatizacion.id.desc()).limit(50)).all()
-    return {"datos": [serializar_ejecucion(sesion, registro) for registro in registros]}
+def listar_ejecuciones(limite: int = Query(50, ge=1, le=100), desplazamiento: int = Query(0, ge=0),
+                      _usuario: Usuario = Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
+    registros = sesion.scalars(select(EjecucionAutomatizacion).order_by(EjecucionAutomatizacion.id.desc()).offset(desplazamiento).limit(limite)).all()
+    return {"datos": [serializar_ejecucion(sesion, registro) for registro in registros],
+            "metadatos": {"total": sesion.scalar(select(func.count()).select_from(EjecucionAutomatizacion))}}
 
 
 @router_ejecuciones.get("/{ejecucion_id}")

@@ -7,7 +7,7 @@ export function buscarChatsTelegram(token: string) { return solicitar<{ chat_id:
 export function deshabilitarTelegram(token: string) { return solicitar<EstadoTelegram>("/proveedores/telegram/configuracion", { token, method: "DELETE" }); }
 export function verificarDestino(token: string, id: number) { return solicitar<VerificacionDestino>(`/proveedores/${id}/verificar-destino`, { token, method: "POST" }); }
 export function listarProveedores(token: string, signal?: AbortSignal) { return solicitar<Proveedor[]>("/proveedores", { token, signal }); }
-export function crearProveedor(token: string, entrada: { codigo: string; nombre: string }) { return solicitar<Proveedor>("/proveedores", { token, method: "POST", body: entrada }); }
+export function crearProveedor(token: string, entrada: { nombre: string; codigo?: string }) { return solicitar<Proveedor>("/proveedores", { token, method: "POST", body: entrada }); }
 export function cambiarEstadoProveedor(token: string, id: number, activo: boolean) { return solicitar<Proveedor>(`/proveedores/${id}/estado?activo=${activo}`, { token, method: "PATCH" }); }
 export function listarOfertas(token: string, id: number, signal?: AbortSignal) { return solicitar<Oferta[]>(`/proveedores/${id}/ofertas`, { token, signal }); }
 export function crearOferta(token: string, id: number, entrada: NuevaOferta) { return solicitar<Oferta>(`/proveedores/${id}/ofertas`, { token, method: "POST", body: entrada }); }

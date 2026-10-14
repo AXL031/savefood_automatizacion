@@ -1,5 +1,29 @@
 # Dependencias y orden de entregas
 
+## Corte local solicitado · 14-10-2026
+
+Codex para Axel configura Pastelería Maria Juanita y retira rótulos de demostración de interfaz/pedidos nuevos. Negocios publica nombre_negocio(sesion) a Compras; texto autorizado permanece congelado. Motor/GUI conservan calendario y añaden ejecución a demanda administrativa, con consumidores comprobados en 69 pruebas Docker PostgreSQL/Redis. Cueva coordina y enlaza E04/K04/M04/L03 sin atribuir el cambio a sus integrantes. [Registro](avances/cueva.md).
+
+WhatsApp se preparará al teléfono propio de Axel: activos Meta y destinatario verificado pendientes del usuario; adaptador/contrato de evidencia (wamid), configuración cifrada y webhook pendientes de Cueva/Aguirre. [Guía de preparación](../api/configurar-whatsapp.md). Telegram sigue siendo el canal implementado. La carga inicial y el traslado de fechas del CSV no se ejecutan en este corte.
+
+## Estado vigente · 12-10-2026
+
+Coordinación Codex para Axel. Cada responsable conserva sus dominios y autoría. [Contrato nuevo](../api/contrato-flujo-promociones.md), [plan de cierre](plan-cierre-prototipo.md) y [evidencia transversal](avances/cueva.md). Publicado en `cueva`, actualizado desde `main` sin conflictos: [PR #14](https://github.com/AXL031/savefood_automatizacion/pull/14), [CI del corte publicado correcto](https://github.com/AXL031/savefood_automatizacion/actions/runs/38330972748). Revisión del equipo pendiente antes de integrar.
+
+| Frontera | Entrega y consumidor actual | Pendiente real |
+|---|---|---|
+| Primera carga → recetas/stock → ML | Edu orquesta; Max/Vera exponen servicios; Kevin y Axel preparan/evalúan modelo. Implementación y pruebas locales existentes. | Reproducción por otro integrante; no reimportar tras fallo ML. |
+| Pronóstico → plan → faltantes → compras | Kevin, Max, Vera y Aguirre conectados por interfaces públicas y transacción común. CI remoto del corte publicado correcto. | Demo conjunta final y revisión del equipo. |
+| Programaciones y gestión | Axel: configuración reusable, diagnóstico, calendario histórico acotado, pausa/cancelación/reprogramación pendientes y trazas. | Corte PostgreSQL/Redis y suite completa final (283 + 6 subpruebas) verificados; CI remoto correcto; revisión y otra PC pendientes. |
+| Ajuste → promoción | Vera/Axel: regla versionada, reserva atómica, handler, persistencia y pantalla real; pruebas del consumidor local. | Concurrencia PostgreSQL comprobada; demo conjunta en otra PC pendiente. |
+| Pedidos → Telegram | Aguirre: manual/automático, recuperación con evidencia, protección de recompra. | Nuevo automático real solo bajo autorización concreta; ofertas reales según configuración del usuario. |
+| Interfaz común | Edu coordina; cada dominio mantiene su pantalla. Asistente, regreso, menú y carga simplificados. | QA final documentada y reproducción en otra computadora. |
+
+La recurrencia disponible es un calendario histórico de 1–31 días reales con avance del escenario, misma zona del negocio y fin explícito. No acredita operación diaria con ventas actuales. No trasladar las pruebas de cada frontera al coordinador.
+
+<details><summary>Cortes anteriores conservados como historial</summary>
+
+
 ## Entrega transversal vigente · 30-09-2026 · Codex para Axel
 
 A02/A03 y L03: envío AUTOMATICO conectado, modo opcional conservado por programación, outbox transaccional y worker revalida destinos sin aprobación ficticia. 54 pruebas PostgreSQL correctas; envío manual real pedido #1 confirmado en chat propio, message_id=2. E04: orientación, etiquetas y menú comunes en todas las pantallas. V01/V04: entradas kg/L y presentación exacta, 14 ajustes reales auditados para stock pequeño. M02/M03: consumidor conserva unidades base y modo elegido. K02/K04: etiquetas/métricas explicadas; predicción no cambia su política histórica.
@@ -83,3 +107,5 @@ Axel solicita gráficos en Inicio y Reportes de lectura. Contrato previo: [Dashb
 ## Conciliación de cueva
 
 Conciliación 06-10-2026: E03/K01 y M02/M03 usan los contratos publicados que consumen L02–L04. Se conservan muestras y suites locales adaptadas; no se vuelve a declarar compras pendiente ni se atribuye el trabajo remoto a otro integrante. Evidencia y migración de la base local en avances/cueva.md y la guía de backend/migrations. Publicación reservada a Axel.
+
+</details>
