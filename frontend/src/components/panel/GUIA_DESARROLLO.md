@@ -35,3 +35,10 @@ Total previsto y real usan exactamente los mismos productos evaluables.
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/bohorquez.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Analitica.tsx publica NavegacionAnalitica, IndicadoresEvaluacion, ParticionModelo, IconoAnalitica y numeroAnalitica. Consumidos por Inicio, Pronósticos, Evaluación y Reportes. Props tipadas del contrato vigente, null como Sin dato y cifras sin precisión comercial inventada.
+
+[Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

@@ -12,11 +12,13 @@ import { listarModelos } from "@/services/pronosticos";
 import type { FiltrosInforme, Informe, TipoInforme } from "@/types/informes";
 import { etiquetasEstado } from "@/types/informes";
 import type { Modelo } from "@/types/pronostico";
+import { NavegacionAnalitica, IconoAnalitica, IndicadoresEvaluacion } from "@/components/panel/Analitica";
+import { formatearEscenario, formatearFechaHora } from "@/utils/fechas";
 
-const numero = (valor: number | null, sufijo = "") => valor === null ? "Sin dato" : `${valor.toLocaleString("es", { maximumFractionDigits: 2 })}${sufijo}`;
+const numero = (valor: number | null, sufijo = "") => valor === null ? "Sin dato" : `${valor.toLocaleString("es-PE", { maximumFractionDigits: 2 })}${sufijo}`;
 const tipos: { tipo: TipoInforme; titulo: string }[] = [{ tipo: "ventas", titulo: "Ventas" }, { tipo: "pronosticos", titulo: "Pronósticos" }, { tipo: "pedidos", titulo: "Pedidos" }];
 
-function Contenido({ token }: { token: string }) {
+function Contenido({ token, zona }: { token: string; zona: string }) {
   const [tipo, setTipo] = useState<TipoInforme>("ventas");
   const [informe, setInforme] = useState<Informe | null>(null);
   const [filtros, setFiltros] = useState<FiltrosInforme>({});
@@ -73,7 +75,9 @@ function Contenido({ token }: { token: string }) {
   }
   const evaluacion = informe?.evaluacion;
   const detalle = evaluacion?.serie_diaria.find((d) => d.fecha_local === diaDetalle);
-  return <>
+  return <div className="analytics-page">
+    <NavegacionAnalitica />
+    <section className="analytics-hero analytics-hero-compact"><div><span className="analytics-eyebrow"><IconoAnalitica tipo="archivo" /> Una mirada más completa</span><h2>Convierte datos en decisiones.</h2><p>Explora tus ventas, compara pronósticos y exporta cada resultado con sus fuentes y fechas.</p></div><Link href="/panel" className="hero-link">Evaluar modelo ↗</Link></section>
     <section className="card"><h2>Elige el período</h2><p>Los filtros se aplican al pulsar Consultar. El CSV contiene el período completo, aunque las tablas se muestren por páginas.</p>
       <form className="report-filters" onSubmit={aplicar}>
         <label>Desde<input type="date" required value={borrador.desde} disabled={cargando || descargando} onChange={(e) => setBorrador({ ...borrador, desde: e.target.value })} /></label>
@@ -84,12 +88,12 @@ function Contenido({ token }: { token: string }) {
       </form>
       <div className="report-actions"><span>Últimos días disponibles:</span>{[7, 30, 90].map((dias) => <button key={dias} className="button-secondary" disabled={!informe || cargando || descargando} onClick={() => periodoRapido(dias)}>{dias} días</button>)}</div>
       {errorModelos && <p className="inline-error" role="alert">Selector de versiones: {errorModelos}</p>}
-      <p className="helper-text">Hasta 366 días por consulta. El selector muestra las 50 versiones más recientes. Estos reportes muestran unidades y estados, sin calcular ingresos ni ahorro.</p>
+      <p className="helper-text">Hasta 366 días por consulta. Todas las versiones están disponibles en el selector. Las cifras muestran unidades y estados del período consultado.</p>
     </section>
     {error && <EstadoPanel tono="alerta" titulo="Revisa la consulta" descripcion={error} />}
     {cargando && <p role="status">Preparando reportes…</p>}
     {informe && <>
-      <section className="card section-space"><div className="section-heading"><div><h2>{informe.periodo.desde} — {informe.periodo.hasta}</h2><p>Consulta generada: {new Date(informe.generado_en).toLocaleString("es")} · {informe.periodo.dias_calendario} días calendario.</p></div><button className="button-primary" onClick={exportar} disabled={descargando}>{descargando ? "Preparando CSV…" : `Descargar CSV de ${tipos.find((t) => t.tipo === tipo)?.titulo}`}</button></div>
+      <section className="card section-space"><div className="section-heading"><div><h2>{formatearEscenario(informe.periodo.desde)} — {formatearEscenario(informe.periodo.hasta)}</h2><p>Consulta generada: {formatearFechaHora(informe.generado_en, zona)} · {informe.periodo.dias_calendario} días calendario.</p></div><button className="button-primary" onClick={exportar} disabled={descargando}>{descargando ? "Preparando CSV…" : `Descargar CSV de ${tipos.find((t) => t.tipo === tipo)?.titulo}`}</button></div>
         <div className="report-selector" role="group" aria-label="Tipo de reporte">{tipos.map((t) => <button key={t.tipo} className={tipo === t.tipo ? "button-primary" : "button-secondary"} aria-pressed={tipo === t.tipo} disabled={descargando} onClick={() => { setTipo(t.tipo); setEstadoDescarga(""); setDiaDetalle(""); }}>{t.titulo}</button>)}</div>
         {estadoDescarga && <p role="status">{estadoDescarga}</p>}
         <p className="helper-text">Ventas disponibles: {informe.periodo.ventas_desde ?? "sin registros"} a {informe.periodo.ventas_hasta ?? "sin registros"}. Propuestas disponibles: {informe.periodo.pedidos_desde ?? "sin registros"} a {informe.periodo.pedidos_hasta ?? "sin registros"}.</p>
@@ -112,20 +116,20 @@ function Contenido({ token }: { token: string }) {
       {tipo === "pronosticos" && <>
         {informe.aviso_evaluacion && <EstadoPanel titulo="Evaluación sin fechas disponibles" descripcion={informe.aviso_evaluacion} />}
         {evaluacion && <>
-          <div className="report-kpis"><div><span>Error medio · MAE</span><strong>{numero(evaluacion.metricas_globales.mae)}</strong></div><div><span>Error relativo · WAPE</span><strong>{numero(evaluacion.metricas_globales.wape_pct, "%")}</strong></div><div><span>Cobertura</span><strong>{numero(evaluacion.metricas_globales.cobertura_pct, "%")}</strong></div><div><span>Pares comparables</span><strong>{numero(evaluacion.metricas_globales.pares_evaluables)}</strong></div></div>
+          <IndicadoresEvaluacion metricas={evaluacion.metricas_globales} pendientes={evaluacion.pares_pendientes_evaluacion} />
           <section className="card"><h2>Pronóstico frente a ventas conocidas</h2><p>Modelo #{evaluacion.modelo_id} · {evaluacion.version_modelo}. Solo se comparan productos con pronóstico disponible y venta real evaluada en su revisión vigente.</p><p className="helper-text">MAE: diferencia media en unidades. WAPE: error relativo, sin dato si la suma real es cero. Cobertura: pares con pronóstico que tienen venta evaluable; no incluye productos sin pronóstico.</p>
-            {evaluacion.serie_diaria.length > 0 && <><div className="serie-leyenda"><span><i className="previsto" /> Pronóstico evaluable</span><span><i className="real" /> Venta real conocida</span></div><SerieHistorica dias={evaluacion.serie_diaria} seleccion={diaDetalle} alSeleccionar={setDiaDetalle} /><p className="helper-text">Selecciona un día para abrir sus productos en un detalle. Un día sin pares evaluables no muestra barras.</p>
+            {evaluacion.serie_diaria.length > 0 && <><SerieHistorica dias={evaluacion.serie_diaria} seleccion={diaDetalle} alSeleccionar={setDiaDetalle} /><p className="helper-text">Selecciona un día para abrir sus productos en un detalle. Un día sin pares evaluables interrumpe la serie.</p>
               <TablaPaginada><thead><tr><th>Fecha</th><th>Pronóstico evaluable</th><th>Venta real</th><th>Pares comparables</th><th>Excluidos</th><th>Detalle</th></tr></thead><tbody>{evaluacion.serie_diaria.map((d) => <tr key={d.fecha_local}><td>{d.fecha_local}</td><td>{d.productos_evaluables ? numero(d.total_previsto_evaluable) : "Sin dato"}</td><td>{d.productos_evaluables ? numero(d.total_real_conocido) : "Sin dato"}</td><td>{d.productos_evaluables}</td><td>{d.productos_excluidos}</td><td><button className="button-secondary" onClick={() => setDiaDetalle(d.fecha_local)}>Ver productos</button></td></tr>)}</tbody></TablaPaginada>
             </>}
             <p><Link href={`/panel?modelo_id=${evaluacion.modelo_id}`}>Ver evaluación completa y partición del modelo →</Link></p>
           </section>
         </>}
       </>}
-      {detalle && <PanelDetalle titulo={`Productos del ${detalle.fecha_local}`} onCerrar={() => setDiaDetalle("")}><p>{detalle.productos_evaluables} comparables · {detalle.productos_excluidos} con pronóstico sin real evaluable · {evaluacion?.trazas.find((t) => t.fecha_local === detalle.fecha_local)?.pronosticos_no_disponibles.length ?? 0} sin pronóstico disponible.</p><TablaPaginada><thead><tr><th>Producto</th><th>Pronóstico</th><th>Venta real</th><th>Error absoluto</th><th>Exclusión</th></tr></thead><tbody>{detalle.desglose_productos.map((p) => <tr key={p.producto_id}><td>{p.producto ?? `#${p.producto_id}`}</td><td>{numero(p.previsto)}</td><td>{p.real === null ? "Desconocida" : numero(p.real)}</td><td>{numero(p.diferencia_absoluta)}</td><td>{p.motivo_exclusion ?? "—"}</td></tr>)}</tbody></TablaPaginada></PanelDetalle>}
+      {detalle && <PanelDetalle titulo={`Productos del ${detalle.fecha_local}`} onCerrar={() => setDiaDetalle("")}><p>{detalle.productos_evaluables} comparables · {detalle.productos_excluidos} con pronóstico sin real evaluable · {evaluacion?.trazas.find((t) => t.fecha_local === detalle.fecha_local)?.pronosticos_no_disponibles.length ?? 0} sin pronóstico disponible.</p><TablaPaginada><thead><tr><th>Producto</th><th>Pronóstico</th><th>Venta real</th><th>Error absoluto</th><th>Exclusión</th></tr></thead><tbody>{detalle.desglose_productos.map((p) => <tr key={p.producto_id}><td>{p.producto ?? `#${p.producto_id}`}</td><td>{numero(p.previsto)}</td><td>{p.real === null ? "Desconocida" : numero(p.real)}</td><td>{numero(p.diferencia_absoluta)}</td><td>{p.real !== null ? "—" : p.motivo_exclusion === "EVALUACION_PENDIENTE" ? "Por reevaluar" : "Venta no conocida"}</td></tr>)}</tbody></TablaPaginada></PanelDetalle>}
     </>}
-  </>;
+  </div>;
 }
 
 export default function InformesPage() {
-  return <ProtectedShell titulo="Reportes" descripcion="Ventas, pronósticos y pedidos con fechas, fuentes y exportación CSV.">{({ token }) => <Contenido token={token} />}</ProtectedShell>;
+  return <ProtectedShell titulo="Reportes" descripcion="Ventas, pronósticos y pedidos con fechas, fuentes y exportación CSV.">{({ token, negocio }) => <Contenido token={token} zona={negocio.zona_horaria} />}</ProtectedShell>;
 }

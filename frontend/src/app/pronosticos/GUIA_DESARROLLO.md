@@ -54,3 +54,10 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](.
 Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Detalle/edición en PanelDetalle, cierre/Escape y retorno a la página de origen; conservar permisos, snapshots y unidades. Las APIs mantienen listas recientes hasta 50 registros, identificadas en la pantalla; paginar esas filas no amplía el contrato histórico.
 
 14-10-2026: el estado vacío solicita preparar una versión del modelo, sin rótulos de demostración. Codex para Axel; lógica de entrenamiento e inferencia intacta.
+
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Biblioteca de modelos con partición, identificación y entrenamiento administrativo plegable. Todos los modelos en el selector; historial de corridas paginado en servidor, con filtros de tipo/fechas y detalle buscable. Conserva enlace directo por corrida_id y navegación a ejecución/evaluación.
+
+[Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

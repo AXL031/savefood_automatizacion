@@ -3,7 +3,7 @@ import { useId } from "react";
 import type { Informe } from "@/types/informes";
 import { etiquetasEstado } from "@/types/informes";
 
-const numero = (valor: number) => valor.toLocaleString("es");
+const numero = (valor: number) => valor.toLocaleString("es-PE");
 const fechaCorta = (valor: string) => `${valor.slice(8, 10)}/${valor.slice(5, 7)}`;
 
 /** Cada barra representa un día observado; los huecos mantienen distancia temporal. */

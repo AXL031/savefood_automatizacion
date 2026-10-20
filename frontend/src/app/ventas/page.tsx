@@ -121,10 +121,11 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     setGuardando(true);
     setError("");
     try {
-      await corregirVenta(token, correccion.venta.id, unidades, correccion.motivo.trim());
+      const resultado = await corregirVenta(token, correccion.venta.id, unidades, correccion.motivo.trim());
+      const tareas = resultado.reevaluaciones?.length ?? 0;
       setMensaje(
-        `Se registró una revisión nueva de ${correccion.venta.producto} del ${correccion.venta.fecha_local}. ` +
-          "El valor anterior se conserva; Kevin debe reevaluar las corridas que lo usaron.",
+        `Venta revisada: ${correccion.venta.producto}, ${correccion.venta.fecha_local}. El historial se conserva. ` +
+          (tareas ? `${tareas === 1 ? "Se reservó" : "Se reservaron"} ${tareas} ${tareas === 1 ? "tarea de evaluación" : "tareas de evaluación"}; puedes seguir su estado en Automatización.` : "No hay pronósticos de esa fecha que requieran reevaluación."),
       );
       setCorreccion(null);
       cargar();

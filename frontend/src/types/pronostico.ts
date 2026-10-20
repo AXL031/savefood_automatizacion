@@ -36,6 +36,7 @@ export type ParProducto = {
 };
 
 export type EvaluacionDia = {
+  pares_pendientes_evaluacion?: number;
   fecha_local: string; total_previsto_evaluable: number; total_real_conocido: number;
   productos_evaluables: number; productos_excluidos: number; metricas: Metricas;
   desglose_productos: ParProducto[]; corrida_id?: number;
@@ -43,6 +44,7 @@ export type EvaluacionDia = {
 };
 
 export type EvaluacionTramo = {
+  pares_pendientes_evaluacion?: number;
   estado: string; modelo_id: number; version_modelo: string; particion: Particion;
   fecha_inicio: string; fecha_fin: string; fechas_evaluadas: number;
   total_pares_evaluables: number; metricas_globales: Metricas;
