@@ -1,5 +1,19 @@
 # Contratos del recorrido demostrable
 
+## K03/K04 y frontera E01 · 20-10-2026
+
+- `ventas.servicio.leer_revisiones(sesion, revision_ids)` entrega `VentaHistorica` de versiones inmutables, incluso si hay una revisión vigente posterior. No confirma la sesión.
+- `pronosticos.evaluacion.evaluar_corrida(..., revisiones=None)` conserva compatibilidad con backtest/tareas antiguas. Si se proporciona una lista de pares `[producto_id, revision_venta_id]`, usa exactamente esas revisiones; lista vacía no utiliza reales actuales. Rechaza pares duplicados, IDs inválidos, revisiones ausentes o de otro producto/fecha (`422 REVISIONES_INVALIDAS`). Serializa las evaluaciones de una corrida con bloqueo de fila para no competir por pares compartidos.
+- `solicitar_reevaluaciones_venta(sesion, producto_id, fecha)` reserva idempotentemente `EVALUAR_PRONOSTICO` para las corridas con ese producto/fecha y pronóstico disponible. `PATCH /ventas/{id}` coordina corrección y reserva en una transacción y añade `datos.reevaluaciones: number[]`. Fallo de reserva revierte la corrección. No regenera planes/pedidos ni mueve stock. Consumidores directos de `corregir_venta` deben coordinar esa reserva si requieren actualizar métricas.
+- El manejador `EVALUAR_PRONOSTICO` consume el snapshot `revisiones` guardado en su entrada. Una corrección posterior reserva otra tarea; las evaluaciones anteriores permanecen para auditoría. Resumen/detalle incorporan `pares_pendientes_evaluacion` y distinguen `EVALUACION_PENDIENTE` de venta desconocida. Solo las revisiones vigentes ya evaluadas participan en métricas.
+- `GET /pronosticos/modelos` y `/pronosticos/corridas` admiten `limite` (1–100, 50 por defecto), `desplazamiento>=0` y devuelven `metadatos={total,limite,desplazamiento}`; `datos` conserva la lista anterior. Corridas admite filtros `modelo_id`, `tipo=BACKTEST|DEMO_PROGRAMADA`, `desde`/`hasta` inclusivos. Orden estable por ID descendente y total filtrado antes de paginar. Rangos invertidos: `422 RANGO_INVALIDO`.
+- `GET /pronosticos/evaluacion` admite `desde`/`hasta` inclusivos, conservando la consulta completa cuando se omiten. Lecturas autenticadas; entrenar/corregir siguen siendo administrativos. Sin migración nueva.
+- Consumidores: Pronósticos pagina el historial completo en servidor; selectores recorren todas las páginas de modelos; Evaluación filtra fechas, muestra comparaciones pendientes y ofrece búsqueda/desglose por producto. El gráfico interrumpe líneas ante fechas ausentes o sin pares, sin imputar ceros. Inicio/Reportes comparten indicadores y navegación con K04.
+
+### Primera carga · límite acotado E02
+
+La lectura admite hasta cinco archivos, 64 MiB por archivo y 128 MiB por entrega; solicita como máximo el presupuesto restante más un byte, en lugar de leer todo antes de validar. `413 ARCHIVO_DEMASIADO_GRANDE`/`ENTREGA_DEMASIADO_GRANDE`, `422 DEMASIADOS_ARCHIVOS`/`ARCHIVO_REPETIDO`. Nombres comparados sin distinguir mayúsculas. La validación posterior mantiene dos XLSX o cinco CSV canónicos y la transacción original.
+
 ## Ampliación vigente A02/L03 y unidades · 30-09-2026
 
 POST /programaciones-demo admite modo_envio_pedidos opcional: REQUIERE_APROBACION, AUTOMATICO o null. Si se proporciona queda en parametros/datos_entrada y participa en la huella/idempotencia; omitirlo mantiene el comportamiento previo de leer negocio al ejecutar. La UI siempre guarda su elección. No modifica la preferencia global. Ejemplo de campo adicional: "modo_envio_pedidos":"AUTOMATICO" junto al cuerpo A02 documentado abajo. Sigue siendo una ejecución única a hora real futura para una fecha histórica, no una recurrencia diaria.

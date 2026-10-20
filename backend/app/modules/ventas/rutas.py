@@ -14,6 +14,7 @@ from app.modules.productos.modelos import Producto, SkuProducto
 from app.modules.ventas.esquemas import CorregirVenta
 from app.modules.ventas.modelos import RevisionVenta, VentaDiaria
 from app.modules.ventas.servicio import corregir_venta
+from app.modules.pronosticos.evaluacion import solicitar_reevaluaciones_venta
 
 router = APIRouter(prefix="/ventas", tags=["ventas"])
 
@@ -124,13 +125,15 @@ def corregir(
     viejo se conserva para que la evaluación histórica siga siendo reproducible.
     """
     revision_id = corregir_venta(sesion, venta_id, entrada.unidades_vendidas, entrada.motivo, admin.id)
-    sesion.commit()
     venta = sesion.get(VentaDiaria, venta_id)
+    reevaluaciones = solicitar_reevaluaciones_venta(sesion, venta.producto_id, venta.fecha_local)
+    sesion.commit()
     return {
         "datos": {
             "venta_id": venta_id,
             "revision_venta_id": revision_id,
             "revision_actual": venta.revision_actual,
             "unidades_vendidas": venta.unidades_vendidas,
+            "reevaluaciones": reevaluaciones,
         }
     }

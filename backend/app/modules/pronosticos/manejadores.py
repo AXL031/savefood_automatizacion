@@ -49,7 +49,8 @@ def backtest(sesion: Session, contexto: ContextoEjecucion) -> dict:
 
 def evaluacion_programada(sesion: Session, contexto: ContextoEjecucion) -> dict:
     try:
-        return evaluar_corrida(sesion, _id(contexto.datos_entrada, "corrida_id"), contexto.id)
+        return evaluar_corrida(sesion, _id(contexto.datos_entrada, "corrida_id"), contexto.id,
+                               revisiones=contexto.datos_entrada.get("revisiones"))
     except ErrorAPI as exc:
         raise ErrorDatos(str(exc.detail)) from exc
 

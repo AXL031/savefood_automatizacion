@@ -1,5 +1,7 @@
 # Rutas HTTP: existentes y objetivo del prototipo
 
+**K03/K04 · 20-10-2026:** modelos y corridas añaden paginación remota con `limite`, `desplazamiento` y `metadatos.total`; corridas filtra modelo/tipo/fechas. Evaluación admite fechas inclusivas. PATCH de ventas añade IDs de reevaluaciones reservadas en su transacción. No hay rutas ni migraciones nuevas. [Detalle vigente](contratos.md#k03k04-y-frontera-e01--20-10-2026).
+
 Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rutas de la segunda son contratos pendientes. Los contratos de cuerpo, unidades, errores e idempotencia están en [contratos.md](contratos.md) y [primera inicialización](contrato-importaciones.md).
 
 | Ruta actual | Autorización |

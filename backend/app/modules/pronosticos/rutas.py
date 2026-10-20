@@ -1,7 +1,9 @@
 """API de modelo, corridas y evaluación histórica."""
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from datetime import date
+from typing import Literal
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.core.base_datos import obtener_sesion
@@ -48,10 +50,14 @@ def _corrida(sesion: Session, corrida: CorridaPronostico, incluir_productos: boo
 
 @router.get("/modelos")
 def listar_modelos(
+    limite: int = Query(50, ge=1, le=100), desplazamiento: int = Query(0, ge=0),
     _usuario: Usuario = Depends(identidad_actual), sesion: Session = Depends(obtener_sesion),
 ):
-    modelos = sesion.scalars(select(ArtefactoModelo).order_by(ArtefactoModelo.id.desc()).limit(50)).all()
-    return {"datos": [_modelo(modelo) for modelo in modelos]}
+    total = sesion.scalar(select(func.count()).select_from(ArtefactoModelo))
+    modelos = sesion.scalars(select(ArtefactoModelo).order_by(ArtefactoModelo.id.desc())
+                            .offset(desplazamiento).limit(limite)).all()
+    return {"datos": [_modelo(modelo) for modelo in modelos],
+            "metadatos": {"total": total, "limite": limite, "desplazamiento": desplazamiento}}
 
 
 @router.post("/preparar-modelo", status_code=202)
@@ -70,13 +76,26 @@ def solicitar_preparacion(
 @router.get("/corridas")
 def listar_corridas(
     modelo_id: int | None = Query(default=None, gt=0),
+    tipo: Literal["BACKTEST", "DEMO_PROGRAMADA"] | None = None,
+    desde: date | None = None, hasta: date | None = None,
+    limite: int = Query(50, ge=1, le=100), desplazamiento: int = Query(0, ge=0),
     _usuario: Usuario = Depends(identidad_actual), sesion: Session = Depends(obtener_sesion),
 ):
     consulta = select(CorridaPronostico)
     if modelo_id is not None:
         consulta = consulta.where(CorridaPronostico.modelo_id == modelo_id)
-    corridas = sesion.scalars(consulta.order_by(CorridaPronostico.id.desc()).limit(50)).all()
-    return {"datos": [_corrida(sesion, corrida) for corrida in corridas]}
+    if desde and hasta and desde > hasta:
+        raise ErrorAPI(422, "RANGO_INVALIDO", "La fecha inicial no puede ser posterior a la final.")
+    if tipo:
+        consulta = consulta.where(CorridaPronostico.tipo == tipo)
+    if desde:
+        consulta = consulta.where(CorridaPronostico.fecha_objetivo >= desde)
+    if hasta:
+        consulta = consulta.where(CorridaPronostico.fecha_objetivo <= hasta)
+    total = sesion.scalar(select(func.count()).select_from(consulta.subquery()))
+    corridas = sesion.scalars(consulta.order_by(CorridaPronostico.id.desc()).offset(desplazamiento).limit(limite)).all()
+    return {"datos": [_corrida(sesion, corrida) for corrida in corridas],
+            "metadatos": {"total": total, "limite": limite, "desplazamiento": desplazamiento}}
 
 
 @router.get("/corridas/{corrida_id}")
@@ -93,9 +112,12 @@ def obtener_corrida(
 @router.get("/evaluacion")
 def obtener_evaluacion(
     modelo_id: int | None = Query(default=None, gt=0),
+    desde: date | None = None, hasta: date | None = None,
     _usuario: Usuario = Depends(identidad_actual), sesion: Session = Depends(obtener_sesion),
 ):
-    return {"datos": resumen_evaluacion(sesion, modelo_id)}
+    if desde and hasta and desde > hasta:
+        raise ErrorAPI(422, "RANGO_INVALIDO", "La fecha inicial no puede ser posterior a la final.")
+    return {"datos": resumen_evaluacion(sesion, modelo_id, desde=desde, hasta=hasta)}
 
 
 @router.get("/corridas/{corrida_id}/evaluacion")
