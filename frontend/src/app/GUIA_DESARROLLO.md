@@ -63,3 +63,10 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 [Contrato vigente, APIs y límites](../../../docs/api/contrato-flujo-promociones.md). Aplicar `0015_flujo_promociones` antes de actualizar API/worker/Beat. El diagnóstico no ejecuta inferencia ni envía mensajes; guardar configuración no agenda. Consultas de tareas/evaluaciones admiten paginación real con total. La pausa no recupera horas perdidas: reprogramar antes de reanudar. Deshabilitar promociones afecta ajustes nuevos; tareas ya reservadas conservan su versión. Hora simulada de evaluación avanza por el tiempo real transcurrido desde el ajuste para comprobar frescura.
 
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
+
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Inicio, Pronósticos, Evaluación y Reportes comparten cabecera/navegación analítica, paleta hoja/yema e indicadores de datos reales. Estilos en styles.css; grid con minmax(0,1fr) y mínimos contenidos evita desbordamiento en móvil. No añade métricas económicas ni tareas externas.
+
+[Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

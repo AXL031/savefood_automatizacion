@@ -13,7 +13,7 @@ from app.modules.pronosticos.ml_runtime import preparar_ruta_ml
 from app.modules.pronosticos.modelos import ArtefactoModelo, CorridaPronostico, EvaluacionPronostico, Pronostico
 from app.modules.pronosticos.servicio import generar_corrida, obtener_pronosticos
 from app.modules.productos.servicio import listar_skus_bakery, nombres_productos
-from app.modules.ventas.servicio import leer_historial
+from app.modules.ventas.servicio import leer_historial, leer_revisiones
 
 
 def _reales_actuales(sesion: Session, corrida: CorridaPronostico, ids: list[int]):
@@ -37,13 +37,40 @@ def solicitar_evaluacion_corrida(sesion: Session, corrida_id: int):
     )
 
 
-def evaluar_corrida(sesion: Session, corrida_id: int, ejecucion_id: int) -> dict:
+def solicitar_reevaluaciones_venta(sesion: Session, producto_id: int, fecha: date) -> list[int]:
+    """Frontera E01→K03: reserva comparaciones, nunca recalcula planes o pedidos."""
+    ids = sesion.scalars(select(CorridaPronostico.id)
+        .join(Pronostico, Pronostico.corrida_id == CorridaPronostico.id)
+        .where(CorridaPronostico.fecha_objetivo == fecha,
+               Pronostico.producto_id == producto_id, Pronostico.estado == "DISPONIBLE")
+        .order_by(CorridaPronostico.id)).all()
+    return [solicitar_evaluacion_corrida(sesion, id_).id for id_ in ids]
+
+
+def evaluar_corrida(sesion: Session, corrida_id: int, ejecucion_id: int, *, revisiones: list | None = None) -> dict:
     """Evalúa únicamente pares con pronóstico y venta real conocida."""
-    corrida = sesion.get(CorridaPronostico, corrida_id)
+    # Tareas de revisiones distintas pueden compartir pares sin corregir.
+    # Serializar por corrida evita competir por una evaluación inmutable.
+    corrida = sesion.scalar(select(CorridaPronostico).where(CorridaPronostico.id == corrida_id).with_for_update())
     if corrida is None:
         raise ErrorAPI(404, "CORRIDA_NO_ENCONTRADA", "La corrida no existe.")
     pronosticos = obtener_pronosticos(sesion, corrida_id)
-    reales = _reales_actuales(sesion, corrida, [p.producto_id for p in pronosticos])
+    if revisiones is None:
+        # Compatibilidad de backtest y tareas anteriores sin snapshot.
+        reales = _reales_actuales(sesion, corrida, [p.producto_id for p in pronosticos])
+    else:
+        if (not isinstance(revisiones, list) or any(not isinstance(par, (list, tuple)) or len(par) != 2
+                or any(type(id_) is not int or id_ <= 0 for id_ in par) for par in revisiones)
+                or len({par[0] for par in revisiones}) != len(revisiones)
+                or len({par[1] for par in revisiones}) != len(revisiones)):
+            raise ErrorAPI(422, "REVISIONES_INVALIDAS", "Las revisiones conservadas no son válidas.")
+        esperadas = dict(revisiones)
+        filas = leer_revisiones(sesion, list(esperadas.values()))
+        ids_productos = {p.producto_id for p in pronosticos}
+        if (len(filas) != len(esperadas) or any(v.fecha_local != corrida.fecha_objetivo
+                or v.producto_id not in ids_productos or esperadas.get(v.producto_id) != v.revision_venta_id for v in filas)):
+            raise ErrorAPI(422, "REVISIONES_INVALIDAS", "Una revisión no corresponde al producto y fecha de la corrida.")
+        reales = {v.producto_id: v for v in filas}
     creadas = 0
     for pronostico in pronosticos:
         real = reales.get(pronostico.producto_id)
@@ -119,6 +146,12 @@ def detalle_evaluacion(sesion: Session, corrida: CorridaPronostico) -> dict:
         producto_id = int(producto["producto_id"])
         producto["producto"] = nombres.get(producto_id, f"Producto #{producto_id}")
     resultado["corrida_id"] = corrida.id
+    resultado["pares_pendientes_evaluacion"] = sum(
+        p.estado == "DISPONIBLE" and p.producto_id in vigentes and p.producto_id not in actuales
+        for p in pronosticos)
+    for producto in resultado["desglose_productos"]:
+        if int(producto["producto_id"]) in vigentes and producto["real"] is None:
+            producto["motivo_exclusion"] = "EVALUACION_PENDIENTE"
     resultado["pronosticos_no_disponibles"] = [
         {"producto_id": p.producto_id, "estado": p.estado} for p in pronosticos if p.estado != "DISPONIBLE"
     ]
@@ -167,4 +200,5 @@ def resumen_evaluacion(sesion: Session, modelo_id: int | None = None, *,
     resultado["modelo_id"] = modelo.id
     resultado["particion"] = modelo.particion_json
     resultado["trazas"] = trazas
+    resultado["pares_pendientes_evaluacion"] = sum(dia["pares_pendientes_evaluacion"] for dia in dias)
     return resultado

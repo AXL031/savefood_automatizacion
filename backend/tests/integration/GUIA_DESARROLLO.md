@@ -90,3 +90,10 @@ Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` c
 ## Conciliación de cueva
 
 Conciliación 06-10-2026: se conservan las suites remotas y las locales (test_preparacion_e03.py y test_planificacion_conciliada.py) adaptadas al contrato vigente. test_conciliacion_migraciones.py verifica ambas revisiones locales, rollback, enlaces y rechazo de datos/ejecuciones activas en esquemas PostgreSQL aislados. No usa Telegram real.
+
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. test_evaluacion_revisiones.py agrega seis regresiones: snapshot antiguo/nuevo y reentrega, snapshot vacío/ajeno, PATCH con reserva idempotente, rollback de reserva, más de 50 corridas con filtros/roles y lectura limitada/duplicados/presupuesto. Usa fixtures aisladas existentes, sin red externa. Pruebas de locks reales siguen requiriendo PostgreSQL.
+
+[Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

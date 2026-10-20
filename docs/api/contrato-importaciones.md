@@ -1,5 +1,7 @@
 # Contrato de primera inicialización
 
+**Lectura acotada · 20-10-2026:** máximo cinco archivos, 64 MiB por archivo y 128 MiB en conjunto. La lectura se limita al presupuesto restante más un byte antes de validar tamaño; nombres repetidos se comparan sin distinguir mayúsculas. Errores `413 ARCHIVO_DEMASIADO_GRANDE`/`ENTREGA_DEMASIADO_GRANDE`, `422 DEMASIADOS_ARCHIVOS`/`ARCHIVO_REPETIDO`. Se mantiene la validación de dos XLSX o cinco CSV y la atomicidad original. [Contrato transversal](contratos.md#primera-carga--límite-acotado-e02).
+
 **Estado:** asistente completo implementado: XLSX/CSV, vista previa, carga atómica de catálogos/ventas/recetas/lotes y preparación ML automática. PostgreSQL es la fuente después de aceptar. Ver contrato E03 de este corte y registros de Edu/Kevin/Axel; plan/pedidos/promociones no se declaran completos.
 
 ## Acceso rápido del piloto implementado

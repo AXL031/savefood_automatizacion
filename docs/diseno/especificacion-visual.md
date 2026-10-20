@@ -148,3 +148,12 @@ Marco/sesión persistentes en layout raíz; Link cambia contenido y conserva men
 ## Claridad vigente · 11-10-2026
 
 Menú por grupos desplegables con el grupo activo abierto; Inicio destaca una siguiente acción según carga/modelo/pedidos recientes. Asistente de cinco pasos con progreso compacto, diagnóstico por requisito y enlace para corregir/regresar conservando selección. Horarios en zona del negocio y resumen antes de programar. Carga inicial elige dos Excel o cinco CSV; identificador automático en detalles. Promociones muestran regla/version y sugerencias o descartes con motivo, lote y referencias. Tareas y evaluaciones tienen paginación remota; pantalla móvil conserva acciones, estados y desplazamiento de tablas.
+
+
+## Analítica K04 · 20-10-2026
+
+Se conserva identidad hoja/yema, Bricolage y Manrope. Inicio, Pronósticos, Evaluación y Reportes comparten pestañas analíticas con iconos de trazo y cabecera verde; jerarquía de indicadores con contexto temporal, una tarjeta de énfasis oscuro y cifras tabulares. Paleta adicional crema/blanco/luz definida como variables en styles.css. Texto nuevo de al menos 12 px, foco visible y carga con movimiento reducido.
+
+Evaluación muestra línea verde de pronóstico y azul discontinua de venta real, puntos seleccionables por teclado, selector de fecha y navegación diaria. Ausencias interrumpen la serie; no se inventan tendencias. Filtros por modelo/fechas, búsqueda por producto, comparación ±20 y pendientes de revisión conservan el contrato de datos. Pronósticos separa biblioteca, historial completo y entrenamiento plegable. Reportes reutiliza indicadores/serie y mantiene CSV completo.
+
+Grid de una columna con minmax(0,1fr), indicadores 4→2 columnas, filtros apilados en móvil y tablas/gráficos con desplazamiento interno. QA a 1280 px y 390 px con datos sintéticos aislados; el cuerpo no desborda en móvil. Capturas y evidencia en el registro de Bohorquez; la QA no sustituye datos reales ni evaluación comercial.

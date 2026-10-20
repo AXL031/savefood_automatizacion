@@ -1,5 +1,9 @@
 # Guía de desarrollo — Reparto, coordinación y traspasos
 
+## Revisión transversal · 20-10-2026
+
+[Revisión del proyecto](revision-proyecto-2026-10-20.md): estado observado sobre `a19a294`, hallazgos R01–R03, pendientes por responsable y criterios de cierre. Distingue implementación existente, defectos, evidencia pendiente y ampliaciones fuera del prototipo. El informe no modifica contratos ni acredita envíos o pruebas de infraestructura que no se hayan ejecutado.
+
 **Carpeta:** `docs/equipo`.
 
 **Responsable:** Axel Cueva. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.
