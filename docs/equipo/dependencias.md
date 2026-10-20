@@ -1,5 +1,11 @@
 # Dependencias y orden de entregas
 
+## Avance local vigente · 20-10-2026 · Prioridad Bohorquez
+
+Solicitud del usuario: avanzar también dominios ajenos cuando ayuden al recorrido y mejorar el diseño, priorizando K03/K04. Codex implementa corrección de ventas→reserva transaccional, evaluación de revisiones conservadas, indicadores pendientes, paginación completa de modelos/corridas y analítica compartida en Inicio/Pronósticos/Evaluación/Reportes. E02 limita lecturas antes de materializar archivos completos. [Contrato](../api/contratos.md#k03k04-y-frontera-e01--20-10-2026) y [entrega/pruebas](avances/bohorquez.md); E01/E02/E04 siguen bajo responsabilidad de Sanchez y el motor bajo Cueva.
+
+API y manejador consumidos en pruebas aisladas; UI verificada en navegador con datos sintéticos y API real de QA. Suite general: 271 correctas, 26 omisiones de PostgreSQL/Redis y 6 subpruebas correctas. No modifica stock, planes/pedidos ni realiza envíos. La rama local `bohorquez` contiene `a19a294`, merge del PR #14; no se vuelve a marcar ese merge como pendiente a partir de los resúmenes históricos siguientes. El avance nuevo se separó en commits de backend `f66d1a2`, pruebas `7ff08de`, interfaz `9fb094c` y un cuarto documental; el usuario autorizó su publicación en `bohorquez`. Ver el registro de entrega en [Bohorquez](avances/bohorquez.md). Continúan pendientes PostgreSQL/Redis de este corte, CI remoto, otra PC y automático Telegram real autorizado; operar con ventas actuales es ampliación distinta.
+
 ## Corte local solicitado · 14-10-2026
 
 Codex para Axel configura Pastelería Maria Juanita y retira rótulos de demostración de interfaz/pedidos nuevos. Negocios publica nombre_negocio(sesion) a Compras; texto autorizado permanece congelado. Motor/GUI conservan calendario y añaden ejecución a demanda administrativa, con consumidores comprobados en 69 pruebas Docker PostgreSQL/Redis. Cueva coordina y enlaza E04/K04/M04/L03 sin atribuir el cambio a sus integrantes. [Registro](avances/cueva.md).

@@ -6,6 +6,10 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **20-10-2026 · Entrega por commits autorizada por el usuario:** cambios separados en [f66d1a2](https://github.com/AXL031/savefood_automatizacion/commit/f66d1a2) (backend, reevaluacion y contratos); [7ff08de](https://github.com/AXL031/savefood_automatizacion/commit/7ff08de) (pruebas de regresion y guias); [9fb094c](https://github.com/AXL031/savefood_automatizacion/commit/9fb094c) (diseno web y analitica). Los registros, contratos y auditoria se entregan en un cuarto commit documental. Rama de publicacion: `bohorquez`; sin PR ni integracion en `main`. La evidencia de pruebas del corte se conserva; esta entrega Git no ejecuta nuevas pruebas ni despliega servicios.
+
+- **20-10-2026 · Codex a solicitud del usuario, E01/E02/E04 con prioridad K03/K04:** PATCH de venta reserva reevaluaciones con rollback compartido; UI informa las tareas y la lectura pública de revisiones conserva versiones antiguas. Subidas acotadas (64 MiB/archivo, 128 MiB/entrega, hasta cinco, nombres duplicados sin mayúsculas). Inicio y piezas comunes consumen el rediseño analítico de Bohorquez. [Coordinación, archivos, contratos y evidencia completa](bohorquez.md). Suite final 271 passed, 26 skipped PostgreSQL/Redis, 6 subtests passed; typecheck/build de 23 páginas y QA aislada correctos. Sin migración, cambio habitual, mensaje externo ni publicación; rama bohorquez conservada.
+
 - **11-10-2026 · Codex para Axel, E02/E04 y fronteras E01:** Carga inicial distingue dos XLSX de cinco CSV y genera su identificador; menú agrupado desplegable, siguiente acción en Inicio y enlace de regreso al asistente. Catálogo publica productos_activos para diagnóstico. E01–E03 y sus consumidores ML, recetas y stock ya están conectados localmente; no volver a marcarlos pendientes.
 - **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
 - **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
@@ -13,6 +17,21 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 20-10-2026 America/Bogota — Separacion y entrega Git
+
+- **Autor/alcance:** Codex por solicitud expresa del usuario de separar y subir el avance a `bohorquez`. K03/K04, E01/E02/E04 y coordinacion A03/A04; responsabilidades personales conservadas.
+- **Commits:** [f66d1a2](https://github.com/AXL031/savefood_automatizacion/commit/f66d1a2) (backend, reevaluacion y contratos); [7ff08de](https://github.com/AXL031/savefood_automatizacion/commit/7ff08de) (pruebas de regresion y guias); [9fb094c](https://github.com/AXL031/savefood_automatizacion/commit/9fb094c) (diseno web y analitica). Cuarto commit: registros y revision del proyecto. Sin cambios adicionales de comportamiento, contratos o migraciones en esta operacion.
+- **Verificacion:** remoto consultado antes de crear commits; `HEAD` y `origin/bohorquez` coincidian en `a19a294`. `git diff --cached --check` correcto para cada grupo. Se conserva la validacion previa de 271 pruebas y seis subpruebas, 26 omisiones PostgreSQL/Redis y build de 23 paginas; no se repite ni se presenta como ejecutada nuevamente.
+- **Dependencias/siguiente:** revisar backend y frontend juntos; completar PostgreSQL/Redis aislados, CI y otra PC. Destino remoto `origin/bohorquez`; publicar no acredita despliegue, revision de PR ni integracion en `main`. [Registro principal](bohorquez.md).
+
+
+### 20-10-2026 America/Bogota — E01/E02/E04 al servicio de la analítica
+
+- **Autor/responsable/tareas/estado:** Codex a solicitud del usuario, que autorizó avanzar otros bloques. Responsabilidad Sanchez, coordinación principal K03/K04 de Bohorquez. Implementación local real, PostgreSQL/Redis de este corte pendiente.
+- **Disponible/archivos:** [Ventas API](../../../backend/app/modules/ventas/rutas.py) coordina corrección y reserva antes de commit; [servicio](../../../backend/app/modules/ventas/servicio.py) publica leer_revisiones. [Ventas UI](../../../frontend/src/app/ventas/page.tsx) confirma la revisión e informa tareas. [Inicialización](../../../backend/app/modules/inicializacion/rutas.py) lee como máximo presupuesto+1 y rechaza exceso/duplicados. Inicio y estilos compartidos respetan sesión, navegación, cantidades desconocidas y datos reales.
+- **Contrato/ejemplo/migración:** [contratos vigentes](../../api/contratos.md#k03k04-y-frontera-e01--20-10-2026). PATCH añade reevaluaciones; fallo de reserva revierte venta y revisión. Dos XLSX o cinco CSV siguen validándose de forma atómica; 413 por archivo/entrega, 422 por cantidad/nombres. Sin migración o dependencia nueva.
+- **Pruebas/dependencias/siguiente:** seis casos permanentes nuevos y consumidor API/manejador en suite general: 271 passed, 26 skipped, 39 warnings y 6 subtests passed, 190,80 s. Selección inicial de 40 incluida en el total. Typecheck/build de 23 páginas correctos. QA aislada verifica corrección sintética 91→92/revisión 2/reserva de una tarea; no usa instalación habitual ni worker externo. [Registro principal](bohorquez.md) contiene comandos, fuentes, capturas y límites. Acompañar a Kevin en PostgreSQL/Redis/CI y revisión del equipo. Cambios locales en bohorquez, sin commit/push/PR; autoría y cambios previos conservados.
 
 ### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
 
