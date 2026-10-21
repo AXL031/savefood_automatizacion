@@ -1,5 +1,9 @@
 # Contratos del recorrido demostrable
 
+## Inventario desde recepción de Compras · 15-10-2026
+
+`inventario.servicio.registrar_recepcion_ingrediente(sesion, *, ingrediente_id, cantidad_base, codigo_lote, lote_informado, fecha_ingreso, fecha_caducidad, clave, motivo, usuario_id) -> ResultadoMovimiento` es interfaz pública sin commit. Crea lote independiente y movimiento RECEPCION positivo, con claves únicas, hasta tres decimales exactos y unidades enteras si corresponde; rechaza ingrediente inactivo, código repetido y caducidad anterior al ingreso. Compras orquesta recibo/líneas/lotes/movimientos en una transacción. `consultar_disponibilidad(fecha)` excluye lotes de ingrediente con fecha_ingreso posterior; NULL conserva el comportamiento de aperturas anteriores. Es filtro de ingreso, no reconstrucción de todos los saldos históricos. Detalle HTTP, bloqueo e idempotencia en [contrato-pedidos.md](contrato-pedidos.md).
+
 ## K03/K04 y frontera E01 · 20-10-2026
 
 - `ventas.servicio.leer_revisiones(sesion, revision_ids)` entrega `VentaHistorica` de versiones inmutables, incluso si hay una revisión vigente posterior. No confirma la sesión.

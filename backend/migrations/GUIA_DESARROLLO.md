@@ -112,3 +112,13 @@ El puente de revisiones locales ahora adopta la cadena hasta 0015 y compara los 
 ## Corte solicitado · 14-10-2026
 
 Codex para Axel. Cabeza 0016_nombre_comercio sobre 0015: normaliza exclusivamente el nombre inicial heredado a Mi comercio. No reemplaza nombres personalizados ni restaura rótulos antiguos en downgrade. Cadena aplicada previamente intacta; puente local adopta 0016 y bases publicadas 0014/0015 usan upgrade normal.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Cabeza 0017_pruebas_proveedor sobre 0016, tabla aditiva de intentos de prueba Telegram con FK a proveedor/usuario, clave única, estado, texto/destino/huella congelados y recibo. No contiene tokens ni toca ventas, stock, modelo o pedidos. Aplicar antes de reiniciar API. Puente de revisiones locales incorpora 0017; bases publicadas 0016 siguen Alembic normal.
+
+
+## Recepción y corrección autorizadas · 15-10-2026
+
+Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.

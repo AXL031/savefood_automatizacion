@@ -32,6 +32,8 @@ Cada PC tiene su propio volumen de PostgreSQL y `model_artifacts` compartido: el
 - [Cronograma semanal](docs/equipo/cronograma.md): hitos de las semanas 1 a 16 y estado de cada entrega.
 - [Responsabilidades del equipo](docs/equipo/responsabilidades.md): cada persona desarrolla interfaz, servidor y API de los módulos asignados.
 - [Arquitectura y diagramas](docs/arquitectura/diagramas/README.md), incluido el [diagrama entidad-relación](docs/base_de_datos/diagrama-entidad-relacion.md).
+- [Automatizaciones implementadas para diagramar](docs/automatizacion/flujos-implementados.md): disparadores, decisiones, resultados y diagramas Mermaid.
+- [Repetir grupos de proveedores en otra PC](datos_carga/referencias/replicar_proveedores_otra_pc.md) y [configurar bot/API Telegram](docs/api/configurar-telegram.md).
 - [Contratos de API](docs/api/contratos.md) y [rutas propuestas](docs/api/rutas-api.md).
 - [Índice de documentación](docs/README.md) y [referencias visuales conservadas](docs/diseno/mockups/README.md).
 

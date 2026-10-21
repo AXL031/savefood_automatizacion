@@ -22,6 +22,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+La referencia para dibujar los procesos al 20-10-2026 es [flujos-implementados.md](flujos-implementados.md): cinco tipos registrados, outbox Telegram separada, infraestructura y recepción explícita. Mantener disparadores, decisiones, efectos y límites unidos a sus fuentes de código. No contar configuración, un reintento o una lectura de pantalla como un tipo de tarea adicional. Enlaza la [configuración del bot y API](../api/configurar-telegram.md); los tokens nunca forman parte de los ejemplos versionados.
+
 1. Mantener eventos, programación, leases, estados e intentos.
 2. Separar reglas comunes de política Telegram escrita por Aguirre.
 3. Documentar orden de inferencia, plan, evaluación y promoción con referencias de dominio.

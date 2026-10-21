@@ -24,6 +24,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+La [guía de Telegram](configurar-telegram.md) documenta el bot público indicado por Axel, configuración desde la aplicación, métodos externos consumidos y rutas internas, con diagrama. Mantenerla alineada con el adaptador y Proveedores; nunca guardar tokens, chats privados ni URLs con credenciales en la documentación. La guía es reproducción documental, no evidencia de transmisión en otra instalación.
+
 1. Cada dueño define cuerpos, campos, permisos, errores y ejemplos de sus rutas.
 2. Edu mantiene importación; Kevin pronóstico/evaluación; Max receta/plan; Vera stock/promoción; Aguirre pedido/canal.
 3. Axel coordina sobre y catálogo de rutas; cambios de contrato incluyen consumidor.

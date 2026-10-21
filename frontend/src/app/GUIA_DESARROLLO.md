@@ -65,6 +65,10 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
 
 
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Patrón de gestión solicitado por Axel: listar registros primero y abrir creación/edición con botón y PanelDetalle. Aplicado a Proveedores, Ingredientes, Usuarios, Planes, Ajustes de inventario y Entrenamiento. Recetas ya abre su gestión desde la tabla. Configuración singular, importación y asistente conservan su recorrido propio.
+
 ## Avance K03/K04 y E01/E02 · 20-10-2026
 
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Inicio, Pronósticos, Evaluación y Reportes comparten cabecera/navegación analítica, paleta hoja/yema e indicadores de datos reales. Estilos en styles.css; grid con minmax(0,1fr) y mínimos contenidos evita desbordamiento en móvil. No añade métricas económicas ni tareas externas.

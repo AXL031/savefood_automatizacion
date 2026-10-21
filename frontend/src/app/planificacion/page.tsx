@@ -38,6 +38,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
+  const [creando, setCreando] = useState(false);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("plan_id");
@@ -73,7 +74,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     evento.preventDefault(); setGuardando(true); setError("");
     try {
       const resultado = await generarPlan(token, Number(corrida), clave);
-      setPlan(resultado); setSeleccionado(String(resultado.id));
+      setCreando(false); setPlan(resultado); setSeleccionado(String(resultado.id));
       setPlanes((actual) => [resultado, ...actual.filter((p) => p.id !== resultado.id)]);
       // Mantener clave: repetir recupera este resultado. Recalcular es explícito.
     } catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo generar el plan."); }
@@ -83,10 +84,10 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   return <>
     <EstadoPanel tono="info" titulo="Propuesta de producción · margen de seguridad 0"
       descripcion="El plan conserva pronóstico, receta, necesidades de ingredientes y stock leídos. Generarlo no modifica inventario. Consulta sus pedidos en Compras." />
-    <div className="section-heading section-space"><Link href="/automatizaciones">Programar propuesta automática</Link><button className="button-secondary" type="button" disabled={cargando || guardando} onClick={() => setRevision((r) => r + 1)}>Actualizar</button></div>
+    <div className="section-heading section-space"><Link href="/automatizaciones">Programar propuesta automática</Link>{perfil.rol === "ADMINISTRADOR" && <button className="button-primary" type="button" disabled={cargando || guardando || !corridas.length} onClick={() => { setCreando(true); setError(""); }}>Crear plan</button>}<button className="button-secondary" type="button" disabled={cargando || guardando} onClick={() => setRevision((r) => r + 1)}>Actualizar</button></div>
     {error && <EstadoPanel tono="alerta" titulo="No se pudo completar la operación" descripcion={error} />}
     {cargando && <EstadoPanel titulo="Consultando planes" descripcion="Cargando resultados persistidos…" />}
-    {!cargando && perfil.rol === "ADMINISTRADOR" && corridas.length > 0 && <section className="card section-space">
+    {creando && perfil.rol === "ADMINISTRADOR" && corridas.length > 0 && <PanelDetalle titulo="Crear plan" ocupado={guardando} onCerrar={() => setCreando(false)}><section className="card section-space">
       <h2>Crear plan con un pronóstico guardado</h2><form onSubmit={generar}>
         <div className="form-grid">
           <CampoSelect id="corrida-plan" etiqueta="Cálculo de pronóstico de origen" valor={corrida} deshabilitado={guardando}
@@ -98,7 +99,8 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         <div className="section-heading section-space"><BotonEnviar enviando={guardando} textoEnviando="Guardando…">Guardar propuesta</BotonEnviar>
           <button className="button-secondary" type="button" disabled={guardando} onClick={() => setClave(nuevaClave())}>Preparar nuevo cálculo</button></div>
       </form>
-    </section>}
+      {error && <EstadoPanel tono="alerta" titulo="Revisa el cálculo" descripcion={error} />}
+    </section></PanelDetalle>}
     {!cargando && planes.length === 0 && !error && <EstadoPanel titulo="Todavía no hay planes" descripcion="Programa una propuesta o genera un plan desde una corrida de pronóstico existente." />}
     {planes.length > 0 && <section className="card section-space"><h2>Planes guardados</h2><TablaPaginada><thead><tr><th>Plan</th><th>Fecha histórica</th><th>Pronóstico</th><th>Necesidades</th><th>Detalle</th></tr></thead><tbody>{planes.map((p) => <tr key={p.id}><td>#{p.id}</td><td>{p.fecha_objetivo}</td><td>#{p.corrida_id}</td><td>{etiquetaDato(p.necesidades_estado)}</td><td><button type="button" className="button-link" onClick={() => { setPlan(null); setSeleccionado(String(p.id)); }}>Ver plan #{p.id}</button></td></tr>)}</tbody></TablaPaginada><p className="helper-text">Últimos 50 planes guardados.</p></section>}
     {seleccionado && <PanelDetalle titulo={`Plan #${seleccionado}`} onCerrar={() => { setSeleccionado(""); setPlan(null); }} ocupado={guardando}>

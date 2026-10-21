@@ -3,18 +3,35 @@ import importlib.util
 from pathlib import Path
 import pytest
 
-from alembic.autogenerate import compare_metadata
+from alembic.autogenerate import compare_metadata as comparar_modelos_actuales
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, event, inspect
+from sqlalchemy import create_engine, event, inspect, MetaData
 
 from app.core.base import Base
 from app.principal import app  # noqa: F401; carga los modelos de todas las rutas
 
 NUEVAS = {"ingrediente", "receta", "receta_ingrediente", "lote_producto",
           "lote_ingrediente", "movimiento_inventario", "proveedor", "oferta_ingrediente"}
+
+
+def compare_metadata(contexto, metadata):
+    # Estos cortes verifican deltas históricos; 0018 se verifica íntegra aparte.
+    # Solo se resta la ampliación futura si el delta no la crea todavía.
+    esperado = MetaData()
+    for tabla in metadata.sorted_tables:
+        tabla.to_metadata(esperado)
+    for tabla, columna in (("lote_ingrediente", "fecha_ingreso"), ("propuesta_compra", "reemplazo_id")):
+        existentes = {c["name"] for c in inspect(contexto.bind).get_columns(tabla)}
+        if columna not in existentes:
+            copia = esperado.tables[tabla]
+            for restriccion in list(copia.constraints):
+                if columna in restriccion.columns:
+                    copia.constraints.remove(restriccion)
+            copia._columns.remove(copia.c[columna])
+    return comparar_modelos_actuales(contexto, esperado)
 
 
 def cargar_revision(nombre):
@@ -46,11 +63,30 @@ def test_nombre_inicial_se_normaliza_sin_reemplazar_comercio_configurado():
     motor.dispose()
 
 
+def test_pruebas_proveedor_migracion_aditiva_reversible():
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor, "connect")
+    def funciones(conexion, _):
+        conexion.create_function("char_length", 1, len)
+    Base.metadata.create_all(motor, tables=[t for t in Base.metadata.sorted_tables if t.name != "prueba_mensaje_proveedor"])
+    revision = cargar_revision("0017_pruebas_proveedor")
+    with motor.begin() as conexion:
+        contexto = MigrationContext.configure(conexion)
+        with Operations.context(contexto):
+            revision.upgrade()
+            assert compare_metadata(contexto, Base.metadata) == []
+            revision.downgrade()
+            assert "prueba_mensaje_proveedor" not in inspect(conexion).get_table_names()
+            revision.upgrade()
+            assert compare_metadata(contexto, Base.metadata) == []
+    motor.dispose()
+
+
 def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0016_nombre_comercio"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0018_recepcion_compras"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")

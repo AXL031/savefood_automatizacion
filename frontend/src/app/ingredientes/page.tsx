@@ -31,6 +31,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [nuevo, setNuevo] = useState({ codigo: "", nombre: "", unidad: "g" as UnidadBase });
   const [edicion, setEdicion] = useState<Edicion | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [creando, setCreando] = useState(false);
 
   const cargar = useCallback(
     (signal?: AbortSignal) => {
@@ -73,6 +74,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       });
       setMensaje(`Ingrediente ${creado.nombre} registrado en ${creado.unidad_base}.`);
       setNuevo({ codigo: "", nombre: "", unidad: "g" });
+      setCreando(false);
       cargar();
     } catch (fallo) {
       setError(fallo instanceof Error ? fallo.message : "No se pudo registrar el ingrediente.");
@@ -157,6 +159,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               implícitas; por eso no cambia cuando ya existe una receta o un lote que la use.
             </p>
           </div>
+          {administrador && <button type="button" className="button-primary" onClick={() => { setCreando(true); setError(""); }}>Crear ingrediente</button>}
         </div>
         {error ? <EstadoPanel tono="alerta" titulo="Revisa la operación" descripcion={error} /> : null}
         {mensaje ? <p className="inline-success" role="status">{mensaje}</p> : null}
@@ -166,7 +169,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
           idFila={(fila) => fila.id}
           cargando={cargando}
           vacioTitulo="Todavía no hay ingredientes"
-          vacioDescripcion="Se registran en la primera carga o con el formulario de esta página."
+          vacioDescripcion="Se registran en la primera carga o pulsando Crear ingrediente."
           pie={ingredientes.length ? `${ingredientes.length} ingredientes registrados.` : undefined}
         />
       </section>
@@ -207,9 +210,9 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         </section></PanelDetalle>
       ) : null}
 
-      {administrador ? (
-        <section className="card main-card section-space">
-          <h2>Registrar ingrediente</h2>
+      {administrador && creando ? (
+        <PanelDetalle titulo="Crear ingrediente" ocupado={guardando} onCerrar={() => setCreando(false)}><section className="card main-card section-space">
+          {error && <EstadoPanel tono="alerta" titulo="Revisa el ingrediente" descripcion={error} />}
           <form onSubmit={crear}>
             <div className="form-grid">
               <CampoTexto id="nuevo-codigo" etiqueta="Código" valor={nuevo.codigo} onCambio={(v) => setNuevo({ ...nuevo, codigo: v })} ayuda="Único; no se puede cambiar después." requerido />
@@ -220,7 +223,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               <BotonEnviar enviando={guardando} textoEnviando="Registrando…">Registrar ingrediente</BotonEnviar>
             </div>
           </form>
-        </section>
+        </section></PanelDetalle>
       ) : null}
     </>
   );

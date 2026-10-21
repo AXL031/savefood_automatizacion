@@ -1,0 +1,367 @@
+{
+  "fecha_revision": "2026-10-14",
+  "estado": "PROPUESTA_SIN_ASIGNAR",
+  "fuente": "GET /api/v1/ingredientes, catálogo activo contrastado con datos_carga/ingredientes.csv",
+  "total_ingredientes": 55,
+  "grupos": [
+    {
+      "codigo": "G01",
+      "nombre": "Panadería y repostería",
+      "perfil_proveedor": "Distribuidor de materias primas de panadería y repostería",
+      "total_ingredientes": 27,
+      "subgrupos": [
+        {
+          "nombre": "Harinas, cereales y semillas",
+          "ingredientes": [
+            {
+              "codigo": "harina_trigo",
+              "nombre": "Harina de trigo",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "harina_integral",
+              "nombre": "Harina de trigo integral",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "harina_centeno",
+              "nombre": "Harina de centeno",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "maicena",
+              "nombre": "Almidón de maíz",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "avena",
+              "nombre": "Copos de avena",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "semillas_mezcladas",
+              "nombre": "Mezcla de semillas (sésamo, girasol, lino)",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Azúcares y endulzantes",
+          "ingredientes": [
+            {
+              "codigo": "azucar",
+              "nombre": "Azúcar",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "azucar_glass",
+              "nombre": "Azúcar glas",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "azucar_moreno",
+              "nombre": "Azúcar moreno",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "jarabe_glucosa",
+              "nombre": "Jarabe de glucosa",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "miel",
+              "nombre": "Miel",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Frutos secos y fruta deshidratada",
+          "ingredientes": [
+            {
+              "codigo": "almendra_molida",
+              "nombre": "Almendra molida",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "almendra_laminada",
+              "nombre": "Almendra laminada",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "nueces",
+              "nombre": "Nueces",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "avellana",
+              "nombre": "Avellanas",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "pistacho",
+              "nombre": "Pistachos",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "pasas",
+              "nombre": "Pasas",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Chocolates y preparados dulces",
+          "ingredientes": [
+            {
+              "codigo": "chocolate",
+              "nombre": "Chocolate",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "chocolate_blanco",
+              "nombre": "Chocolate blanco",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "cacao",
+              "nombre": "Cacao en polvo",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "caramelo",
+              "nombre": "Caramelo preparado",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Leudantes, aromas y complementos",
+          "ingredientes": [
+            {
+              "codigo": "levadura",
+              "nombre": "Levadura panadera",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "polvo_hornear",
+              "nombre": "Polvo de hornear",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "vainilla",
+              "nombre": "Extracto de vainilla",
+              "unidad_base": "ml"
+            },
+            {
+              "codigo": "esencia_fruta",
+              "nombre": "Aroma frutal",
+              "unidad_base": "ml"
+            },
+            {
+              "codigo": "gelatina",
+              "nombre": "Gelatina",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "sal",
+              "nombre": "Sal",
+              "unidad_base": "g"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "codigo": "G02",
+      "nombre": "Frescos y refrigerados",
+      "perfil_proveedor": "Distribuidor de alimentos frescos, lácteos, huevos y carnes",
+      "total_ingredientes": 18,
+      "subgrupos": [
+        {
+          "nombre": "Lácteos y huevos",
+          "ingredientes": [
+            {
+              "codigo": "mantequilla",
+              "nombre": "Mantequilla",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "leche",
+              "nombre": "Leche",
+              "unidad_base": "ml"
+            },
+            {
+              "codigo": "nata",
+              "nombre": "Nata para montar / crema de leche",
+              "unidad_base": "ml"
+            },
+            {
+              "codigo": "huevo",
+              "nombre": "Huevo",
+              "unidad_base": "unidad"
+            },
+            {
+              "codigo": "queso_emmental",
+              "nombre": "Queso emmental",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Frutas",
+          "ingredientes": [
+            {
+              "codigo": "manzana",
+              "nombre": "Manzana",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "pera",
+              "nombre": "Pera",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "fresa",
+              "nombre": "Fresa",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "frambuesa",
+              "nombre": "Frambuesa",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "albaricoque",
+              "nombre": "Albaricoque",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "frutas_mixtas",
+              "nombre": "Frutas variadas",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "mango",
+              "nombre": "Mango",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "limon",
+              "nombre": "Limón",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Verduras",
+          "ingredientes": [
+            {
+              "codigo": "lechuga",
+              "nombre": "Lechuga",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "tomate",
+              "nombre": "Tomate fresco",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "verduras",
+              "nombre": "Mezcla de verduras",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Carnes y fiambres",
+          "ingredientes": [
+            {
+              "codigo": "pollo",
+              "nombre": "Pollo",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "jamon",
+              "nombre": "Jamón cocido",
+              "unidad_base": "g"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "codigo": "G03",
+      "nombre": "Abarrotes, bebidas y empaques",
+      "perfil_proveedor": "Distribuidor general de abarrotes, bebidas y empaques",
+      "total_ingredientes": 10,
+      "subgrupos": [
+        {
+          "nombre": "Abarrotes y salsas",
+          "ingredientes": [
+            {
+              "codigo": "pasta_seca",
+              "nombre": "Pasta seca",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "arroz",
+              "nombre": "Arroz crudo",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "aceite",
+              "nombre": "Aceite vegetal",
+              "unidad_base": "ml"
+            },
+            {
+              "codigo": "mayonesa",
+              "nombre": "Mayonesa",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "salsa_tomate",
+              "nombre": "Salsa de tomate",
+              "unidad_base": "g"
+            }
+          ]
+        },
+        {
+          "nombre": "Bebidas e infusiones",
+          "ingredientes": [
+            {
+              "codigo": "agua",
+              "nombre": "Agua",
+              "unidad_base": "ml"
+            },
+            {
+              "codigo": "cafe_molido",
+              "nombre": "Café molido",
+              "unidad_base": "g"
+            },
+            {
+              "codigo": "te_bolsita",
+              "nombre": "Bolsa de té",
+              "unidad_base": "unidad"
+            },
+            {
+              "codigo": "bebida_330ml",
+              "nombre": "Bebida envasada 330 ml",
+              "unidad_base": "unidad"
+            }
+          ]
+        },
+        {
+          "nombre": "Empaques",
+          "ingredientes": [
+            {
+              "codigo": "bolsa_empaque",
+              "nombre": "Bolsa / empaque",
+              "unidad_base": "unidad"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

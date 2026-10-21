@@ -1,5 +1,23 @@
 # Contrato de pedidos derivados del pronóstico
 
+## Ampliación autorizada · 15-10-2026 · Corrección y recepción
+
+Solicitud expresa de Axel amplía el alcance anterior con recepción de compras de ingredientes. Crear/aprobar/enviar pedidos sigue sin mover stock. Solo confirmar mercancía recibida produce entradas RECEPCION auditadas. Ventas en vivo y simulación acelerada quedan únicamente planificadas.
+
+POST /compras/propuestas/{id}/corregir (Administrador, motivo) sustituye únicamente una propuesta BLOQUEADA sin decisiones ni intentos de envío. Conserva la propuesta y plan anteriores, cancela su borrador y genera un plan nuevo desde la misma corrida con datos vigentes y una propuesta nueva REQUIERE_APROBACION, sin red/outbox. Si aún hay bloqueos, revierte todo. reemplazo_id enlaza el resultado y hace idempotente la acción por propuesta original; repetir devuelve el mismo reemplazo. No recupera pedidos autorizados ni elude recompra.
+
+POST /pedidos/{id}/recepciones (Administrador) recibe clave_idempotencia, fecha_recepcion local, motivo y líneas con linea_pedido_id, cantidad_compra realmente recibida, codigo_lote opcional y fecha_caducidad opcional. Solo pedido ENVIADO de propuesta activa. Permite recepciones parciales sin superar lo pendiente; convierte con el factor congelado del pedido, exige cantidad base exacta con hasta tres decimales y respeta unidades enteras. Una misma clave/actor/cuerpo recupera el resultado sin sumar otra vez; reutilizarla con otro contenido devuelve 409. Transacción única y bloqueo fecha→propuesta→pedido: recepción, lotes y movimientos se confirman juntos. No transmite mensajes. Fecha no futura, no anterior al objetivo del pedido; caducidad no anterior a recepción. Lote técnico REC-ID-LINEA si no se informa, sin inventar caducidad.
+
+GET de pedido incorpora recepcion_estado PENDIENTE/PARCIAL/RECIBIDO, historial de recepciones con actor/fecha/lotes/movimientos y cantidades recibidas/pendientes por línea. estado de envío permanece separado. Inventario publica registrar_recepcion_ingrediente sin commit; crea lote de entrada independiente con fecha_ingreso y movimiento RECEPCION. Consultar una fecha anterior excluye esos lotes, sin alterar snapshots antiguos. Migración aditiva 0018_recepcion_compras sobre 0017. Downgrade rechaza eliminar evidencia/stock de recepciones existentes. Operador consulta, Administrador confirma lo que recibió. No se acreditará una recepción física mediante un recibo de Telegram.
+
+## Ampliación 14-10-2026 · Gestión y prueba de conexión
+
+Proveedores abre con tabla paginada, activos por defecto, búsqueda y filtro de estado; cada fila muestra los ingredientes de sus ofertas activas y el estado del destino. Crear proveedor abre un diálogo; la gestión de ingredientes/chat se abre desde cada fila. Ingredientes y Usuarios siguen el mismo patrón de listado y creación bajo demanda. Telegram se configura en un diálogo independiente.
+
+`POST /api/v1/proveedores/{id}/mensaje-prueba` (Administrador) recibe `clave_idempotencia` (8–80 caracteres), `chat_id_revisado` y `confirmar_revision_chat` (false por defecto). Requiere proveedor activo y destino verificado con la credencial vigente, coincidente con el chat revisado. Congela un texto fijo con el nombre del comercio; no crea pedidos ni movimientos. Reserva el intento en una transacción confirmada ANTES de llamar una sola vez a Telegram. La misma clave, usuario y destino recuperan el resultado sin transmitir de nuevo; otro contenido con esa clave devuelve 409. El resultado inicial durable es PENDIENTE_VERIFICACION: una caída conserva la incertidumbre. Una prueba nueva tras un resultado incierto requiere revisión explícita del chat; nunca hay reintento automático. Devuelve estado ENVIADO/FALLIDO/PENDIENTE_VERIFICACION, texto, chat, ID/fecha de Telegram y detalle saneado. La respuesta ENVIADO acredita la aceptación de Telegram, no la lectura humana.
+
+`GET /api/v1/proveedores/{id}/mensajes-prueba` (Administrador) recupera los últimos diez intentos. Migración aditiva `0017_pruebas_proveedor`; secretos y huellas no se devuelven. El servicio no confirma la sesión: HTTP coordina reserva y resultado en dos transacciones. Configurar/verificar no envía; únicamente pulsar Enviar mensaje de prueba autoriza este mensaje. WhatsApp sigue pendiente de adaptador.
+
 **Formato vigente · 14-10-2026:** por solicitud expresa de Axel, pedidos nuevos usan el nombre configurado del comercio y textos comerciales. Las referencias de los cortes anteriores a demostración/no surtir son historial y no se aplican a pedidos nuevos. Mensajes ya autorizados permanecen congelados. Ver la ampliación del 14-10 al final; WhatsApp todavía está pendiente de integración.
 
 ## Registro de proveedor · ampliación 14-10-2026

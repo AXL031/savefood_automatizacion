@@ -97,6 +97,15 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
 
 
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+compras.ts expone listarPruebasProveedor/enviarPruebaProveedor con cliente HTTP autenticado; clave estable para recuperar intentos sin retransmitir. GET /proveedores añade ingredientes para la tabla. No almacena token Telegram ni hace reintentos automáticos.
+
+
+## Recepción y corrección autorizadas · 15-10-2026
+
+Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
 ## Avance K03/K04 y E01/E02 · 20-10-2026
 
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. listarModelos recorre páginas del servidor hasta recuperar todas las versiones; listarPaginaCorridas usa total/limite/desplazamiento y filtros. obtenerEvaluacion admite fechas opcionales sin romper sus consumidores anteriores. Usa solicitarSobre/solicitar comunes y AbortSignal.

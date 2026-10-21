@@ -24,6 +24,7 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
   const [error, setError] = useState("");
   const [version, setVersion] = useState(""), [preparando, setPreparando] = useState(false);
   const [tarea, setTarea] = useState<number>();
+  const [entrenando, setEntrenando] = useState(false);
   const [pagina, setPagina] = useState(1), [tamano, setTamano] = useState(10), [total, setTotal] = useState(0);
   const [borrador, setBorrador] = useState({ tipo: "", desde: "", hasta: "" });
   const [filtros, setFiltros] = useState(borrador);
@@ -70,7 +71,7 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
   }
   async function entrenar(e: FormEvent) {
     e.preventDefault(); setError(""); setPreparando(true);
-    try { setTarea((await prepararModelo(token, version, `modelo-${version}`)).ejecucion_id); }
+    try { setTarea((await prepararModelo(token, version, `modelo-${version}`)).ejecucion_id); setEntrenando(false); }
     catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo solicitar el entrenamiento."); }
     finally { setPreparando(false); }
   }
@@ -79,6 +80,7 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
   const disponibles = detalle?.pronosticos?.filter((p) => p.estado === "DISPONIBLE") ?? [];
   return <div className="analytics-page">
     <NavegacionAnalitica />
+    {administrador && <div className="section-heading"><h2>Modelos y pronósticos</h2><button type="button" className="button-primary" onClick={() => { setEntrenando(true); setError(""); }}>Entrenar nueva versión</button></div>}
     <section className="analytics-hero analytics-hero-compact"><div><span className="analytics-eyebrow"><IconoAnalitica tipo="modelo" /> Tu biblioteca predictiva</span><h2>Planifica con perspectiva.</h2><p>Explora cada versión y consulta qué unidades se previeron para cada producto.</p></div><Link href={modelo ? `/panel?modelo_id=${modelo.id}` : "/panel"} className="hero-link">Ver evaluación <span aria-hidden="true">↗</span></Link></section>
     {error && <EstadoPanel tono="alerta" titulo="No se pudo completar la consulta" descripcion={error} />}
     {tarea && <div className="analytics-notice" role="status"><strong>Entrenamiento solicitado · tarea #{tarea}</strong><span>Los modelos anteriores permanecen disponibles.</span><Link href={`/automatizaciones/ejecuciones/${tarea}`}>Seguir preparación →</Link></div>}
@@ -94,7 +96,7 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
         {cargandoLista ? <p role="status" className="helper-text">Consultando historial…</p> : !corridas.length && <p className="chart-empty">No hay pronósticos para estos filtros.</p>}
       </section>
     </>}
-    {administrador && <details className="card training-card"><summary><span className="model-symbol"><IconoAnalitica tipo="modelo" /></span><span><strong>Entrenar una nueva versión</strong><small>Utiliza las ventas guardadas y conserva los modelos anteriores.</small></span><span aria-hidden="true">＋</span></summary><form className="analytics-filters" onSubmit={entrenar}><label>Nombre de la nueva versión<input value={version} onChange={(e) => setVersion(e.target.value)} placeholder="Por ejemplo: catboost-octubre-01" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" maxLength={80} required /></label><button className="button-primary" disabled={preparando}>{preparando ? "Solicitando preparación…" : "Solicitar entrenamiento"}</button></form></details>}
+    {administrador && entrenando && <PanelDetalle titulo="Entrenar nueva versión" ocupado={preparando} onCerrar={() => setEntrenando(false)}><section className="card training-card"><p>Utiliza las ventas guardadas y conserva los modelos anteriores.</p>{error && <EstadoPanel tono="alerta" titulo="Revisa el entrenamiento" descripcion={error} />}<form className="analytics-filters" onSubmit={entrenar}><label>Nombre de la nueva versión<input value={version} onChange={(e) => setVersion(e.target.value)} placeholder="Por ejemplo: catboost-octubre-01" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" maxLength={80} required /></label><button className="button-primary" disabled={preparando}>{preparando ? "Solicitando preparación…" : "Solicitar entrenamiento"}</button></form></section></PanelDetalle>}
     {detalle && <PanelDetalle titulo={`Pronóstico #${detalle.id} · ${formatearEscenario(detalle.fecha_objetivo)}`} onCerrar={() => setDetalle(null)}><div className="day-summary"><div><span>Unidades previstas</span><strong>{numero(disponibles.reduce((s, p) => s + (p.cantidad_pronosticada ?? 0), 0))}</strong></div><div><span>Productos con pronóstico</span><strong>{disponibles.length} / {detalle.pronosticos?.length ?? 0}</strong></div><div><span>Modelo</span><strong className="model-version-value">{detalle.version_modelo}</strong></div></div><label className="field">Buscar producto<input type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Nombre del producto…" /></label><TablaPaginada><thead><tr><th>Producto</th><th className="number-cell">Unidades previstas</th><th>Disponibilidad</th></tr></thead><tbody>{productos.map((p) => <tr key={p.id}><td>{p.producto}</td><td className="number-cell">{numero(p.cantidad_pronosticada)}</td><td><span className={`badge ${p.estado === "DISPONIBLE" ? "badge-ok" : "badge-advertencia"}`}>{etiquetaDato(p.estado)}</span></td></tr>)}</tbody></TablaPaginada>{!productos.length && <p className="chart-empty">No hay productos que coincidan.</p>}<p className="helper-text">Una cantidad desconocida se conserva sin valor y no se interpreta como cero.</p><Link href={`/automatizaciones/ejecuciones/${detalle.ejecucion_id}`}>Ver tarea e intentos →</Link></PanelDetalle>}
   </div>;
 }

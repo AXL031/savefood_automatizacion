@@ -76,6 +76,30 @@ def test_pedidos_conversion_exacta_snapshots_permisos_y_stock(compra):
     assert repetida == propuesta
 
 
+def test_varios_insumos_del_mismo_proveedor_se_agrupan_en_un_pedido(compra):
+    escenario, proveedor_id, _, harina_id = compra
+    _, sesiones, _, _, _, productos = escenario
+    with sesiones.begin() as sesion:
+        sal = crear_ingrediente(sesion, "sal-prueba", "Sal", "g")
+        sesion.add(LoteIngrediente(ingrediente_id=sal.id, codigo_lote="SAL-0", lote_informado=True, saldo_disponible=0))
+        crear_version(sesion, productos["baguette"], [LineaNueva(harina_id, Decimal("250.500")),
+            LineaNueva(sal.id, Decimal("10"))], "Receta con dos insumos del mismo proveedor", None)
+        ServicioProveedores(sesion, TelegramFalso()).crear_oferta(proveedor_id, OfertaCrear(
+            ingrediente_id=sal.id, descripcion="Bolsa de sal", unidad_compra="bolsa", factor_conversion=Decimal("1000"), preferida=True))
+        sal_id = sal.id
+    antes = saldos(sesiones)
+    plan = solicitar(escenario).json()["datos"]
+    respuesta = generar(escenario, plan["id"])
+    assert respuesta.status_code == 201, respuesta.text
+    propuesta = respuesta.json()["datos"]
+    pedido, = propuesta["pedidos"]
+    assert pedido["proveedor"]["id"] == proveedor_id
+    assert {linea["ingrediente_id"] for linea in pedido["lineas"]} == {harina_id, sal_id}
+    assert pedido["estado"] == "PENDIENTE_APROBACION" and pedido["envio_estado"] == "SIN_ENVIO"
+    assert saldos(sesiones) == antes
+    assert generar(escenario, plan["id"]).json()["datos"]["id"] == propuesta["id"]
+
+
 @pytest.mark.parametrize("causa", ["SIN_PROVEEDOR", "DESTINO_NO_VERIFICADO", "INCOMPLETAS"])
 def test_bloqueos_reales_no_simulan_envio(compra, causa):
     escenario, proveedor_id, oferta_id, _ = compra

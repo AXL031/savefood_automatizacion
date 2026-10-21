@@ -45,7 +45,7 @@ export type Movimiento = {
   lote_id: number;
   codigo_lote: string;
   item_nombre: string;
-  tipo_movimiento: "APERTURA" | "AJUSTE";
+  tipo_movimiento: "APERTURA" | "AJUSTE" | "RECEPCION";
   delta: string;
   saldo_resultante: string;
   motivo: string;

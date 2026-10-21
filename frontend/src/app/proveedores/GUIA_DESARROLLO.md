@@ -64,3 +64,8 @@ Conectar bot, elegir proveedor/vincular/verificar chat y ofertas son pasos separ
 ## Ajustes de interfaz · 30-09-2026
 
 Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Tabla paginada primero, proveedores activos por defecto, filtros de estado/búsqueda por proveedor e ingrediente. GET /proveedores entrega ingredientes de ofertas activas sin duplicados. Crear proveedor y Configurar Telegram abren PanelDetalle; Gestionar abre insumos y destino. Añadir ingrediente mantiene proveedor y selecciona el siguiente pendiente. Mensaje de prueba administrativo con destino/texto visibles y registro durable; no reintentar automáticamente una respuesta incierta. Recuperar la misma clave tras error de red, revisión expresa del chat para nueva prueba incierta. Contrato de pedidos, migración 0017; WhatsApp pendiente.

@@ -63,6 +63,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [mensaje, setMensaje] = useState("");
   const [promocionEn, setPromocionEn] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [creandoAjuste, setCreandoAjuste] = useState(false);
   const [unidadAjuste, setUnidadAjuste] = useState("");
   const [ajuste, setAjuste] = useState<Ajuste>({ loteClave: "", delta: "", motivo: "", fecha: "", hora: "17:45", clave: nuevaClave() });
 
@@ -167,6 +168,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       setPromocionEn(resultado.evaluacion_promocion_ejecucion_id ?? null);
       // Una clave nueva solo después de confirmar: reintentar el mismo envío no duplica.
       setAjuste({ ...ajuste, loteClave: "", delta: "", motivo: "", clave: nuevaClave() });
+      setCreandoAjuste(false);
       cargar();
     } catch (fallo) {
       setError(fallo instanceof Error ? fallo.message : "No se pudo registrar el ajuste.");
@@ -241,7 +243,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const columnasMovimientos: Columna<Movimiento>[] = [
     { clave: "efectivo", encabezado: "Fecha y hora", celda: (m) => <span className="mono-corto">{m.efectivo_en_demo.replace("T", " ").slice(0, 16)}</span> },
     { clave: "item", encabezado: "Ítem y lote", celda: (m) => `${m.item_nombre}, ${m.codigo_lote}` },
-    { clave: "tipo", encabezado: "Tipo", celda: (m) => <span className={`badge badge-${m.tipo_movimiento === "APERTURA" ? "info" : "neutral"}`}>{m.tipo_movimiento === "APERTURA" ? "Apertura" : "Ajuste"}</span> },
+    { clave: "tipo", encabezado: "Tipo", celda: (m) => <span className={`badge badge-${m.tipo_movimiento === "RECEPCION" ? "ok" : m.tipo_movimiento === "APERTURA" ? "info" : "neutral"}`}>{{ APERTURA: "Apertura", AJUSTE: "Ajuste", RECEPCION: "Recepción" }[m.tipo_movimiento]}</span> },
     { clave: "delta", encabezado: "Cambio", numerica: true, celda: (m) => <strong>{m.delta.startsWith("-") ? "" : "+"}{cantidadMovimiento(m.delta, m)}</strong> },
     { clave: "saldo", encabezado: "Saldo después", numerica: true, celda: (m) => cantidadMovimiento(m.saldo_resultante, m) },
     { clave: "motivo", encabezado: "Motivo", celda: (m) => m.motivo },
@@ -258,6 +260,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               día 6 es merma que no cuenta. Un ingrediente deja de contar al día siguiente de su caducidad.
             </p>
           </div>
+          {administrador && <button type="button" className="button-primary" onClick={() => { setCreandoAjuste(true); setError(""); }}>Registrar ajuste</button>}
         </div>
         <div className="form-grid">
           <CampoFecha id="fecha-disponibilidad" etiqueta="Fecha de consulta" valor={fecha} onCambio={setFecha} />
@@ -293,9 +296,9 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         ) : null}
       </section>
 
-      {administrador ? (
-        <section className="card main-card section-space">
-          <h2>Registrar ajuste</h2>
+      {administrador && creandoAjuste ? (
+        <PanelDetalle titulo="Registrar ajuste" ocupado={guardando} onCerrar={() => setCreandoAjuste(false)}><section className="card main-card section-space">
+          {error && <EstadoPanel tono="alerta" titulo="Revisa el ajuste" descripcion={error} />}
           <p className="helper-text">
             Usa un número negativo para restar (merma, rotura, consumo) y positivo para sumar. El saldo nunca queda
             negativo y cada ajuste queda en el historial con su motivo.
@@ -329,7 +332,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
               <BotonEnviar enviando={guardando} textoEnviando="Registrando…">Registrar ajuste</BotonEnviar>
             </div>
           </form>
-        </section>
+        </section></PanelDetalle>
       ) : null}
 
       <section className="card main-card section-space">

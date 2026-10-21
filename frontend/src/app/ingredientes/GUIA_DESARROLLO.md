@@ -50,3 +50,8 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](.
 ## Ajustes de interfaz · 30-09-2026
 
 Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Detalle/edición en PanelDetalle, cierre/Escape y retorno a la página de origen; conservar permisos, snapshots y unidades.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Catálogo primero y botón Crear ingrediente; formulario dentro de PanelDetalle y cierre tras guardar. Edición conserva unidad bloqueada cuando está en uso. Estados y errores dentro del diálogo; sin cambios en API ni datos.

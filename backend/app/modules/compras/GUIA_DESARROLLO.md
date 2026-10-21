@@ -96,3 +96,8 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Corte solicitado · 14-10-2026
 
 Codex para Axel. Pedidos nuevos incorporan nombre_negocio(sesion), fecha de planificación, proveedor y cantidades. Formato comercial sin rótulos de demostración por solicitud expresa de Axel. Textos ya autorizados conservados; estados, stock, autorización y deduplicación intactos. WhatsApp pendiente: docs/api/configurar-whatsapp.md.
+
+
+## Recepción y corrección autorizadas · 15-10-2026
+
+Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.

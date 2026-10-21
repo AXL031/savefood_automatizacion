@@ -3,14 +3,41 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.core.base_datos import obtener_sesion
 from app.core.identidad import identidad_actual, requiere_administrador
 from .modelos import PedidoCompra
 from .recuperacion import recuperar_envio
+from .recepciones import RecepcionCrear, registrar_recepcion
+from .servicio import corregir_propuesta
+from app.core.errores import ErrorAPI
 from .servicio import cancelar_propuesta, decidir_pedido, detalle_pedido, detalle_propuesta, generar_pedidos, listar_propuestas, verificar_destinos_propuesta
 
 router = APIRouter(tags=["compras"])
+
+
+@router.post("/pedidos/{pedido_id}/recepciones")
+def recibir(pedido_id: int, datos: RecepcionCrear, admin=Depends(requiere_administrador), sesion: Session = Depends(obtener_sesion)):
+    try:
+        registrar_recepcion(sesion, pedido_id, datos, admin.id, admin.nombre)
+        sesion.commit()
+        return {"datos": detalle_pedido(sesion, pedido_id)}
+    except IntegrityError:
+        sesion.rollback()
+        raise ErrorAPI(409, "RECEPCION_EN_CONFLICTO", "La clave o el lote ya existe; actualiza el pedido antes de continuar.") from None
+
+
+class CorreccionCrear(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    motivo: str = Field(min_length=3, max_length=500)
+
+
+@router.post("/compras/propuestas/{propuesta_id}/corregir")
+def corregir(propuesta_id: int, datos: CorreccionCrear, admin=Depends(requiere_administrador), sesion: Session = Depends(obtener_sesion)):
+    nueva = corregir_propuesta(sesion, propuesta_id, admin.id, datos.motivo)
+    sesion.commit()
+    return {"datos": detalle_propuesta(sesion, nueva.id)}
 
 
 class GenerarPedidos(BaseModel):

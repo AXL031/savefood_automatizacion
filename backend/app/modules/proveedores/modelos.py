@@ -2,7 +2,7 @@
 from decimal import Decimal
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Numeric, String, text
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Numeric, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base import Base
@@ -58,3 +58,24 @@ class OfertaIngrediente(Base):
             postgresql_where=text("preferida AND activa"),
         ),
     )
+
+
+class PruebaMensajeProveedor(Base):
+    """Reserva durable antes del efecto externo; nunca reentregar una reserva."""
+    __tablename__ = "prueba_mensaje_proveedor"
+    __table_args__ = (
+        CheckConstraint("estado IN ('ENVIADO','FALLIDO','PENDIENTE_VERIFICACION')", name="ck_prueba_proveedor_estado"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    proveedor_id: Mapped[int] = mapped_column(ForeignKey("proveedor.id", ondelete="RESTRICT"), index=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuario.id", ondelete="RESTRICT"))
+    clave_idempotencia: Mapped[str] = mapped_column(String(80), unique=True)
+    chat_id: Mapped[str] = mapped_column(String(64))
+    credencial_huella: Mapped[str] = mapped_column(String(64))
+    texto: Mapped[str] = mapped_column(Text)
+    revision_chat_confirmada: Mapped[bool] = mapped_column(Boolean, default=False)
+    creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    estado: Mapped[str] = mapped_column(String(24), default="PENDIENTE_VERIFICACION")
+    message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    fecha_telegram: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    detalle: Mapped[str] = mapped_column(String(300), default="Resultado pendiente. Revisa el chat antes de autorizar otra prueba.")

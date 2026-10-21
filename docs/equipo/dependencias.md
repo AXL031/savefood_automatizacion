@@ -1,5 +1,13 @@
 # Dependencias y orden de entregas
 
+## Recepción y propuesta corregida · 15-10-2026
+
+Ampliación de Axel coordinada por Codex: Compras (Aguirre) consume entrada pública de Inventario (Vera), conserva plan/corrida de Rojas y reemplaza solo borradores bloqueados. Contrato estable en contrato-pedidos.md y contratos.md. Migración 0018; pruebas de fronteras en test_recepcion_compras.py. Ventas en vivo/simulación permanecen [diseño](plan-ventas-vivo-simulacion.md) para Sanchez/Vera/Cueva/Bohorquez/Rojas/Aguirre. PROV-001 recibe temporalmente G02+G03 (28) y PROV-002 G01 (27); PROV-003 pendiente sin asignación.
+
+## Gestión y canal · 14-10-2026
+
+Codex para Axel coordina A02/E04/L01–L04/M04: tabla de proveedores con insumos, formularios bajo demanda en seis pantallas, selector de productos paginado y avisos de proveedor que permiten planificar. Compras conserva bloqueo global/recompra/aprobación. Pruebas de mensaje administrativas con reserva durable, idempotencia y revisión expresa de incertidumbre; migración aditiva 0017 aplicada. 124 pruebas de fronteras correctas en dos cortes PostgreSQL, build/QA escritorio y móvil correctos. Registro habitual ya contiene dos pruebas ENVIADO con recibos Telegram; las suites usaron transporte falso. [Evidencia y límites de Cueva](avances/cueva.md). Cambios nuevos locales en cueva, sin commit/push; responsables y autorías previos conservados. Siguiente: revisión del equipo, completar ofertas de insumos y reproducción en otra PC. WhatsApp sigue pendiente del adaptador.
+
 ## Avance local vigente · 20-10-2026 · Prioridad Bohorquez
 
 Solicitud del usuario: avanzar también dominios ajenos cuando ayuden al recorrido y mejorar el diseño, priorizando K03/K04. Codex implementa corrección de ventas→reserva transaccional, evaluación de revisiones conservadas, indicadores pendientes, paginación completa de modelos/corridas y analítica compartida en Inicio/Pronósticos/Evaluación/Reportes. E02 limita lecturas antes de materializar archivos completos. [Contrato](../api/contratos.md#k03k04-y-frontera-e01--20-10-2026) y [entrega/pruebas](avances/bohorquez.md); E01/E02/E04 siguen bajo responsabilidad de Sanchez y el motor bajo Cueva.

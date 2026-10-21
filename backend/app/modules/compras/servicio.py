@@ -183,6 +183,9 @@ def detalle_pedido(sesion: Session, pedido_id: int) -> dict:
                 "fecha_telegram": e.fecha_telegram.isoformat() if e.fecha_telegram else None,
                 "codigo_error": e.codigo_error, "detalle_error": e.detalle_error}
     destino = ServicioProveedores(sesion).consultar_destino(pedido.proveedor_id)
+    from .recepciones import resumen_recepciones
+    lineas = list(sesion.scalars(select(LineaPedido).where(LineaPedido.pedido_id == pedido.id).order_by(LineaPedido.ingrediente_id)))
+    recepciones = resumen_recepciones(sesion, pedido_id, lineas)
     return {"id": pedido.id, "propuesta_id": pedido.propuesta_id, "plan_id": pedido.plan_id,
         "fecha_objetivo": propuesta.fecha_objetivo.isoformat(), "proveedor": pedido.proveedor_json,
         "estado": pedido.estado, "modo_envio": pedido.modo_envio, "bloqueos": pedido.bloqueos_json,
@@ -191,6 +194,7 @@ def detalle_pedido(sesion: Session, pedido_id: int) -> dict:
                      "fecha": pedido.decidido_en.isoformat()} if pedido.decision_json else None,
         "destino_actual": destino.model_dump(mode="json"),
         "mensaje": envio.texto if envio else construir_mensaje(sesion, pedido),
+        "recepcion_estado": recepciones["recepcion_estado"], "recepciones": recepciones["recepciones"],
         "envio": resumir(envio) if envio else None,
         "envios": [resumir(e) for e in envios],
         "recuperaciones": [{"id": r.id, "envio_id": r.envio_id, "accion": r.accion,
@@ -200,12 +204,12 @@ def detalle_pedido(sesion: Session, pedido_id: int) -> dict:
             for r in sesion.scalars(select(RecuperacionEnvio).join(EnvioPedido, RecuperacionEnvio.envio_id == EnvioPedido.id)
                 .where(EnvioPedido.pedido_id == pedido.id).order_by(RecuperacionEnvio.id))],
         "lineas": [
-            {"id": l.id, "necesidad_ingrediente_id": l.necesidad_ingrediente_id, "ingrediente_id": l.ingrediente_id,
+            {"id": l.id, **recepciones["cantidades"][l.id], "necesidad_ingrediente_id": l.necesidad_ingrediente_id, "ingrediente_id": l.ingrediente_id,
              "nombre": l.ingrediente_json["stock"]["nombre"], "faltante_base": str(l.faltante_base),
              "cantidad_compra": str(l.cantidad_compra), "cantidad_base_pedida": str(l.cantidad_base_pedida),
              "unidad_base": l.unidad_base, "unidad_compra": l.unidad_compra, "oferta": l.oferta_json,
              "necesidad": l.ingrediente_json}
-            for l in sesion.scalars(select(LineaPedido).where(LineaPedido.pedido_id == pedido.id).order_by(LineaPedido.ingrediente_id))]}
+            for l in lineas]}
 
 
 def detalle_propuesta(sesion: Session, propuesta_id: int) -> dict:
@@ -213,7 +217,7 @@ def detalle_propuesta(sesion: Session, propuesta_id: int) -> dict:
     if propuesta is None:
         raise ErrorAPI(404, "PROPUESTA_NO_ENCONTRADA", "La propuesta no existe.")
     return {"id": propuesta.id, "plan_id": propuesta.plan_id, "fecha_objetivo": propuesta.fecha_objetivo.isoformat(),
-        "estado": propuesta.estado, "activa": propuesta.activa, "modo_envio": propuesta.modo_envio,
+        "estado": propuesta.estado, "activa": propuesta.activa, "modo_envio": propuesta.modo_envio, "reemplazo_id": propuesta.reemplazo_id,
         "necesidades": propuesta.necesidades_json, "incidencias": propuesta.incidencias_json,
         "creado_en": propuesta.creado_en.isoformat(), "motivo_cancelacion": propuesta.motivo_cancelacion,
         "cancelado_por": propuesta.cancelado_por, "cancelado_en": propuesta.cancelado_en.isoformat() if propuesta.cancelado_en else None,
@@ -250,6 +254,32 @@ def cancelar_propuesta(sesion: Session, propuesta_id: int, usuario_id: int, moti
             pedido.estado = "CANCELADO"
     sesion.flush()
     return propuesta
+
+
+def corregir_propuesta(sesion: Session, propuesta_id: int, usuario_id: int, motivo: str) -> PropuestaCompra:
+    from app.modules.planificacion.servicio import detalle_plan, generar_plan
+    original = sesion.get(PropuestaCompra, propuesta_id)
+    if original is None:
+        raise ErrorAPI(404, "PROPUESTA_NO_ENCONTRADA", "La propuesta no existe.")
+    _bloquear_fecha(sesion, original.fecha_objetivo)
+    original = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.id == propuesta_id)
+        .with_for_update().execution_options(populate_existing=True))
+    if original.reemplazo_id:
+        return sesion.get(PropuestaCompra, original.reemplazo_id)
+    pedidos = list(sesion.scalars(select(PedidoCompra).where(PedidoCompra.propuesta_id == propuesta_id).order_by(PedidoCompra.id).with_for_update()))
+    if (original.estado != "BLOQUEADA" or not original.activa or
+            any(p.estado != "BLOQUEADO" or p.clave_decision for p in pedidos) or
+            sesion.scalar(select(EnvioPedido.id).where(EnvioPedido.pedido_id.in_([p.id for p in pedidos])).limit(1))):
+        raise ErrorAPI(409, "PROPUESTA_NO_CORREGIBLE", "Solo se puede sustituir un borrador bloqueado sin decisiones ni envíos.")
+    origen = detalle_plan(sesion, original.plan_id)
+    cancelar_propuesta(sesion, propuesta_id, usuario_id, motivo)
+    nuevo_plan = generar_plan(sesion, corrida_id=origen["corrida_id"], clave_ejecucion=f"corregir-propuesta-{propuesta_id}")
+    nueva = generar_pedidos(sesion, nuevo_plan.id, modo_envio="REQUIERE_APROBACION")
+    if nueva.estado == "BLOQUEADA":
+        raise ErrorAPI(409, "CONFIGURACION_INCOMPLETA", "Todavía faltan ofertas o destinos válidos. Completa Proveedores antes de preparar la corrección.")
+    original.reemplazo_id = nueva.id
+    sesion.flush()
+    return nueva
 
 
 def construir_mensaje(sesion: Session, pedido: PedidoCompra) -> str:

@@ -62,3 +62,8 @@ envio_pedido es outbox y evidencia: UNIQUE(pedido_id), numero_intento=1 en este 
 Codex para Axel bajo responsabilidad de Aguirre: POST /pedidos/{id}/conciliar registra ENVIADO o NO_ENVIADO con evidencia del último intento incierto; no transmite. POST /pedidos/{id}/reintentar reserva N+1 solo desde FALLIDO y con chat actual revisado/verificado. Conserva texto, plan, cantidades, autorización original e historial. GET incorpora envios/recuperaciones; envio sigue siendo el último. Locks fecha→propuesta→pedido→envío en recuperación/despacho/worker, respuesta tardía obsoleta ignorada. Clave/contenido/actor idempotentes, evidencia chat/message_id única. Usuario Operador consulta; solo Administrador actúa.
 
 Migración aditiva 0014_l04_recuperacion sobre 0013, sin reescribir anteriores; downgrade bloqueado con acciones/reintentos. 57 pruebas PostgreSQL y 7 de migraciones correctas; typecheck/build correctos, API/UI/worker locales actualizados y alembic check sin diferencias. QA visual nuevo no acreditado: navegador integrado rechazó el entorno temporal con ERR_BLOCKED_BY_CLIENT. Pruebas usan transporte falso; no se envió otro Telegram. Contrato vigente: docs/api/contrato-pedidos.md, registro detallado en docs/equipo/avances/aguirre.md. Automático real, promociones y demo conjunta pendientes.
+
+
+## Ampliación 0018 · 15-10-2026
+
+Esquema y ER incluyen recepcion_pedido/linea_recepcion_pedido, lote_ingrediente.fecha_ingreso y propuesta_compra.reemplazo_id. Contrato público en contrato-pedidos.md y contratos.md; cantidades/movimientos/idempotencia atómicos. Migración aditiva con downgrade protegido. No crea tablas de tickets ni simulación. Evidencia de PostgreSQL/SQLite y despliegue en avances/cueva.md.

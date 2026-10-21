@@ -31,6 +31,7 @@ class PropuestaCompra(Base):
     cancelado_en: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancelado_por: Mapped[int | None] = mapped_column(ForeignKey("usuario.id", ondelete="RESTRICT"))
     motivo_cancelacion: Mapped[str | None] = mapped_column(String(500))
+    reemplazo_id: Mapped[int | None] = mapped_column(ForeignKey("propuesta_compra.id", name="fk_propuesta_reemplazo", ondelete="RESTRICT"))
 
 
 class PedidoCompra(Base):
@@ -123,3 +124,33 @@ class LineaPedido(Base):
     unidad_compra: Mapped[str] = mapped_column(String(30), nullable=False)
     oferta_json: Mapped[dict] = mapped_column(JsonPersistido, nullable=False)
     ingrediente_json: Mapped[dict] = mapped_column(JsonPersistido, nullable=False)
+
+
+class RecepcionPedido(Base):
+    __tablename__ = "recepcion_pedido"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    pedido_id: Mapped[int] = mapped_column(ForeignKey("pedido_compra.id", ondelete="RESTRICT"), index=True)
+    clave_idempotencia: Mapped[str] = mapped_column(String(80), unique=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuario.id", ondelete="RESTRICT"))
+    nombre_usuario: Mapped[str] = mapped_column(String(150))
+    fecha_recepcion: Mapped[date] = mapped_column(Date)
+    motivo: Mapped[str] = mapped_column(String(300))
+    solicitud_json: Mapped[dict] = mapped_column(JsonPersistido)
+    creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class LineaRecepcionPedido(Base):
+    __tablename__ = "linea_recepcion_pedido"
+    __table_args__ = (
+        UniqueConstraint("recepcion_id", "linea_pedido_id", name="uq_recepcion_linea"),
+        CheckConstraint("cantidad_compra > 0 AND cantidad_base > 0", name="ck_recepcion_cantidades"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    recepcion_id: Mapped[int] = mapped_column(ForeignKey("recepcion_pedido.id", ondelete="RESTRICT"), index=True)
+    linea_pedido_id: Mapped[int] = mapped_column(ForeignKey("linea_pedido.id", ondelete="RESTRICT"), index=True)
+    cantidad_compra: Mapped[Decimal] = mapped_column(Numeric(20, 4))
+    cantidad_base: Mapped[Decimal] = mapped_column(Numeric(14, 3))
+    lote_id: Mapped[int] = mapped_column(ForeignKey("lote_ingrediente.id", ondelete="RESTRICT"), unique=True)
+    movimiento_id: Mapped[int] = mapped_column(ForeignKey("movimiento_inventario.id", ondelete="RESTRICT"), unique=True)
+    codigo_lote: Mapped[str] = mapped_column(String(80))
+    fecha_caducidad: Mapped[date | None] = mapped_column(Date)

@@ -75,3 +75,8 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Corte solicitado · 14-10-2026
 
 Codex para Axel. Gestionar admite EJECUTAR_AHORA con motivo administrativo: adelanta una tarea pendiente/pausada, conserva entrada/clave/modelo/modo y la recoge Beat. No modifica tareas iniciadas. Contrato: docs/api/contrato-flujo-promociones.md; pruebas test_flujo_promociones.py.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+comprobar devuelve requisitos del plan y avisos de compras separados: listo depende de productos, modelo/fechas, recetas, ingredientes activos, stock y protección de recompra. Ofertas/proveedores/destinos incompletos solo generan avisos con recomendación/enlace; compras_listas es false mientras existan. Destinos pendientes deduplicados por proveedor. La generación/envío de compras mantiene validación propia.

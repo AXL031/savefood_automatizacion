@@ -37,6 +37,14 @@ El modelo actual calcula su partición usando meses completos. Este historial co
 
 ## Alcance
 
+### Agrupación para tres proveedores
+
+La [propuesta de agrupación de insumos](referencias/agrupacion_insumos.md) distribuye los 55 ingredientes actuales en tres rubros de abastecimiento, con detalle por familia y cobertura sin duplicados. Su [referencia estructurada](referencias/agrupacion_insumos.json) conserva códigos, nombres y unidades. Es documentación para preparar la asignación: no forma parte de los archivos de primera carga ni cambia los proveedores/ofertas registrados.
+
+**Asignación aplicada posteriormente:** [estado de los proveedores](referencias/asignacion_proveedores.md) registra G02+G03 en PROV-001 (28 insumos) y G01 en PROV-002 (27), presentaciones iniciales para probar y corrección del arroz. El 15-10-2026 Axel solicita asignar temporalmente los 18 frescos a PROV-001; los 55 insumos quedan cubiertos y PROV-003 conserva su configuración sin ofertas. Las ofertas están guardadas en la base de esta instalación; estos documentos no las aplican en otra base.
+
+**Para repetirlo en otra PC:** [procedimiento de proveedores y ofertas](referencias/replicar_proveedores_otra_pc.md), con equivalencias de códigos, unidades del formulario, comprobaciones y diferencia entre la asignación actual de dos proveedores y la distribución futura de tres. Incluye enlace a la [configuración del bot/API Telegram](../docs/api/configurar-telegram.md), sin secretos.
+
 Axel ya confirmó los archivos anteriores y la instalación habitual tiene los 139 productos y un modelo listo. La ampliación permite usarlos sin volver a cargar. Los archivos no configuran proveedores, ofertas, destinos ni WhatsApp; para generar y enviar pedidos deben completarse esos datos después de la carga. Consultar [configuración de WhatsApp](../docs/api/configurar-whatsapp.md).
 
 **Validación ejecutada:** PostgreSQL aislado con todas las migraciones. Vista previa sin errores; confirmación de 139 productos, 55 ingredientes, 88 543 ventas y 194 aperturas; reintento sin duplicados; CatBoost real para los 139 y motor GENERAR_PROPUESTA real con 139 pronósticos/elementos y 55 necesidades CALCULADAS, incluso conservando solo cinco flags heredados. Reentrega ignorada, stock intacto y cero envíos. Corte de cinco suites: 42 pruebas correctas en 161,12 s; la prueba concurrente omitida inicialmente se habilitó y pasó después (1 en 3,07 s). Esquemas y artefactos temporales retirados. La aplicación habitual conserva sus datos y modelo; su evaluación histórica ya estaba completada antes de actualizar. Detalles en el [registro de Cueva](../docs/equipo/avances/cueva.md).

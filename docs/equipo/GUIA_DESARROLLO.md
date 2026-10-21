@@ -1,5 +1,9 @@
 # Guía de desarrollo — Reparto, coordinación y traspasos
 
+## Plan de ampliación · 15-10-2026
+
+[plan-ventas-vivo-simulacion.md](plan-ventas-vivo-simulacion.md) describe tickets, reloj, escenario aislado y jornada de 300 s. Solo diseño; no declara ventas en vivo, producción ni simulador implementados. Recepción se implementa por petición expresa distinta y se registra transversalmente en avances/cueva.md.
+
 ## Revisión transversal · 20-10-2026
 
 [Revisión del proyecto](revision-proyecto-2026-10-20.md): estado observado sobre `a19a294`, hallazgos R01–R03, pendientes por responsable y criterios de cierre. Distingue implementación existente, defectos, evidencia pendiente y ampliaciones fuera del prototipo. El informe no modifica contratos ni acredita envíos o pruebas de infraestructura que no se hayan ejecutado.

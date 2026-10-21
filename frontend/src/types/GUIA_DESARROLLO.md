@@ -88,6 +88,15 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
 
 
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Proveedor incluye ingredientes suministrados; MensajePrueba representa solo datos públicos (sin huella/credencial). DiagnosticoFlujo separa avisos y compras_listas de requisitos/listo del plan.
+
+
+## Recepción y corrección autorizadas · 15-10-2026
+
+Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
 ## Avance K03/K04 y E01/E02 · 20-10-2026
 
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. EvaluacionDia/EvaluacionTramo añaden pares_pendientes_evaluacion opcional; CorreccionVenta añade reevaluaciones. Contratos existentes de cantidades, revisiones y fechas conservados. Consumidores web distinguen reserva, resultado pendiente y dato ausente.

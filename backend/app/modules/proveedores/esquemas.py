@@ -42,6 +42,7 @@ class ProveedorSalida(BaseModel):
     chat_id_pruebas: str | None
     destino_verificado: bool
     destino_verificado_en: datetime | None
+    ingredientes: list[dict] = Field(default_factory=list)
 
 
 class OfertaCrear(BaseModel):
@@ -99,3 +100,23 @@ class VerificacionDestino(BaseModel):
     verificado: bool
     detalle: str
     codigo: str = "DESTINO_NO_VERIFICADO"
+
+
+class MensajePruebaCrear(BaseModel):
+    clave_idempotencia: str = Field(min_length=8, max_length=80, pattern=r"^[a-zA-Z0-9_-]+$")
+    chat_id_revisado: str = Field(pattern=r"^-?[1-9][0-9]{0,18}$")
+    confirmar_revision_chat: bool = False
+
+
+class MensajePruebaSalida(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    proveedor_id: int
+    clave_idempotencia: str
+    chat_id: str
+    texto: str
+    creado_en: datetime
+    estado: str
+    message_id: int | None
+    fecha_telegram: datetime | None
+    detalle: str

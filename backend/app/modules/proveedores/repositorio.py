@@ -1,6 +1,6 @@
 """Persistencia."""
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from .modelos import OfertaIngrediente, Proveedor
 
@@ -19,7 +19,7 @@ class RepositorioProveedores:
         return self.db.scalar(select(Proveedor).where(Proveedor.codigo == codigo))
 
     def listar_proveedores(self) -> list[Proveedor]:
-        return list(self.db.scalars(select(Proveedor).order_by(Proveedor.nombre)))
+        return list(self.db.scalars(select(Proveedor).options(selectinload(Proveedor.ofertas)).order_by(Proveedor.nombre)))
 
     def guardar(self, obj):
         self.db.add(obj)
