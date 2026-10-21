@@ -1,5 +1,9 @@
 # Contratos del recorrido demostrable
 
+## Inventario desde recepción de Compras · 15-10-2026
+
+`inventario.servicio.registrar_recepcion_ingrediente(sesion, *, ingrediente_id, cantidad_base, codigo_lote, lote_informado, fecha_ingreso, fecha_caducidad, clave, motivo, usuario_id) -> ResultadoMovimiento` es interfaz pública sin commit. Crea lote independiente y movimiento RECEPCION positivo, con claves únicas, hasta tres decimales exactos y unidades enteras si corresponde; rechaza ingrediente inactivo, código repetido y caducidad anterior al ingreso. Compras orquesta recibo/líneas/lotes/movimientos en una transacción. `consultar_disponibilidad(fecha)` excluye lotes de ingrediente con fecha_ingreso posterior; NULL conserva el comportamiento de aperturas anteriores. Es filtro de ingreso, no reconstrucción de todos los saldos históricos. Detalle HTTP, bloqueo e idempotencia en [contrato-pedidos.md](contrato-pedidos.md).
+
 ## Ampliación vigente A02/L03 y unidades · 30-09-2026
 
 POST /programaciones-demo admite modo_envio_pedidos opcional: REQUIERE_APROBACION, AUTOMATICO o null. Si se proporciona queda en parametros/datos_entrada y participa en la huella/idempotencia; omitirlo mantiene el comportamiento previo de leer negocio al ejecutar. La UI siempre guarda su elección. No modifica la preferencia global. Ejemplo de campo adicional: "modo_envio_pedidos":"AUTOMATICO" junto al cuerpo A02 documentado abajo. Sigue siendo una ejecución única a hora real futura para una fecha histórica, no una recurrencia diaria.

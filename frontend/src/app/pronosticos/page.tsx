@@ -24,6 +24,7 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
   const [mensaje, setMensaje] = useState("");
   const [version, setVersion] = useState("");
   const [preparando, setPreparando] = useState(false);
+  const [entrenando, setEntrenando] = useState(false);
 
   useEffect(() => {
     const control = new AbortController();
@@ -67,13 +68,14 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
     setError(""); setMensaje(""); setPreparando(true);
     try {
       const resultado = await prepararModelo(token, version, `modelo-${version}`);
-      setMensaje(`Preparación encolada como ejecución #${resultado.ejecucion_id}. Consulta su estado en Automatizaciones.`);
+      setEntrenando(false); setMensaje(`Preparación encolada como ejecución #${resultado.ejecucion_id}. Consulta su estado en Automatizaciones.`);
     } catch (fallo) { setError(fallo instanceof Error ? fallo.message : "No se pudo solicitar el entrenamiento."); }
     finally { setPreparando(false); }
   }
 
   const modelo = modelos.find((item) => item.id === modeloId);
   return <>
+    {administrador && <div className="section-heading"><h2>Modelos y pronósticos</h2><button type="button" className="button-primary" onClick={() => { setEntrenando(true); setError(""); }}>Entrenar nueva versión</button></div>}
     {error && <div className="inline-error" role="alert">{error}</div>}
     {mensaje && <div className="inline-success" role="status">{mensaje}</div>}
     {cargando ? <p role="status">Cargando modelos…</p> : modelos.length === 0 ?
@@ -103,9 +105,9 @@ function Contenido({ token, administrador }: { token: string; administrador: boo
         <TablaPaginada><thead><tr><th>Producto</th><th>Pronóstico</th><th>Estado</th></tr></thead><tbody>{detalle.pronosticos?.map((item) => <tr key={item.id}><td>{item.producto}</td><td>{item.cantidad_pronosticada ?? "Desconocido"}</td><td>{etiquetaDato(item.estado)}</td></tr>)}</tbody></TablaPaginada>
       </section></PanelDetalle>}
     </>}
-    {administrador && <section className="card section-space"><h2>Entrenar una nueva versión</h2><p>El sistema entrena con las ventas ya guardadas. La solicitud no vuelve a importar archivos.</p>
+    {administrador && entrenando && <PanelDetalle titulo="Entrenar nueva versión" ocupado={preparando} onCerrar={() => setEntrenando(false)}><section className="card section-space">{error && <p className="inline-error" role="alert">{error}</p>}<p>El sistema entrena con las ventas ya guardadas. La solicitud no vuelve a importar archivos.</p>
       <form className="form-grid" onSubmit={(evento) => void entrenar(evento)}><label className="field">Versión del modelo<input value={version} onChange={(e) => setVersion(e.target.value)} placeholder="catboost-1" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" maxLength={80} required /></label><div className="form-actions"><button className="button-primary" disabled={preparando}>{preparando ? "Solicitando…" : "Solicitar entrenamiento"}</button></div></form>
-    </section>}
+    </section></PanelDetalle>}
   </>;
 }
 

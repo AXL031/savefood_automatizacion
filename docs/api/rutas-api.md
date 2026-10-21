@@ -1,9 +1,15 @@
 # Rutas HTTP: existentes y objetivo del prototipo
 
+## Corrección y recepción · 15-10-2026
+
+Administrador: POST `/compras/propuestas/{id}/corregir` con motivo; retorna nueva propuesta manual y preserva original/reemplazo, sin envíos. POST `/pedidos/{id}/recepciones` con clave_idempotencia, fecha_recepcion, motivo y lineas[{linea_pedido_id,cantidad_compra,codigo_lote?,fecha_caducidad?}]; retorna detalle del pedido. GET pedidos añade recepcion_estado, recepciones y cantidades recibidas/pendientes por línea; GET propuestas añade reemplazo_id. Operador solo consulta. Errores 403/404/409/422 según [contrato](contrato-pedidos.md); migración 0018. Rutas futuras de tickets/simulación no existen.
+
 Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rutas de la segunda son contratos pendientes. Los contratos de cuerpo, unidades, errores e idempotencia están en [contratos.md](contratos.md) y [primera inicialización](contrato-importaciones.md).
 
 | Ruta actual | Autorización |
 |---|---|
+| `POST /proveedores/{id}/mensaje-prueba` | Administrador; reserva durable y envío explícito único, clave y chat revisado |
+| `GET /proveedores/{id}/mensajes-prueba` | Administrador; diez intentos recientes sin secreto |
 | `GET`, `POST`, `DELETE /proveedores/telegram/configuracion` | Administrador; estado sin secreto, guardar/comprobar y deshabilitar |
 | `POST /proveedores/telegram/comprobar` | Administrador; getMe sin envío |
 | `POST /proveedores/telegram/chats-pruebas` | Administrador; buscar /start pendiente sin consumir updates |

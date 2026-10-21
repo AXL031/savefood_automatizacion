@@ -71,3 +71,8 @@ Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes 
 ## Conciliación de cueva
 
 Conciliación 06-10-2026: se conserva la interfaz remota con componentes compartidos y enlace a compras; plan_id en la URL abre el detalle directamente, como en el corte local.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Listado de planes primero; Crear plan abre PanelDetalle cuando hay una corrida disponible. Guardar cierra el formulario y abre el resultado. Clave, recálculo explícito y snapshots conservados; no mueve stock.

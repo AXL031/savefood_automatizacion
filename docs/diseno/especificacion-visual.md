@@ -148,3 +148,8 @@ Marco/sesión persistentes en layout raíz; Link cambia contenido y conserva men
 ## Claridad vigente · 11-10-2026
 
 Menú por grupos desplegables con el grupo activo abierto; Inicio destaca una siguiente acción según carga/modelo/pedidos recientes. Asistente de cinco pasos con progreso compacto, diagnóstico por requisito y enlace para corregir/regresar conservando selección. Horarios en zona del negocio y resumen antes de programar. Carga inicial elige dos Excel o cinco CSV; identificador automático en detalles. Promociones muestran regla/version y sugerencias o descartes con motivo, lote y referencias. Tareas y evaluaciones tienen paginación remota; pantalla móvil conserva acciones, estados y desplazamiento de tablas.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Gestión de registros: listado paginado como primera superficie, acción primaria Crear y acciones por fila. Formularios en PanelDetalle únicamente al solicitarlos; cierre/Escape devuelve el foco a la lista. Proveedores muestra ingredientes y conexión; bot en configuración separada. La selección masiva de productos usa tabla paginada y contador global con búsqueda; no tarjetas para todo el catálogo.

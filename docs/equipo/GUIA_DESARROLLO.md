@@ -1,5 +1,9 @@
 # Guía de desarrollo — Reparto, coordinación y traspasos
 
+## Plan de ampliación · 15-10-2026
+
+[plan-ventas-vivo-simulacion.md](plan-ventas-vivo-simulacion.md) describe tickets, reloj, escenario aislado y jornada de 300 s. Solo diseño; no declara ventas en vivo, producción ni simulador implementados. Recepción se implementa por petición expresa distinta y se registra transversalmente en avances/cueva.md.
+
 **Carpeta:** `docs/equipo`.
 
 **Responsable:** Axel Cueva. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.

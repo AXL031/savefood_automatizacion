@@ -316,6 +316,39 @@ class SolicitudAjuste:
     efectivo_en_demo: datetime
 
 
+def registrar_recepcion_ingrediente(sesion: Session, *, ingrediente_id: int, cantidad_base: Decimal,
+        codigo_lote: str, lote_informado: bool, fecha_ingreso: date, fecha_caducidad: date | None,
+        clave: str, motivo: str, usuario_id: int) -> ResultadoMovimiento:
+    """Entrada de compra, lote independiente y movimiento; el consumidor confirma."""
+    cantidad = _cantidad(INGREDIENTE, cantidad_base, "Recepción de ingrediente")
+    if cantidad <= 0 or len(codigo_lote.strip()) not in range(1, 81):
+        raise ErrorAPI(422, "RECEPCION_INVALIDA", "Indica cantidad positiva y código de lote válido.")
+    ingrediente = ingredientes.obtener_ingredientes(sesion, [ingrediente_id]).get(ingrediente_id)
+    if not ingrediente or not ingrediente.activo:
+        raise ErrorAPI(409, "INGREDIENTE_INACTIVO", "El ingrediente recibido debe existir y estar activo.")
+    if ingrediente.unidad_base == "unidad" and cantidad != cantidad.to_integral_value():
+        raise ErrorAPI(422, "UNIDADES_ENTERAS", "Este ingrediente se recibe en unidades enteras.")
+    if fecha_caducidad is not None and fecha_caducidad < fecha_ingreso:
+        raise ErrorAPI(422, "CADUCIDAD_INVALIDA", "La caducidad no puede ser anterior a la recepción.")
+    previo = _movimiento_por_clave(sesion, clave)
+    if previo:
+        lote = sesion.get(LoteIngrediente, previo.lote_ingrediente_id)
+        if not lote or (lote.ingrediente_id, lote.codigo_lote, lote.fecha_ingreso, lote.fecha_caducidad,
+                Decimal(previo.delta), previo.motivo, previo.usuario_id, previo.tipo) != (
+                ingrediente_id, codigo_lote, fecha_ingreso, fecha_caducidad, cantidad, motivo, usuario_id, "RECEPCION"):
+            raise ErrorAPI(409, "CLAVE_REUTILIZADA", "La entrada ya tiene otros parámetros.")
+        return _resultado(previo, True)
+    if sesion.scalar(select(LoteIngrediente.id).where(LoteIngrediente.ingrediente_id == ingrediente_id,
+            LoteIngrediente.codigo_lote == codigo_lote)):
+        raise ErrorAPI(409, "LOTE_EXISTENTE", "Ese lote ya existe para el ingrediente. Identifica esta entrada con otro código.")
+    lote = LoteIngrediente(ingrediente_id=ingrediente_id, codigo_lote=codigo_lote,
+        lote_informado=lote_informado, fecha_ingreso=fecha_ingreso, fecha_caducidad=fecha_caducidad,
+        saldo_disponible=Decimal("0.000"))
+    sesion.add(lote); sesion.flush()
+    return _aplicar(sesion, tipo=INGREDIENTE, lote=lote, delta=cantidad, tipo_movimiento="RECEPCION",
+        clave=clave, motivo=motivo, efectivo_en_demo=datetime.combine(fecha_ingreso, time.min), usuario_id=usuario_id)
+
+
 def registrar_ajuste(sesion: Session, solicitud: SolicitudAjuste, usuario_id: int | None) -> ResultadoMovimiento:
     """Aplica un delta a un lote con bloqueo. No confirma.
 
@@ -489,7 +522,7 @@ def consultar_disponibilidad(
 
     if tipo in (None, INGREDIENTE):
         ids = set(ingrediente_ids) if ingrediente_ids is not None else None
-        consulta = select(LoteIngrediente)
+        consulta = select(LoteIngrediente).where((LoteIngrediente.fecha_ingreso.is_(None)) | (LoteIngrediente.fecha_ingreso <= fecha))
         if ids is not None:
             consulta = consulta.where(LoteIngrediente.ingrediente_id.in_(ids)) if ids else None
         lotes = list(sesion.scalars(consulta)) if consulta is not None else []

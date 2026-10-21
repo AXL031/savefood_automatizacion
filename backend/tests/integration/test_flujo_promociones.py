@@ -158,7 +158,11 @@ def test_flujo_diagnostico_guardado_calendario_y_consentimiento(entorno, monkeyp
     datos = datos_flujo(producto_id, modelo_id)
     monkeypatch.setattr(ServicioProveedores, "oferta_preferida_para_compras", lambda self, id: None)
     diag = c.post("/api/v1/flujo-automatizacion/comprobar", headers=admin, json=datos).json()["datos"]
-    assert not diag["listo"] and any("Harina" in r["titulo"] and not r["listo"] for r in diag["requisitos"])
+    assert diag["listo"] and not diag["compras_listas"]
+    assert any("Harina" in r["titulo"] and r["codigo"] == "SIN_PROVEEDOR" and r["recomendacion"] for r in diag["avisos"])
+    sin_proveedor = c.post("/api/v1/flujo-automatizacion/programar", headers=admin,
+        json={**datos, "clave_idempotencia": "sin-proveedor", "autorizar_envio": False})
+    assert sin_proveedor.status_code == 200, sin_proveedor.text
     assert c.put("/api/v1/flujo-automatizacion/configuracion", headers=admin, json=datos).status_code == 200
     assert c.get("/api/v1/flujo-automatizacion/configuracion", headers=admin).json()["datos"]["producto_ids"] == [producto_id]
     monkeypatch.setattr(ServicioProveedores, "oferta_preferida_para_compras", oferta_falsa)
@@ -170,7 +174,7 @@ def test_flujo_diagnostico_guardado_calendario_y_consentimiento(entorno, monkeyp
     assert len(tareas) == 2 and tareas[1]["parametros"]["fecha_objetivo_demo"] == "2022-08-25"
     assert all(t["parametros"]["modelo_id"] == modelo_id for t in tareas)
     pagina = c.get("/api/v1/programaciones-demo?limite=1&desplazamiento=1", headers=admin).json()
-    assert pagina["metadatos"]["total"] == 2 and len(pagina["datos"]) == 1
+    assert pagina["metadatos"]["total"] == 4 and len(pagina["datos"]) == 1
     assert c.post("/api/v1/flujo-automatizacion/programar", headers=admin, json=solicitud).json() == creada.json()
     assert c.post("/api/v1/flujo-automatizacion/programar", headers=admin, json={**solicitud, "dias": 3}).status_code == 409
     automatico = {**solicitud, "clave_idempotencia": "auto", "modo_envio_pedidos": "AUTOMATICO"}
@@ -178,6 +182,25 @@ def test_flujo_diagnostico_guardado_calendario_y_consentimiento(entorno, monkeyp
     assert c.post("/api/v1/flujo-automatizacion/programar", headers=admin, json={**automatico, "autorizar_envio": True}).status_code == 200
     with Session(engine) as s:
         assert s.scalar(select(func.count()).select_from(MovimientoInventario)) == 0
+
+
+def test_destino_pendiente_es_aviso_pero_ingrediente_inactivo_impide_plan(entorno, monkeypatch):
+    c, engine = entorno
+    producto_id, ingrediente_id, _, modelo_id = sembrar(engine)
+    admin = _cabecera(_token(c, "admin@example.com", "clave-segura-admin"))
+    datos = datos_flujo(producto_id, modelo_id)
+    monkeypatch.setattr(ServicioProveedores, "oferta_preferida_para_compras", lambda self, id:
+        SimpleNamespace(proveedor_activo=True, proveedor_id=7, destino_verificado=False, proveedor_nombre="Harinas"))
+    diag = c.post("/api/v1/flujo-automatizacion/comprobar", headers=admin, json=datos).json()["datos"]
+    assert diag["listo"] and not diag["compras_listas"]
+    assert [a["codigo"] for a in diag["avisos"]] == ["DESTINO_NO_VERIFICADO"]
+    with Session(engine) as s:
+        s.get(Ingrediente, ingrediente_id).activo = False
+        s.commit()
+    diag = c.post("/api/v1/flujo-automatizacion/comprobar", headers=admin, json=datos).json()["datos"]
+    assert not diag["listo"]
+    assert c.post("/api/v1/flujo-automatizacion/programar", headers=admin,
+        json={**datos, "clave_idempotencia": "ingrediente-inactivo"}).status_code == 409
 
 
 def test_gestion_pendientes_y_despacho_no_recoge_pausadas(entorno, monkeypatch):

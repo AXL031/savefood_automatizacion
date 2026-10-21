@@ -10,3 +10,8 @@ Registrar cambios y pruebas reales en [avance de Axel](../../../../docs/equipo/a
 ## Ajustes de interfaz · 30-09-2026
 
 Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar. Detalle/edición en PanelDetalle, cierre/Escape y retorno a la página de origen; conservar permisos, snapshots y unidades.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Tabla primero; Crear usuario abre PanelDetalle, igual que Editar. Creación cierra al guardar; errores permanecen dentro del diálogo. Permisos y protección del último administrador conservados.

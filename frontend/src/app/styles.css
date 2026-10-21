@@ -196,10 +196,23 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; }
 .next-action { padding: 18px; border: 1px solid var(--color-primario-borde); border-radius: 10px; background: var(--color-primario-tenue); margin: 18px 0; }
 .next-action p { margin: 6px 0 0; }
 .danger-action { color: var(--color-error); }
-.product-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; padding: 0; border: 0; }
-.product-picker label { border: 1px solid var(--color-borde-campo); border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 9px; font-size: .84rem; }
-.product-picker label:has(input:checked) { border-color: var(--color-primario); background: var(--color-primario-tenue); }
-.product-picker legend { margin-bottom: 10px; font-size: .82rem; font-weight: 700; }
+.supplier-ingredients { display: flex; flex-wrap: wrap; gap: 6px; max-width: 32rem; }
+.supplier-list td { vertical-align: top; }
+.supplier-list td small { display: block; margin-top: 4px; }
+.flow-product-selection { border: 1px solid var(--color-borde); border-radius: 12px; padding: 20px; margin: 20px 0 28px; }
+.flow-product-selection .section-heading { margin-bottom: 18px; gap: 16px; }
+.flow-product-selection .section-heading p { margin: 5px 0 0; color: var(--color-texto-secundario); font-size: .8rem; }
+.flow-product-selection .form-actions { margin: 0; gap: 16px; }
+.flow-product-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 16px; }
+.flow-product-filters .field { flex: 1; min-width: 200px; margin: 0; }
+.flow-product-selection table { width: 100%; table-layout: fixed; }
+.flow-product-selection th:first-child { width: 72px; }
+.flow-product-selection th:last-child { width: 34%; }
+.flow-product-selection td { padding-top: 12px; padding-bottom: 12px; overflow-wrap: anywhere; }
+.flow-product-selection td:first-child { text-align: center; }
+.flow-product-selection input[type="checkbox"] { margin: 0; }
+.flow-product-selection .helper-text { margin: 14px 0 0; color: var(--color-texto-secundario); }
+@media (max-width: 600px) { .flow-product-selection { padding: 12px; } .flow-product-selection th:first-child { width: 55px; } .flow-product-selection th:last-child { width: 28%; } .flow-product-selection .mono-corto { font-size: .68rem; } }
 fieldset { min-width: 0; }
 .journey-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; padding-left: 24px; }
 .journey-grid li { padding-left: 5px; }

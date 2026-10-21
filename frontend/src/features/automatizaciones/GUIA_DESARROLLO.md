@@ -60,3 +60,8 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Corte solicitado · 14-10-2026
 
 Codex para Axel. Probar en un minuto prepara una ejecución próxima de un día, con revisión y confirmación final. Fecha inicial desde primera carga/modelo, sin fecha 2022 fija. El calendario avanza desde la fecha elegida; no se confunde con mañana real. Conserva las validaciones del servidor.
+
+
+## Gestión y avisos · 14-10-2026 · Codex para Axel
+
+Selector de productos en tabla paginada con búsqueda, Solo seleccionados y contador global; seleccionar todos incluye todo el catálogo, independiente de página/filtro. Resumen de nombres desplegable. Proveedores/ofertas/destinos pendientes aparecen como avisos con recomendación y enlace por ingrediente/proveedor; no bloquean el plan. Compras conserva bloqueos de envío.

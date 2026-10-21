@@ -139,6 +139,15 @@ class ServicioProveedores:
         """Interfaz pública para revisión/aprobación; no expone credencial ni huella."""
         return self.salida_proveedor(self._proveedor(proveedor_id, bloquear=bloquear))
 
+    def listar_con_ingredientes(self) -> list[ProveedorSalida]:
+        proveedores = self.repo.listar_proveedores()
+        ids = {o.ingrediente_id for p in proveedores for o in p.ofertas if o.activa}
+        ingredientes = obtener_ingredientes(self.db, list(ids)) if ids else {}
+        return [self.salida_proveedor(p).model_copy(update={"ingredientes": sorted(
+            [{"id": id_, "nombre": ingredientes[id_].nombre} for id_ in
+             {o.ingrediente_id for o in p.ofertas if o.activa} if id_ in ingredientes], key=lambda i: i["nombre"])})
+                for p in proveedores]
+
     def puede_enviar(self, proveedor_id: int) -> bool:
         """Destino no verificado bloquea el envío."""
         p = self._proveedor(proveedor_id)

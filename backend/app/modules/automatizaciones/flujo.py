@@ -29,7 +29,7 @@ def guardar_configuracion(sesion, datos, usuario_id):
 
 
 def comprobar(sesion: Session, datos: ConfigurarFlujo) -> dict:
-    requisitos = []
+    requisitos, avisos = [], []
     def requisito(titulo, listo, motivo, enlace):
         requisitos.append({"titulo": titulo, "listo": bool(listo), "motivo": motivo, "enlace": enlace})
     nombres = productos_activos(sesion, datos.producto_ids)
@@ -56,21 +56,35 @@ def comprobar(sesion: Session, datos: ConfigurarFlujo) -> dict:
     ids_ingredientes = sorted({linea.ingrediente_id for receta in recetas.values() for linea in receta.lineas})
     ingredientes = obtener_ingredientes(sesion, ids_ingredientes)
     proveedores = ServicioProveedores(sesion)
+    destinos_revisados = set()
     for ingrediente_id in ids_ingredientes:
         ingrediente = ingredientes.get(ingrediente_id)
         oferta = proveedores.oferta_preferida_para_compras(ingrediente_id)
         nombre = ingrediente.nombre if ingrediente else f"Ingrediente #{ingrediente_id}"
-        requisito(f"Oferta de {nombre}", ingrediente and ingrediente.activo and oferta and oferta.proveedor_activo,
-                  "Configura una oferta preferida activa con su presentación y contenido.", "/proveedores")
-        if oferta:
-            requisito(f"Telegram de {oferta.proveedor_nombre}", oferta.destino_verificado,
-                      "Vincula y verifica tu chat propio para poder enviar los pedidos.", "/proveedores")
+        requisito(f"Ingrediente {nombre}", ingrediente and ingrediente.activo,
+                  "El ingrediente debe existir y estar activo para calcular sus necesidades.", "/ingredientes")
+        enlace = f"/proveedores?ingrediente={ingrediente_id}"
+        if not oferta or not oferta.proveedor_activo:
+            avisos.append({"codigo": "SIN_PROVEEDOR" if not oferta else "PROVEEDOR_INACTIVO",
+                "titulo": f"{nombre}: sin proveedor configurado" if not oferta else f"{nombre}: proveedor inactivo",
+                "motivo": "No hay una oferta preferida activa que vincule este insumo a un proveedor."
+                          if not oferta else f"El proveedor {oferta.proveedor_nombre} está inactivo.",
+                "recomendacion": "Selecciona o registra un proveedor y añade una oferta para este insumo, "
+                                  "indicando su presentación y contenido. El mismo proveedor puede suministrar varios insumos.",
+                "enlace": enlace, "ingrediente_id": ingrediente_id})
+        if oferta and not oferta.destino_verificado and oferta.proveedor_id not in destinos_revisados:
+            destinos_revisados.add(oferta.proveedor_id)
+            avisos.append({"codigo": "DESTINO_NO_VERIFICADO", "titulo": f"{oferta.proveedor_nombre}: destino sin verificar",
+                "motivo": "El proveedor no tiene un chat verificado para recibir pedidos.",
+                "recomendacion": "Vincula y verifica el chat del proveedor antes de enviar sus pedidos.",
+                "enlace": f"/proveedores?proveedor={oferta.proveedor_id}", "proveedor_id": oferta.proveedor_id})
     stock = consultar_disponibilidad(sesion, datos.fecha_objetivo_demo,
                                      producto_ids=datos.producto_ids, ingrediente_ids=ids_ingredientes)
     for item in stock.items:
         requisito(f"Stock de {item.nombre}", item.stock_conocido,
                   "Registra un lote; cero explícito es válido, ausencia no equivale a cero.", "/inventario")
     return {"listo": all(r["listo"] for r in requisitos), "requisitos": requisitos,
+            "avisos": avisos, "compras_listas": not avisos,
             "modelo_id": modelo.id if modelo else None,
             "productos": [nombres.get(i, f"#{i}") for i in datos.producto_ids]}
 

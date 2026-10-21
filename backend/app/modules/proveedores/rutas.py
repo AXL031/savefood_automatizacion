@@ -9,6 +9,8 @@ from app.core.errores import ErrorAPI
 from app.core.identidad import identidad_actual, requiere_administrador
 from .esquemas import OfertaCrear, OfertaSalida, ProveedorCrear, ProveedorSalida
 from .servicio import Conflicto, NoEncontrado, ServicioProveedores
+from .esquemas import MensajePruebaCrear, MensajePruebaSalida
+from .pruebas_mensaje import listar_pruebas, reservar_prueba, transmitir_prueba
 
 router = APIRouter(prefix="/proveedores", tags=["proveedores"])
 
@@ -103,7 +105,7 @@ def crear(datos: ProveedorCrear, _admin=Depends(requiere_administrador), s=Depen
 
 @router.get("")
 def listar(_usuario=Depends(identidad_actual), s=Depends(get_servicio)):
-    return {"datos": [s.salida_proveedor(p) for p in s.repo.listar_proveedores()]}
+    return {"datos": s.listar_con_ingredientes()}
 
 
 @router.patch("/{proveedor_id}/estado")
@@ -129,6 +131,29 @@ def listar_ofertas(proveedor_id: int, _usuario=Depends(identidad_actual), s=Depe
     if s.repo.proveedor_por_id(proveedor_id) is None:
         raise ErrorAPI(404, "PROVEEDOR_NO_ENCONTRADO", "Proveedor no encontrado")
     return {"datos": [OfertaSalida.model_validate(o) for o in s.repo.ofertas_de_proveedor(proveedor_id)]}
+
+
+@router.get("/{proveedor_id}/mensajes-prueba")
+def historial_pruebas(proveedor_id: int, _admin=Depends(requiere_administrador), s=Depends(get_servicio)):
+    return _guardar(s, lambda: [MensajePruebaSalida.model_validate(p) for p in listar_pruebas(s, proveedor_id)])
+
+
+@router.post("/{proveedor_id}/mensaje-prueba")
+def mensaje_prueba(proveedor_id: int, datos: MensajePruebaCrear,
+                  admin=Depends(requiere_administrador), s=Depends(get_servicio)):
+    try:
+        prueba, nueva = reservar_prueba(s, proveedor_id, admin.id, datos)
+        s.db.commit()  # Reserva durable antes de cualquier efecto externo.
+        if nueva:
+            transmitir_prueba(ServicioProveedores(s.db), prueba)
+            s.db.commit()
+        return {"datos": MensajePruebaSalida.model_validate(prueba)}
+    except (NoEncontrado, Conflicto) as error:
+        s.db.rollback()
+        raise ErrorAPI(404 if isinstance(error, NoEncontrado) else 409, "PRUEBA_PROVEEDOR_INVALIDA", str(error)) from None
+    except IntegrityError:
+        s.db.rollback()
+        raise ErrorAPI(409, "CLAVE_PRUEBA_OCUPADA", "Esta clave ya se utilizó. Consulta el historial antes de continuar.") from None
 
 
 @router.post("/{proveedor_id}/ofertas", status_code=201)

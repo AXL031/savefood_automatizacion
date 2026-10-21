@@ -1,5 +1,9 @@
 # Esquema objetivo del prototipo universitario
 
+## Ampliación implementada en código · 0018 · 15-10-2026
+
+Recepción sale de la exclusión histórica por solicitud expresa del usuario. `propuesta_compra.reemplazo_id` FK a propuesta enlaza corrección conservada. `lote_ingrediente.fecha_ingreso` DATE nullable conserva aperturas previas y evita contar nuevas entradas en fechas anteriores. `movimiento_inventario.tipo` admite RECEPCION solo de ingrediente. Nuevas tablas: `recepcion_pedido` (pedido, clave única, actor/nombre, fecha local, motivo, solicitud JSON y auditoría UTC) y `linea_recepcion_pedido` (recepción/línea única, cantidades compra/base, lote y movimiento únicos con FK RESTRICT, código y caducidad). Cantidades positivas; Numeric(20,4)/(14,3). Transacción raíz de Compras, factor congelado, tope pendiente e idempotencia. Migración aditiva 0018 sobre 0017; downgrade rechaza evidencia de recepción/corrección. No modifica migraciones ya aplicadas; no hay tablas de ventas por ticket ni simulador.
+
 **Estado:** `0002_e01_ventas` implementa catálogo y ventas sobre `0001c_motor`; `0003_pronosticos` añade `artefacto_modelo`, `corrida_pronostico`, `pronostico` y `evaluacion_pronostico`. Las demás tablas de este esquema siguen pendientes y deben venir en revisiones posteriores de la misma cadena. `programacion_demo`, `ejecucion_automatizacion` e `intento_automatizacion` ya existen en `0001b_automatizaciones`, ampliadas por `0001c_motor`. `0001_nucleo` crea `negocio` y `usuario`; `0001a_configuracion` agrega `negocio.modo_envio_pedidos`. FoodSave guardará ventas diarias y stock en PostgreSQL tras la primera carga. Los archivos de primera inicialización son **carga de arranque**, no fuentes externas permanentes. El [alcance](../guia-inicio-desarrollo.md) manda sobre documentos históricos del producto amplio.
 
 ## Convenciones
@@ -130,3 +134,8 @@ envio_pedido es outbox y evidencia: UNIQUE(pedido_id), numero_intento=1 en este 
 Sustituye la restricción de intento único del corte 0013 anterior. envio_pedido conserva UNIQUE(pedido_id,numero_intento), CHECK numero_intento>=1 y UNIQUE(chat_id,message_id); NULL no representa evidencia. El último intento determina pedido.estado; anteriores se conservan. Una entrega confirmada exige message_id positivo y fin_en, por respuesta del worker o conciliación humana claramente auditada.
 
 recuperacion_envio pertenece a Aguirre: id PK, envio_id FK RESTRICT, clave_idempotencia varchar(80) UNIQUE, accion varchar(24) CHECK CONFIRMAR_ENVIO/CONFIRMAR_NO_ENVIO/REINTENTAR, usuario_id FK usuario RESTRICT, nombre_usuario varchar(150), creado_en timestamptz, evidencia varchar(1500) CHECK longitud 10–1500, solicitud_json JSONB, resultado_anterior_json JSONB, nuevo_envio_id FK envio_pedido nullable RESTRICT. Conserva resultado/error previos, actor y evidencia. El vínculo al nuevo intento se usa solo al reintentar. No hay token del bot ni movimiento de inventario. Downgrade con auditoría o intento N>1 se bloquea para no eliminar evidencia.
+
+
+## Ampliación 14-10-2026 · Prueba de canal de proveedor
+
+0017_pruebas_proveedor crea prueba_mensaje_proveedor: id PK, proveedor_id y usuario_id FK RESTRICT, clave_idempotencia varchar(80) UNIQUE, chat_id varchar(64), credencial_huella varchar(64) (huella, nunca token), texto TEXT, revision_chat_confirmada boolean, creado_en timestamptz por servidor, estado varchar(24) CHECK ENVIADO/FALLIDO/PENDIENTE_VERIFICACION, message_id bigint nullable, fecha_telegram timestamptz nullable, detalle varchar(300) saneado. Índice proveedor_id. Reserva durable anterior al efecto externo y resultado separado; no crea pedidos/movimientos. Servicio y HTTP documentados en contrato-pedidos.md.

@@ -1,4 +1,10 @@
 import { solicitar } from "./http";
+import type { EntradaRecepcion } from "@/types/compras";
+export function registrarRecepcion(token: string, id: number, entrada: EntradaRecepcion) { return solicitar<Pedido>(`/pedidos/${id}/recepciones`, { token, method: "POST", body: entrada }); }
+export function corregirPropuesta(token: string, id: number, motivo: string) { return solicitar<PropuestaCompra>(`/compras/propuestas/${id}/corregir`, { token, method: "POST", body: { motivo } }); }
+import type { MensajePrueba } from "@/types/compras";
+export function listarPruebasProveedor(token: string, id: number, signal?: AbortSignal) { return solicitar<MensajePrueba[]>(`/proveedores/${id}/mensajes-prueba`, { token, signal }); }
+export function enviarPruebaProveedor(token: string, id: number, entrada: { clave_idempotencia: string; chat_id_revisado: string; confirmar_revision_chat: boolean }) { return solicitar<MensajePrueba>(`/proveedores/${id}/mensaje-prueba`, { token, method: "POST", body: entrada }); }
 import type { EntradaConciliacion, EntradaRecuperacion, EstadoTelegram, VerificacionDestino, NuevaOferta, Oferta, Pedido, PropuestaCompra, Proveedor } from "@/types/compras";
 export function consultarTelegram(token: string, signal?: AbortSignal) { return solicitar<EstadoTelegram>("/proveedores/telegram/configuracion", { token, signal }); }
 export function guardarTelegram(token: string, credencial: string) { return solicitar<EstadoTelegram>("/proveedores/telegram/configuracion", { token, method: "POST", body: { token: credencial } }); }

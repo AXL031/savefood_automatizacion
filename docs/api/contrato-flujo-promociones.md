@@ -31,3 +31,10 @@ EJECUTAR_AHORA adelanta a ahora UTC una tarea GENERAR_PROPUESTA pendiente o paus
 La interfaz ofrece Probar en un minuto para preparar una programación de un día sin enviarla todavía: se revisan requisitos y se confirma al final. En tareas guardadas: Gestionar → Ejecutar ahora. No depende de rótulos de ejemplo ni elimina la programación normal.
 
 Los nombres técnicos publicados con sufijo demo y las fechas locales mantienen compatibilidad; la interfaz habla de planificación. Las fechas disponibles siguen derivándose del modelo y los datos cargados: cambiar el nombre del comercio no traslada las ventas ni reentrena. El CSV original queda intacto en este corte.
+
+
+## Diagnóstico separado de compras · 14-10-2026
+
+POST /flujo-automatizacion/comprobar mantiene requisitos duros para productos/SKU, modelo/fechas, recetas, ingredientes activos, stock conocido y protección de recompra. `listo` depende exclusivamente de ellos. Devuelve además `avisos` (codigo, titulo, motivo, recomendacion, enlace y referencia de ingrediente/proveedor) y `compras_listas`. Falta de oferta preferida, proveedor inactivo o destino sin verificar son avisos y permiten programar/calcular el plan. Ejemplo: SIN_PROVEEDOR para Harina recomienda registrar/seleccionar proveedor y añadir su presentación/contenido; el mismo proveedor admite varios ingredientes. La UI enlaza /proveedores?ingrediente=ID o ?proveedor=ID y conserva el regreso al asistente. Los avisos de un destino se muestran una vez por proveedor. `compras_listas` no predice si habrá faltantes: solo resume la configuración revisada. Compras mantiene validación global y no genera/envía pedidos incompletos.
+
+Selector de catálogo: tabla con páginas de 10/25/50/100, búsqueda, Solo seleccionados y contador global. Seleccionar todos incluye todos los productos activos, independiente de página o búsqueda. Cambiar modo manual/automático conserva el diagnóstico de datos; confirmar automático sigue siendo obligatorio.

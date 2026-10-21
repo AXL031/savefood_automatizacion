@@ -27,7 +27,8 @@ from app.core.base import Base
 
 TIPO_APERTURA = "APERTURA"
 TIPO_AJUSTE = "AJUSTE"
-TIPOS_MOVIMIENTO = (TIPO_APERTURA, TIPO_AJUSTE)
+TIPO_RECEPCION = "RECEPCION"
+TIPOS_MOVIMIENTO = (TIPO_APERTURA, TIPO_AJUSTE, TIPO_RECEPCION)
 
 
 class LoteIngrediente(Base):
@@ -43,6 +44,7 @@ class LoteIngrediente(Base):
     codigo_lote: Mapped[str] = mapped_column(String(80), nullable=False)
     lote_informado: Mapped[bool] = mapped_column(Boolean, nullable=False)
     fecha_caducidad: Mapped[date | None] = mapped_column(Date)
+    fecha_ingreso: Mapped[date | None] = mapped_column(Date)
     saldo_disponible: Mapped[Decimal] = mapped_column(Numeric(14, 3), nullable=False)
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
     actualizado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -86,7 +88,8 @@ class MovimientoInventario(Base):
             name="ck_movimiento_inventario_delta_entero_producto",
         ),
         CheckConstraint("saldo_resultante >= 0", name="ck_movimiento_inventario_saldo"),
-        CheckConstraint("tipo in ('APERTURA', 'AJUSTE')", name="ck_movimiento_inventario_tipo"),
+        CheckConstraint("tipo in ('APERTURA', 'AJUSTE', 'RECEPCION')", name="ck_movimiento_inventario_tipo"),
+        CheckConstraint("tipo <> 'RECEPCION' OR lote_producto_id IS NULL", name="ck_movimiento_recepcion_ingrediente"),
         CheckConstraint("length(trim(motivo)) > 0", name="ck_movimiento_inventario_motivo"),
         Index("ix_movimiento_inventario_lote_producto", "lote_producto_id"),
         Index("ix_movimiento_inventario_lote_ingrediente", "lote_ingrediente_id"),

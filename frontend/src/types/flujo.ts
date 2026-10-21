@@ -4,4 +4,5 @@ export type ConfiguracionFlujo = {
   modo_envio_pedidos: "REQUIERE_APROBACION" | "AUTOMATICO";
 };
 export type Requisito = { titulo: string; listo: boolean; motivo: string; enlace: string };
-export type DiagnosticoFlujo = { listo: boolean; requisitos: Requisito[]; modelo_id: number | null; productos: string[] };
+export type AvisoCompra = { codigo: string; titulo: string; motivo: string; recomendacion: string; enlace: string; ingrediente_id?: number; proveedor_id?: number };
+export type DiagnosticoFlujo = { listo: boolean; requisitos: Requisito[]; avisos: AvisoCompra[]; compras_listas: boolean; modelo_id: number | null; productos: string[] };
