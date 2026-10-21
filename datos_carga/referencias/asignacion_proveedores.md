@@ -38,6 +38,8 @@ Por respuesta expresa de Axel del 15-10-2026, G02 se asigna temporalmente a PROV
 
 Esta configuración pertenece a la base local. Copiar estos archivos a otra instalación no aplica las ofertas automáticamente.
 
+Para reproducirla desde la interfaz en otra PC, seguir [replicar_proveedores_otra_pc.md](replicar_proveedores_otra_pc.md): instalación, equivalencia de proveedores, 55 ofertas, conversiones y verificación de Telegram. Los IDs/códigos de la nueva base pueden diferir; no confundir los proveedores de igual nombre.
+
 ## Verificación
 
 La transacción adicional crea exactamente 18 ofertas preferidas para G02 en PROV-001. Los consumidores públicos de Compras confirman 55 insumos cubiertos, proveedor activo y compra automática habilitada por destino verificado. Recuentos operativos y saldos se contrastaron antes/después y no cambiaron. Respaldo privado previo conservado. Las propuestas existentes guardan su cálculo anterior y requieren preparar una corrección; asignar ofertas por sí solo no altera su historial ni envía mensajes.

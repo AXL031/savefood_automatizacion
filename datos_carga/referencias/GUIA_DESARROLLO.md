@@ -4,6 +4,8 @@
 
 `supuestos_recetas.csv` es una copia intacta del archivo suministrado por Axel. Explica el origen y los supuestos de las recetas: 5 originales y 134 estimadas. Sirve para revisar el conjunto con Rojas; no acredita recetas comerciales verificadas ni forma parte de los cinco archivos aceptados por primera carga.
 
+La [guía para otra PC](replicar_proveedores_otra_pc.md), añadida el 20-10-2026, reproduce mediante ofertas la asignación vigente 28/27/0 y enlaza el bot/API Telegram. No es un importador ni un respaldo de PostgreSQL; preservar la separación entre clasificación portable, estado aplicado y procedimiento. Los códigos internos del proveedor pueden variar por instalación. Mantener fuera de Git token, chat privado y secretos de instalación.
+
 Conservar esta procedencia y los campos originales. No seleccionar este CSV en el asistente. Documentar una eventual sustitución por recetas verificadas en el contrato y registro del bloque correspondiente.
 
 ## Agrupación de abastecimiento · 14-10-2026

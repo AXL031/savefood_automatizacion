@@ -1,6 +1,10 @@
 # Programación de la exposición
 
-## Funcionamiento vigente · 30-09-2026
+## Referencia vigente · 20-10-2026
+
+Para preparar diagramas usar [flujos implementados](flujos-implementados.md), contrastados con el registro y sus consumidores. El sistema admite todo el catálogo y calendario finito de 1–31 días; los avisos de ofertas permiten planificar, mientras Compras conserva sus bloqueos de envío. Hay ejecución adelantada explícita, reevaluación por corrección de ventas, promoción tras ajuste y recepción administrativa. El [contrato configurable](../api/contrato-flujo-promociones.md), el [contrato de pedidos](../api/contrato-pedidos.md) y los flujos enlazados describen el estado actual. Las secciones siguientes son **historial**: sus límites de cinco productos, rótulos y pendientes no describen el corte vigente.
+
+## Historial de funcionamiento · 30-09-2026
 
 El flujo completo de GENERAR_PROPUESTA está conectado: modelo listo → pronóstico anterior al objetivo → plan/recetas/stock → faltantes → ofertas por proveedor → outbox Telegram. En /automatizaciones el administrador elige entre 1 y 5 productos por nombre, fecha/hora real del equipo, fecha/hora histórica y envío manual o automático. La elección queda conservada por programación; automático tiene una confirmación explícita de chat propio de pruebas en la UI. El modo del negocio sirve de valor inicial. API/Beat/worker deben permanecer encendidos; el disparo y envío dependen de sus ciclos de 30 segundos.
 

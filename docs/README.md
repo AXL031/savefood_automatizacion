@@ -12,6 +12,6 @@ Empezar por la [guía de alcance](guia-inicio-desarrollo.md) (qué se construye)
 | [Procesos](procesos/README.md) | Diagramas BPMN del negocio |
 | [API](api/README.md) | Rutas, contratos y códigos de error |
 | [Base de datos](base_de_datos/README.md) | Esquema, diccionario y ER |
-| [Automatización](automatizacion/README.md) | Flujos, programación y reintentos |
+| [Automatización](automatizacion/README.md) | [Flujos implementados para diagramar](automatizacion/flujos-implementados.md), programación y reintentos |
 | [Equipo](equipo/README.md) | Responsabilidades, Git, cronograma y avances |
 | [Visión futura](vision-futura.md) | Lo que queda después de la demo |
