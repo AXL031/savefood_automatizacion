@@ -6,6 +6,7 @@ import { soles } from "@/tienda/dinero";
 import { Icono, IconoArchivo } from "@/tienda/componentes/Iconos";
 import { TarjetaProducto, TarjetaProductoHorizontal } from "@/tienda/componentes/TarjetaProducto";
 import { EstadoCarga } from "@/tienda/componentes/EstadoCarga";
+import { LogoTienda } from "@/tienda/componentes/LogoTienda";
 
 export default function InicioTienda() {
   const { catalogo, errorCatalogo, recargarCatalogo, agregar } = useTienda();
@@ -55,7 +56,7 @@ export default function InicioTienda() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/tienda/hero-horno.jpg" alt="Bandeja de croissants recién salidos del horno" />
             <figcaption>
-              <span className="t-marca-sello"><IconoArchivo nombre="huella" escala={0.8} /></span>
+              <LogoTienda tamano={46} />
               <span><strong>Hecho en casa</strong>“El sabor de siempre, horneado cada mañana.”</span>
             </figcaption>
           </figure>
@@ -129,7 +130,7 @@ export default function InicioTienda() {
           </div>
           <div className="t-rejilla-3">
             <article className="t-valor">
-              <span className="t-valor-icono t-valor-icono-marron"><IconoArchivo nombre="huella" /></span>
+              <span className="t-valor-icono"><LogoTienda tamano={60} /></span>
               <h3>Horneado del día</h3>
               <p>Cada producto se elabora con nuestras recetas y se ofrece mientras haya unidades en vitrina.</p>
             </article>

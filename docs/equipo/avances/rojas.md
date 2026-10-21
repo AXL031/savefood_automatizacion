@@ -18,6 +18,21 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Bitácora
 
+### 21-10-2026 America/Lima — Logo de la tienda
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Bloque Tienda (interfaz).
+- **Qué cambió:** ilustración entregada por Max recortada en círculo con fondo transparente (`frontend/public/tienda/logo.png` 512 px, `logo-192.png` e `icono.png` 64 px para la pestaña). [LogoTienda.tsx](../../../frontend/src/tienda/componentes/LogoTienda.tsx) reemplaza el sello de huella del prototipo en encabezado, pie, login, portada, canasta, consejo del menú y «Horneado del día».
+- **Pruebas:** typecheck, imagen de Docker reconstruida y revisión visual en Chrome headless (encabezado, portada, login y pie).
+- **Commit/PR:** cambios locales, sin commit.
+
+### 21-10-2026 America/Lima — Pago con tarjeta y retiro de rótulos de simulación
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Tarea T04 (interfaz).
+- **Estado:** interfaz real; pago simulado.
+- **Qué cambió:** se retiraron los rótulos «Pago simulado» del checkout, el total, la confirmación, el detalle del pedido y el pie. Con tarjeta, [FormularioTarjeta.tsx](../../../frontend/src/tienda/componentes/FormularioTarjeta.tsx) pide número, titular, vencimiento y CVV con validación local. Esos valores solo viven en memoria, no viajan en `confirmarPedido` y se borran al confirmar. AGENTS.md, ADR-009 y el contrato se actualizaron con esta regla.
+- **Pruebas ejecutadas:** typecheck y recorrido en Chrome headless (ver resumen de la respuesta).
+- **Commit/PR:** cambios locales, sin commit.
+
 ### 21-10-2026 America/Lima — T02: sesión de clientes con Google
 
 - **Autor y responsable:** Max Rojas, con Claude Code. Tarea T02.

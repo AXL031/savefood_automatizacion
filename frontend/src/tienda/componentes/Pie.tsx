@@ -34,7 +34,7 @@ export function Pie() {
           </div>
         </div>
         <div className="t-pie-legal">
-          <span><IconoArchivo nombre="copyright" /> {new Date().getFullYear()} {DATOS_COMERCIO.nombre}. Pagos simulados con fines académicos.</span>
+          <span><IconoArchivo nombre="copyright" /> {new Date().getFullYear()} {DATOS_COMERCIO.nombre}. Todos los derechos reservados.</span>
         </div>
       </div>
     </footer>

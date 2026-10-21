@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTienda } from "../contexto";
 import { DATOS_COMERCIO } from "../servicios";
 import { Icono, IconoArchivo } from "./Iconos";
+import { LogoTienda } from "./LogoTienda";
 
 const ENLACES = [
   { href: "/tienda", texto: "Inicio" },
@@ -16,7 +17,7 @@ const ENLACES = [
 export function MarcaTienda({ pequena = false }: { pequena?: boolean }) {
   return (
     <span className={`t-marca${pequena ? " t-marca-pequena" : ""}`}>
-      <span className="t-marca-sello"><IconoArchivo nombre="huella" escala={pequena ? 0.75 : 1} /></span>
+      <LogoTienda tamano={pequena ? 40 : 54} />
       <span className="t-marca-textos">
         <span className="t-marca-nombre">{DATOS_COMERCIO.nombre}</span>
         {pequena ? null : <span className="t-marca-lema">{DATOS_COMERCIO.lema}</span>}

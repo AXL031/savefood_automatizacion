@@ -7,6 +7,7 @@ import type { EstadoStock } from "@/tienda/tipos";
 import { EstadoCarga } from "@/tienda/componentes/EstadoCarga";
 import { Icono, IconoArchivo } from "@/tienda/componentes/Iconos";
 import { TarjetaProducto } from "@/tienda/componentes/TarjetaProducto";
+import { LogoTienda } from "@/tienda/componentes/LogoTienda";
 
 type Filtro = "TODOS" | EstadoStock;
 const FILTROS: { valor: Filtro; texto: string }[] = [
@@ -70,7 +71,7 @@ function Menu() {
             {catalogo.categorias.map((c) => <a key={c.codigo} href={`#${c.codigo}`} className="t-seccion-enlace">{c.nombre}<span aria-hidden="true">›</span></a>)}
           </nav>
           <div className="t-consejo">
-            <span className="t-consejo-icono"><IconoArchivo nombre="huella" escala={0.85} /></span>
+            <LogoTienda tamano={48} />
             <span className="t-antetitulo t-antetitulo-acento">Consejo de la casa</span>
             <strong>Pide temprano</strong>
             <p>Los productos con “Últimas unidades” suelen agotarse antes del mediodía. Agrégalos a tu canasta y confirma tu pedido.</p>

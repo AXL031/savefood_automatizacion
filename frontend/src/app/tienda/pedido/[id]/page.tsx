@@ -42,7 +42,7 @@ export default function PaginaPedido() {
         <span className="t-confirmacion-icono"><Icono nombre="check" tamano={30} /></span>
         <span className="t-antetitulo t-antetitulo-acento">Pedido #{pedido.id} confirmado</span>
         <h1>¡Gracias, {sesion.cliente.nombre.split(" ")[0]}!</h1>
-        <p>Registramos tu pedido y el pago simulado. Nuestro stock ya se actualizó con tu compra.</p>
+        <p>Registramos tu pedido y tu pago. Te contactaremos al celular indicado para coordinar la entrega.</p>
         <DetallePedido pedido={pedido} />
         <div className="t-confirmacion-acciones">
           <Link href="/tienda/menu" className="t-boton-primario">Seguir comprando</Link>

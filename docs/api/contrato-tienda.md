@@ -116,7 +116,7 @@ Validaciones antes de cualquier efecto:
 
 - Tienda abierta; 1–30 líneas; productos publicados y sin repetir; cantidad 1..`max_unidades_por_linea`.
 - `nombre_receptor` 3–120 caracteres; `celular` peruano de 9 dígitos que empieza con 9; `direccion` 5–200; `distrito` 2–80; `referencia` opcional hasta 200.
-- `metodo_pago_simulado`: `TARJETA_SIMULADA` o billetera digital `YAPE_SIMULADO` / `PLIN_SIMULADO`. **No se aceptan números de tarjeta, teléfonos de billetera, códigos de aprobación ni otros datos de pago**: un campo adicional se rechaza (`extra="forbid"`). La interfaz solo muestra la elección del método y un botón de pagar simulado.
+- `metodo_pago_simulado`: `TARJETA_SIMULADA` o billetera digital `YAPE_SIMULADO` / `PLIN_SIMULADO`. **No se aceptan números de tarjeta, teléfonos de billetera, códigos de aprobación ni otros datos de pago**: un campo adicional se rechaza (`extra="forbid"`). Con `TARJETA_SIMULADA` la interfaz pide número, titular, vencimiento y CVV con validación local (Luhn, marca Visa/Mastercard/Amex/Diners, fecha futura, largo del CVV) y `autocomplete="off"`; **ninguno de esos valores forma parte de esta petición** ni se guarda en ningún lugar. La interfaz no muestra rótulos de simulación.
 - `subtotal_esperado` de cada línea igual al `subtotal` de la cotización vigente (incluidas las unidades con promoción). Si difiere: `409 PRECIO_CAMBIADO` con las líneas recotizadas en `detalles`; la interfaz vuelve a cotizar y pide revisar antes de pagar.
 
 Transacción única:

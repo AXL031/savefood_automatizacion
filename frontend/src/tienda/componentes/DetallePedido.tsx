@@ -2,9 +2,9 @@ import { soles } from "../dinero";
 import type { MetodoPagoSimulado, PedidoCliente } from "../tipos";
 
 export const TEXTO_METODO: Record<MetodoPagoSimulado, string> = {
-  TARJETA_SIMULADA: "Tarjeta (simulado)",
-  YAPE_SIMULADO: "Yape (simulado)",
-  PLIN_SIMULADO: "Plin (simulado)",
+  TARJETA_SIMULADA: "Tarjeta",
+  YAPE_SIMULADO: "Yape",
+  PLIN_SIMULADO: "Plin",
 };
 
 export function fechaPedido(iso: string) {

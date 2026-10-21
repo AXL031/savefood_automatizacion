@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTienda } from "../contexto";
 import { DATOS_COMERCIO, iniciarSesionEjemplo, iniciarSesionGoogle } from "../servicios";
 import { IconoArchivo } from "./Iconos";
+import { LogoTienda } from "./LogoTienda";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 
@@ -94,7 +95,7 @@ export function ModalLogin() {
         <div className="t-modal-acento" aria-hidden="true" />
         <button type="button" className="t-modal-cerrar" onClick={cerrarLogin} aria-label="Cerrar"><IconoArchivo nombre="cerrar" /></button>
         <div className="t-modal-cuerpo">
-          <span className="t-modal-sello"><IconoArchivo nombre="huella-grande" /></span>
+          <span className="t-modal-sello"><LogoTienda tamano={88} /></span>
           <p className="t-modal-marca">{DATOS_COMERCIO.nombre}</p>
           <p className="t-modal-lema">{DATOS_COMERCIO.lema}</p>
           <h2 id="t-login-titulo">Inicia sesión para continuar</h2>

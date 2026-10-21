@@ -10,6 +10,8 @@ import { ErrorTienda, type DatosEntrega, type MetodoPagoSimulado } from "@/tiend
 import { EstadoStock } from "@/tienda/componentes/EstadoStock";
 import { Icono, IconoArchivo } from "@/tienda/componentes/Iconos";
 import { QrFicticio } from "@/tienda/componentes/QrFicticio";
+import { LogoTienda } from "@/tienda/componentes/LogoTienda";
+import { FormularioTarjeta, TARJETA_VACIA, validarTarjeta, type DatosTarjeta } from "@/tienda/componentes/FormularioTarjeta";
 
 const ENTREGA_VACIA: DatosEntrega = { nombre_receptor: "", celular: "", direccion: "", distrito: "", referencia: "" };
 
@@ -25,6 +27,8 @@ export default function PaginaCarrito() {
   const [tocados, setTocados] = useState(false);
   const [tipoPago, setTipoPago] = useState<"BILLETERA" | "TARJETA">("BILLETERA");
   const [billetera, setBilletera] = useState<"YAPE_SIMULADO" | "PLIN_SIMULADO">("YAPE_SIMULADO");
+  // Solo en memoria: nunca se envía ni se guarda (pago simulado, ADR-009).
+  const [tarjeta, setTarjeta] = useState<DatosTarjeta>(TARJETA_VACIA);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   const [copiado, setCopiado] = useState(false);
@@ -44,7 +48,8 @@ export default function PaginaCarrito() {
   useEffect(() => { clave.current = nuevaClave(); }, [carrito]);
 
   const errores = validarEntrega(entrega);
-  const hayErrores = Object.values(errores).some(Boolean);
+  const erroresTarjeta = tipoPago === "TARJETA" && Object.values(validarTarjeta(tarjeta)).some(Boolean);
+  const hayErrores = Object.values(errores).some(Boolean) || erroresTarjeta;
   const sinStock = cotizacion?.lineas.some((l) => !l.disponible) ?? false;
   const metodo: MetodoPagoSimulado = tipoPago === "TARJETA" ? "TARJETA_SIMULADA" : billetera;
 
@@ -66,6 +71,7 @@ export default function PaginaCarrito() {
         entrega: { ...entrega, celular: entrega.celular.replace(/\s/g, "") },
         metodo_pago_simulado: metodo,
       }, sesion);
+      setTarjeta(TARJETA_VACIA);
       vaciarCarrito();
       recargarCatalogo();
       router.push(`/tienda/pedido/${pedido.id}`);
@@ -161,7 +167,7 @@ export default function PaginaCarrito() {
           <section className="t-paso" aria-labelledby="t-paso-3">
             <div className="t-paso-cabecera">
               <span className="t-paso-numero">3</span>
-              <div><h2 id="t-paso-3">Paso 3: Método de pago</h2><p>Pago simulado: no se realiza ningún cobro real.</p></div>
+              <div><h2 id="t-paso-3">Paso 3: Método de pago</h2><p>Elige cómo quieres pagar tu pedido.</p></div>
             </div>
             <div className="t-pagos" role="radiogroup" aria-label="Método de pago">
               <label className={`t-pago${tipoPago === "BILLETERA" ? " t-pago-activo" : ""}`}>
@@ -170,7 +176,7 @@ export default function PaginaCarrito() {
               </label>
               <label className={`t-pago${tipoPago === "TARJETA" ? " t-pago-activo" : ""}`}>
                 <input type="radio" name="pago" checked={tipoPago === "TARJETA"} onChange={() => setTipoPago("TARJETA")} />
-                <span><strong>Tarjeta de débito / crédito</strong><small>Simulada, sin datos de tarjeta</small></span>
+                <span><strong>Tarjeta de débito / crédito</strong><small>Visa, Mastercard, American Express o Diners</small></span>
               </label>
             </div>
             {tipoPago === "BILLETERA" ? (
@@ -179,7 +185,6 @@ export default function PaginaCarrito() {
                 <div className="t-transferencia-datos">
                   <div className="t-transferencia-cabecera">
                     <span>Datos de pago</span>
-                    <span className="t-chip-ok t-chip-pequeno">Pago simulado</span>
                   </div>
                   <div className="t-billeteras" role="radiogroup" aria-label="Billetera">
                     {(["YAPE_SIMULADO", "PLIN_SIMULADO"] as const).map((b) => (
@@ -193,13 +198,12 @@ export default function PaginaCarrito() {
                     <button type="button" className="t-boton-copiar" onClick={copiarNumero}><Icono nombre="copiar" tamano={14} />{copiado ? "Copiado" : "Copiar"}</button>
                   </div>
                   <p className="t-titular">Titular: <strong>{DATOS_COMERCIO.pago_simulado.titular}</strong></p>
-                  <p className="t-aviso-simulado"><Icono nombre="check" tamano={14} /><span><strong>No transfieras dinero.</strong> El QR y el número son de demostración; al confirmar se registra un pago simulado aprobado.</span></p>
+                  <p className="t-aviso-simulado"><Icono nombre="check" tamano={14} /><span><strong>No necesitas adjuntar voucher.</strong> Validamos tu pago al confirmar el pedido.</span></p>
                 </div>
               </div>
             ) : (
               <div className="t-transferencia t-transferencia-tarjeta">
-                <span className="t-tarjeta-icono"><Icono nombre="tarjeta" tamano={28} /></span>
-                <p className="t-aviso-simulado"><span><strong>Pago con tarjeta simulado.</strong> No ingreses ni compartas datos de tarjeta: al confirmar se registra un pago aprobado de demostración.</span></p>
+                <FormularioTarjeta datos={tarjeta} alCambiar={setTarjeta} mostrarErrores={tocados} />
               </div>
             )}
           </section>
@@ -237,15 +241,15 @@ export default function PaginaCarrito() {
             <dl className="t-totales">
               <div><dt>Subtotal</dt><dd>{cotizacion ? soles(cotizacion.total) : "…"}</dd></div>
               <div><dt>Envío a domicilio</dt><dd><span className="t-chip-ok t-chip-pequeno">Sin costo</span></dd></div>
-              <div className="t-total"><dt>Total a pagar<small>Pago simulado</small></dt><dd>{cotizacion ? soles(cotizacion.total) : "…"}</dd></div>
+              <div className="t-total"><dt>Total a pagar</dt><dd>{cotizacion ? soles(cotizacion.total) : "…"}</dd></div>
             </dl>
             {error ? <p className="t-error" role="alert">{error}</p> : null}
-            {tocados && hayErrores ? <p className="t-error" role="alert">Completa los datos de entrega obligatorios.</p> : null}
+            {tocados && hayErrores ? <p className="t-error" role="alert">{erroresTarjeta && !Object.values(errores).some(Boolean) ? "Revisa los datos de tu tarjeta." : "Completa los datos obligatorios."}</p> : null}
             <button type="submit" className="t-boton-confirmar" disabled={enviando || !cotizacion || sinStock}>
               <IconoArchivo nombre="candado" escala={1.2} />
               {enviando ? "Confirmando…" : sesion ? `Confirmar pedido (${cotizacion ? soles(cotizacion.total) : "…"})` : "Iniciar sesión y confirmar"}
             </button>
-            <p className="t-resumen-nota"><span className="t-marca-sello t-marca-sello-pequeno"><IconoArchivo nombre="huella" escala={0.7} /></span>Al confirmar, el stock se descuenta al instante y tu pedido queda registrado.</p>
+            <p className="t-resumen-nota"><LogoTienda tamano={34} />Al confirmar, el stock se descuenta al instante y tu pedido queda registrado.</p>
           </div>
         </aside>
       </div>
