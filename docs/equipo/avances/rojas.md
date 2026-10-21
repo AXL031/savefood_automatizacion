@@ -6,6 +6,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **20-10-2026 · Max Rojas con Claude Code, T01–T05 (diseño):** documentada la tienda del cliente: [ADR-009](../../arquitectura/decisiones/ADR-009-tienda-cliente.md), [contrato](../../api/contrato-tienda.md), ampliación en la guía de alcance, regla de stock en AGENTS.md y tareas en responsabilidades. **Sin código, migración ni pantalla.** Siguiente paso: revisión de Vera/Edu/Axel y luego migración `0019_tienda`.
 - **14-10-2026 · Max Rojas (frontend y UX/UI temporal):** paleta hoja/yema y tipografía Bricolage + Manrope aplicadas en todo el frontend, login rediseñado con ilustración de panadería y textos de demostración/escenario/manual retirados de la interfaz. Ver bitácora del 14-10-2026.
 - **11-10-2026 · Codex para Axel, M02/M04 y consumo K02/V02/L02:** M01–M04 están implementadas localmente; el flujo consume corrida, recetas y stock, conserva plan/necesidades y enlaza pedidos. El manejador usa el modelo elegido por el asistente. Margen cero, cantidades desconocidas nullable, versiones e inventario conservados.
 - **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
@@ -14,6 +15,18 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 20-10-2026 America/Lima — Diseño de la tienda del cliente
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Tareas T01–T05 (nuevas, bloque Tienda).
+- **Estado:** PENDIENTE de implementación; documentación lista para revisión.
+- **Qué cambió:** decisión y contrato de una tienda separada (`/api/v1/tienda/*` y `/api/v1/tienda-admin/*`): login con Google, precios en PEN por CSV o manual, stock visible en tres estados, compra con pago simulado (tarjeta, Yape o Plin) y datos de entrega que termina en pedido `CONFIRMADO` (estados posteriores y cancelación quedan como desarrollo futuro), descuento por lote FEFO con `VENTA_TIENDA`, reserva de `EVALUAR_PROMOCION` en la misma transacción y promociones visibles solo tras aprobación. Compras de tienda fuera de Ventas/ML. Reloj de tienda por escenario o fecha actual, con apertura de lotes nuevos.
+- **Archivos clave:** [ADR-009](../../arquitectura/decisiones/ADR-009-tienda-cliente.md), [contrato-tienda.md](../../api/contrato-tienda.md), [guía de alcance](../../guia-inicio-desarrollo.md), [AGENTS.md](../../../AGENTS.md), [responsabilidades](../responsabilidades.md), [errores](../../api/errores.md).
+- **Migración/configuración:** ninguna aplicada. Prevista `0019_tienda` aditiva; variables futuras `GOOGLE_CLIENT_ID` y `TIENDA_JWT_SECRET`.
+- **Pruebas:** no aplica (solo documentación); no se ejecutaron pruebas.
+- **Dependencias:** Vera revisa las funciones nuevas de Inventario/Promociones; Edu, el alta manual de producto; Axel, el token de cliente y las variables. Registrar cliente OAuth de Google para `http://localhost:3100`.
+- **Siguiente paso:** acordar el contrato con los dueños de frontera, crear las carpetas `tienda` con su guía y empezar por T01 (migración y precios).
+- **Commit/PR:** cambios locales, sin commit.
 
 ### 14-10-2026 America/Lima — Identidad visual, login y textos de producto
 

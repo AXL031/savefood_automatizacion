@@ -12,5 +12,6 @@
 | [006](ADR-006-identidades-lotes-pronosticos.md) | Ventas diarias, lotes locales e identidad de pronósticos |
 | [007](ADR-007-automatizaciones-demo.md) | Disparadores programados, ejecución durable y promoción sugerida |
 | [008](ADR-008-pedidos-desde-el-plan.md) | Pedidos desde el plan y envío por Telegram |
+| [009](ADR-009-tienda-cliente.md) | Tienda del cliente: compra simulada, stock visible y promociones aprobadas (diseño) |
 
 Ante contradicción, prevalece el ADR de número mayor sobre el tema que trata.

@@ -16,6 +16,10 @@ Generado desde `backend/app` el 06-10-2026. Sobre de error y significado de cada
 | 500 | `ERROR_INTERNO` |
 | 503 | `SERVICIO_NO_DISPONIBLE` |
 
+## Tienda del cliente (diseño, sin implementar)
+
+Códigos previstos por [contrato-tienda.md](contrato-tienda.md#errores-nuevos): `GOOGLE_TOKEN_INVALIDO` (401), `CORREO_NO_VERIFICADO`, `CLIENTE_INACTIVO` (403), `PRODUCTO_NO_PUBLICADO`, `PEDIDO_NO_ENCONTRADO`, `PROMOCION_NO_ENCONTRADA` (404), `TIENDA_CERRADA`, `STOCK_INSUFICIENTE`, `PRECIO_CAMBIADO`, `EVALUACION_NO_PROPONE`, `PROMOCION_YA_DECIDIDA`, `PROMOCION_NO_VIGENTE` (409), `CARRITO_INVALIDO`, `DATOS_ENTREGA_INVALIDOS`, `PRECIO_INVALIDO`, `PRECIO_FALTANTE`, `CSV_INVALIDO`, `LOTE_VENCIDO`, `CONFIGURACION_INVALIDA` (422). Pasan a las tablas de arriba cuando se implementen.
+
 ## Usados por varios módulos
 
 | HTTP | Código | Módulos |
