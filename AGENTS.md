@@ -15,7 +15,7 @@
 - Kevin Bohorquez: entrenamiento, inferencia, evaluación histórica y dashboard.
 - Leonardo Vera: inventario por lotes y promociones sugeridas.
 - Leonardo Aguirre: proveedores, ofertas, pedidos, aprobación y adaptador Telegram.
-- Max Rojas: ingredientes, recetas, planificación y necesidades de insumos.
+- Max Rojas: ingredientes, recetas, planificación, necesidades de insumos y tienda del cliente (T01–T05).
 
 Cada persona implementa interfaz, backend, API, datos y pruebas de su bloque. La propiedad de una carpeta compartida indica coordinación; la lógica de dominio sigue perteneciendo a su autor. No trasladar toda la integración ni todas las pruebas a Axel.
 
@@ -23,10 +23,11 @@ Cada persona implementa interfaz, backend, API, datos y pruebas de su bloque. La
 
 - Prototipo local: una instalación, un comercio y una sucursal; PostgreSQL es la fuente después de la primera carga.
 - Ausencia de venta no es cero. Pronóstico usa solo historia anterior al objetivo. Modelo/receta/plan conservan versiones.
-- Un plan o pedido no cambia stock. Solo apertura y ajustes explícitos producen movimientos en esta demo.
+- Un plan o pedido a proveedor no cambia stock. Solo apertura, ajustes explícitos, recepción de compras y, cuando se implemente, la compra confirmada de la tienda del cliente ([ADR-009](docs/arquitectura/decisiones/ADR-009-tienda-cliente.md)) producen movimientos.
+- Tienda del cliente: pago siempre simulado (la interfaz puede pedir datos de tarjeta para validarlos en el navegador, pero nunca se envían a la API, ni se guardan ni se registran), promociones visibles solo tras aprobación administrativa y compras de tienda fuera de Ventas/ML.
 - Pedidos por faltantes, aprobación configurable y Telegram real a un chat propio de pruebas. Mensajes históricos rotulados como demostración. No enviar mensajes externos sin autorización expresa de la tarea en curso.
 - Un envío incierto no se reintenta a ciegas. Cerrar la regla entre planes de la misma fecha antes de habilitar compras automáticas.
-- No implementar producción física, pagos, recepción, promoción publicada o informes de impacto a partir de carpetas futuras o maquetas.
+- No implementar producción física, pagos reales o informes de impacto a partir de carpetas futuras o maquetas. Recepción y tienda del cliente siguen sus ampliaciones expresas y contratos.
 - El alcance vigente (`docs/guia-inicio-desarrollo.md`) y los ADR prevalecen; `docs/vision-futura.md` no es contrato. Para responsables prevalece `docs/equipo/responsabilidades.md`.
 
 ## Implementación y entrega

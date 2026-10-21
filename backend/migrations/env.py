@@ -20,6 +20,7 @@ from app.modules.inventario.modelos import LoteProducto, LoteIngrediente, Movimi
 from app.modules.proveedores.modelos import Proveedor, OfertaIngrediente  # noqa: F401
 from app.modules.planificacion.modelos import PlanProduccion, ElementoPlan  # noqa: F401
 from app.modules.compras.modelos import PropuestaCompra, PedidoCompra, LineaPedido  # noqa: F401
+from app.modules.tienda.modelos import ClienteTienda  # noqa: F401
 
 config = context.config
 if config.config_file_name and config.get_section(config.config_ini_section, {}).get("loggers"):

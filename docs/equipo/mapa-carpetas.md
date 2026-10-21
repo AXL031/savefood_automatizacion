@@ -40,6 +40,7 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `backend/app/modules/pronosticos` | Kevin Bohorquez | Demo · Pronósticos y evaluación histórica | [Abrir](../../backend/app/modules/pronosticos/GUIA_DESARROLLO.md) |
 | `backend/app/modules/proveedores` | Leonardo Aguirre | Demo · Proveedores y ofertas | [Abrir](../../backend/app/modules/proveedores/GUIA_DESARROLLO.md) |
 | `backend/app/modules/recetas` | Max Rojas | Demo · Recetas versionadas | [Abrir](../../backend/app/modules/recetas/GUIA_DESARROLLO.md) |
+| `backend/app/modules/tienda` | Max Rojas | Tienda del cliente · sesión Google (T02) y dominio futuro | [Abrir](../../backend/app/modules/tienda/GUIA_DESARROLLO.md) |
 | `backend/app/modules/ventas` | Edu Sanchez | Demo · Ventas diarias e historial | [Abrir](../../backend/app/modules/ventas/GUIA_DESARROLLO.md) |
 | `backend/app/shared` | Axel Cueva | Compartida; coordinación | [Abrir](../../backend/app/shared/GUIA_DESARROLLO.md) |
 | `backend/app/shared/enums` | Axel Cueva | Compartida; coordinación | [Abrir](../../backend/app/shared/enums/GUIA_DESARROLLO.md) |
@@ -97,6 +98,7 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `frontend/src/app/pronosticos` | Kevin Bohorquez | Demo · Pronósticos y evaluación histórica | [Abrir](../../frontend/src/app/pronosticos/GUIA_DESARROLLO.md) |
 | `frontend/src/app/proveedores` | Leonardo Aguirre | Demo · Proveedores y ofertas | [Abrir](../../frontend/src/app/proveedores/GUIA_DESARROLLO.md) |
 | `frontend/src/app/recetas` | Max Rojas | Demo · Recetas versionadas | [Abrir](../../frontend/src/app/recetas/GUIA_DESARROLLO.md) |
+| `frontend/src/app/tienda` | Max Rojas | Tienda del cliente · rutas (ADR-009) | [Abrir](../../frontend/src/app/tienda/GUIA_DESARROLLO.md) |
 | `frontend/src/app/ventas` | Edu Sanchez | Demo · Ventas diarias e historial | [Abrir](../../frontend/src/app/ventas/GUIA_DESARROLLO.md) |
 | `frontend/src/components` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/components/GUIA_DESARROLLO.md) |
 | `frontend/src/components/automatizacion` | Axel Cueva | Compartida; coordinación | [Abrir](../../frontend/src/components/automatizacion/GUIA_DESARROLLO.md) |
@@ -125,6 +127,8 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `frontend/src/features/ventas` | Edu Sanchez | Demo · Ventas diarias e historial | [Abrir](../../frontend/src/features/ventas/GUIA_DESARROLLO.md) |
 | `frontend/src/hooks` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/hooks/GUIA_DESARROLLO.md) |
 | `frontend/src/services` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/services/GUIA_DESARROLLO.md) |
+| `frontend/src/tienda` | Max Rojas | Tienda del cliente · tipos, servicios y contexto | [Abrir](../../frontend/src/tienda/GUIA_DESARROLLO.md) |
+| `frontend/src/tienda/componentes` | Max Rojas | Tienda del cliente · componentes visuales | [Abrir](../../frontend/src/tienda/componentes/GUIA_DESARROLLO.md) |
 | `frontend/src/types` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/types/GUIA_DESARROLLO.md) |
 | `frontend/src/utils` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/utils/GUIA_DESARROLLO.md) |
 | `scripts` | Axel Cueva | Compartida; coordinación | [Abrir](../../scripts/GUIA_DESARROLLO.md) |

@@ -95,6 +95,16 @@ La distribución considera el trabajo pendiente y la dificultad de integración,
 | M03 · Calcular necesidades y faltantes | Agregar ingredientes de todos los productos, redondear al final, guardar requerido/disponible/faltante y entregar a Aguirre. | Dos productos que usan harina generan una necesidad agregada correcta en la unidad base. |
 | M04 · Entregar pantalla y contrato del plan | Detalle, trazas de receta/stock/pronóstico, avisos y enlace a pedidos; versiones y respuesta API. | Cada cantidad puede explicarse; plan repetido recupera resultado y un recálculo conserva el anterior. |
 
+**Ampliación 20-10-2026 · Tienda del cliente (diseño, sin implementar):** Max es autor y coordinador. [ADR-009](../arquitectura/decisiones/ADR-009-tienda-cliente.md) y [contrato](../api/contrato-tienda.md). Entidades propias previstas: `cliente`, `configuracion_tienda`, `precio_producto`, `pedido_cliente`, `linea_pedido_cliente`, `asignacion_lote_tienda`, `pago_simulado`, `decision_promocion`, `promocion_publicada`. Las funciones nuevas de Inventario/Promociones (Vera) y Productos (Edu) se implementan por coordinación, con revisión de sus dueños.
+
+| Tarea | Trabajo concreto | Evidencia de terminado |
+|---|---|---|
+| T01 · Precios, configuración y lotes | Precios versionados en PEN por CSV y manual, alta manual de producto, configuración de fecha (escenario/actual) y apertura de lotes nuevos. | CSV inválido no aplica nada; reimportar no duplica versiones; lote vencido se rechaza. |
+| T02 · Cliente con Google | Verificación del ID token, cliente por `google_sub` y token propio con audiencia `tienda`. | Correo no verificado → 403; token de cliente rechazado en rutas administrativas. |
+| T03 · Catálogo y stock visible | Catálogo público con precio, promoción y estado de stock en tres niveles, sin cantidades. | Lote vencido o sin fecha no cuenta; el catálogo no expone cantidades ni lotes. |
+| T04 · Compra simulada | Pedido `CONFIRMADO` final, líneas, FEFO, pago simulado (tarjeta/Yape/Plin), movimiento `VENTA_TIENDA` y reserva de `EVALUAR_PROMOCION` en una transacción. Estados posteriores y cancelación quedan para el futuro. | Compra concurrente de la última unidad no deja saldo negativo; repetir clave no duplica efectos. |
+| T05 · Promociones aprobadas | Aprobación/rechazo de sugerencias, publicación con vigencia y finalización por agotamiento o vencimiento. | Venta → evaluación por Beat → aprobación → visible en tienda → finaliza al agotar el lote. |
+
 ## Fronteras que evitan duplicar trabajo
 
 | Frontera | Quién entrega | Quién consume | Acuerdo requerido |
@@ -107,6 +117,7 @@ La distribución considera el trabajo pendiente y la dificultad de integración,
 | Stock disponible por fecha | Vera | Max y promociones de Vera | Unidad, lote, vigencia y lectura reproducible, sin modificar saldo al consultar. |
 | Receta y necesidades del plan | Max | Aguirre | Plan y receta versionados, cantidades decimales y fecha del escenario. |
 | Pedidos y envío | Aguirre | Axel y pantalla de compras | El dominio de compras decide estados/reenvío; el worker común no reintenta ciegamente Telegram. |
+| Tienda del cliente → stock y promociones | Max (Tienda) consume; Vera revisa `retirar_para_tienda`, `abrir_lote_producto`, `reservar_tras_movimiento` | Tienda | Bloqueo de lotes en orden, sin saldo negativo, misma transacción sin commit propio; ver [contrato](../api/contrato-tienda.md). |
 | Motor de tareas | Axel | Edu, Kevin, Vera, Aguirre y Max | Envoltorio de ejecución, claves, intentos y eventos. Cada dueño escribe la función de su dominio. |
 | Componentes visuales | Edu coordina | Todos | Layout, formularios, tablas, estados y cliente común. Kevin mantiene gráficos/métricas; Axel los componentes de ejecución. |
 
