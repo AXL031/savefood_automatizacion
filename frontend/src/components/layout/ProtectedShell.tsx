@@ -70,7 +70,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [revisionSesion, setRevisionSesion] = useState(0);
-  const publica = ruta === "/iniciar-sesion";
+  // La tienda del cliente (ADR-009) tiene su propio layout y sesión; no usa la administrativa.
+  const publica = ruta === "/iniciar-sesion" || ruta === "/tienda" || ruta.startsWith("/tienda/");
   const enlaceActual = grupos.flatMap((grupo) => grupo.enlaces).find((enlace) => ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`)));
   const grupoActual = grupos.find((grupo) => grupo.enlaces.some((enlace) => ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`))));
 

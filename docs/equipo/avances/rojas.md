@@ -6,6 +6,9 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **21-10-2026 · Max Rojas con Claude Code, T02 (backend real):** inicio de sesión con Google implementado (migración `0019_tienda_clientes`, `/api/v1/tienda/sesion*`). Requiere `GOOGLE_CLIENT_ID` en `.env` ([guía](../../api/configurar-google-tienda.md)); sin él la tienda sigue con login simulado. Catálogo, stock y pedidos siguen de ejemplo.
+- **21-10-2026 · Max Rojas con Claude Code, T02–T05 (interfaz):** tienda del cliente en `/tienda` desde el Figma «PaginaCliente»: inicio, menú, canasta y pago simulado, confirmación y mis pedidos. **Funciona con datos de ejemplo en el navegador**; backend T01–T04 pendiente. Ver bitácora del 21-10-2026.
+- **20-10-2026 · Max Rojas con Claude Code, T01–T05 (diseño):** documentada la tienda del cliente: [ADR-009](../../arquitectura/decisiones/ADR-009-tienda-cliente.md), [contrato](../../api/contrato-tienda.md), ampliación en la guía de alcance, regla de stock en AGENTS.md y tareas en responsabilidades. **Sin código, migración ni pantalla.** Siguiente paso: revisión de Vera/Edu/Axel y luego migración `0019_tienda`.
 - **14-10-2026 · Max Rojas (frontend y UX/UI temporal):** paleta hoja/yema y tipografía Bricolage + Manrope aplicadas en todo el frontend, login rediseñado con ilustración de panadería y textos de demostración/escenario/manual retirados de la interfaz. Ver bitácora del 14-10-2026.
 - **11-10-2026 · Codex para Axel, M02/M04 y consumo K02/V02/L02:** M01–M04 están implementadas localmente; el flujo consume corrida, recetas y stock, conserva plan/necesidades y enlaza pedidos. El manejador usa el modelo elegido por el asistente. Margen cero, cantidades desconocidas nullable, versiones e inventario conservados.
 - **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
@@ -14,6 +17,56 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 21-10-2026 America/Lima — Logo de la tienda
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Bloque Tienda (interfaz).
+- **Qué cambió:** ilustración entregada por Max recortada en círculo con fondo transparente (`frontend/public/tienda/logo.png` 512 px, `logo-192.png` e `icono.png` 64 px para la pestaña). [LogoTienda.tsx](../../../frontend/src/tienda/componentes/LogoTienda.tsx) reemplaza el sello de huella del prototipo en encabezado, pie, login, portada, canasta, consejo del menú y «Horneado del día».
+- **Pruebas:** typecheck, imagen de Docker reconstruida y revisión visual en Chrome headless (encabezado, portada, login y pie).
+- **Commit/PR:** cambios locales, sin commit.
+
+### 21-10-2026 America/Lima — Pago con tarjeta y retiro de rótulos de simulación
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Tarea T04 (interfaz).
+- **Estado:** interfaz real; pago simulado.
+- **Qué cambió:** se retiraron los rótulos «Pago simulado» del checkout, el total, la confirmación, el detalle del pedido y el pie. Con tarjeta, [FormularioTarjeta.tsx](../../../frontend/src/tienda/componentes/FormularioTarjeta.tsx) pide número, titular, vencimiento y CVV con validación local. Esos valores solo viven en memoria, no viajan en `confirmarPedido` y se borran al confirmar. AGENTS.md, ADR-009 y el contrato se actualizaron con esta regla.
+- **Pruebas ejecutadas:** typecheck y recorrido en Chrome headless (ver resumen de la respuesta).
+- **Commit/PR:** cambios locales, sin commit.
+
+### 21-10-2026 America/Lima — T02: sesión de clientes con Google
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Tarea T02.
+- **Estado:** LISTO_PARA_INTEGRAR en código; conexión con una cuenta real pendiente del ID de cliente OAuth del usuario.
+- **Qué cambió:** módulo [backend/app/modules/tienda](../../../backend/app/modules/tienda/GUIA_DESARROLLO.md) con tabla `cliente`, verificación del ID token con las claves públicas de Google mediante PyJWT (sin dependencias nuevas), token propio con audiencia `tienda` y clave distinta de la administrativa. El frontend muestra el botón oficial de Google cuando existe `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Se retiraron las etiquetas «Stock actualizado en vivo» y «Aprobadas por la pastelería» del menú.
+- **Migración/configuración:** `0019_tienda_clientes` aditiva sobre 0018. `GOOGLE_CLIENT_ID` en `compose.yaml` (API y argumento de build del frontend), `frontend/Dockerfile` y `.env.example`; `TIENDA_JWT_SECRET` opcional. Puente `conciliar_local.py` y pruebas de cabeza de migraciones actualizados a 0019 (archivos de coordinación de Axel).
+- **Pruebas ejecutadas:** `test_tienda_sesion.py` (4), `test_migraciones_entregas.py` y `test_usuarios.py` en SQLite: 14 correctas, 1 omitida. Con PostgreSQL (`E03_POSTGRES_TEST=1`): tienda, conciliación de migraciones y usuarios, 11 correctas. Typecheck del frontend correcto. Suite completa en PostgreSQL: 251 correctas, 12 omitidas y 13 fallos por montar solo `backend/` (faltaba `foodsave-ml`); al repetir esos 6 módulos con `foodsave-ml` montado, 44/44 correctas. Migración 0019 aplicada en la instalación local.
+- **Dependencias:** el usuario crea el ID de cliente en Google Cloud con origen `http://localhost:3000`. Axel revisa los cambios de `compose.yaml` y del puente.
+- **Siguiente paso:** cargar `GOOGLE_CLIENT_ID`, reconstruir y probar con una cuenta real; luego T01/T03.
+- **Commit/PR:** cambios locales, sin commit.
+
+### 21-10-2026 America/Lima — Interfaz de la tienda del cliente
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Tareas T02–T05 (interfaz); T01 sin implementar.
+- **Estado:** PARCIAL. Interfaz real; datos **simulados** (modo ejemplo en el navegador). Backend, migración `0019_tienda` y Google real pendientes.
+- **Qué cambió:** carpetas nuevas `frontend/src/app/tienda/` (rutas `/tienda`, `/tienda/menu`, `/tienda/carrito`, `/tienda/pedido/[id]`, `/tienda/pedidos`, layout y `tienda.css`) y `frontend/src/tienda/` (tipos, servicios, contexto, componentes). Diseño del Figma con la marca Pastelería Maria Juanita, una sucursal en Lima y sin reseñas, 2×1, seguimiento, recojo, boleta ni boletín. Stock en tres estados, consulta cada 5 s. Pago simulado con tarjeta o Yape/Plin (QR y número ficticios rotulados). Login con Google: botón oficial en modo api; en modo ejemplo pide un correo Gmail y lo rotula como simulado.
+- **Contrato:** [contrato-tienda.md](../../api/contrato-tienda.md) amplía la ficha del producto (categoría, descripción, presentación, imagen), añade `POST /tienda/carrito/cotizar` y cambia `precio_esperado` por `subtotal_esperado` por línea, porque una línea puede mezclar unidades con y sin promoción.
+- **Compartidos tocados:** [ProtectedShell.tsx](../../../frontend/src/components/layout/ProtectedShell.tsx) (una línea: las rutas `/tienda` no exigen sesión administrativa; carpeta coordinada por Edu) y `frontend/package.json` (+ `@fontsource-variable/newsreader` y `@fontsource-variable/plus-jakarta-sans`). Imágenes y SVG del Figma en `frontend/public/tienda/` (capturas con la marca del mockup descartadas o recortadas).
+- **Pruebas ejecutadas:** `npx tsc --noEmit` y `npm run build` correctos (27 rutas). Recorrido en Chrome headless contra `next start`: agregar 3 brioche y 2 croissant, confirmar sin sesión abre login, login simulado, 4 errores de entrega visibles, pedido #1001 confirmado, brioche pasa de Últimas unidades a Agotado, ninguna cantidad en el DOM y sin scroll horizontal a 390 px. Sin pruebas automatizadas en el repositorio (el frontend no tiene runner).
+- **Dependencias:** backend T01–T04 propio; revisión de Vera (inventario/promociones), Edu (productos y `ProtectedShell`) y Axel (token de cliente, variables, Compose).
+- **Siguiente paso:** migración `0019_tienda` y backend T01/T03 (precios, ficha, catálogo, stock, cotización); luego T02 y T04.
+- **Commit/PR:** cambios locales, sin commit.
+
+### 20-10-2026 America/Lima — Diseño de la tienda del cliente
+
+- **Autor y responsable:** Max Rojas, con Claude Code. Tareas T01–T05 (nuevas, bloque Tienda).
+- **Estado:** PENDIENTE de implementación; documentación lista para revisión.
+- **Qué cambió:** decisión y contrato de una tienda separada (`/api/v1/tienda/*` y `/api/v1/tienda-admin/*`): login con Google, precios en PEN por CSV o manual, stock visible en tres estados, compra con pago simulado (tarjeta, Yape o Plin) y datos de entrega que termina en pedido `CONFIRMADO` (estados posteriores y cancelación quedan como desarrollo futuro), descuento por lote FEFO con `VENTA_TIENDA`, reserva de `EVALUAR_PROMOCION` en la misma transacción y promociones visibles solo tras aprobación. Compras de tienda fuera de Ventas/ML. Reloj de tienda por escenario o fecha actual, con apertura de lotes nuevos.
+- **Archivos clave:** [ADR-009](../../arquitectura/decisiones/ADR-009-tienda-cliente.md), [contrato-tienda.md](../../api/contrato-tienda.md), [guía de alcance](../../guia-inicio-desarrollo.md), [AGENTS.md](../../../AGENTS.md), [responsabilidades](../responsabilidades.md), [errores](../../api/errores.md).
+- **Migración/configuración:** ninguna aplicada. Prevista `0019_tienda` aditiva; variables futuras `GOOGLE_CLIENT_ID` y `TIENDA_JWT_SECRET`.
+- **Pruebas:** no aplica (solo documentación); no se ejecutaron pruebas.
+- **Dependencias:** Vera revisa las funciones nuevas de Inventario/Promociones; Edu, el alta manual de producto; Axel, el token de cliente y las variables. Registrar cliente OAuth de Google para `http://localhost:3100`.
+- **Siguiente paso:** acordar el contrato con los dueños de frontera, crear las carpetas `tienda` con su guía y empezar por T01 (migración y precios).
+- **Commit/PR:** cambios locales, sin commit.
 
 ### 14-10-2026 America/Lima — Identidad visual, login y textos de producto
 
