@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **21-10-2026 · Codex para Axel, L02/L04 (interfaz):** retirados del detalle de compras los desplegables «Conversión de…» por ingrediente. La tabla conserva faltante, cantidad a comprar y contenido total, con nota breve de redondeo; el mensaje y sus acciones aparecen inmediatamente después. Sin cambios en cálculos, snapshots, ofertas o API. Validación y despliegue en la entrada de bitácora de este corte; coordinación en [Cueva](cueva.md).
+
 - **11-10-2026 · Codex para Axel, L02/L04 y consumo A02/E04:** L01–L04 incluyen ofertas, compras, aprobación, outbox, envío y recuperación humana en código local. El diagnóstico del asistente señala ofertas/destinos pendientes y consulta fechas con compra activa por interfaz pública. Protección de recompra y envío incierto sin reintento ciego conservados. Telegram automático real todavía requiere una prueba concreta autorizada.
 - **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
 - **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
@@ -13,6 +15,16 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 21-10-2026 America/Lima — Detalle de pedidos sin conversiones técnicas repetidas
+
+- **Autor/tareas/estado:** Codex para Axel, L02/L04 en el bloque de Aguirre; sin atribuir este cambio al integrante. INTEGRADO en la interfaz local, por solicitud a partir de una captura del detalle.
+- **Qué cambió:** se elimina el listado de desplegables por ingrediente con IDs de necesidad/oferta, factor, mínimo y múltiplo. La tabla mantiene las cuatro columnas de cantidades/unidades y la nota de redondeo; revisión del mensaje, aprobación, envío y recepción conservan sus componentes.
+- **Archivos/contrato:** [page.tsx](../../../frontend/src/app/compras/page.tsx), [guía local](../../../frontend/src/app/compras/GUIA_DESARROLLO.md). [Contrato de pedidos](../../api/contrato-pedidos.md) sin modificación: los snapshots técnicos permanecen en API/base y el cálculo no cambia.
+- **Configuración/migraciones/datos:** ninguna; no se modifican carga, ofertas, stock ni pedidos y no se transmiten mensajes. Solo se reconstruye/actualiza el servicio frontend habitual con el override del puerto 3100.
+- **Validación:** `npm.cmd run typecheck` y `git diff --check` correctos. `docker compose -f compose.yaml -f .tmp/compose.rojas.yaml build frontend` correcto (Next, 23 páginas), seguido de `up -d --no-deps frontend`. En el contenedor actualizado, `/compras` responde HTTP 200, el archivo desplegado ya no contiene los desplegables y mantiene las tres columnas de cantidades; puerto publicado 3100. Sin QA de navegador ni pruebas añadidas para esta eliminación visual.
+- **Dependencias/siguiente paso:** frontend actualizado; recargar el detalle por el usuario. Sin cambios de backend ni contrato compartido; coordinación de la solicitud en [Cueva](cueva.md).
+- **Commit/PR:** cambios locales, sin commit ni publicación.
 
 ### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
 

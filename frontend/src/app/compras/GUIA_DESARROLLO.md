@@ -21,6 +21,8 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**21-10-2026 · Detalle compacto solicitado por Axel:** el pedido muestra faltante, cantidad a comprar y contenido total en la tabla, más la nota de redondeo. Se retiran los desplegables técnicos «Conversión de…» por ingrediente para dar paso al mensaje y sus acciones. Factores, mínimos, múltiplos e IDs siguen conservados en los snapshots de API/base; no cambia el cálculo ni el contrato HTTP. Autor: Codex para Axel, coordinación L02/L04 con Aguirre.
+
 1. Listar pedidos por plan/proveedor y detallar líneas, conversión y modo.
 2. Mostrar aprobación solo a Administrador y solo en estado permitido.
 3. Distinguir envío, fallo e incertidumbre; construir conciliación con evidencia según contrato.
