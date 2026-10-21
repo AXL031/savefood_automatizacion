@@ -32,6 +32,8 @@ Axel coordina la raíz; los seis responden por su propio bloque. La revisión do
 
 ## Trabajo en esta carpeta
 
+**21-10-2026 · Compatibilidad main/PR17 en cueva:** integración del bloque de tienda de Rojas sobre `main=39723b4`, conservando el detalle compacto de Compras y los registros locales. Cabeza del código: `0019_tienda_clientes`; sesión de cliente separada de administración, tienda con datos de ejemplo mientras se completan T01/T03–T05. Pruebas/alcance en [Cueva](docs/equipo/avances/cueva.md). La sincronización Git no actualiza imágenes ni la base habitual (0018 observada); para activar el código nuevo, reconstruir y aplicar migraciones con respaldo previo, sin repetir primera carga. No copiar secretos ni respaldos a Git.
+
 **14-10-2026 · Catálogo completo:** solicitud expresa de Axel, posterior al límite inicial de cinco. Carga, programación y manejador permiten todo el catálogo; Automatización consulta todos los activos, los selecciona por defecto y ofrece Seleccionar todos/búsqueda. Productos deja de mostrar el flag heredado como exclusión. CSV actualizado para 139 seleccionados. Instalación habitual ya cargada y modelo listo: ampliar selección sin reimportar ni reentrenar. Contratos de carga/flujo y guías actualizados; evidencia en Cueva.
 
 **14-10-2026 · CSV para primera carga:** [datos_carga](datos_carga/README.md) contiene las copias del usuario con nombres canónicos y stock ajustado a la regla vigente. Objetivo 2026-09-30 y referencia 2026-09-29; ventas originales conservadas. Supuestos de recetas separados de los cinco archivos importables. La instalación habitual sigue pendiente de la confirmación de Axel; evidencia de la validación aislada en el registro de Cueva.
