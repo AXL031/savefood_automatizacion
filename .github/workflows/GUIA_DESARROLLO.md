@@ -84,3 +84,8 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Recepción y corrección autorizadas · 15-10-2026
 
 Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
+
+## Compatibilidad Cueva/Bohorquez · 20-10-2026
+
+El corte PostgreSQL/Redis ejecuta también test_evaluacion_revisiones.py junto con test_recepcion_compras.py y prueba_mensaje_proveedor.py. Verifica corrección de ventas→reevaluación exacta junto con nuevos modelos/recepciones; la suite general conserva pruebas SQLite. No transmite mensajes reales ni cambia la base habitual. Evidencia y nueva PR en avances/cueva.md.

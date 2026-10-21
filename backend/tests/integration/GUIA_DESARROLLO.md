@@ -100,3 +100,9 @@ test_prueba_mensaje_proveedor prueba HTTP, permisos, reserva visible antes de en
 ## Recepción y corrección autorizadas · 15-10-2026
 
 Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. test_evaluacion_revisiones.py agrega seis regresiones: snapshot antiguo/nuevo y reentrega, snapshot vacío/ajeno, PATCH con reserva idempotente, rollback de reserva, más de 50 corridas con filtros/roles y lectura limitada/duplicados/presupuesto. Usa fixtures aisladas existentes, sin red externa. Pruebas de locks reales siguen requiriendo PostgreSQL.
+
+[Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

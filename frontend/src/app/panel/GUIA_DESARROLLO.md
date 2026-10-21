@@ -52,3 +52,10 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](.
 ## Ajustes de interfaz · 30-09-2026
 
 Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes en AppShell; no usar recarga del documento para navegar.
+
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Evaluación rediseñada con navegación analítica, filtros de modelo/fechas, MAE/WAPE/±20/cobertura, pares pendientes y gráfico accesible con selector diario. Desglose con búsqueda y filtro de errores; partición temporal visible. Carga/error/ausencia sin cifras inventadas; diseño móvil verificado en QA.
+
+[Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

@@ -199,6 +199,21 @@ def leer_historial(sesion: Session, producto_ids: list[int], inicio: date, fin_e
     return [VentaHistorica(*fila) for fila in filas]
 
 
+def leer_revisiones(sesion: Session, revision_ids: list[int]) -> list[VentaHistorica]:
+    """Lee versiones inmutables, aunque una venta tenga una revisión más reciente."""
+    if not revision_ids:
+        return []
+    filas = sesion.execute(
+        select(VentaDiaria.producto_id, SkuProducto.sku_externo, VentaDiaria.fecha_local,
+               RevisionVenta.unidades_vendidas, RevisionVenta.id)
+        .join(RevisionVenta, RevisionVenta.venta_id == VentaDiaria.id)
+        .join(SkuProducto, SkuProducto.producto_id == VentaDiaria.producto_id)
+        .where(RevisionVenta.id.in_(revision_ids), SkuProducto.origen == ORIGEN_BAKERY)
+        .order_by(RevisionVenta.id)
+    )
+    return [VentaHistorica(*fila) for fila in filas]
+
+
 def limites_historial(sesion: Session, producto_ids: list[int]) -> tuple[date | None, date | None]:
     """Primera y última fecha observada de los productos indicados."""
     if not producto_ids:

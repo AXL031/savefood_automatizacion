@@ -59,3 +59,14 @@ Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes 
 ## Gestión y avisos · 14-10-2026 · Codex para Axel
 
 Entrenar nueva versión abre formulario en PanelDetalle desde el encabezado. Tras reservar entrenamiento, cierra y muestra su ejecución. No importa ventas ni modifica lógica ML.
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Biblioteca de modelos con partición, identificación y entrenamiento administrativo plegable. Todos los modelos en el selector; historial de corridas paginado en servidor, con filtros de tipo/fechas y detalle buscable. Conserva enlace directo por corrida_id y navegación a ejecución/evaluación.
+
+[Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+
+## Integración de interfaz · 20-10-2026
+
+La página conserva navegación/partición/analítica, filtros y paginación remota de Bohorquez. Entrenar nueva versión permanece administrativo y abre PanelDetalle mediante botón; al solicitar cierra el formulario y conserva el aviso con enlace a la tarea. No vuelve a importar archivos ni oculta modelos existentes. Se combinan ambas entregas en cueva sin cambiar reglas ML.

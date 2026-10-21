@@ -27,6 +27,7 @@ router = APIRouter(prefix="/inicializacion", tags=["inicializacion"])
 # Tope por archivo. El CSV del piloto ronda los 12 MB; se deja margen sin admitir
 # una subida capaz de agotar la memoria del contenedor local.
 LIMITE_BYTES = 64 * 1024 * 1024
+LIMITE_ENTREGA_BYTES = 128 * 1024 * 1024
 
 
 def _estado(fila: ConfiguracionInicial, sesion: Session) -> dict:
@@ -91,17 +92,24 @@ def _vista_previa(vista: VistaPrevia) -> dict:
 async def _leer_archivos(archivos: list[UploadFile]) -> dict[str, bytes]:
     if not archivos:
         raise ErrorAPI(422, "ENTREGA_VACIA", "Adjunta los archivos de la primera carga.")
+    if len(archivos) > 5:
+        raise ErrorAPI(422, "DEMASIADOS_ARCHIVOS", "Adjunta dos libros XLSX o los cinco CSV de la primera carga.")
     contenidos: dict[str, bytes] = {}
+    total = 0
     for archivo in archivos:
         nombre = (archivo.filename or "").strip()
         if not nombre:
             raise ErrorAPI(422, "ARCHIVO_SIN_NOMBRE", "Cada archivo debe llegar con su nombre.")
-        contenido = await archivo.read()
-        if len(contenido) > LIMITE_BYTES:
-            raise ErrorAPI(413, "ARCHIVO_DEMASIADO_GRANDE", f"{nombre} supera el tamaño permitido.")
         if nombre.lower() in contenidos:
             raise ErrorAPI(422, "ARCHIVO_REPETIDO", f"{nombre} llegó dos veces.")
-        contenidos[nombre] = contenido
+        cupo = min(LIMITE_BYTES, LIMITE_ENTREGA_BYTES - total)
+        contenido = await archivo.read(cupo + 1)
+        if len(contenido) > LIMITE_BYTES:
+            raise ErrorAPI(413, "ARCHIVO_DEMASIADO_GRANDE", f"{nombre} supera el tamaño permitido.")
+        total += len(contenido)
+        if total > LIMITE_ENTREGA_BYTES:
+            raise ErrorAPI(413, "ENTREGA_DEMASIADO_GRANDE", "La entrega completa supera los 128 MiB permitidos.")
+        contenidos[nombre.lower()] = contenido
     return contenidos
 
 

@@ -23,3 +23,10 @@ Frontend: `/informes` (etiqueta Reportes) usa `services/informes.ts`, `types/inf
 ## Documentar cada avance
 
 Actualizar resumen vigente y bitácora del responsable, contrato y guía cuando cambie una frontera. Mantener las limitaciones reales del entorno y los indicadores económicos como evolución futura.
+
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Navegación, cabecera e indicadores compartidos con Evaluación. Gráfico interactivo con fechas/teclado y sin unir huecos; CSV conserva período completo. Todas las versiones disponibles; fecha de generación en zona del negocio. Motivo pendiente visible como Por reevaluar.
+
+[Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

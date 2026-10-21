@@ -68,3 +68,9 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Gestión y avisos · 14-10-2026 · Codex para Axel
 
 Patrón de gestión solicitado por Axel: listar registros primero y abrir creación/edición con botón y PanelDetalle. Aplicado a Proveedores, Ingredientes, Usuarios, Planes, Ajustes de inventario y Entrenamiento. Recetas ya abre su gestión desde la tabla. Configuración singular, importación y asistente conservan su recorrido propio.
+
+## Avance K03/K04 y E01/E02 · 20-10-2026
+
+Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Inicio, Pronósticos, Evaluación y Reportes comparten cabecera/navegación analítica, paleta hoja/yema e indicadores de datos reales. Estilos en styles.css; grid con minmax(0,1fr) y mínimos contenidos evita desbordamiento en móvil. No añade métricas económicas ni tareas externas.
+
+[Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.

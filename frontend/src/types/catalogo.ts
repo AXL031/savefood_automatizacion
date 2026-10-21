@@ -32,6 +32,7 @@ export type RevisionVenta = {
 };
 
 export type CorreccionVenta = {
+  reevaluaciones?: number[];
   venta_id: number;
   revision_venta_id: number;
   revision_actual: number;
