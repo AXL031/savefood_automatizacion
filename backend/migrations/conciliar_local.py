@@ -19,6 +19,7 @@ PUBLICADAS = (
     "0008_e03_preparacion_ml", "0009_m02_planificacion", "0010_m03_necesidades",
     "0011_l02_compras", "0012_l03_telegram_config", "0013_l03_aprobacion_envio",
     "0014_l04_recuperacion", "0015_flujo_promociones", "0016_nombre_comercio", "0017_pruebas_proveedor", "0018_recepcion_compras",
+    "0019_tienda_clientes",
 )
 
 
@@ -37,7 +38,7 @@ def conciliar(conexion):
     revision = conexion.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
     if revision == PUBLICADAS[-1]:
         return revision
-    if revision in ("0014_l04_recuperacion", "0015_flujo_promociones", "0016_nombre_comercio", "0017_pruebas_proveedor"):
+    if revision in ("0014_l04_recuperacion", "0015_flujo_promociones", "0016_nombre_comercio", "0017_pruebas_proveedor", "0018_recepcion_compras"):
         # Una base publicada usa la migración normal; el puente solo convierte
         # las revisiones locales originales y no actualiza instalaciones activas.
         return revision

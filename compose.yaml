@@ -46,6 +46,7 @@ services:
       MODEL_ARTIFACT_DIR: /code/model_artifacts
       ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
       ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     volumes:
       - model_artifacts:/code/model_artifacts:ro
       - telegram_secrets:/code/telegram_secrets
@@ -102,6 +103,7 @@ services:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:

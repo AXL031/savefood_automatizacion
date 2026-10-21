@@ -28,15 +28,20 @@
 
 - El token de cliente es un JWT propio con `aud = "tienda"`, `sub = cliente_id` y expiración de 8 horas. Las rutas `/tienda/*` protegidas solo aceptan esa audiencia; las rutas administrativas lo rechazan con `401`.
 - Se acepta cualquier cuenta de Google con correo verificado (Gmail o Workspace). Un cliente desactivado por un administrador recibe `403 CLIENTE_INACTIVO`.
-- Variables nuevas: `GOOGLE_CLIENT_ID` (público) y `TIENDA_JWT_SECRET` (secreto, distinto de `JWT_SECRET`). En pruebas se inyecta un verificador falso; ninguna prueba llama a Google.
+- Variables nuevas: `GOOGLE_CLIENT_ID` (público) y `TIENDA_JWT_SECRET` (secreto, distinto de `JWT_SECRET`; si falta, se deriva de `JWT_SECRET` con HMAC). En pruebas se inyecta un verificador falso; ninguna prueba llama a Google.
+- **Implementado 21-10-2026** (migración `0019_tienda_clientes`): ambas rutas, verificación con las claves públicas de Google (RS256, `aud`, emisor, vigencia) y errores `GOOGLE_NO_CONFIGURADO` (503), `GOOGLE_NO_DISPONIBLE` (503), `GOOGLE_TOKEN_INVALIDO` (401), `CORREO_NO_VERIFICADO` y `CLIENTE_INACTIVO` (403). Configuración: [configurar-google-tienda.md](configurar-google-tienda.md). El frontend usa el botón oficial de Google cuando `NEXT_PUBLIC_GOOGLE_CLIENT_ID` existe, aunque el catálogo siga en modo ejemplo.
 
 ## Catálogo y stock visible (T03)
 
 | Método y ruta | Acceso | Descripción |
 |---|---|---|
-| `GET /api/v1/tienda/catalogo` | Público | Productos publicados con `id`, `nombre`, `precio`, `moneda`, `estado_stock`, `promocion` (o `null`). Filtro `buscar`. |
+| `GET /api/v1/tienda/catalogo` | Público | `{categorias, productos}`. Cada producto publicado trae `id`, `codigo`, `nombre`, `categoria`, `descripcion`, `presentacion` (peso o formato), `imagen` (URL), `precio`, `moneda`, `estado_stock` y `promocion` (o `null`). Filtro `buscar`. |
 | `GET /api/v1/tienda/catalogo/{producto_id}` | Público | Detalle del producto publicado. |
 | `GET /api/v1/tienda/stock` | Público | Respuesta liviana `[{producto_id, estado_stock, promocion_id}]` para consultar cada 5 s. |
+| `POST /api/v1/tienda/carrito/cotizar` | Público | `{"lineas": [{producto_id, cantidad}]}`. Devuelve por línea `precio_unitario_base`, `unidades_con_promocion`, `precio_promocional`, `subtotal`, `disponible` y `estado_stock`, más `total`. No reserva ni modifica nada. |
+| `GET /api/v1/tienda/imagenes/{nombre}` | Público | Imagen ilustrativa de un producto o categoría. |
+
+`categorias` = `[{codigo, nombre, descripcion, imagen}]`. La cotización existe porque una línea puede mezclar unidades con y sin promoción (la promoción vale solo para el lote evaluado). `disponible=false` indica que la cantidad pedida supera lo vendible, sin decir cuánto queda.
 
 Un producto aparece si está activo, marcado como publicado y tiene precio vigente. `estado_stock` se calcula sobre los lotes **vendibles** a la fecha efectiva de la tienda:
 
@@ -67,13 +72,18 @@ Nunca se expone la cantidad exacta ni el código de lote al cliente. Leer el cat
 |---|---|---|
 | `GET /api/v1/tienda-admin/productos` | Operador | Productos con precio vigente, `publicado` y estado de stock interno (con cantidades). |
 | `PUT /api/v1/tienda-admin/productos/{id}/precio` | Administrador | `{"precio", "publicado", "clave_idempotencia"}`. Crea una nueva versión de precio. |
-| `POST /api/v1/tienda-admin/productos` | Administrador | Alta manual: `{"codigo", "nombre", "precio", "publicado", "clave_idempotencia"}`. Crea el producto por la interfaz pública de Productos y su primer precio en una transacción. |
-| `POST /api/v1/tienda-admin/precios/importar` | Administrador | CSV `codigo_producto,precio,publicado`. `?confirmar=false` valida y devuelve vista previa; `true` aplica todo o nada. |
+| `POST /api/v1/tienda-admin/productos` | Administrador | Alta manual: `{"codigo", "nombre", "categoria", "descripcion", "presentacion", "precio", "publicado", "clave_idempotencia"}`. Crea el producto por la interfaz pública de Productos, su ficha y su primer precio en una transacción. |
+| `PUT /api/v1/tienda-admin/productos/{id}/ficha` | Administrador | `{"categoria", "descripcion", "presentacion"}`. Nueva versión de la ficha visible. |
+| `POST /api/v1/tienda-admin/productos/{id}/imagen` | Administrador | `multipart/form-data` con `imagen` JPEG, PNG o WebP de hasta 2 MB. Guarda el archivo en el volumen de la tienda y devuelve su nombre. |
+| `GET/PUT /api/v1/tienda-admin/categorias` | Operador / Administrador | Lista y actualización de categorías `{codigo, nombre, descripcion, imagen, orden}`. |
+| `POST /api/v1/tienda-admin/precios/importar` | Administrador | CSV `codigo_producto,precio,publicado,categoria,descripcion,presentacion,imagen`. Las cuatro últimas columnas son opcionales; `imagen` es el nombre de un archivo ya subido. `?confirmar=false` valida y devuelve vista previa; `true` aplica todo o nada. |
 
 - `precio`: decimal > 0 y ≤ 99999.99, máximo 2 decimales. Moneda siempre la del negocio.
 - El CSV usa UTF-8, separador coma y `publicado` = `si`/`no`. Un código desconocido, precio inválido o fila duplicada rechaza todo el archivo con `422 CSV_INVALIDO` y `detalles` por fila. Reimportar el mismo archivo (misma huella) no crea versiones nuevas.
 - Los precios se guardan versionados en `precio_producto` (PostgreSQL). Cambiar un precio no altera pedidos ya confirmados, que guardan su precio por línea.
 - Un producto sin precio vigente no se publica, aunque tenga stock.
+- **Ficha visible del producto** (`ficha_producto_tienda`): `categoria` (código existente), `descripcion` (hasta 300 caracteres), `presentacion` (peso o formato, hasta 80, por ejemplo `500 g · 4-5 porciones`) e `imagen`. La imagen es ilustrativa; sin imagen la tienda muestra un marcador neutro. Un producto sin categoría aparece en «Otros».
+- Las imágenes se guardan en un volumen local (`TIENDA_IMAGENES_DIR`), no en la base; la base guarda el nombre y la huella SHA-256.
 
 ## Lotes nuevos (T01, frontera de Inventario)
 
@@ -90,7 +100,7 @@ Llama a `abrir_lote_producto` de Inventario: crea el lote y un movimiento `APERT
 ```json
 {
   "clave_idempotencia": "web-7f3c2a",
-  "lineas": [{"producto_id": 12, "cantidad": 2, "precio_esperado": "8.50"}],
+  "lineas": [{"producto_id": 12, "cantidad": 2, "subtotal_esperado": "17.00"}],
   "entrega": {
     "nombre_receptor": "Ana Pérez",
     "celular": "987654321",
@@ -107,7 +117,7 @@ Validaciones antes de cualquier efecto:
 - Tienda abierta; 1–30 líneas; productos publicados y sin repetir; cantidad 1..`max_unidades_por_linea`.
 - `nombre_receptor` 3–120 caracteres; `celular` peruano de 9 dígitos que empieza con 9; `direccion` 5–200; `distrito` 2–80; `referencia` opcional hasta 200.
 - `metodo_pago_simulado`: `TARJETA_SIMULADA` o billetera digital `YAPE_SIMULADO` / `PLIN_SIMULADO`. **No se aceptan números de tarjeta, teléfonos de billetera, códigos de aprobación ni otros datos de pago**: un campo adicional se rechaza (`extra="forbid"`). La interfaz solo muestra la elección del método y un botón de pagar simulado.
-- `precio_esperado` igual al precio que cobraría el servidor (incluida promoción). Si difiere: `409 PRECIO_CAMBIADO` con los precios actuales en `detalles`.
+- `subtotal_esperado` de cada línea igual al `subtotal` de la cotización vigente (incluidas las unidades con promoción). Si difiere: `409 PRECIO_CAMBIADO` con las líneas recotizadas en `detalles`; la interfaz vuelve a cotizar y pide revisar antes de pagar.
 
 Transacción única:
 
@@ -180,13 +190,15 @@ Las compras de la tienda **no** se escriben en `venta_diaria`, no entrenan ni ev
 
 Max implementa estas funciones por coordinación, con pruebas en el módulo de su dueño, sin cambiar el comportamiento de ajustes, apertura inicial ni evaluaciones existentes. Se avisa a Vera y Edu antes de integrar.
 
-## Datos (migración aditiva prevista `0019_tienda`)
+## Datos (migraciones aditivas: `0019_tienda_clientes` aplicada; el resto, prevista `0020_tienda`)
 
 | Tabla | Claves y restricciones principales |
 |---|---|
-| `cliente` | `google_sub` UNIQUE, `correo`, `nombre`, `activo`, fechas. |
+| `cliente` | `google_sub` UNIQUE, `correo`, `nombre`, `activo`, `creado_en`, `ultimo_acceso_en`. **Creada en `0019_tienda_clientes`.** |
 | `configuracion_tienda` | Versiones con `id` creciente; la vigente es la mayor. Campos de la tabla de configuración + actor. |
 | `precio_producto` | `producto_id`, `version` (UNIQUE juntos), `precio NUMERIC(10,2) > 0`, `moneda CHAR(3)`, `publicado`, `origen` (`CSV`/`MANUAL`), actor, fecha. |
+| `categoria_tienda` | `codigo` UNIQUE, `nombre`, `descripcion`, `imagen`, `orden`. |
+| `ficha_producto_tienda` | `producto_id`, `version` (UNIQUE juntos), `categoria_codigo?`, `descripcion`, `presentacion`, `imagen_nombre?`, `imagen_sha256?`, actor, fecha. |
 | `pedido_cliente` | `cliente_id`, `clave_idempotencia` UNIQUE por cliente, `huella`, `estado` (CHECK `CONFIRMADO`; se ampliará en el futuro), `total NUMERIC(12,2)`, `moneda`, `configuracion_id`, `fecha_efectiva`, datos de entrega. |
 | `linea_pedido_cliente` | `pedido_id`, `producto_id` (UNIQUE juntos), `cantidad > 0`, `precio_unitario_base`, `subtotal`. |
 | `asignacion_lote_tienda` | `linea_id`, `lote_producto_id`, `cantidad > 0`, `precio_unitario`, `promocion_id?`, `movimiento_venta_id`. |
@@ -208,7 +220,7 @@ Además: ampliar `ck_movimiento_inventario_tipo` con `VENTA_TIENDA` (cabe en `VA
 | 404 | `PROMOCION_NO_ENCONTRADA` | Evaluación o promoción inexistente. |
 | 409 | `TIENDA_CERRADA` | Compra con la tienda cerrada. |
 | 409 | `STOCK_INSUFICIENTE` | No hay unidades vendibles suficientes. |
-| 409 | `PRECIO_CAMBIADO` | El precio esperado no coincide con el actual. |
+| 409 | `PRECIO_CAMBIADO` | El subtotal esperado de una línea no coincide con la cotización actual. |
 | 409 | `EVALUACION_NO_PROPONE` | Se intenta aprobar una evaluación que rechazó la promoción. |
 | 409 | `PROMOCION_YA_DECIDIDA` | La evaluación ya fue aprobada o rechazada con otra clave. |
 | 409 | `PROMOCION_NO_VIGENTE` | El lote ya no es vendible o no tiene saldo. |
@@ -243,8 +255,12 @@ No forma parte de este corte; requiere ampliar este contrato y una migración ad
 - Cancelación (cliente mientras esté `CONFIRMADO`, administrador hasta `EN_PREPARACION`) con movimientos compensatorios `ANULA_TIENDA` sobre los lotes de origen, función `devolver_de_tienda` de Inventario, pago `REEMBOLSADO_SIMULADO` y nueva reserva de `EVALUAR_PROMOCION`.
 - Notificaciones al cliente, cálculo de envío y devoluciones tras la entrega.
 
+## Interfaz del cliente · 21-10-2026
+
+Implementada en `frontend/src/app/tienda/` (rutas) y `frontend/src/tienda/` (tipos, servicios, contexto y componentes), a partir del prototipo Figma «PaginaCliente». Rutas: `/tienda`, `/tienda/menu`, `/tienda/carrito`, `/tienda/pedido/{id}` y `/tienda/pedidos`. **Funciona con datos de ejemplo** (`NEXT_PUBLIC_TIENDA_MODO` sin definir): catálogo, stock y pedidos se guardan en el navegador y el login con Google se simula pidiendo un correo Gmail, rotulado como simulado. Con `NEXT_PUBLIC_TIENDA_MODO=api` y `NEXT_PUBLIC_GOOGLE_CLIENT_ID` usa las rutas de este contrato y el botón oficial de Google. Las imágenes de ejemplo están en `frontend/public/tienda/`.
+
 ## Pendiente antes de implementar
 
 1. Revisión de este contrato por Vera (Inventario y Promociones) y Edu (Productos); Axel por el token de cliente y las variables nuevas.
 2. Registrar el cliente OAuth de Google con el origen `http://localhost:3100` y documentar la configuración sin publicar valores secretos.
-3. Crear las carpetas `backend/app/modules/tienda/` y `frontend/src/app/tienda/` con su `GUIA_DESARROLLO.md` e incorporarlas al [mapa de carpetas](../equipo/mapa-carpetas.md).
+3. Carpetas `backend/app/modules/tienda/` y del frontend creadas con su guía. Falta T01, T03, T04 y T05 en el backend.
