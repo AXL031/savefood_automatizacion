@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **27-10-2026 · Corrección de CI M03 coordinada en bohorquez:** Codex reprodujo el error PostgreSQL por la FK de `solicitud_proveedor`; el test histórico ahora retira/restaura 0020 en el orden correcto. No se modifican migraciones aplicadas ni datos de la instalación. Bloque completo del paso de Actions comprobado localmente: **208 passed**, además de M03 PostgreSQL y migración SQLite. [Detalle y límites](bohorquez.md). Resultado remoto de la cabeza corregida se verifica por su propio run.
+
 - **27-10-2026 · Publicación coordinada en bohorquez:** por petición expresa del usuario, Codex subió seis commits separados hasta `6f41c43`, confirmados con la referencia remota; [registro y hashes](bohorquez.md). Incluye operación, pruebas/CI, interfaz, entornos y documentación; migración 0020 y límites de Telegram/pago conservados. Comprobaciones locales correctas, [CI remoto](https://github.com/AXL031/savefood_automatizacion/actions/runs/40531257124) en curso al corte. Registro de cierre en commit documental adicional. Sin modificar main, crear PR ni publicar secretos.
 
 - **27-10-2026 09:37 America/Bogota · Codex, recuperación tras apagado solicitada:** Docker Linux y proyecto `foodsave_pruebas` recuperados con `iniciar-demo.cmd -Publico -NoBuild`; cuentas, modelo, plan y dos pedidos del cliente conservados. HTTPS público comprobado sin credenciales y API administrativa denegada sin sesión; QA autenticada en localhost, escritorio y móvil, sin errores ni desbordamiento. Producción, venta y compra repetidas recuperan sus registros sin crear operaciones nuevas. Dirección vigente en `.tmp/url-publica.txt`; contraseñas privadas conservadas. Sin servicios de pago, mensajes Telegram, nuevas migraciones, commit ni push. Detalle en la bitácora y [guía](../../operacion-integrada.md).
@@ -62,6 +64,10 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisión por otro integrante antes de integrar `main`; reproducción en otra PC y prueba Telegram real autorizada pendientes. Docker no disponible durante la comprobación adicional del 12-10; no se modifica ni se vuelve a acreditar el arranque local del corte anterior.
 
 ## Bitácora
+
+### 27-10-2026 America/Bogota — Corrección de la preparación histórica M03 en CI
+
+Codex por reporte del usuario; coordinación A04 y frontera M03 de Rojas. La revisión 0020 añadió dependencias que el test de preservación del plan no retiraba antes de compras. Se corrige únicamente la lista y comentario del test, conservando la validación de datos; no se alteran migraciones ya aplicadas ni la base de la demo. Reproducción fallida previa, 6 casos M03 PostgreSQL y 1 caso SQLite correctos después; bloque completo de Actions con 19 archivos: 208 passed, 13 warnings, 319,55 s. [Evidencia, archivos y alcance](bohorquez.md). Guía de pruebas actualizada. Se publica en bohorquez mediante un commit de corrección; sin main, PR, mensajes externos o recursos de pago. Verificar el run remoto de esa cabeza, sin heredar resultados anteriores.
 
 ### 27-10-2026 America/Bogota — Coordinación de publicación en rama bohorquez
 

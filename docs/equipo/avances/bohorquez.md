@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **27-10-2026 · Corrección CI M03 solicitada por el usuario:** reproducido el fallo `DependentObjectsStillExist` del run [40531539375](https://github.com/AXL031/savefood_automatizacion/actions/runs/40531539375). La preparación de `test_migracion_preserva_plan_previo` omitía retirar la revisión 0020 antes de compras. Se añade al ciclo de downgrade/upgrade del test aislado; sin cambiar migraciones aplicadas ni datos de la demo. Validación nueva: seis pruebas M03 PostgreSQL correctas, caso de migración SQLite correcto y bloque completo de Actions **208 passed, 13 warnings, 319,55 s**. Nueva cabeza y resultado remoto se consultan en [Actions de bohorquez](https://github.com/AXL031/savefood_automatizacion/actions?query=branch%3Abohorquez); el resultado local no se presenta como aprobación remota.
+
 - **27-10-2026 · Publicado en bohorquez por solicitud del usuario:** fetch/pull correctos sin conflictos; push normal `39723b4..6f41c43` confirmado mediante `git ls-remote`. Seis commits separan backend (`1462b8c`), pruebas/CI (`4239c1d`), interfaz (`ba76bbb`), infraestructura (`5550ea2`), auditorías/BPMN (`ce876db`) y contratos/guías (`6f41c43`). Typecheck, Compose, metadatos PostgreSQL, sintaxis y revisión de valores secretos correctos. [CI del código publicado](https://github.com/AXL031/savefood_automatizacion/actions/runs/40531257124) en curso al corte, sin acreditar éxito anticipado. Este registro se entrega en un commit documental adicional. Sin cambios en main, PR, secretos ni recursos de pago.
 
 <!-- avance-operativo-2026-10-27 -->
@@ -32,6 +34,15 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 27-10-2026 America/Bogota — Corrección del fallo PostgreSQL en CI M03
+
+- **Autor/responsabilidad:** Codex por reporte del usuario, en bohorquez; A04 coordina la frontera con M03 de Rojas. No se atribuye el arreglo a los integrantes.
+- **Problema observado:** el paso Motor A03 del run `40531539375` terminó con 207 passed y un fallo. El test histórico de M03 intentaba retirar `pedido_compra` dejando la FK de `solicitud_proveedor` creada en 0020. Reproducción local del mismo fallo PostgreSQL: un caso fallido antes del cambio.
+- **Corrección:** `backend/tests/integration/test_necesidades_m03.py` incorpora `0020_operacion_integrada` a las revisiones posteriores que retira en orden inverso y restaura al final. Se mantienen las comprobaciones del plan anterior y el recálculo de sus necesidades. Guía de integración actualizada; no se edita ninguna migración aplicada, no se usa CASCADE y no se cambia comportamiento de negocio.
+- **Verificación realmente ejecutada:** módulo M03 completo con PostgreSQL: 6 passed, 1 warning, 10,96 s; caso de migración con SQLite: 1 passed, 2 warnings, 1,69 s. Mismo listado de 19 archivos del paso CI, con E03/A03/V02=1 y HABILITAR_ENLACES_PROVEEDOR=0: **208 passed, 13 warnings, 319,55 s**. Python 3.12 en contenedor temporal, esquemas/colas aislados; evidencia JUnit privada en `.tmp/ci-corregido.xml`. No se repiten builds o QA visual porque el cambio solo afecta la preparación del test y documentación.
+- **Contrato/configuración/límites:** contratos, esquema operativo y revisión 0020 sin cambios; sin nueva migración, mensajes externos ni cambios de stock/cuentas. No se presenta el éxito local como CI remoto aprobado; consultar el run asociado al commit de corrección en [Actions](https://github.com/AXL031/savefood_automatizacion/actions?query=branch%3Abohorquez).
+- **Entrega:** corrección y documentación en un commit `correccion(pruebas)` de bohorquez para push normal. Sin cambios en main ni PR. Siguiente: verificar la nueva ejecución remota; los dos runs fallidos anteriores se conservan como historial.
 
 ### 27-10-2026 America/Bogota — Publicación remota confirmada
 
