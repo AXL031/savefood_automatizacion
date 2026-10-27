@@ -30,7 +30,9 @@ def cargar():
     with SessionLocal.begin() as s:
         from app.modules.ventas.modelos import ImportacionVenta
         if s.scalar(select(ImportacionVenta.id).where(ImportacionVenta.clave_importacion=='demo-operacion-2026')):
-            print('Datos de prueba ya existentes; no se cambian contraseñas, stock ni historia.');return
+            from .semilla_catalogo import enriquecer
+            ampliada=enriquecer(s,preparar_modelo=True)
+            print('Demo ampliada con catálogo y escenarios v2; se conservan cuentas, operaciones e historia anteriores.' if ampliada else 'Demo v2 ya existente; no se cambian contraseñas, saldos ni historia.');return
         if s.scalar(select(func.count()).select_from(Usuario)) or s.scalar(select(func.count()).select_from(Producto)):
             raise RuntimeError('La base ya contiene datos. Usa el proyecto Docker aislado foodsave_pruebas; no se sobrescribe nada.')
         negocio=s.get(Negocio,1)
@@ -56,9 +58,10 @@ def cargar():
             s.add(FichaTienda(producto_id=p.id,precio=Decimal(precio),version=1,datos={'publicado':True,'categoria':'panes','descripcion':'Producto del conjunto de prueba','presentacion':'Unidad','imagen':f'/tienda/productos/{imagen}.jpg'}))
             productos.append(p)
         diarios={}
+        from .semilla_catalogo import enriquecer, PRODUCTOS, unidades_sinteticas
         for n in range((date(2026,9,30)-date(2026,1,1)).days+1):
             d=date(2026,1,1)+timedelta(days=n)
-            for i,p in enumerate(productos):diarios[(p.id,d)]=max(0,25+i*5+(n%7)*2+(n%11)-5)
+            for i,p in enumerate(productos):diarios[(p.id,d)]=unidades_sinteticas(PRODUCTOS[i]['codigo'],d,PRODUCTOS[i]['base'])
         registrar_ventas_diarias(s,diarios,'demo-operacion-2026',hashlib.sha256(b'demo-operacion-2026').hexdigest(),len(diarios),'Ventas sintéticas deterministas; no son resultados comerciales')
         admin_id=s.scalar(select(Usuario.id).where(Usuario.correo=='admin.foodsave@example.com'))
         guardar_regla(s,ConfigurarRegla(habilitada=True,stock_umbral=5),admin_id)
@@ -79,7 +82,8 @@ def cargar():
         inicial.estado='DATOS_CARGADOS';inicial.huella_solicitud=huella;inicial.huella_ventas=huella;inicial.huella_catalogo=huella
         inicial.fecha_objetivo_demo=date(2026,9,29);inicial.fecha_referencia_stock=date(2026,9,28)
         inicial.preparacion_ejecucion_id=tarea.id;inicial.preparacion_numero=1
-    print('Cuentas, catálogo, recetas, lotes y ventas de prueba creados. Preparación CatBoost reservada para el worker. No se envió Telegram.')
+        s.flush();enriquecer(s,preparar_modelo=False)
+    print('Demo v2 creada: 12 productos, 16 insumos, recetas e historia sintética. Preparación CatBoost reservada para el worker. No se envió Telegram.')
 
 
 if __name__=='__main__':cargar()

@@ -8,6 +8,15 @@ from app.modules.inventario.operacion import bloquear_catalogo, lotes_vendibles,
 from .modelos import FichaTienda, PromocionOperacion, RegistroOperacion
 from .servicio import fecha_operativa, previo, nuevo
 
+CATEGORIAS = {
+    'panes': ('Panes y hojaldres','Fermentación lenta y masas laminadas'),
+    'tortas': ('Tortas clásicas','Para celebrar y compartir'),
+    'kekes': ('Kekes caseros','Sabores de casa, recién horneados'),
+    'postres-personales': ('Postres personales','Una pausa dulce para ti'),
+    'postres-enteros': ('Postres para compartir','El centro de la mesa'),
+    'bocados': ('Bocados salados','Empanadas y quiches artesanales'),
+}
+
 
 def dinero(n): return str(Decimal(n).quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
 
@@ -35,7 +44,9 @@ def catalogo(s):
                     'precio_promocional':dinero(f.precio*(100-promo.descuento)/100),'vigente_hasta':f'{fecha}T23:59:59'}
                 break
         categoria = f.datos.get('categoria','panes')
-        categorias[categoria] = {'codigo':categoria,'nombre':categoria.replace('-',' ').capitalize(),'descripcion':'','imagen':'/tienda/categorias/panes.jpg'}
+        nombre,descripcion=CATEGORIAS.get(categoria,(categoria.replace('-',' ').capitalize(),''))
+        imagen_categoria=categoria if categoria in CATEGORIAS else 'panes'
+        categorias[categoria] = {'codigo':categoria,'nombre':nombre,'descripcion':descripcion,'imagen':f'/tienda/categorias/{imagen_categoria}.jpg'}
         productos.append({'id':p.id,'codigo':p.codigo,'nombre':p.nombre,'precio':dinero(f.precio),'moneda':'PEN',
             **{k:f.datos.get(k,'') for k in ['categoria','descripcion','presentacion','imagen']},
             'estado_stock':estado_stock(sum(l.saldo_disponible for l in lotes)),'promocion':promocion})

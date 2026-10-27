@@ -18,12 +18,12 @@ export function DetallePedido({ pedido }: { pedido: PedidoCliente }) {
         {pedido.lineas.map((l) => (
           <li key={l.producto_id}><span>{l.cantidad} × {l.nombre}</span><strong>{soles(l.subtotal)}</strong></li>
         ))}
-        <li className="t-detalle-total"><span>Total pagado</span><strong>{soles(pedido.total)}</strong></li>
+        <li className="t-detalle-total"><span>Total simulado</span><strong>{soles(pedido.total)}</strong></li>
       </ul>
       <dl className="t-detalle-datos">
         <div><dt>Entrega en</dt><dd>{pedido.entrega.direccion}, {pedido.entrega.distrito}{pedido.entrega.referencia ? ` (${pedido.entrega.referencia})` : ""}</dd></div>
         <div><dt>Recibe</dt><dd>{pedido.entrega.nombre_receptor} · +51 {pedido.entrega.celular}</dd></div>
-        <div><dt>Pago</dt><dd>{TEXTO_METODO[pedido.pago.metodo]} · Aprobado · Ref. {pedido.pago.referencia}</dd></div>
+        <div><dt>Pago simulado</dt><dd>{TEXTO_METODO[pedido.pago.metodo]} · Sin cargo real · Ref. {pedido.pago.referencia}</dd></div>
         <div><dt>Fecha</dt><dd>{fechaPedido(pedido.creado_en)}</dd></div>
       </dl>
     </div>
