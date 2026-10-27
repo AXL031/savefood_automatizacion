@@ -38,7 +38,18 @@ Docker Desktop con motor Linux activo y Compose v2.24.4+ (`!override`). Ejecutar
 
 Crea `.env.pruebas` solo si falta: toma las tres cuentas públicas de `datos_carga/cuentas_demo.json` y genera claves independientes para PostgreSQL/JWT. Construye y arranca el proyecto **foodsave_pruebas** con base y volúmenes propios, sin modificar la instalación habitual. La web espera el chequeo saludable de la API y PostgreSQL antes de iniciar. Web `http://localhost:3100`; API de diagnóstico `http://localhost:8100`. Navegador y teléfono usan `/api/v1` a través de Next, sin URLs privadas de Docker.
 
-La semilla crea tres productos, harina, recetas/lotes, nueve meses de ventas sintéticas de 2026 y proveedor/oferta sin chat. Reserva entrenamiento CatBoost real para el worker. Se consulta en Pronósticos/Automatizaciones. Fecha operativa de prueba **2026-09-29, 17:15**; no confundir lotes del escenario con stock vigente hoy. No se crean recibos Telegram falsos ni se envían mensajes. Configurar canal real y autorizar una prueba específica antes de transmitir.
+La semilla v2 crea **12 productos en seis categorías, 16 insumos, recetas multingrediente y tres proveedores ficticios sin chat**. Nueve meses de ventas sintéticas de 2026 incluyen perfiles semanales distintos, tendencia, campañas ficticias, cero explícito y una ausencia deliberada que no se rellena. Reserva entrenamiento CatBoost real para el worker. Se consulta en Pronósticos/Automatizaciones. Fecha operativa de prueba **2026-09-29, 17:15**; no confundir lotes del escenario con stock vigente hoy. No se crean recibos Telegram falsos ni se envían mensajes. Configurar canal real y autorizar una prueba específica antes de transmitir.
+
+### Escenarios para una exposición más completa
+
+- Ciabatta y rollos: excedente del día para evaluar una sugerencia de promoción; aprobar sigue siendo una decisión del administrador.
+- Brioche y pie de limón: últimas unidades. Tartaleta de fresas: agotada por stock cero. Quiche: hay ocho porciones físicas de un lote vencido, excluidas de la tienda.
+- Keke y cheesecake: varios lotes con fechas distintas para observar FEFO y distinguir excedentes de lotes frescos.
+- Mantequilla/queso con saldo limitado y fresas con cero conocido: producen faltantes al calcular el plan. Los tres proveedores están sin chat verificado; se muestra el bloqueo real, sin fingir pedidos aceptados o entregados.
+
+[Referencia CSV de los doce productos](../datos_carga/demo_escenarios_v2.csv): saldos iniciales de una base nueva, no plantilla de importación ni estado actual después de ventas. Las cantidades de receta son ilustrativas, no fichas técnicas comerciales.
+
+Al ejecutar la semilla sobre la demo v1 se amplía una sola vez mediante un marcador versionado. Conserva contraseñas, pedidos, planes, ventas previas y saldos ya consumidos; no reemplaza fichas/recetas editadas por el usuario. Crea versiones nuevas de las recetas originales y añade lotes e historia para los productos nuevos. Espera si hay entrenamiento activo; con un modelo anterior listo reserva otro entrenamiento/evaluación real para el catálogo ampliado. Los artefactos y pronósticos anteriores se conservan.
 
 ```powershell
 .\iniciar-demo.cmd -NoBuild
@@ -66,7 +77,11 @@ La semilla crea tres productos, harina, recetas/lotes, nueve meses de ventas sin
 
 **Correos y contraseñas de demo publicados por solicitud expresa del usuario:** [cuentas_demo.json](../datos_carga/cuentas_demo.json). Son los tres accesos de la demo actual y los valores iniciales para nuevas instalaciones. Son públicos y exclusivos para datos ficticios. El archivo no contiene claves PostgreSQL/JWT ni tokens Telegram.
 
-Los datos mock también están versionados: [semilla operativa](../backend/app/modules/operaciones/semilla.py) crea los tres productos, recetas, lotes, ventas sintéticas y proveedor/oferta. Cada compañero ejecuta `iniciar-demo.cmd` para crear su base independiente con el mismo origen y las mismas cuentas iniciales; no debe copiar una base privada ni su archivo `.env`.
+Los datos mock también están versionados: [semilla operativa](../backend/app/modules/operaciones/semilla.py) y [catálogo/escenarios v2](../backend/app/modules/operaciones/semilla_catalogo.py). Cada compañero ejecuta `iniciar-demo.cmd` para crear su base independiente con el mismo origen y las mismas cuentas iniciales; no debe copiar una base privada ni su archivo `.env`.
+
+### Alcance del checkout
+
+La interfaz ofrece tarjeta, Yape y Plin **simulados**. No hay SDK, API ni webhook de una pasarela financiera: la API registra un pago de prueba aprobado con referencia `SIM-<id>`. La tarjeta se valida solo en el navegador y no se envía ni persiste. Checkout y detalle lo rotulan como simulación; no efectuar transferencias ni cargos reales. Esto no cambia por ampliar los datos mock.
 
 `.tmp/credenciales-pruebas.txt` es una copia local de los accesos y `.env.pruebas` sigue fuera de Git por sus secretos de instalación. Si la instalación ya tenía otras contraseñas, el lanzador y la semilla las conservan; el archivo público no las cambia automáticamente. Cliente local verifica hash real, solo si `HABILITAR_CLIENTE_LOCAL=1`; no suplanta Google.
 

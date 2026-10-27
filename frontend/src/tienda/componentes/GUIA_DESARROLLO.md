@@ -15,6 +15,8 @@ Componentes visuales del prototipo Figma «PaginaCliente», con clases `t-*` def
 - `QrFicticio`: patrón decorativo, no codifica datos.
 - `DetallePedido`, `EstadoCarga`, `Iconos`, `Pie`, `Encabezado`.
 
+**27-10-2026 · Claridad de pago:** `DetallePedido` muestra «Total simulado», «Pago simulado» y «Sin cargo real». La pantalla de checkout valida campos en el navegador; no existe integración con una pasarela financiera. Los datos de tarjeta no llegan a la API ni se conservan.
+
 Mantener accesibilidad: etiquetas en botones de solo ícono, foco visible, Escape cierra el login y menús, contraste del texto sobre fondos crema.
 
 ## Operación integrada · 27-10-2026

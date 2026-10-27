@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **27-10-2026 · Mocks v2 y claridad de pago:** Codex mejora catálogo/recetas/proveedores/historia y casos de inventario en la demo aislada: 12 productos, seis categorías y 16 insumos; preserva cuentas, plan/pedidos anteriores y saldos consumidos. Modelo #2 preparado/evaluado realmente y plan #2 de doce productos, sin envíos. PostgreSQL 11 pruebas, SQLite 4, tipos/build y navegador correctos; [detalle de evidencia y archivos](bohorquez.md). El checkout es simulado, sin pasarela financiera; detalle de pedido ahora dice Sin cargo real. Sin nuevas migraciones, mensajes ni recursos de pago.
+
 - **27-10-2026 · Credenciales mock públicas autorizadas:** el usuario pide incluir accesos y datos de prueba en el repositorio. JSON compartido con las tres cuentas de la demo y lanzador para nuevas instalaciones; datos sintéticos reproducibles desde la semilla ya versionada. Claves PostgreSQL/JWT y Telegram siguen privadas. Comprobación real de generación/conservación del entorno y tres logins localhost correcta; [detalle](bohorquez.md). CI del arreglo M03 anterior confirmado SUCCESS, sin heredar ese resultado a la publicación nueva.
 
 - **27-10-2026 · Corrección de CI M03 coordinada en bohorquez:** Codex reprodujo el error PostgreSQL por la FK de `solicitud_proveedor`; el test histórico ahora retira/restaura 0020 en el orden correcto. No se modifican migraciones aplicadas ni datos de la instalación. Bloque completo del paso de Actions comprobado localmente: **208 passed**, además de M03 PostgreSQL y migración SQLite. [Detalle y límites](bohorquez.md). Resultado remoto de la cabeza corregida se verifica por su propio run.
@@ -66,6 +68,10 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisión por otro integrante antes de integrar `main`; reproducción en otra PC y prueba Telegram real autorizada pendientes. Docker no disponible durante la comprobación adicional del 12-10; no se modifica ni se vuelve a acreditar el arranque local del corte anterior.
 
 ## Bitácora
+
+### 27-10-2026 America/Bogota — Coordinación del escenario sintético enriquecido
+
+Codex por solicitud del usuario; coordinación A04 con Rojas, Vera, Sanchez y Bohorquez, sin inventar autoría. Catálogo/semilla v2 aditivos con 12 productos/seis categorías, 16 ingredientes, recetas multingrediente, tres proveedores ficticios, historia variada y casos de excedente/stock bajo/cero/caducidad; fichas, cuentas e historia anteriores conservadas. Pruebas PostgreSQL 11 correctas y SQLite 4, tipos/build y QA local de catálogo, móvil y checkout correctos. Aplicado con respaldo privado: plan #1 y pedidos anteriores intactos, modelo #2 entrenado/evaluado y nuevo plan de doce productos sin compras/envíos. CSV y guías reproducibles versionados. Se constató que la interfaz de pago no integra proveedor financiero; solo pago simulado, rotulado también en el detalle. [Archivos, tiempos y límites](bohorquez.md). Sin migraciones nuevas, mensajes externos, datos reales ni recursos de pago. Siguiente: comprobar CI de la publicación y reproducir la demo desde el lanzador en otra laptop.
 
 ### 27-10-2026 America/Bogota — Cuentas mock compartidas y secretos por instalación
 
