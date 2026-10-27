@@ -116,3 +116,7 @@ GET `/api/v1/informes/resumen` y GET `/api/v1/informes/exportar?tipo=ventas|pron
 - GET programaciones, ejecuciones y evaluaciones: `limite`, `desplazamiento`, `metadatos.total`.
 
 [Contrato y errores](contrato-flujo-promociones.md). Solo Administrador modifica; tareas despachadas conservan sus efectos y estado.
+
+## Operación integrada · 27-10-2026
+
+Rutas nuevas y permisos en [contrato operativo](contrato-operacion-integrada.md): `/operaciones/resumen`, `/producciones`, `/ventas`, `/configuracion`, `/revisar`, `/promociones/{id}/decision`, `/avisos`, `/avisos/{id}`, `/pedidos/{id}/enlace`, `/recepciones/{id}`, `/productos/{id}/ficha`, `/precios/csv` (todas bajo `/operaciones`). Públicas restringidas `/proveedor/pedidos/{token}`; tienda real `/tienda/catalogo`, `/stock`, `/carrito/cotizar`, `/pedidos`, `/pedidos/{id}`, `/sesion/local` (todas bajo `/tienda`, salvo la primera ya prefijada). Prefijo común `/api/v1`. Consultas no mueven stock; POST confirmados sí según contrato.

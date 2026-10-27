@@ -23,11 +23,11 @@ Cada persona implementa interfaz, backend, API, datos y pruebas de su bloque. La
 
 - Prototipo local: una instalación, un comercio y una sucursal; PostgreSQL es la fuente después de la primera carga.
 - Ausencia de venta no es cero. Pronóstico usa solo historia anterior al objetivo. Modelo/receta/plan conservan versiones.
-- Un plan o pedido a proveedor no cambia stock. Solo apertura, ajustes explícitos, recepción de compras y, cuando se implemente, la compra confirmada de la tienda del cliente ([ADR-009](docs/arquitectura/decisiones/ADR-009-tienda-cliente.md)) producen movimientos.
+- Un plan o pedido a proveedor no cambia stock. Apertura, ajustes, recepción y las operaciones confirmadas de producción/venta autorizadas el 27-10-2026 producen movimientos; ver [contrato operativo](docs/api/contrato-operacion-integrada.md). Producción consume ingredientes y crea productos; venta consume productos, nunca ingredientes dos veces. Tienda conserva [ADR-009](docs/arquitectura/decisiones/ADR-009-tienda-cliente.md).
 - Tienda del cliente: pago siempre simulado (la interfaz puede pedir datos de tarjeta para validarlos en el navegador, pero nunca se envían a la API, ni se guardan ni se registran), promociones visibles solo tras aprobación administrativa y compras de tienda fuera de Ventas/ML.
 - Pedidos por faltantes, aprobación configurable y Telegram real a un chat propio de pruebas. Mensajes históricos rotulados como demostración. No enviar mensajes externos sin autorización expresa de la tarea en curso.
 - Un envío incierto no se reintenta a ciegas. Cerrar la regla entre planes de la misma fecha antes de habilitar compras automáticas.
-- No implementar producción física, pagos reales o informes de impacto a partir de carpetas futuras o maquetas. Recepción y tienda del cliente siguen sus ampliaciones expresas y contratos.
+- El registro de producción por tandas fue autorizado expresamente el 27-10-2026; no automatiza maquinaria ni fabricación física. No implementar pagos reales ni informes de impacto a partir de maquetas. Recepción, operación y tienda siguen sus ampliaciones expresas y contratos.
 - El alcance vigente (`docs/guia-inicio-desarrollo.md`) y los ADR prevalecen; `docs/vision-futura.md` no es contrato. Para responsables prevalece `docs/equipo/responsabilidades.md`.
 
 ## Implementación y entrega

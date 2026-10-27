@@ -1,5 +1,9 @@
 # Guía de desarrollo — Reparto, coordinación y traspasos
 
+## Auditoría académica V2 · 26-10-2026
+
+[Contraste con la rúbrica del curso](auditoria-rubrica-v2-2026-10-26.md): evidencia de implementación, requisitos documentales pendientes, ECA existentes, límites del control y criterios de demostración. El usuario confirma que no existe informe ni recibió observaciones V1. La auditoría no constituye el informe académico ni acredita una demo en vivo. Coordinación A04 y registros Cueva/Bohorquez.
+
 ## Plan de ampliación · 15-10-2026
 
 [plan-ventas-vivo-simulacion.md](plan-ventas-vivo-simulacion.md) describe tickets, reloj, escenario aislado y jornada de 300 s. Solo diseño; no declara ventas en vivo, producción ni simulador implementados. Recepción se implementa por petición expresa distinta y se registra transversalmente en avances/cueva.md.
@@ -52,3 +56,7 @@ Al finalizar un avance significativo, actualizar [el registro del responsable](a
 ## Plan de cierre vigente · 30-09-2026
 
 Consultar [plan-cierre-prototipo.md](plan-cierre-prototipo.md): base disponible 1–7, corte de interfaz solicitado y pasos 7–10 pendientes con criterios de aceptación. Detenerse al concluir el corte UI; recurrencia diaria se planifica como ampliación posterior con fuente de datos actuales.
+
+## Operación integrada · 27-10-2026
+
+Ampliación expresa del usuario, implementada por Codex; responsabilidades conservadas. [Contrato](../api/contrato-operacion-integrada.md) y [guía de reproducción/variables](../operacion-integrada.md). Migración aditiva 0020: producción por tandas, venta interna/tienda con movimientos, respuesta del proveedor de una hora, recepción asistida/avisos y monitor cada diez minutos con aprobación. Código en operaciones y fronteras públicas de inventario/ventas. No hay reposición ni pagos reales automáticos. Docker separado para pruebas; túnel gratuito y Render opcional de pago. Credenciales privadas fuera de Git. Consultar bitácora Cueva para pruebas realmente ejecutadas y límites.

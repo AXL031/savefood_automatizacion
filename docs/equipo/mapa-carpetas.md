@@ -135,3 +135,12 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 ## Ampliación local · Gestión de usuarios
 
 - [frontend/src/app/usuarios](../../frontend/src/app/usuarios/GUIA_DESARROLLO.md): A01 de Axel, cuentas/roles/activación, API bajo autenticacion/usuarios.py.
+
+## Ampliación operativa · 27-10-2026
+
+- [backend operaciones](../../backend/app/modules/operaciones/GUIA_DESARROLLO.md): Cueva coordina; producción/tienda Rojas, inventario/promociones Vera, compras Aguirre y ventas Sanchez.
+- [Operación diaria](../../frontend/src/app/operaciones/GUIA_DESARROLLO.md).
+- [Avisos administrativos](../../frontend/src/app/notificaciones/GUIA_DESARROLLO.md).
+- [Proveedor](../../frontend/src/app/proveedor/GUIA_DESARROLLO.md), [pedido](../../frontend/src/app/proveedor/pedido/GUIA_DESARROLLO.md), [enlace individual](../../frontend/src/app/proveedor/pedido/[token]/GUIA_DESARROLLO.md).
+- [Reproducción y variables](../operacion-integrada.md).
+- [Diagramas BPMN originales](../automatizacion/bpmn/GUIA_DESARROLLO.md): evaluación histórica y promoción sugerida; autoría del usuario conservada, con límites del corte documental indicados.

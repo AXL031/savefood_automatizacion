@@ -264,3 +264,7 @@ Implementada en `frontend/src/app/tienda/` (rutas) y `frontend/src/tienda/` (tip
 1. Revisión de este contrato por Vera (Inventario y Promociones) y Edu (Productos); Axel por el token de cliente y las variables nuevas.
 2. Registrar el cliente OAuth de Google con el origen `http://localhost:3100` y documentar la configuración sin publicar valores secretos.
 3. Carpetas `backend/app/modules/tienda/` y del frontend creadas con su guía. Falta T01, T03, T04 y T05 en el backend.
+
+## Implementación ampliada · 27-10-2026
+
+La ampliación del [contrato operativo](contrato-operacion-integrada.md) implementa catálogo/cotización/pedidos persistentes y pago simulado, fichas/precios auditados y promociones aprobadas por lote. Rutas administrativas de este corte bajo `/operaciones`; no presumir que las rutas `tienda-admin` del diseño inicial existen. Almacenamiento real: FichaTienda, RegistroOperacion y PromocionOperacion; ver modelos operaciones y migración 0020. Google se conserva y se añade cuenta local con hash habilitable para pruebas. Pantalla usa API por defecto; modo ejemplo solo explícito. El encabezado histórico de diseño no describe este corte.
