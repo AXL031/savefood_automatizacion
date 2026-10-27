@@ -96,6 +96,14 @@ def ejecutar_envio(envio_id: int, token: str, *, sesiones=SessionLocal, cliente=
                     "El proveedor, chat o credencial cambió después de autorizar el envío. El mensaje no se transmitió.", ahora)
             return {"estado": "FALLIDO"}
         envio.estado = pedido.estado = "ENVIANDO"
+        import os
+        if os.getenv('HABILITAR_ENLACES_PROVEEDOR') == '1':
+            from app.modules.operaciones.modelos import SolicitudProveedor
+            respuesta_proveedor = sesion.scalar(select(SolicitudProveedor).where(
+                SolicitudProveedor.pedido_id == pedido.id, SolicitudProveedor.estado == 'PENDIENTE')
+                .order_by(SolicitudProveedor.id.desc()).limit(1).with_for_update())
+            if respuesta_proveedor:
+                respuesta_proveedor.expira_en = ahora + timedelta(hours=1)
         envio.inicio_en = ahora
         envio.lease_hasta = ahora + timedelta(seconds=LEASE_SEGUNDOS)
         chat_id, texto = envio.chat_id, envio.texto

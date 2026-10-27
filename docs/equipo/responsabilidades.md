@@ -160,3 +160,7 @@ Producción física, excedentes intradía y desperdicio: Leonardo Vera es custod
 Consultar también [dependencias y entregas](dependencias.md) y el [registro de avances](avances/README.md). Cada avance significativo debe actualizar el registro del responsable antes del traspaso; el siguiente integrante parte del resumen vigente, contrato y ejemplo enlazados.
 
 Leer primero el [AGENTS.md raíz](../../AGENTS.md), este reparto y la GUIA_DESARROLLO.md de la carpeta a editar. Indicar a la IA el integrante y un ID de tarea (por ejemplo, M02). La guía local define qué construir y a quién entrega datos; no otorga permiso para ampliar funciones futuras. El nombre del responsable expresa propiedad técnica, no bloquea cambios de integración ya autorizados.
+
+## Ampliación operativa autorizada · 27-10-2026
+
+Codex implementa por solicitud expresa del usuario: [contrato](../api/contrato-operacion-integrada.md). Cueva coordina A04/motor/avisos/despliegue; Rojas conserva producción por plan y tienda, Vera las fronteras de stock/promociones, Sanchez ventas/UI, Aguirre respuesta/recepción del proveedor. Cada dueño conserva responsabilidades y autoría previa. No se atribuye a integrantes esta implementación de Codex.

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTienda } from "../contexto";
-import { DATOS_COMERCIO, iniciarSesionEjemplo, iniciarSesionGoogle } from "../servicios";
+import { DATOS_COMERCIO, iniciarSesionEjemplo, iniciarSesionGoogle, iniciarSesionLocal, MODO_TIENDA } from "../servicios";
 import { IconoArchivo } from "./Iconos";
 import { LogoTienda } from "./LogoTienda";
 
@@ -41,6 +41,7 @@ export function ModalLogin() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [correo, setCorreo] = useState("");
   const [nombre, setNombre] = useState("");
+  const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
   const dialogo = useRef<HTMLDivElement>(null);
@@ -49,7 +50,7 @@ export function ModalLogin() {
   useEffect(() => {
     if (!loginAbierto) return;
     foco.current = document.activeElement;
-    setError(""); setMostrarFormulario(false);
+    setError(""); setMostrarFormulario(false); setContrasena("");
     dialogo.current?.querySelector<HTMLElement>("button, input")?.focus();
     const escape = (e: KeyboardEvent) => { if (e.key === "Escape") cerrarLogin(); };
     document.addEventListener("keydown", escape);
@@ -67,7 +68,8 @@ export function ModalLogin() {
     e.preventDefault();
     setEnviando(true); setError("");
     try {
-      guardarSesion(await iniciarSesionEjemplo(correo, nombre));
+      guardarSesion(await (MODO_TIENDA === "api" ? iniciarSesionLocal(correo, contrasena) : iniciarSesionEjemplo(correo, nombre)));
+      setContrasena("");
       cerrarLogin();
     } catch (fallo) {
       setError(fallo instanceof Error ? fallo.message : "No se pudo iniciar sesión.");
@@ -99,19 +101,19 @@ export function ModalLogin() {
           <p className="t-modal-marca">{DATOS_COMERCIO.nombre}</p>
           <p className="t-modal-lema">{DATOS_COMERCIO.lema}</p>
           <h2 id="t-login-titulo">Inicia sesión para continuar</h2>
-          <p className="t-modal-texto">Tu canasta está lista. Accede con tu cuenta de Google para confirmar el pedido y consultarlo después.</p>
+          <p className="t-modal-texto">Tu canasta está lista. Inicia sesión para confirmar el pedido y consultarlo después.</p>
 
           {googleReal ? (
             <BotonGoogleReal alIniciar={ingresarGoogle} alFallar={setError} />
           ) : !mostrarFormulario ? (
             <button type="button" className="t-boton-google" onClick={() => setMostrarFormulario(true)}>
-              <IconoArchivo nombre="google" /> Continuar con Google
+              Continuar con mi cuenta
             </button>
           ) : (
             <form className="t-login-ejemplo" onSubmit={ingresarEjemplo}>
-              <p className="t-aviso-simulado">Inicio de sesión simulado: hasta conectar Google, escribe tu correo Gmail. No se verifica la cuenta.</p>
-              <label>Correo Gmail<input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="nombre@gmail.com" autoComplete="email" required autoFocus /></label>
-              <label>Tu nombre<input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="María Rojas" autoComplete="name" required /></label>
+              <p className="t-aviso-simulado">{MODO_TIENDA === "api" ? "Acceso con la cuenta local habilitada por el administrador." : "Modo ejemplo: no verifica identidad ni modifica inventario real."}</p>
+              <label>{MODO_TIENDA === "api" ? "Correo" : "Correo Gmail"}<input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="nombre@example.com" autoComplete="email" required autoFocus /></label>
+              {MODO_TIENDA === "api" ? <label>Contraseña<input type="password" value={contrasena} onChange={e => setContrasena(e.target.value)} autoComplete="current-password" required minLength={8} /></label> : <label>Tu nombre<input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="María Rojas" autoComplete="name" required /></label>}
               <button type="submit" className="t-boton-primario" disabled={enviando}>{enviando ? "Ingresando…" : "Continuar"}</button>
             </form>
           )}

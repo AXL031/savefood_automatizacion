@@ -1,0 +1,13 @@
+codigo,nombre,categoria,precio_soles,stock_vendible_inicial,escenario,insumos_por_receta
+DEMO-PAN,Pan francés,panes,0.50,12,Disponible,3
+DEMO-CROISSANT,Croissant,panes,3.50,13,Disponible,5
+DEMO-EMPANADA,Empanada,bocados,4.00,14,Disponible,5
+DEMO-CIABATTA,Ciabatta artesanal,panes,2.80,48,Disponible; lote elegible para evaluar promocion,3
+DEMO-BRIOCHE,Brioche de mantequilla,panes,12.00,2,Ultimas unidades,6
+DEMO-ROLL-CANELA,Rollo de canela glaseado,postres-personales,7.50,30,Disponible; lote elegible para evaluar promocion,7
+DEMO-PIE-LIMON,Pie de limón individual,postres-personales,9.50,3,Ultimas unidades,5
+DEMO-SELVA-NEGRA,Torta Selva Negra,tortas,58.00,4,Ultimas unidades,6
+DEMO-KEKE-NARANJA,Keke de naranja glaseado,kekes,22.00,26,Disponible; lote elegible para evaluar promocion,5
+DEMO-CHEESECAKE,Cheesecake horneado,postres-enteros,64.00,9,Disponible; lote elegible para evaluar promocion,6
+DEMO-TARTA-FRESA,Tartaleta de fresas,postres-enteros,45.00,0,Agotado: sin existencias,5
+DEMO-QUICHE,Quiche de queso,bocados,11.50,0,Agotado: lote vencido,6

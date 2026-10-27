@@ -123,3 +123,7 @@ Axel solicita gráficos en Inicio y Reportes de lectura. Contrato previo: [Dashb
 Conciliación 06-10-2026: E03/K01 y M02/M03 usan los contratos publicados que consumen L02–L04. Se conservan muestras y suites locales adaptadas; no se vuelve a declarar compras pendiente ni se atribuye el trabajo remoto a otro integrante. Evidencia y migración de la base local en avances/cueva.md y la guía de backend/migrations. Publicación reservada a Axel.
 
 </details>
+
+## Ampliación operativa · 27-10-2026
+
+[Contrato operativo](../api/contrato-operacion-integrada.md): plan/receta conservada → producción → movimientos Inventario; venta interna → salida FEFO y revisión/reevaluación; tienda → salida separada de ML; control periódico → sugerencia/aprobación/publicación; respuesta proveedor → recepción/aviso. Transacción de cada operación compartida, sin commits en servicios. Cueva coordina y enlaza responsabilidades; [reproducción/env](../operacion-integrada.md) y bitácora de Cueva. PostgreSQL/Redis/navegador/despliegue se acreditan únicamente con resultados observados.

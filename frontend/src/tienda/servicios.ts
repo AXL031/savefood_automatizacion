@@ -21,8 +21,8 @@ import {
   type PromocionVisible,
 } from "./tipos";
 
-export const MODO_TIENDA: "ejemplo" | "api" = process.env.NEXT_PUBLIC_TIENDA_MODO === "api" ? "api" : "ejemplo";
-const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+export const MODO_TIENDA: "ejemplo" | "api" = process.env.NEXT_PUBLIC_TIENDA_MODO === "ejemplo" ? "ejemplo" : "api";
+const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
 export const DATOS_COMERCIO = COMERCIO;
 
@@ -197,6 +197,11 @@ export async function iniciarSesionEjemplo(correo: string, nombre: string): Prom
 /** Siempre usa la API real (T02), también cuando el catálogo está en modo ejemplo. */
 export async function iniciarSesionGoogle(idToken: string): Promise<{ token: string; cliente: ClienteTienda }> {
   return solicitar("/sesion/google", { method: "POST", body: { id_token: idToken } });
+}
+
+/** Cuenta de prueba real en PostgreSQL, habilitada expresamente en el servidor. */
+export async function iniciarSesionLocal(correo: string, contrasena: string): Promise<{ token: string; cliente: ClienteTienda }> {
+  return solicitar("/sesion/local", { method: "POST", body: { correo, contrasena } });
 }
 
 // --- Pedidos (T04) ---

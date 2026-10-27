@@ -16,6 +16,10 @@
 
 ## Punto de partida
 
+**27-10-2026 · Mocks enriquecidos:** `test_semilla_demo.py` cubre un primer arranque con 12 productos/16 insumos, ampliación aditiva desde v1 sin perder usuarios/historia/saldos/ediciones, repetición sin reponer stock, ausencia distinta de cero, lote vencido excluido y reserva única del nuevo modelo. Usa únicamente los esquemas aislados de la fixture API, nunca la base de la demo. Las pruebas no crean envíos Telegram ni pagos reales.
+
+**27-10-2026 · Corrección de CI M03:** `test_migracion_preserva_plan_previo` debe retirar primero la revisión 0020 y restaurarla al final de su ciclo histórico: `solicitud_proveedor` referencia compras y `registro_operacion` referencia el plan. Esta preparación se ejecuta solo en el esquema aislado de la fixture; no retirar tablas de la instalación ni modificar migraciones ya aplicadas. Mantener las comprobaciones de conservación del plan y recálculo de sus necesidades; SQLite no sustituye la verificación de dependencias PostgreSQL.
+
 **30-09-2026 · Paso 5: test_telegram_config_l03.py cubre cifrado/persistencia, permisos API, bot, vínculo, rotación/deshabilitación, búsqueda /start sin confirmar updates, webhook y permisos de grupo con transporte falso; test_migraciones_entregas.py verifica 0012 y conservación de proveedor/chat. Fixtures aíslan secretos/credencial de prueba. No se envían mensajes reales.**
 
 **Paso 2 local · 30-09-2026:** test_planificacion_m02.py prueba snapshots, estados desconocidos, caducidad/límite, recálculo, permisos, rollback del consumidor, reentrega y concurrencia PostgreSQL (E03_POSTGRES_TEST=1). La prueba real de test_inicializacion_ml.py incorpora Beat → inferencia CatBoost → plan → evaluación posterior.
@@ -106,3 +110,7 @@ Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: do
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. test_evaluacion_revisiones.py agrega seis regresiones: snapshot antiguo/nuevo y reentrega, snapshot vacío/ajeno, PATCH con reserva idempotente, rollback de reserva, más de 50 corridas con filtros/roles y lectura limitada/duplicados/presupuesto. Usa fixtures aisladas existentes, sin red externa. Pruebas de locks reales siguen requiriendo PostgreSQL.
 
 [Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+## Operación integrada · 27-10-2026
+
+Ampliación expresa del usuario, implementada por Codex; responsabilidades conservadas. [Contrato](../../../docs/api/contrato-operacion-integrada.md) y [guía de reproducción/variables](../../../docs/operacion-integrada.md). Migración aditiva 0020: producción por tandas, venta interna/tienda con movimientos, respuesta del proveedor de una hora, recepción asistida/avisos y monitor cada diez minutos con aprobación. Código en operaciones y fronteras públicas de inventario/ventas. No hay reposición ni pagos reales automáticos. Docker separado para pruebas; túnel gratuito y Render opcional de pago. Credenciales privadas fuera de Git. Consultar bitácora Cueva para pruebas realmente ejecutadas y límites.

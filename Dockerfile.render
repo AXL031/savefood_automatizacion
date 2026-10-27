@@ -1,0 +1,22 @@
+# Variante remota compacta: procesos separados dentro de una instancia con disco compartido.
+# No es el modo gratuito. Docker local conserva sus servicios separados en compose.yaml.
+FROM node:22-bookworm-slim AS web
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/ ./
+ARG GOOGLE_CLIENT_ID=
+ENV NEXT_PUBLIC_API_URL="" NEXT_PUBLIC_TIENDA_MODO=api API_INTERNAL_URL=http://127.0.0.1:8000 NEXT_PUBLIC_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+RUN npm run build
+
+FROM python:3.12-slim-bookworm
+WORKDIR /code
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 libgomp1 && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 10001 foodsave && useradd --uid 10001 --gid foodsave --home-dir /tmp foodsave
+COPY --from=web /usr/local/bin/node /usr/local/bin/node
+COPY --from=web /app /app
+COPY backend/ /code/
+COPY foodsave-ml/ /code/foodsave-ml/
+RUN --mount=type=cache,target=/root/.cache/pip pip install --timeout 120 --retries 5 '.[ml]' && chown -R foodsave:foodsave /code
+ENV MODEL_ARTIFACT_DIR=/data/models TELEGRAM_CONFIG_DIR=/data/telegram NEXT_TELEMETRY_DISABLED=1
+CMD ["python", "-m", "app.modules.operaciones.servidor"]

@@ -47,6 +47,15 @@ services:
       ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
       ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      HABILITAR_CLIENTE_LOCAL: ${HABILITAR_CLIENTE_LOCAL:-0}
+      HABILITAR_ENLACES_PROVEEDOR: ${HABILITAR_ENLACES_PROVEEDOR:-1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/operaciones/salud', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     volumes:
       - model_artifacts:/code/model_artifacts:ro
       - telegram_secrets:/code/telegram_secrets
@@ -74,6 +83,8 @@ services:
       MODEL_ARTIFACT_DIR: /code/model_artifacts
       ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
       ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      HABILITAR_ENLACES_PROVEEDOR: ${HABILITAR_ENLACES_PROVEEDOR:-1}
     volumes:
       - model_artifacts:/code/model_artifacts
       - telegram_secrets:/code/telegram_secrets:ro
@@ -102,12 +113,15 @@ services:
     build:
       context: ./frontend
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_URL: ""
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        NEXT_PUBLIC_TIENDA_MODO: ${NEXT_PUBLIC_TIENDA_MODO:-api}
+        API_INTERNAL_URL: http://api:8000
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   postgres_data:

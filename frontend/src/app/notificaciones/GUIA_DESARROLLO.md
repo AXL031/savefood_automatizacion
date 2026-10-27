@@ -1,3 +1,9 @@
+# Avisos administrativos · ampliación 27-10-2026
+
+Coordinación Cueva; incidencias de Compras/Aguirre. Solicitud expresa del usuario amplía el alcance anterior: bandeja administrativa compartida, lectura separada de resolución e historial persistente. No hay mensajes ni compras de reposición automáticos. Leer [contrato operativo](../../../../docs/api/contrato-operacion-integrada.md) y guías padre. API aplica permisos administrativos.
+
+<details><summary>Guía anterior conservada como historial; alcance sustituido por la ampliación expresa</summary>
+
 # Guía de desarrollo — Notificaciones externas futuras
 
 **Carpeta:** `frontend/src/app/notificaciones`.
@@ -38,3 +44,5 @@ La función se presenta como futura/no implementada y no altera datos ni expone 
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/cueva.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+</details>

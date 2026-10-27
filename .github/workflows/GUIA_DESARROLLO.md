@@ -16,6 +16,10 @@
 
 ## Punto de partida
 
+**Mocks v2 · 27-10-2026:** `test_semilla_demo.py` forma parte del corte PostgreSQL para verificar ampliación aditiva, conservación de historia y credenciales, caducidad, repetición sin reponer stock y reserva única de un modelo nuevo. La suite Python también lo descubre con SQLite. No se habilitan pagos o mensajes reales.
+
+**27-10-2026 · Publicación operativa en bohorquez:** el corte PostgreSQL incluye `test_operacion_integrada.py` para ejecutar también las ventas y tandas concurrentes que SQLite omite. Ese proceso de pruebas fija `HABILITAR_ENLACES_PROVEEDOR=0` para aislar el texto de las pruebas de transporte heredadas; los casos de enlace crean y prueban explícitamente aceptación, vencimiento y recepción, sin transmitir Telegram. No cambia el valor de la instalación. CI remoto se acredita por su resultado después del push, no por editar este archivo.
+
 **Estado vigente · 12-10-2026:** [CI del corte publicado 93d5c26](https://github.com/AXL031/savefood_automatizacion/actions/runs/38330972748) correcto: Python 258 passed, 25 skipped y 6 subtests passed; segundo corte PostgreSQL/Redis 166 passed. Construcción/arranque, cabeza 0015, metadatos, volumen de modelos y API/frontend/Celery correctos. Incluye promociones y concurrencia. [PR #14](https://github.com/AXL031/savefood_automatizacion/pull/14) permite comprobar el último commit y su integración; sigue pendiente revisión humana antes de merge. Las notas de CI pendiente de abajo son historial.
 
 **30-09-2026 · Paso 5: suite Python descubre test_telegram_config_l03.py; el corte Docker PostgreSQL incluye el mismo archivo y prueba cifrado/API sin Telegram real. CI remoto pendiente; cambios sin publicar.**

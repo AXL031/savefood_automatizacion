@@ -66,3 +66,7 @@ Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` c
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. leer_revisiones publica versiones inmutables. PATCH coordina corregir_venta y solicitar_reevaluaciones_venta en la misma sesión antes del commit; añade reevaluaciones a la respuesta. La reserva fallida revierte la corrección; repetición conserva IDs. No recalcula planes/pedidos ni stock.
 
 [Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+## Operación integrada · 27-10-2026
+
+Ampliación expresa del usuario, implementada por Codex; responsabilidades conservadas. [Contrato](../../../../docs/api/contrato-operacion-integrada.md) y [guía de reproducción/variables](../../../../docs/operacion-integrada.md). Migración aditiva 0020: producción por tandas, venta interna/tienda con movimientos, respuesta del proveedor de una hora, recepción asistida/avisos y monitor cada diez minutos con aprobación. Código en operaciones y fronteras públicas de inventario/ventas. No hay reposición ni pagos reales automáticos. Docker separado para pruebas; túnel gratuito y Render opcional de pago. Credenciales privadas fuera de Git. Consultar bitácora Cueva para pruebas realmente ejecutadas y límites.

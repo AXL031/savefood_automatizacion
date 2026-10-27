@@ -28,4 +28,6 @@
 
 ## Verificación
 
+**27-10-2026, ampliación autorizada:** catálogo, cotización y pedidos consumen la API operativa real por defecto. La cuenta de cliente puede ser Google real o local con contraseña verificada y habilitación explícita. El checkout no atribuye la cuenta local a Google y rotula el pago como simulado, sin transferencias ni cargos. Campos de tarjeta permanecen solo en memoria del navegador según el alcance vigente. Ver [operación integrada](../../../../docs/operacion-integrada.md); prevalece sobre el punto de partida de ejemplo anterior.
+
 `npm run typecheck` y `npm run build`. Recorrido manual: agregar productos, confirmar sin sesión (abre login), errores de entrega, confirmar, ver el pedido y comprobar que el estado de stock cambia en el menú. Revisar también a 390 px sin scroll horizontal.

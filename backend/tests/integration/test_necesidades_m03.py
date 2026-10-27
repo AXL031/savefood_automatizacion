@@ -105,13 +105,15 @@ def test_migracion_preserva_plan_previo(escenario):
     migracion = importlib.util.module_from_spec(spec); spec.loader.exec_module(migracion)
     posteriores = []
     for nombre in ("0011_l02_compras", "0012_l03_telegram_config",
-                   "0013_l03_aprobacion_envio", "0014_l04_recuperacion", "0018_recepcion_compras"):
+                   "0013_l03_aprobacion_envio", "0014_l04_recuperacion", "0018_recepcion_compras",
+                   "0020_operacion_integrada"):
         spec = importlib.util.spec_from_file_location(nombre, ruta.parent / f"{nombre}.py")
         modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
         posteriores.append(modulo)
     with sesiones.begin() as sesion:
         with Operations.context(MigrationContext.configure(sesion.connection())):
-            # En la cadena vigente, envíos/recuperaciones dependen de compras.
+            # Envíos, recepciones y solicitud_proveedor (0020) dependen de compras;
+            # registro_operacion también conserva una FK al plan de M02.
             # Retirar esas revisiones en orden antes del delta que se verifica.
             for modulo in reversed(posteriores):
                 modulo.downgrade()

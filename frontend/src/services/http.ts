@@ -1,6 +1,6 @@
 import type { ApiEnvelope, ApiErrorBody } from "@/types/api";
 
-const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
 export class HttpError extends Error {
   constructor(
