@@ -327,6 +327,11 @@ def _preparar_envio(sesion: Session, pedido: PedidoCompra, *, chat_id_revisado: 
     if chat_id_revisado is not None and chat_id_revisado != destino.chat_id_pruebas:
         raise ErrorAPI(409, "DESTINO_CAMBIO", "El chat cambió desde tu revisión. Actualiza el pedido y revisa el nuevo destino.")
     texto = construir_mensaje(sesion, pedido)
+    import os
+    if os.getenv('HABILITAR_ENLACES_PROVEEDOR') == '1':
+        from app.modules.operaciones.proveedores import crear_enlace
+        enlace = crear_enlace(sesion, pedido.id)
+        texto += '\n\nRevisar y responder en una hora:\n' + enlace['url']
     if len(texto.encode("utf-16-le")) // 2 > 4096:
         raise ErrorAPI(422, "MENSAJE_FUERA_DE_RANGO", "El pedido supera el tamaño de un mensaje de Telegram; reduce sus líneas antes de enviarlo.")
     return EnvioPedido(pedido_id=pedido.id, estado="PENDIENTE_ENVIO", chat_id=destino.chat_id_pruebas,

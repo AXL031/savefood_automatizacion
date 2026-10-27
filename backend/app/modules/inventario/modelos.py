@@ -28,7 +28,7 @@ from app.core.base import Base
 TIPO_APERTURA = "APERTURA"
 TIPO_AJUSTE = "AJUSTE"
 TIPO_RECEPCION = "RECEPCION"
-TIPOS_MOVIMIENTO = (TIPO_APERTURA, TIPO_AJUSTE, TIPO_RECEPCION)
+TIPOS_MOVIMIENTO = (TIPO_APERTURA, TIPO_AJUSTE, TIPO_RECEPCION, 'PRODUCCION', 'VENTA', 'VENTA_TIENDA')
 
 
 class LoteIngrediente(Base):
@@ -88,7 +88,7 @@ class MovimientoInventario(Base):
             name="ck_movimiento_inventario_delta_entero_producto",
         ),
         CheckConstraint("saldo_resultante >= 0", name="ck_movimiento_inventario_saldo"),
-        CheckConstraint("tipo in ('APERTURA', 'AJUSTE', 'RECEPCION')", name="ck_movimiento_inventario_tipo"),
+        CheckConstraint("tipo in ('APERTURA', 'AJUSTE', 'RECEPCION', 'PRODUCCION', 'VENTA', 'VENTA_TIENDA')", name="ck_movimiento_inventario_tipo"),
         CheckConstraint("tipo <> 'RECEPCION' OR lote_producto_id IS NULL", name="ck_movimiento_recepcion_ingrediente"),
         CheckConstraint("length(trim(motivo)) > 0", name="ck_movimiento_inventario_motivo"),
         Index("ix_movimiento_inventario_lote_producto", "lote_producto_id"),
