@@ -74,3 +74,7 @@ Patrón de gestión solicitado por Axel: listar registros primero y abrir creaci
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Inicio, Pronósticos, Evaluación y Reportes comparten cabecera/navegación analítica, paleta hoja/yema e indicadores de datos reales. Estilos en styles.css; grid con minmax(0,1fr) y mínimos contenidos evita desbordamiento en móvil. No añade métricas económicas ni tareas externas.
 
 [Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+## Operación integrada · 27-10-2026
+
+Ampliación expresa del usuario, implementada por Codex; responsabilidades conservadas. [Contrato](../../../docs/api/contrato-operacion-integrada.md) y [guía de reproducción/variables](../../../docs/operacion-integrada.md). Migración aditiva 0020: producción por tandas, venta interna/tienda con movimientos, respuesta del proveedor de una hora, recepción asistida/avisos y monitor cada diez minutos con aprobación. Código en operaciones y fronteras públicas de inventario/ventas. No hay reposición ni pagos reales automáticos. Docker separado para pruebas; túnel gratuito y Render opcional de pago. Credenciales privadas fuera de Git. Consultar bitácora Cueva para pruebas realmente ejecutadas y límites.

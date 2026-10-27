@@ -459,3 +459,41 @@ th { font-size: .8rem; font-weight: 700; color: var(--color-texto-medio); }
   .login-cadena { display: none; }
   .login-panel { align-items: flex-start; padding: 32px 20px 48px; }
 }
+/* Desplegables: jerarquía, sangría y tono propios para las opciones hijas. */
+.sidebar-menu details { margin: 4px 0 10px; }
+.sidebar-menu details[open] > summary { color: var(--color-primario-oscuro); }
+.sidebar-menu details > nav { margin: 8px 0 0 16px; padding: 8px; border-left: 2px solid var(--color-primario-suave); border-radius: 0 12px 12px 0; background: color-mix(in srgb, var(--color-primario-tenue) 70%, transparent); }
+.sidebar-menu details > nav .nav-link { padding: 10px 12px; font-weight: 500; }
+.sidebar-menu details > nav .nav-link.active { font-weight: 750; box-shadow: inset 3px 0 var(--color-primario); }
+.operation-banner { display:flex; gap:24px; align-items:center; padding:20px 24px; background:var(--color-primario-tenue); border-radius:16px; margin-bottom:24px; }
+.operation-banner strong { display:block; font-size:1.25rem; white-space:nowrap; }
+.operation-banner p { flex:1; margin:0; }
+.operation-tabs,.action-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.operation-tabs { margin-bottom:24px; }
+.operation-tabs button { min-height:44px; padding:10px 16px; border:1px solid var(--color-borde-campo); border-radius:10px; font:inherit; font-size:.875rem; font-weight:700; cursor:pointer; }
+.operation-tabs button[aria-pressed="true"] { color:#fff; background:var(--color-primario); border-color:var(--color-primario); }
+.operation-fieldset { padding:0; border:0; margin:0; min-width:0; }
+.operation-fieldset > .card { margin-bottom:24px; }
+.operation-form { display:grid; gap:18px; max-width:680px; margin-top:24px; }
+.operation-form label,.operation-receipt label { display:grid; gap:7px; }
+.operation-form input,.operation-form select,.operation-form textarea,.operation-receipt input,.operation-receipt textarea { width:100%; min-width:0; }
+.operation-form input:not([type="checkbox"]),.operation-form select,.operation-form textarea,.operation-receipt input,.operation-receipt textarea { min-height:44px; padding:10px 12px; border:1px solid var(--color-borde-campo); border-radius:10px; background:#fff; color:var(--color-texto); font:inherit; }
+.operation-form :is(input,select,textarea):focus-visible,.operation-receipt :is(input,textarea):focus-visible,.operation-tabs button:focus-visible { outline:2px solid var(--color-primario); outline-offset:2px; }
+.operation-form textarea,.operation-receipt textarea { min-height:100px; resize:vertical; }
+.operation-form fieldset { border:1px solid var(--color-borde); border-radius:12px; }
+.operation-products { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; max-height:300px; overflow:auto; padding:12px; }
+.operation-products .checkbox-row,.operation-form .checkbox-row { display:flex; gap:10px; align-items:center; }
+.checkbox-row input { width:auto; }
+.operation-receipt { display:grid; gap:18px; margin-top:24px; padding-top:24px; border-top:1px solid var(--color-borde); }
+.operation-receipt-line { display:grid; grid-template-columns:minmax(160px,1fr) minmax(150px,200px) minmax(150px,200px); align-items:center; gap:20px; }
+.operation-receipt-line small,td small { display:block; color:var(--color-texto-secundario); margin-top:5px; }
+.quantity-control { display:flex; gap:8px; align-items:center; }
+.quantity-control input { width:90px; text-align:center; }
+.operation-notices { display:grid; gap:20px; }
+.notice-unread { border-left:4px solid var(--color-primario); }
+.operation-link { padding:16px; border:1px solid var(--color-borde); border-radius:10px; overflow-wrap:anywhere; }
+.notification-bell { display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--color-primario-tenue); border-radius:20px; }
+.notification-bell span { background:var(--color-primario); color:white; border-radius:12px; padding:1px 7px; }
+.supplier-page { max-width:760px; margin:0 auto; padding:40px 20px; }
+.supplier-brand { font-weight:800; color:var(--color-primario); margin-bottom:24px; }
+@media(max-width:720px) { .operation-banner { align-items:flex-start; flex-direction:column; gap:12px; } .operation-receipt-line { grid-template-columns:1fr; padding:16px 0; border-bottom:1px solid var(--color-borde); } .sidebar-menu details > nav { margin-left:12px; grid-template-columns:1fr; } .topbar .business-chip { display:none; } }

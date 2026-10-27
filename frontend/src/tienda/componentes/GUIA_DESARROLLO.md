@@ -16,3 +16,7 @@ Componentes visuales del prototipo Figma «PaginaCliente», con clases `t-*` def
 - `DetallePedido`, `EstadoCarga`, `Iconos`, `Pie`, `Encabezado`.
 
 Mantener accesibilidad: etiquetas en botones de solo ícono, foco visible, Escape cierra el login y menús, contraste del texto sobre fondos crema.
+
+## Operación integrada · 27-10-2026
+
+Ampliación expresa del usuario, implementada por Codex; responsabilidades conservadas. [Contrato](../../../../docs/api/contrato-operacion-integrada.md) y [guía de reproducción/variables](../../../../docs/operacion-integrada.md). Migración aditiva 0020: producción por tandas, venta interna/tienda con movimientos, respuesta del proveedor de una hora, recepción asistida/avisos y monitor cada diez minutos con aprobación. Código en operaciones y fronteras públicas de inventario/ventas. No hay reposición ni pagos reales automáticos. Docker separado para pruebas; túnel gratuito y Render opcional de pago. Credenciales privadas fuera de Git. Consultar bitácora Cueva para pruebas realmente ejecutadas y límites.

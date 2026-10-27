@@ -116,17 +116,17 @@ export default function PaginaCarrito() {
           <section className="t-paso" aria-labelledby="t-paso-1">
             <div className="t-paso-cabecera">
               <span className="t-paso-numero">1</span>
-              <div><h2 id="t-paso-1">Paso 1: Tu cuenta</h2><p>Para confirmar tu pedido y consultarlo después, inicia sesión con Google.</p></div>
+              <div><h2 id="t-paso-1">Paso 1: Tu cuenta</h2><p>Para confirmar tu pedido y consultarlo después, inicia sesión con tu cuenta.</p></div>
               {sesion ? <span className="t-chip-ok"><Icono nombre="check" tamano={12} />Identificado</span> : null}
             </div>
             {sesion ? (
               <div className="t-cuenta-tarjeta">
-                <span className="t-avatar">{sesion.cliente.nombre.charAt(0).toUpperCase()}<span className="t-avatar-google"><IconoArchivo nombre="google" escala={0.6} /></span></span>
+                <span className="t-avatar">{sesion.cliente.nombre.charAt(0).toUpperCase()}</span>
                 <div><strong>{sesion.cliente.nombre}</strong><span>{sesion.cliente.correo}</span></div>
                 <button type="button" className="t-boton-contorno" onClick={() => { guardarSesion(null); abrirLogin(); }}>Cambiar cuenta</button>
               </div>
             ) : (
-              <button type="button" className="t-boton-google t-boton-google-ancho" onClick={abrirLogin}><IconoArchivo nombre="google" />Iniciar sesión con Google</button>
+              <button type="button" className="t-boton-google t-boton-google-ancho" onClick={abrirLogin}><Icono nombre="persona" />Iniciar sesión</button>
             )}
           </section>
 
@@ -167,7 +167,7 @@ export default function PaginaCarrito() {
           <section className="t-paso" aria-labelledby="t-paso-3">
             <div className="t-paso-cabecera">
               <span className="t-paso-numero">3</span>
-              <div><h2 id="t-paso-3">Paso 3: Método de pago</h2><p>Elige cómo quieres pagar tu pedido.</p></div>
+              <div><h2 id="t-paso-3">Paso 3: Pago simulado</h2><p>Elige un método de prueba. Esta demo no realiza cargos.</p></div>
             </div>
             <div className="t-pagos" role="radiogroup" aria-label="Método de pago">
               <label className={`t-pago${tipoPago === "BILLETERA" ? " t-pago-activo" : ""}`}>
@@ -198,7 +198,7 @@ export default function PaginaCarrito() {
                     <button type="button" className="t-boton-copiar" onClick={copiarNumero}><Icono nombre="copiar" tamano={14} />{copiado ? "Copiado" : "Copiar"}</button>
                   </div>
                   <p className="t-titular">Titular: <strong>{DATOS_COMERCIO.pago_simulado.titular}</strong></p>
-                  <p className="t-aviso-simulado"><Icono nombre="check" tamano={14} /><span><strong>No necesitas adjuntar voucher.</strong> Validamos tu pago al confirmar el pedido.</span></p>
+                  <p className="t-aviso-simulado"><Icono nombre="check" tamano={14} /><span><strong>Simulación: no transfieras dinero.</strong> El pago de prueba se aprueba al confirmar el pedido.</span></p>
                 </div>
               </div>
             ) : (
