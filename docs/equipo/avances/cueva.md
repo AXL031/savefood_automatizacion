@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **27-10-2026 · Publicación coordinada en bohorquez:** por petición expresa del usuario, Codex subió seis commits separados hasta `6f41c43`, confirmados con la referencia remota; [registro y hashes](bohorquez.md). Incluye operación, pruebas/CI, interfaz, entornos y documentación; migración 0020 y límites de Telegram/pago conservados. Comprobaciones locales correctas, [CI remoto](https://github.com/AXL031/savefood_automatizacion/actions/runs/40531257124) en curso al corte. Registro de cierre en commit documental adicional. Sin modificar main, crear PR ni publicar secretos.
+
 - **27-10-2026 09:37 America/Bogota · Codex, recuperación tras apagado solicitada:** Docker Linux y proyecto `foodsave_pruebas` recuperados con `iniciar-demo.cmd -Publico -NoBuild`; cuentas, modelo, plan y dos pedidos del cliente conservados. HTTPS público comprobado sin credenciales y API administrativa denegada sin sesión; QA autenticada en localhost, escritorio y móvil, sin errores ni desbordamiento. Producción, venta y compra repetidas recuperan sus registros sin crear operaciones nuevas. Dirección vigente en `.tmp/url-publica.txt`; contraseñas privadas conservadas. Sin servicios de pago, mensajes Telegram, nuevas migraciones, commit ni push. Detalle en la bitácora y [guía](../../operacion-integrada.md).
 
 <!-- avance-operativo-2026-10-27 -->
@@ -60,6 +62,10 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisión por otro integrante antes de integrar `main`; reproducción en otra PC y prueba Telegram real autorizada pendientes. Docker no disponible durante la comprobación adicional del 12-10; no se modifica ni se vuelve a acreditar el arranque local del corte anterior.
 
 ## Bitácora
+
+### 27-10-2026 America/Bogota — Coordinación de publicación en rama bohorquez
+
+Codex por solicitud directa del usuario; A04 coordina y conserva las autorías de dominio. Fetch/pull sin conflictos y push normal de seis commits confirmado en GitHub hasta `6f41c43`; [detalle de contenido, pruebas y hashes](bohorquez.md). Typecheck, Compose, metadatos PostgreSQL, sintaxis y revisión de valores secretos correctos en este corte; suites anteriores no se declaran repetidas. CI del código publicado en curso, sin éxito anticipado. Este registro se publica en un commit documental adicional. No modifica datos, credenciales, migraciones aplicadas ni main; sin PR, mensajes externos o recursos de pago. Siguiente: comprobar CI y revisión del equipo antes de integrar; reproducción por cada compañero según [guía](../../operacion-integrada.md).
 
 ### 27-10-2026 09:37 America/Bogota — Recuperación y cierre después del apagado
 
