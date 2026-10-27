@@ -16,6 +16,8 @@
 
 ## Punto de partida
 
+**27-10-2026 · Mocks enriquecidos:** `test_semilla_demo.py` cubre un primer arranque con 12 productos/16 insumos, ampliación aditiva desde v1 sin perder usuarios/historia/saldos/ediciones, repetición sin reponer stock, ausencia distinta de cero, lote vencido excluido y reserva única del nuevo modelo. Usa únicamente los esquemas aislados de la fixture API, nunca la base de la demo. Las pruebas no crean envíos Telegram ni pagos reales.
+
 **27-10-2026 · Corrección de CI M03:** `test_migracion_preserva_plan_previo` debe retirar primero la revisión 0020 y restaurarla al final de su ciclo histórico: `solicitud_proveedor` referencia compras y `registro_operacion` referencia el plan. Esta preparación se ejecuta solo en el esquema aislado de la fixture; no retirar tablas de la instalación ni modificar migraciones ya aplicadas. Mantener las comprobaciones de conservación del plan y recálculo de sus necesidades; SQLite no sustituye la verificación de dependencias PostgreSQL.
 
 **30-09-2026 · Paso 5: test_telegram_config_l03.py cubre cifrado/persistencia, permisos API, bot, vínculo, rotación/deshabilitación, búsqueda /start sin confirmar updates, webhook y permisos de grupo con transporte falso; test_migraciones_entregas.py verifica 0012 y conservación de proveedor/chat. Fixtures aíslan secretos/credencial de prueba. No se envían mensajes reales.**
