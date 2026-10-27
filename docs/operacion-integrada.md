@@ -36,7 +36,7 @@ Docker Desktop con motor Linux activo y Compose v2.24.4+ (`!override`). Ejecutar
 .\iniciar-demo.cmd
 ```
 
-Crea `.env.pruebas` solo si falta, construye y arranca el proyecto **foodsave_pruebas** con base y volúmenes propios, sin modificar la instalación habitual. La web espera el chequeo saludable de la API y PostgreSQL antes de iniciar. Web `http://localhost:3100`; API de diagnóstico `http://localhost:8100`. Navegador y teléfono usan `/api/v1` a través de Next, sin URLs privadas de Docker.
+Crea `.env.pruebas` solo si falta: toma las tres cuentas públicas de `datos_carga/cuentas_demo.json` y genera claves independientes para PostgreSQL/JWT. Construye y arranca el proyecto **foodsave_pruebas** con base y volúmenes propios, sin modificar la instalación habitual. La web espera el chequeo saludable de la API y PostgreSQL antes de iniciar. Web `http://localhost:3100`; API de diagnóstico `http://localhost:8100`. Navegador y teléfono usan `/api/v1` a través de Next, sin URLs privadas de Docker.
 
 La semilla crea tres productos, harina, recetas/lotes, nueve meses de ventas sintéticas de 2026 y proveedor/oferta sin chat. Reserva entrenamiento CatBoost real para el worker. Se consulta en Pronósticos/Automatizaciones. Fecha operativa de prueba **2026-09-29, 17:15**; no confundir lotes del escenario con stock vigente hoy. No se crean recibos Telegram falsos ni se envían mensajes. Configurar canal real y autorizar una prueba específica antes de transmitir.
 
@@ -64,7 +64,11 @@ La semilla crea tres productos, harina, recetas/lotes, nueve meses de ventas sin
 | Trabajador | `operador.foodsave@example.com` | `/iniciar-sesion` |
 | Cliente | `cliente.foodsave@example.com` | Cuenta local en `/tienda` |
 
-Contraseñas aleatorias: **`.tmp/credenciales-pruebas.txt` y `.env.pruebas`**, ignorados por Git. No publicarlas en este documento, capturas o commits. Cliente local verifica hash real, solo si `HABILITAR_CLIENTE_LOCAL=1`; no suplanta Google. Para otra PC, compartir código y ejecutar el lanzador para generar claves propias. Para acceder a esta instalación, compartir privadamente solo la cuenta del rol correspondiente.
+**Correos y contraseñas de demo publicados por solicitud expresa del usuario:** [cuentas_demo.json](../datos_carga/cuentas_demo.json). Son los tres accesos de la demo actual y los valores iniciales para nuevas instalaciones. Son públicos y exclusivos para datos ficticios. El archivo no contiene claves PostgreSQL/JWT ni tokens Telegram.
+
+Los datos mock también están versionados: [semilla operativa](../backend/app/modules/operaciones/semilla.py) crea los tres productos, recetas, lotes, ventas sintéticas y proveedor/oferta. Cada compañero ejecuta `iniciar-demo.cmd` para crear su base independiente con el mismo origen y las mismas cuentas iniciales; no debe copiar una base privada ni su archivo `.env`.
+
+`.tmp/credenciales-pruebas.txt` es una copia local de los accesos y `.env.pruebas` sigue fuera de Git por sus secretos de instalación. Si la instalación ya tenía otras contraseñas, el lanzador y la semilla las conservan; el archivo público no las cambia automáticamente. Cliente local verifica hash real, solo si `HABILITAR_CLIENTE_LOCAL=1`; no suplanta Google.
 
 ## Página pública gratuita
 
@@ -97,7 +101,7 @@ Detiene conservando datos. No usar `down -v` para detener. PostgreSQL/Redis no p
 | `NEXT_PUBLIC_TIENDA_MODO` | `api` por defecto; `ejemplo` solo maqueta explícita. Requiere rebuild. |
 | `API_INTERNAL_URL` | Next → API: `http://api:8000` Docker; `http://127.0.0.1:8000` desarrollo/variante compacta. |
 | `HABILITAR_DATOS_PRUEBA` | `1` solo carga explícita en base aislada. |
-| `DEMO_ADMIN_PASSWORD`, `DEMO_OPERADOR_PASSWORD`, `DEMO_CLIENTE_PASSWORD` | Privadas; cambiar env no cambia hashes ya existentes. |
+| `DEMO_ADMIN_PASSWORD`, `DEMO_OPERADOR_PASSWORD`, `DEMO_CLIENTE_PASSWORD` | Cuentas mock públicas del JSON al crear la demo; cambiar env no cambia hashes ya existentes. |
 | `TELEGRAM_BOT_TOKEN` | Fallback privado; preferir Proveedores → configuración cifrada. Git no lo traslada. |
 
 Compartir `.env.example` y esta guía; nunca publicar `.env`/`.env.pruebas`. El lanzador genera las claves necesarias. Google real requiere credencial OAuth del equipo, no se inventa. El bot puede reutilizarse configurando el token/chat privadamente.

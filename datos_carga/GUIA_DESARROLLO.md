@@ -4,6 +4,8 @@
 
 Leer la [guía raíz](../GUIA_DESARROLLO.md), [responsabilidades](../docs/equipo/responsabilidades.md), [dependencias](../docs/equipo/dependencias.md), [contrato de importaciones](../docs/api/contrato-importaciones.md) y [política ML](../foodsave-ml/POLITICA_EVALUACION.md).
 
+**27-10-2026 · Cuentas mock compartidas por petición del usuario:** `cuentas_demo.json` publica exclusivamente los tres accesos de administrador, trabajador y cliente de la demo sintética. El lanzador los usa al crear una instalación nueva; PostgreSQL y JWT siguen usando secretos locales aleatorios, nunca este JSON. Datos mock reproducibles en `backend/app/modules/operaciones/semilla.py`; ejecutar según la [guía operativa](../docs/operacion-integrada.md), con base aislada. No reutilizar las cuentas públicas para datos reales ni sustituir credenciales de una instalación existente.
+
 Esta carpeta contiene datos de prueba preparados desde archivos suministrados por Axel, no fixtures de pruebas unitarias ni una carga ya aceptada. [README](README.md) fija los cinco nombres, las fechas que deben introducirse y los ajustes de stock. No cambiar encabezados técnicos, identidades, ceros explícitos ni cantidades de receta para eliminar una etiqueta de interfaz.
 
 Actualización 14-10-2026: productos.csv marca los 139 productos como si a solicitud de Axel; el sistema admite todo el catálogo en carga y programación. La instalación habitual ya aceptó los archivos anteriores y tiene modelo listo; no reimportar para ampliar la selección, usar Automatización. La validación inicial para cinco productos se conserva como historial en Cueva; una segunda verificación cubre los 139 y los 55 ingredientes.

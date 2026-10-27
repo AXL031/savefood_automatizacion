@@ -67,4 +67,6 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 
 ## Operación integrada · 27-10-2026
 
+**Cuentas mock compartidas por solicitud posterior del usuario:** `datos_carga/cuentas_demo.json` contiene los tres accesos públicos de demo; `iniciar-demo.cmd` los usa únicamente al generar un `.env.pruebas` nuevo y conserva instalaciones existentes. Los datos sintéticos se reproducen con la semilla operativa versionada. PostgreSQL/JWT se generan independientemente por instalación y permanecen fuera de Git, igual que Telegram. No reutilizar las cuentas públicas con datos reales. Ver la guía de operación.
+
 Ampliación expresa del usuario, implementada por Codex; responsabilidades conservadas. [Contrato](docs/api/contrato-operacion-integrada.md) y [guía de reproducción/variables](docs/operacion-integrada.md). Migración aditiva 0020: producción por tandas, venta interna/tienda con movimientos, respuesta del proveedor de una hora, recepción asistida/avisos y monitor cada diez minutos con aprobación. Código en operaciones y fronteras públicas de inventario/ventas. No hay reposición ni pagos reales automáticos. Docker separado para pruebas; túnel gratuito y Render opcional de pago. Credenciales privadas fuera de Git. Consultar bitácora Cueva para pruebas realmente ejecutadas y límites.

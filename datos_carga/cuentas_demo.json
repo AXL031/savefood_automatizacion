@@ -1,0 +1,15 @@
+{
+  "nota": "Credenciales publicas de demostracion solicitadas por el usuario. Solo datos ficticios; no reutilizar en instalaciones con datos reales.",
+  "administrador": {
+    "correo": "admin.foodsave@example.com",
+    "contrasena": "d5180c1c43a29229291cb3edf2559d4765e1c564c0d8c9409ebe925442ab693e"
+  },
+  "trabajador": {
+    "correo": "operador.foodsave@example.com",
+    "contrasena": "2bcafea69301a668090080f145fca8fb7a6b64ad2739fce00d2592ba6b7c9c04"
+  },
+  "cliente": {
+    "correo": "cliente.foodsave@example.com",
+    "contrasena": "99b066cf4555048cbe22812807990ba012108eeb45b9b4ebf19dafd23542d6b0"
+  }
+}

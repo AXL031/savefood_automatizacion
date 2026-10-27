@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **27-10-2026 · Credenciales mock públicas autorizadas:** el usuario pide incluir accesos y datos de prueba en el repositorio. JSON compartido con las tres cuentas de la demo y lanzador para nuevas instalaciones; datos sintéticos reproducibles desde la semilla ya versionada. Claves PostgreSQL/JWT y Telegram siguen privadas. Comprobación real de generación/conservación del entorno y tres logins localhost correcta; [detalle](bohorquez.md). CI del arreglo M03 anterior confirmado SUCCESS, sin heredar ese resultado a la publicación nueva.
+
 - **27-10-2026 · Corrección de CI M03 coordinada en bohorquez:** Codex reprodujo el error PostgreSQL por la FK de `solicitud_proveedor`; el test histórico ahora retira/restaura 0020 en el orden correcto. No se modifican migraciones aplicadas ni datos de la instalación. Bloque completo del paso de Actions comprobado localmente: **208 passed**, además de M03 PostgreSQL y migración SQLite. [Detalle y límites](bohorquez.md). Resultado remoto de la cabeza corregida se verifica por su propio run.
 
 - **27-10-2026 · Publicación coordinada en bohorquez:** por petición expresa del usuario, Codex subió seis commits separados hasta `6f41c43`, confirmados con la referencia remota; [registro y hashes](bohorquez.md). Incluye operación, pruebas/CI, interfaz, entornos y documentación; migración 0020 y límites de Telegram/pago conservados. Comprobaciones locales correctas, [CI remoto](https://github.com/AXL031/savefood_automatizacion/actions/runs/40531257124) en curso al corte. Registro de cierre en commit documental adicional. Sin modificar main, crear PR ni publicar secretos.
@@ -64,6 +66,10 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisión por otro integrante antes de integrar `main`; reproducción en otra PC y prueba Telegram real autorizada pendientes. Docker no disponible durante la comprobación adicional del 12-10; no se modifica ni se vuelve a acreditar el arranque local del corte anterior.
 
 ## Bitácora
+
+### 27-10-2026 America/Bogota — Cuentas mock compartidas y secretos por instalación
+
+Codex por petición explícita del usuario; coordinación A04 en bohorquez. Se publica `datos_carga/cuentas_demo.json` con los tres accesos actuales de la demo ficticia y se conecta al primer arranque del lanzador. Los datos mock ya estaban versionados en la semilla operativa. Comprobados primer/segundo `-Preparar` aislados, claves PostgreSQL/JWT independientes, tres logins locales correctos e instalación actual sin cambios. Guías y contrato aclaran la excepción autorizada de contraseñas públicas de prueba; no se publica `.env`, claves de BD/JWT ni bot. Sin migraciones, mensajes externos, datos reales ni recursos de pago. [Archivos, pruebas y siguiente paso](bohorquez.md). El CI del arreglo previo d243d2b está SUCCESS; validar por separado el run de la nueva cabeza al publicar.
 
 ### 27-10-2026 America/Bogota — Corrección de la preparación histórica M03 en CI
 
