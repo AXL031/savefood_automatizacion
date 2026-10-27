@@ -14,10 +14,13 @@ backend/*.egg-info
 **/*.pyc
 **/.pytest_cache
 **/.cache
-frontend
 docs
 scripts
 foodsave-ml/*.csv
 foodsave-ml/notebooks
 model_artifacts
 backend/build/
+backend/.local
+frontend/node_modules
+frontend/.next
+frontend/.npm-cache

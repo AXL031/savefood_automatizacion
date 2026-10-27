@@ -1,0 +1,19 @@
+# Usar junto a compose.yaml y --env-file .env.pruebas -p foodsave_pruebas.
+services:
+  api:
+    environment:
+      HABILITAR_CLIENTE_LOCAL: '1'
+      HABILITAR_DATOS_PRUEBA: '1'
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Genera .env.pruebas}
+      DEMO_OPERADOR_PASSWORD: ${DEMO_OPERADOR_PASSWORD:?Genera .env.pruebas}
+      DEMO_CLIENTE_PASSWORD: ${DEMO_CLIENTE_PASSWORD:?Genera .env.pruebas}
+    ports: !override
+      - '127.0.0.1:8100:8000'
+  frontend:
+    ports: !override
+      - '127.0.0.1:3100:3000'
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    profiles: [publico]
+    command: tunnel --no-autoupdate --url http://frontend:3000
+    depends_on: [frontend]
