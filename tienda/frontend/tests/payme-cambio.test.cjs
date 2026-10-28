@@ -14,6 +14,13 @@ const { createRoot } = require("react-dom/client");
 const { PagoPayme } = require("../src/tienda/componentes/PagoPayme.tsx");
 const { puedeCambiarMetodo } = require("../src/tienda/payme.ts");
 const nombres = { CARD: "Tarjetas", YAPE: "Yape", QR: "QR billeteras", PAGOEFECTIVO: "PagoEfectivo" };
+async function esperar(condicion) {
+  const limite = Date.now() + 5000;
+  while (!condicion() && Date.now() < limite) {
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 1)); });
+  }
+  assert.ok(condicion(), "El checkout debe terminar de preparar Flex o mostrar el error antes de interactuar");
+}
 const pagar = (metodo = "CARD", estado = "CREADO", tid = null) => ({
   id: "pago-de-prueba", operacion: "123456789012", metodo, estado, transaction_id: tid,
   pagado: estado === "AUTORIZADO", total: "9.10", ambiente: "pruebas", moneda: "PEN",
@@ -59,8 +66,15 @@ async function montar() {
     alIntentar: () => true, alAprobar: id => aprobados.push(id), alBloquear: () => {}
   })); });
   const boton = metodo => [...document.querySelectorAll(".t-payme-metodo")].find(b => b.querySelector("strong").textContent === nombres[metodo]);
+  await esperar(() => boton("CARD") && !boton("CARD").disabled);
   return { solicitudes, eventos, instancias, aprobados, boton,
-    async elegir(metodo) { assert.equal(boton(metodo).disabled, false); await act(async () => { boton(metodo).click(); }); },
+    async elegir(metodo) {
+      assert.equal(boton(metodo).disabled, false);
+      const anteriores = instancias.length;
+      await act(async () => { boton(metodo).click(); });
+      await esperar(() => !boton(metodo).disabled &&
+        ((instancias.length > anteriores && typeof instancias.at(-1).error === "function") || document.querySelector(".t-error")));
+    },
     fallarNonce() { fallo = true; },
     resultado(pago) { resultado = pago; },
     async cerrar() { await act(async () => root.unmount()); dom.window.close(); global.fetch = fetchOriginal; }

@@ -100,6 +100,12 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Bitácora
 
+### 28-10-2026 · 17:59 America/Lima · Publicación PR19 y espera determinista de pruebas
+
+- **Autor/estado:** Codex para Axel, A04 con tienda Rojas. Publicados9edbe1d y5758d86 en cueva, [PR19](https://github.com/AXL031/savefood_automatizacion/pull/19) a main, merge autorizado expresamente. CI detectó en Node22/Linux que el test cerraba Flex antes de terminar crypto.subtle.digest; la API de tienda pasó39 casos en ese mismo job.
+- **Cambio/validación:** payme-cambio.test.cjs espera callbacks del SDK simulado/error y fin de ocupado con límite5s; conserva todas las aserciones. Trece pruebas correctas en Windows y trece en imagen Linux/Node22 sin red. Solo fixture/guía, sin lógica de producto, migración, configuración ni efectos externos.
+- **Siguiente paso:** publicar esta corrección, verificar CI sobre la nueva cabeza e integrar mediante PR19. El enlace del PR conserva el estado canónico y los checks finales.
+
 ### 28-10-2026 · 17:52 America/Lima · Preparar jornada del 28 en la aplicación actual
 
 - **Autor/tareas/estado:** Codex para Axel, coordinación A04 con dominios Sanchez/Vera/Bohorquez/Rojas/Aguirre conservados. INTEGRADO LOCAL como preparación de datos para prueba, no nuevo simulador. La aclaración posterior de Axel sustituye la elección inicial de copia separada: usar módulos y Telegram ya existentes. No se atribuye implementación nueva a integrantes.

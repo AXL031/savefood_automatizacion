@@ -25,3 +25,8 @@ recorrido visual del checkout. Registrar pruebas reales y bloqueos en
 ## Ampliación vigente · 28-10-2026 · Tienda por API
 
 payme-integracion.test.cjs prueba respuesta perdida y recuperación del mismo intento, quote congelada, rechazo de otra compra y reintento comercial con capacidad privada. No es comprobación visual ni prueba de un pago real de Payme.
+
+
+## Esperas del checkout en CI · 28-10-2026
+
+El fixture espera que Flex haya registrado sus callbacks o mostrado un error y terminado el estado ocupado antes de interactuar. React act no garantiza por sí solo que crypto.subtle.digest haya terminado en Node22/Linux. Se mantiene un límite de cinco segundos y falla si no aparece el estado esperado; no se debilitan las comprobaciones ni se cambia el código del producto. Trece escenarios correctos en Windows y en la imagen Linux/Node22 con red deshabilitada.
