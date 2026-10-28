@@ -15,6 +15,7 @@ backend/*.egg-info
 **/.pytest_cache
 **/.cache
 frontend
+tienda
 docs
 scripts
 foodsave-ml/*.csv

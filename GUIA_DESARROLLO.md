@@ -66,3 +66,26 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 [Contrato vigente, APIs y límites](docs/api/contrato-flujo-promociones.md). Aplicar `0015_flujo_promociones` antes de actualizar API/worker/Beat. El diagnóstico no ejecuta inferencia ni envía mensajes; guardar configuración no agenda. Consultas de tareas/evaluaciones admiten paginación real con total. La pausa no recupera horas perdidas: reprogramar antes de reanudar. Deshabilitar promociones afecta ajustes nuevos; tareas ya reservadas conservan su versión. Hora simulada de evaluación avanza por el tiempo real transcurrido desde el ajuste para comprobar frescura.
 
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
+
+
+## Tienda independiente y Payme sandbox · 21-10-2026
+
+Solicitud expresa de Axel: proyecto `tienda/` con frontend, API y datos propios;
+FoodSave solo por API HTTP. No montar/importar módulos ni usar su PostgreSQL.
+Payme Flex usa exclusivamente preproducción, cuatro botones y comprador invitado
+sin paso Google/Gmail en checkout. Correo del comprador de cualquier proveedor.
+[Arranque y credenciales](tienda/README.md), [contrato](docs/api/contrato-payme-pruebas.md)
+y [ADR-010](docs/arquitectura/decisiones/ADR-010-tienda-independiente-payme.md).
+Catálogo/inventario/pedidos reales por API siguen pendientes de T01/T03/T04.
+
+## Acoplamiento de Bohorquez · 28-10-2026
+
+Backport adaptado 4c2a271: [contrato de operaciones](docs/api/contrato-operacion-integrada.md). Conserva tienda independiente por HTTP, caja y entradas múltiples de Cueva. Nueva migración 0023 sobre 0022; producción explícita, recepción asistida, avisos/monitor. No publica en tienda ni altera histórico/ML. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites. Publicación administrativa en /tienda-admin; procesos Compose comercio y tienda/conciliador separados de Celery/Telegram. Nueva migración 0024, preservando 0001–0023. scripts/configurar-integracion-tienda.cjs prepara dos tokens privados por dirección y copia previa de ambos .env sin mostrar secretos.
+
+## Jornada en la aplicación actual · 28-10-2026
+
+Aclaración expresa de Axel: usar la instalación existente (FoodSave 3100, tienda 3101 y Telegram real configurado) para la exposición. Se autoriza preparar puntualmente ventas sintéticas del 27, continuidad histórica identificada, lotes recientes, ajustes auditados de insumos y modelo/flujo del 28, con respaldo previo y conservación de la carga/configuración anterior. No crear otra instalación ni un receptor ficticio para reemplazar los módulos actuales. El código de preparación separado anterior fue retirado y sus servicios quedaron detenidos. Guion: docs/equipo/guion-prueba-2026-10-28.md.

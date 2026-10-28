@@ -21,6 +21,8 @@ Archivos técnicos observados al preparar esta guía: `page.tsx`. Su presencia n
 
 ## Trabajo en esta carpeta
 
+**Seguimiento visual · 21-10-2026:** el historial destaca hasta tres ejecuciones EN_EJECUCION/REINTENTANDO de la página consultada con `FlujoEjecucion` compacto y acceso «Seguir ejecución». Se conserva paginación y consulta cada cinco segundos; no se afirma listar todas las tareas activas. El detalle ofrece el recorrido completo y enlaces a los IDs de resultado. Contrato HTTP y asistente sin cambios en este corte.
+
 **A03 disponible:** `page.tsx` crea y lista programaciones reales y ejecuciones de la API. Consulta periódicamente los estados mientras hay trabajo activo, muestra despacho/reintento y separa la hora real del escenario histórico. Beat despacha automáticamente; las salidas de negocio aparecen solo cuando sus responsables entreguen los handlers.
 
 1. Listar programaciones/ejecuciones con filtros y estados canónicos de demo.

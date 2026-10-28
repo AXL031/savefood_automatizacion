@@ -34,7 +34,8 @@ def comprobar(sesion: Session, datos: ConfigurarFlujo) -> dict:
         requisitos.append({"titulo": titulo, "listo": bool(listo), "motivo": motivo, "enlace": enlace})
     nombres = productos_activos(sesion, datos.producto_ids)
     reservadas = fechas_con_compra_activa(sesion, datos.fecha_objetivo_demo, datos.fecha_objetivo_demo + timedelta(days=datos.dias - 1))
-    requisito("Fechas disponibles para compras", not reservadas,
+    requisito("Fechas disponibles para compras", datos.prueba_repetible or not reservadas,
+              "Prueba repetible: cada ejecución nueva puede generar pedidos para la misma fecha y conserva los anteriores." if datos.prueba_repetible else
               "Ya hay compras activas para: " + ", ".join(reservadas) if reservadas else "El calendario no repite una fecha con compra activa.", "/compras")
     sku = listar_skus_bakery(sesion)
     requisito("Productos", len(nombres) == len(datos.producto_ids) and all(i in sku for i in datos.producto_ids),
@@ -99,6 +100,9 @@ def _hora_utc(local, zona):
 
 def programar_flujo(sesion, datos: ProgramarFlujo, usuario_id):
     solicitud = datos.model_dump(mode="json")
+    # Conservar la identidad de calendarios previos que no conocían esta opción.
+    if not datos.prueba_repetible:
+        solicitud.pop("prueba_repetible", None)
     claves = [f"{datos.clave_idempotencia}-{dia}" for dia in range(datos.dias)]
     anteriores = list(sesion.scalars(select(ProgramacionDemo).where(ProgramacionDemo.clave_idempotencia.in_(claves)).order_by(ProgramacionDemo.id)))
     if anteriores:
@@ -119,6 +123,7 @@ def programar_flujo(sesion, datos: ProgramarFlujo, usuario_id):
             fecha_hora_simulada_local=datetime.combine(objetivo, datos.hora_simulada),
             parametros={"fecha_objetivo_demo": objetivo.isoformat(), "producto_ids": datos.producto_ids,
                         "modelo_id": diagnostico["modelo_id"], "modo_envio_pedidos": datos.modo_envio_pedidos,
+                        **({"prueba_repetible": True} if datos.prueba_repetible else {}),
                         "solicitud_flujo": solicitud}, clave_idempotencia=claves[dia], creado_por=usuario_id))
     return resultado
 

@@ -1,5 +1,8 @@
 # ADR-009: tienda del cliente con compra simulada y promociones aprobadas
 
+> Actualización 21-10-2026 solicitada por Axel: la tienda es el proyecto independiente `tienda/`; solo se comunica con FoodSave por API HTTP. Payme Flex se integra exclusivamente en preproducción con cuatro botones. El inventario real sigue pendiente de T01/T03/T04. Prevalece ADR-010 y el contrato Payme; las ubicaciones y pagos simulados descritos abajo son el corte previo.
+
+
 **Estado:** aceptada para diseño el 20-10-2026 por solicitud de Max Rojas, autor y coordinador del bloque Tienda. **Sin implementación** en este corte: primero se revisa la documentación. Amplía [ADR-006](ADR-006-identidades-lotes-pronosticos.md), [ADR-007](ADR-007-automatizaciones-demo.md) y [ADR-008](ADR-008-pedidos-desde-el-plan.md). Ante contradicción sobre ventas a clientes, precios publicados o promociones visibles, prevalece esta decisión. Contrato: [contrato-tienda.md](../../api/contrato-tienda.md).
 
 ## Contexto

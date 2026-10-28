@@ -65,3 +65,8 @@ Codex para Axel. Probar en un minuto prepara una ejecución próxima de un día,
 ## Gestión y avisos · 14-10-2026 · Codex para Axel
 
 Selector de productos en tabla paginada con búsqueda, Solo seleccionados y contador global; seleccionar todos incluye todo el catálogo, independiente de página/filtro. Resumen de nombres desplegable. Proveedores/ofertas/destinos pendientes aparecen como avisos con recomendación y enlace por ingrediente/proveedor; no bloquean el plan. Compras conserva bloqueos de envío.
+
+
+## Pruebas repetibles autorizadas · 21-10-2026
+
+AsistenteFlujo añade checkbox de Prueba repetible en Horario, false por defecto y conservado en configuración. Invalida diagnóstico al cambiar, muestra modalidad en resumen y etiqueta Programar prueba nueva. Una programación confirmada con éxito rota la clave; errores mantienen la clave para recuperar sin duplicar. Probar en un minuto conserva fecha/modelo/modalidad; no programa hasta confirmar. Los datos cargados y la aprobación/envío son los habituales, no un canal simulado.

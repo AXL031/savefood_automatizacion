@@ -13,6 +13,8 @@ import { corregirVenta, listarProductos, listarRevisiones, listarPaginaVentas } 
 import type { Producto, RevisionVenta, VentaDiaria } from "@/types/catalogo";
 import { formatearFechaHora } from "@/utils/fechas";
 
+import { CajaPresencial } from "@/features/ventas/CajaPresencial";
+
 type Correccion = { venta: VentaDiaria; unidades: string; motivo: string };
 
 function PanelRevisiones({ token, venta }: { token: string; venta: VentaDiaria }) {
@@ -48,7 +50,7 @@ function PanelRevisiones({ token, venta }: { token: string; venta: VentaDiaria }
   );
 }
 
-function Contenido({ contexto }: { contexto: ContextoSesion }) {
+function Historico({ contexto }: { contexto: ContextoSesion }) {
   const { token, perfil, negocio } = contexto;
   const administrador = perfil.rol === "ADMINISTRADOR";
 
@@ -270,11 +272,16 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   );
 }
 
+function Contenido({ contexto }: { contexto: ContextoSesion }) {
+  const [vista, setVista] = useState<"caja" | "historico">("caja");
+  return <><nav className="form-actions section-space" aria-label="Vistas de ventas"><button type="button" className={vista === "caja" ? "button-primary" : "button-secondary"} aria-pressed={vista === "caja"} onClick={() => setVista("caja")}>Caja y compras de tienda</button><button type="button" className={vista === "historico" ? "button-primary" : "button-secondary"} aria-pressed={vista === "historico"} onClick={() => setVista("historico")}>Histórico importado</button></nav>{vista === "caja" ? <CajaPresencial contexto={contexto} /> : <Historico contexto={contexto} />}</>;
+}
+
 export default function PaginaVentas() {
   return (
     <ProtectedShell
       titulo="Ventas"
-      descripcion="Unidades vendidas por día y producto, con historial de correcciones."
+      descripcion="Registra ventas presenciales y consulta compras de tienda, detalle e historial."
     >
       {(contexto) => <Contenido contexto={contexto} />}
     </ProtectedShell>

@@ -1,5 +1,7 @@
 # Contratos del recorrido demostrable
 
+**28-10-2026 · Inventario:** [contrato implementado de entradas de productos](contrato-entradas-productos.md). Nueva frontera de entrada múltiple, fecha de ingreso de producto y movimiento ENTRADA, consumidos por disponibilidad y caja en una transacción.
+
 ## Inventario desde recepción de Compras · 15-10-2026
 
 `inventario.servicio.registrar_recepcion_ingrediente(sesion, *, ingrediente_id, cantidad_base, codigo_lote, lote_informado, fecha_ingreso, fecha_caducidad, clave, motivo, usuario_id) -> ResultadoMovimiento` es interfaz pública sin commit. Crea lote independiente y movimiento RECEPCION positivo, con claves únicas, hasta tres decimales exactos y unidades enteras si corresponde; rechaza ingrediente inactivo, código repetido y caducidad anterior al ingreso. Compras orquesta recibo/líneas/lotes/movimientos en una transacción. `consultar_disponibilidad(fecha)` excluye lotes de ingrediente con fecha_ingreso posterior; NULL conserva el comportamiento de aperturas anteriores. Es filtro de ingreso, no reconstrucción de todos los saldos históricos. Detalle HTTP, bloqueo e idempotencia en [contrato-pedidos.md](contrato-pedidos.md).
@@ -408,3 +410,7 @@ Frontera pública: `obtener_necesidades(sesion, plan_id)` devuelve estado, metad
 ## Ventas: paginación disponible · 30-09-2026
 
 GET /ventas?limite=25&desplazamiento=50&producto_id=1&desde=2022-08-01&hasta=2022-08-23 conserva datos como lista y añade metadatos={limite:25,desplazamiento:50,total:total_filtrado,total_devuelto:filas_de_la_pagina}. Desplazamiento entero >=0, limite entre 1 y 500, hasta inclusivo. Total usa los mismos filtros; orden estable fecha_local DESC, producto_id, id. Un desplazamiento fuera de rango devuelve datos=[] con el total conservado. Ausencia sigue desconocida, cero explícito se conserva. Sin migración; consultas Bearer existentes siguen compatibles.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+[Integración de tienda independiente](contrato-integracion-tienda.md): catálogo/publicaciones, cotización/reservas y registro idempotente de tickets TIENDA. Amplía el corte histórico de caja y Payme, sin implementar cierre/ML.

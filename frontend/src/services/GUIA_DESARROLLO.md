@@ -111,3 +111,13 @@ Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: do
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. listarModelos recorre páginas del servidor hasta recuperar todas las versiones; listarPaginaCorridas usa total/limite/desplazamiento y filtros. obtenerEvaluacion admite fechas opcionales sin romper sus consumidores anteriores. Usa solicitarSobre/solicitar comunes y AbortSignal.
 
 [Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+
+## Caja presencial · 26-10-2026
+
+`ventas.ts` consume rutas de caja incluyendo recuperación propia por clave; reutiliza http y Bearer habituales. No comunica con tienda ni pasarela. [Contrato implementado](../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+
+## Entradas de productos · 28-10-2026
+
+inventario.ts añade contexto, registro, historial/detalle y recuperación propia por clave para entradas múltiples. Conserva cliente HTTP/Bearer y peticiones de ajustes/disponibilidad anteriores. [Contrato implementado](../../../docs/api/contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.

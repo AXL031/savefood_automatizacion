@@ -1,5 +1,15 @@
 # Contrato de pedidos derivados del pronóstico
 
+## Pruebas repetibles autorizadas · 21-10-2026
+
+Solicitud de Axel permite varias ejecuciones nuevas sobre la misma fecha objetivo mediante `prueba_repetible: true` explícito en la programación o configuración del flujo. Es booleano estricto y false por defecto; se congela en la entrada del motor. `generar_pedidos(sesion, plan_id, modo_envio=None, prueba_repetible=False)` conserva una propuesta por plan y todos sus pedidos: reentregar la misma ejecución/plan sigue siendo idempotente. Cada ejecución nueva tiene otro plan/propuesta; no sustituye, cancela ni borra anteriores aunque estén enviados o inciertos.
+
+Migración aditiva `0020_pruebas_repetibles` sobre 0019 añade la marca a propuesta_compra, false para registros anteriores. El índice único parcial de fecha protege únicamente propuestas activas normales. Las pruebas no reservan una fecha para las compras normales y no quedan bloqueadas por ellas; diagnóstico, validación de generación e índice usan esta misma frontera. No habilita recompra normal ni reintento ciego de un envío incierto. Downgrade se rechaza si existe cualquier propuesta marcada para conservar su identidad e historial.
+
+GET de propuesta/pedido incorpora `prueba_repetible`. La interfaz la identifica y el mensaje de esos pedidos empieza por «PRUEBA REPETIBLE — NO SURTIR». Corrección conserva la marca; aprobación, destino verificado, outbox y conciliación mantienen sus reglas. Esta modalidad usa la base y servicios habituales: no es una base aislada, no simula el canal Telegram y una recepción administrativa explícita continúa creando movimientos reales de esta instalación. Guardar/configurar no envía; AUTO requiere la autorización existente y manual espera aprobación. Las pruebas automatizadas usan Telegram falso.
+
+Las secciones anteriores a este corte que dicen «una propuesta activa por fecha» se refieren a modalidad normal. No hay cambio de stock por programar, pronosticar, generar, aprobar o enviar un pedido.
+
 ## Ampliación autorizada · 15-10-2026 · Corrección y recepción
 
 Solicitud expresa de Axel amplía el alcance anterior con recepción de compras de ingredientes. Crear/aprobar/enviar pedidos sigue sin mover stock. Solo confirmar mercancía recibida produce entradas RECEPCION auditadas. Ventas en vivo y simulación acelerada quedan únicamente planificadas.

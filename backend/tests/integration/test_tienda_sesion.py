@@ -81,3 +81,15 @@ def test_verificacion_de_firma_audiencia_emisor_y_vigencia(google_local):
         with pytest.raises(ErrorAPI) as error:
             verificar_con_google(invalido)
         assert error.value.codigo == "GOOGLE_TOKEN_INVALIDO"
+
+
+def test_cors_tienda_independiente(cliente):
+    respuesta = cliente.options(RUTA + "/google", headers={
+        "Origin": "http://localhost:3101", "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type"})
+    assert respuesta.status_code == 200
+    assert respuesta.headers["access-control-allow-origin"] == "http://localhost:3101"
+    assert "access-control-allow-credentials" not in respuesta.headers
+    ajeno = cliente.options(RUTA + "/google", headers={
+        "Origin": "https://ajeno.example", "Access-Control-Request-Method": "POST"})
+    assert ajeno.status_code == 400

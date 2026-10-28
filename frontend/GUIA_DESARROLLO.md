@@ -1,5 +1,8 @@
 # Guía de desarrollo — Aplicación web común
 
+> Actualización 21-10-2026 solicitada por Axel: la tienda es el proyecto independiente `tienda/`; solo se comunica con FoodSave por API HTTP. Payme Flex se integra exclusivamente en preproducción con cuatro botones. El inventario real sigue pendiente de T01/T03/T04. Prevalece ADR-010 y el contrato Payme; las ubicaciones y pagos simulados descritos abajo son el corte previo.
+
+
 **Carpeta:** `frontend`.
 
 **Responsable:** Edu Sanchez. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.
@@ -44,3 +47,11 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 [Contrato vigente, APIs y límites](../docs/api/contrato-flujo-promociones.md). Aplicar `0015_flujo_promociones` antes de actualizar API/worker/Beat. El diagnóstico no ejecuta inferencia ni envía mensajes; guardar configuración no agenda. Consultas de tareas/evaluaciones admiten paginación real con total. La pausa no recupera horas perdidas: reprogramar antes de reanudar. Deshabilitar promociones afecta ajustes nuevos; tareas ya reservadas conservan su versión. Hora simulada de evaluación avanza por el tiempo real transcurrido desde el ajuste para comprobar frescura.
 
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
+
+## Acoplamiento compatible de Bohorquez · 28-10-2026
+
+Operación diaria, portal proveedor, avisos/campana y jerarquía de menú incorporados sin reemplazar nuestra caja/entradas ni tienda externa. Docker mantiene usuario no root y limita chown al caché de Next, adaptación compatible de Bohorquez. Contrato en ../docs/api/contrato-operacion-integrada.md; evidencia en Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+Nueva /tienda-admin publica fichas sin precios paralelos, muestra reservas/entregas y usa sesión FoodSave. Ventas filtra ambos canales, conserva anulación solo presencial y distingue cobro verificado. Ningún Bearer privado de integración se añade al navegador. Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites.

@@ -1,5 +1,7 @@
 # Guía de desarrollo — Inventario por lotes y movimientos
 
+**28-10-2026 · Entrada de productos:** `entradas.py` publica contexto, esquemas estrictos, registro y detalle; rutas en `rutas.py`. Entrada/código/producto, movimiento positivo ENTRADA y saldo comparten una transacción; hasta 100 lotes, clave por usuario y bloqueo de productos ordenado. Migración 0022 y `fecha_ingreso` de producto para excluir entradas posteriores a la consulta, también en caja. Se rechazan ajustes anteriores al ingreso conocido. [Contrato vigente](../../../../docs/api/contrato-entradas-productos.md); no consume ingredientes ni dispara promociones. Autor Codex para Axel; responsabilidad Vera conservada y coordinación en Cueva.
+
 **Carpeta:** `backend/app/modules/inventario`.
 
 **Responsable:** Leonardo Vera. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.
@@ -64,3 +66,16 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Recepción y corrección autorizadas · 15-10-2026
 
 Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
+
+## Caja presencial · 26-10-2026
+
+`ventas.py` publica disponibilidad/retirada/reintegración para caja presencial: lotes con fecha límite conocida vigente, caducidad informada vigente o aviso; orden de fecha límite/caducidad/ID, bloqueo global por ID y validación del carrito completo. VENTA negativa y ANULA_VENTA positiva de producto; no ingredientes ni producción. El consumidor confirma una única transacción. [Contrato implementado](../../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+## Acoplamiento de Bohorquez · 28-10-2026
+
+Backport adaptado 4c2a271: [contrato de operaciones](../../../../docs/api/contrato-operacion-integrada.md). Conserva tienda independiente por HTTP, caja y entradas múltiples de Cueva. Nueva migración 0023 sobre 0022; producción explícita, recepción asistida, avisos/monitor. No publica en tienda ni altera histórico/ML. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+reservas.py publica el agregado activo/no vencido por lote. ventas.py descuenta reservas de lo vendible para caja y tienda, excluye ingresos futuros y consume asignaciones exactas en confirmar tienda. Ajustes negativos respetan reservas. Reservar/expirar no modifica saldo físico. Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites.

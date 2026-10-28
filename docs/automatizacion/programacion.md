@@ -1,5 +1,13 @@
 # Programación de la exposición
 
+## Seguimiento y predicción vigentes · 21-10-2026
+
+La vista de ejecución presenta espera, despacho, procesamiento y resultado, con consulta cada tres segundos mientras esté activa. Distingue reintento/fallo/cancelación y pérdida de conexión, enlaza resultados por sus IDs y conserva intentos. El listado destaca hasta tres tareas activas de su página del historial. Una ejecución COMPLETADA no confirma por sí sola envío al proveedor ni conclusión de la evaluación reservada.
+
+El worker confirma el inicio del intento antes de procesar; el manejador de propuesta guarda pronóstico, plan y compras juntos en su transacción. No publica telemetría por subetapa, por lo que las tarjetas de dominio son explicación del recorrido, sin porcentaje ni etapa interna fingidos. No cambia el contrato HTTP ni la política de recuperación. Comprobación SSR/estados sin datos operativos: `node scripts/verificar-flujo-automatizacion.cjs`.
+
+La predicción programada ya usa ventas históricas anteriores al objetivo. Ventas tiene importación, consulta y corrección de agregados diarios; caja/tickets, cierre y alimentación continua siguen en [diseño pendiente](../equipo/plan-ventas-vivo-simulacion.md). Además de historia suficiente, la inferencia actual exige una fecha dentro de la partición de prueba del modelo. Consultas de solo lectura en la instalación de este corte: ventas 11-01-2025–09-10-2026 (88 543 filas), modelo #1 LISTO_DEMO con prueba 01-07-2026–30-09-2026; API/Beat/worker activos. Es un estado local, no una configuración portable ni evidencia de pronóstico operativo para hoy.
+
 ## Referencia vigente · 20-10-2026
 
 Para preparar diagramas usar [flujos implementados](flujos-implementados.md), contrastados con el registro y sus consumidores. El sistema admite todo el catálogo y calendario finito de 1–31 días; los avisos de ofertas permiten planificar, mientras Compras conserva sus bloqueos de envío. Hay ejecución adelantada explícita, reevaluación por corrección de ventas, promoción tras ajuste y recepción administrativa. El [contrato configurable](../api/contrato-flujo-promociones.md), el [contrato de pedidos](../api/contrato-pedidos.md) y los flujos enlazados describen el estado actual. Las secciones siguientes son **historial**: sus límites de cinco productos, rótulos y pendientes no describen el corte vigente.
@@ -46,3 +54,10 @@ API: POST /pedidos/generar {plan_id}, GET /pedidos y /pedidos/{id}, GET /compras
 ## Corte configurable vigente · 11-10-2026
 
 El asistente admite una tarea o calendario histórico de 1–31 días reales en la zona del negocio. Cada tarea avanza un día histórico y conserva modelo/modo. Configuración guardada, diagnóstico, gestión de pendientes y paginación real: [contrato](../api/contrato-flujo-promociones.md). Promoción se reserva dentro del ajuste nuevo, no al generar plan/pedido. Se reevalúa la vigencia del movimiento antes de registrar sugerencia o rechazo. Ningún cálculo publica descuentos ni modifica saldos.
+
+
+## Repetir una prueba completa · 21-10-2026
+
+Opción administrativa explícita «Prueba repetible» en Horario. Permite otra programación y nuevos pedidos para la misma fecha aunque una propuesta anterior ya esté enviada, sin cancelarla ni borrarla. El flujo conserva pronóstico/plan/compras/evaluación y el modo manual/automático; misma ejecución/plan sigue sin duplicar. Compras muestra la marca y el mensaje indica PRUEBA REPETIBLE — NO SURTIR. Modo normal mantiene una compra activa por fecha. Véanse los contratos de [pedidos](../api/contrato-pedidos.md#pruebas-repetibles-autorizadas--21-10-2026) y [flujo](../api/contrato-flujo-promociones.md#prueba-repetible-del-flujo--21-10-2026); aplicar 0020 antes de activar API/worker nuevos.
+
+Para la prueba local: abrir Horario, marcar la opción, elegir el día dentro del rango del modelo y pulsar Probar en un minuto; comprobar requisitos, elegir aprobación/envío y confirmar Programar prueba nueva. Repetir requiere otra solicitud/horario futuro, no reintentar la misma ejecución finalizada. Guardar no programa ni envía. Se utilizan datos y servicios habituales; Telegram no está simulado en la aplicación y una recepción administrativa explícita mantiene su efecto de inventario. Las verificaciones automatizadas usan datos aislados y transporte falso.

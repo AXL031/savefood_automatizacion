@@ -1,5 +1,9 @@
 # Guía de desarrollo — Layout y navegación protegida
 
+## Ventas como módulo independiente · 26-10-2026
+
+Por solicitud de Axel, `/ventas` pertenece a su propia sección **Ventas**, con acceso **Caja e historial**, fuera de Preparar datos. La misma definición de navegación actualiza el encabezado de contexto, el indicador de ruta y el menú móvil. Primera carga y Productos conservan su ubicación. No cambia la API ni los permisos. Autor: Codex para Axel, coordinación E04; responsabilidad de UI de Sanchez conservada.
+
 **Carpeta:** `frontend/src/components/layout`.
 
 **Responsable:** Edu Sanchez. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.
@@ -74,3 +78,11 @@ Codex para Axel implementó configuración reutilizable, comprobación de requis
 [Contrato vigente, APIs y límites](../../../../docs/api/contrato-flujo-promociones.md). Aplicar `0015_flujo_promociones` antes de actualizar API/worker/Beat. El diagnóstico no ejecuta inferencia ni envía mensajes; guardar configuración no agenda. Consultas de tareas/evaluaciones admiten paginación real con total. La pausa no recupera horas perdidas: reprogramar antes de reanudar. Deshabilitar promociones afecta ajustes nuevos; tareas ya reservadas conservan su versión. Hora simulada de evaluación avanza por el tiempo real transcurrido desde el ajuste para comprobar frescura.
 
 Las notas fechadas de cortes anteriores son historial; no usar sus pendientes como estado actual. Pruebas y límites finales en los registros Cueva/Vera/Sanchez, incluyendo PostgreSQL/Redis y Telegram real solo si fueron ejecutados. No confundir fixtures QA con datos de operación.
+
+## Acoplamiento de Bohorquez · 28-10-2026
+
+Backport adaptado 4c2a271: [contrato de operaciones](../../../../docs/api/contrato-operacion-integrada.md). Conserva tienda independiente por HTTP, caja y entradas múltiples de Cueva. Nueva migración 0023 sobre 0022; producción explícita, recepción asistida, avisos/monitor. No publica en tienda ni altera histórico/ML. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+Ventas incorpora Publicar en tienda (/tienda-admin). La tienda del comprador permanece en 3101 con proyecto propio; no confundir la administración FoodSave con el checkout invitado.

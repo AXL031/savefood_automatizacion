@@ -14,7 +14,7 @@ class PropuestaCompra(Base):
     __table_args__ = (
         UniqueConstraint("plan_id", name="uq_propuesta_compra_plan"),
         Index("uq_propuesta_compra_fecha_activa", "fecha_objetivo", unique=True,
-              sqlite_where=text("activa = 1"), postgresql_where=text("activa")),
+              sqlite_where=text("activa = 1 AND prueba_repetible = 0"), postgresql_where=text("activa AND NOT prueba_repetible")),
         CheckConstraint("estado IN ('GENERADA','BLOQUEADA','SIN_FALTANTES','CANCELADA')", name="ck_propuesta_compra_estado"),
         CheckConstraint("(estado IN ('GENERADA','BLOQUEADA') AND activa) OR (estado IN ('SIN_FALTANTES','CANCELADA') AND NOT activa)", name="ck_propuesta_compra_activa"),
         CheckConstraint("modo_envio IN ('REQUIERE_APROBACION','AUTOMATICO')", name="ck_propuesta_compra_modo"),
@@ -24,6 +24,7 @@ class PropuestaCompra(Base):
     fecha_objetivo: Mapped[date] = mapped_column(Date, nullable=False)
     estado: Mapped[str] = mapped_column(String(24), nullable=False)
     activa: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    prueba_repetible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=text("false"))
     modo_envio: Mapped[str] = mapped_column(String(24), nullable=False)
     necesidades_json: Mapped[dict] = mapped_column(JsonPersistido, nullable=False)
     incidencias_json: Mapped[list] = mapped_column(JsonPersistido, nullable=False)

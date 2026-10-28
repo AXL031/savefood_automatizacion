@@ -1,0 +1,290 @@
+{
+  "version": "tienda-ejemplo-20261021",
+  "productos": [
+    {
+      "id": 1,
+      "nombre": "Croissant de Mantequilla",
+      "precio": "6.50",
+      "stock": 24,
+      "codigo": "CROISSANT",
+      "categoria": "panes",
+      "descripcion": "Hojaldre laminado a mano con mantequilla, crujiente por fuera y suave por dentro.",
+      "presentacion": "90 g · Por unidad",
+      "imagen": "/tienda/productos/croissant.jpg"
+    },
+    {
+      "id": 2,
+      "nombre": "Baguette Artesanal",
+      "precio": "6.50",
+      "stock": 18,
+      "codigo": "BAGUETTE",
+      "categoria": "panes",
+      "descripcion": "Harina de molienda tradicional y fermentación lenta de 24 horas. Corteza dorada.",
+      "presentacion": "250 g · Alargada",
+      "imagen": "/tienda/productos/baguette.jpg"
+    },
+    {
+      "id": 3,
+      "nombre": "Pan Ciabatta",
+      "precio": "4.50",
+      "stock": 30,
+      "codigo": "CIABATTA",
+      "categoria": "panes",
+      "descripcion": "Corteza crocante y miga alveolada, elaborado con harina de fuerza, agua y sal.",
+      "presentacion": "250 g · Por pieza",
+      "imagen": "/tienda/productos/ciabatta.jpg"
+    },
+    {
+      "id": 4,
+      "nombre": "Brioche de Mantequilla",
+      "precio": "14.00",
+      "stock": 3,
+      "codigo": "BRIOCHE",
+      "categoria": "panes",
+      "descripcion": "Trenza esponjosa con mantequilla y un toque de vainilla.",
+      "presentacion": "400 g · Molde",
+      "imagen": "/tienda/productos/brioche.jpg"
+    },
+    {
+      "id": 5,
+      "nombre": "Selva Negra",
+      "precio": "52.00",
+      "stock": 6,
+      "codigo": "SELVA_NEGRA",
+      "categoria": "tortas",
+      "descripcion": "Bizcocho de chocolate, crema chantilly y cerezas.",
+      "presentacion": "18 cm · 8 porciones",
+      "imagen": "/tienda/productos/selva-negra.jpg"
+    },
+    {
+      "id": 6,
+      "nombre": "Red Velvet",
+      "precio": "55.00",
+      "stock": 0,
+      "codigo": "RED_VELVET",
+      "categoria": "tortas",
+      "descripcion": "Bizcocho rojo aterciopelado con frosting de queso crema.",
+      "presentacion": "20 cm · 10 porciones",
+      "imagen": "/tienda/productos/red-velvet.jpg"
+    },
+    {
+      "id": 7,
+      "nombre": "Torta Tres Leches",
+      "precio": "22.00",
+      "stock": 9,
+      "codigo": "TRES_LECHES",
+      "categoria": "tortas",
+      "descripcion": "Bizcocho esponjoso bañado en tres leches y cubierto con merengue.",
+      "presentacion": "Porción individual",
+      "imagen": "/tienda/productos/tres-leches.jpg"
+    },
+    {
+      "id": 8,
+      "nombre": "Turrón de Doña Pepa",
+      "precio": "38.00",
+      "stock": 7,
+      "codigo": "TURRON_DONA_PEPA",
+      "categoria": "tortas",
+      "descripcion": "Varillas con anís bañadas en miel de chancaca y grageas.",
+      "presentacion": "500 g · 4-5 porciones",
+      "imagen": "/tienda/productos/turron-dona-pepa.jpg"
+    },
+    {
+      "id": 9,
+      "nombre": "Keke Inglés",
+      "precio": "26.00",
+      "stock": 8,
+      "codigo": "KEKE_INGLES",
+      "categoria": "kekes",
+      "descripcion": "Frutas confitadas y pasas maceradas en una masa húmeda y aromática.",
+      "presentacion": "650 g · Molde rectangular",
+      "imagen": "/tienda/productos/keke-ingles.jpg"
+    },
+    {
+      "id": 10,
+      "nombre": "Keke de Naranja Glaseado",
+      "precio": "22.00",
+      "stock": 12,
+      "codigo": "KEKE_NARANJA",
+      "categoria": "kekes",
+      "descripcion": "Zumo de naranja recién exprimido con glaseado cítrico.",
+      "presentacion": "550 g · Corona",
+      "imagen": "/tienda/productos/keke-naranja.jpg"
+    },
+    {
+      "id": 11,
+      "nombre": "Keke de Plátano y Cacao",
+      "precio": "6.50",
+      "stock": 14,
+      "codigo": "KEKE_PLATANO",
+      "categoria": "kekes",
+      "descripcion": "Plátanos maduros, nueces y chispas de chocolate.",
+      "presentacion": "Por porción",
+      "imagen": "/tienda/productos/keke-platano.jpg"
+    },
+    {
+      "id": 12,
+      "nombre": "Panetón con Higos y Cacao",
+      "precio": "48.00",
+      "stock": 4,
+      "codigo": "PANETON",
+      "categoria": "kekes",
+      "descripcion": "Masa madre de fermentación lenta con higos y chispas de chocolate.",
+      "presentacion": "850 g · Lata",
+      "imagen": "/tienda/productos/paneton.jpg"
+    },
+    {
+      "id": 13,
+      "nombre": "Pie de Limón Individual",
+      "precio": "11.50",
+      "stock": 2,
+      "codigo": "PIE_LIMON",
+      "categoria": "postres-personales",
+      "descripcion": "Masa quebrada de mantequilla, crema de limón y merengue tostado.",
+      "presentacion": "120 g · Individual",
+      "imagen": "/tienda/productos/pie-limon.jpg"
+    },
+    {
+      "id": 14,
+      "nombre": "Tartaleta de Limón y Merengue",
+      "precio": "9.00",
+      "stock": 10,
+      "codigo": "TARTALETA_LIMON",
+      "categoria": "postres-personales",
+      "descripcion": "Base crocante de galleta y crema de limón con merengue suizo.",
+      "presentacion": "110 g · Individual",
+      "imagen": "/tienda/productos/tartaleta-limon.jpg"
+    },
+    {
+      "id": 15,
+      "nombre": "Éclair de Vainilla",
+      "precio": "11.50",
+      "stock": 0,
+      "codigo": "ECLAIR",
+      "categoria": "postres-personales",
+      "descripcion": "Pasta choux rellena de crema pastelera de vainilla y glaseado de chocolate.",
+      "presentacion": "Por unidad",
+      "imagen": "/tienda/productos/eclair.jpg"
+    },
+    {
+      "id": 16,
+      "nombre": "Rollo de Canela Glaseado",
+      "precio": "8.00",
+      "stock": 15,
+      "codigo": "ROLLO_CANELA",
+      "categoria": "postres-personales",
+      "descripcion": "Masa brioche con canela y glaseado de queso crema.",
+      "presentacion": "Por unidad",
+      "imagen": "/tienda/productos/rollo-canela.jpg"
+    },
+    {
+      "id": 17,
+      "nombre": "Cheesecake Horneado",
+      "precio": "68.00",
+      "stock": 5,
+      "codigo": "CHEESECAKE",
+      "categoria": "postres-enteros",
+      "descripcion": "Horneado a baño maría, textura densa y cremosa sobre base de galleta.",
+      "presentacion": "1.2 kg · 10-12 porciones",
+      "imagen": "/tienda/productos/cheesecake.jpg"
+    },
+    {
+      "id": 18,
+      "nombre": "Tartaleta de Fresas",
+      "precio": "45.00",
+      "stock": 0,
+      "codigo": "TARTALETA_FRESAS",
+      "categoria": "postres-enteros",
+      "descripcion": "Fondo de masa sablé con crema diplomática y fresas frescas.",
+      "presentacion": "22 cm · 8 porciones",
+      "imagen": "/tienda/productos/tartaleta-fresas.jpg"
+    },
+    {
+      "id": 19,
+      "nombre": "Turrón de la Casa",
+      "precio": "18.00",
+      "stock": 11,
+      "codigo": "TURRON_CAJA",
+      "categoria": "postres-enteros",
+      "descripcion": "Turrón tradicional en caja para regalar.",
+      "presentacion": "Caja 350 g",
+      "imagen": "/tienda/productos/turron-caja.jpg"
+    },
+    {
+      "id": 20,
+      "nombre": "Empanada de Carne",
+      "precio": "8.50",
+      "stock": 20,
+      "codigo": "EMPANADA_CARNE",
+      "categoria": "bocados",
+      "descripcion": "Masa hojaldrada rellena de carne picada a cuchillo, aceituna y huevo.",
+      "presentacion": "180 g · Por unidad",
+      "imagen": "/tienda/productos/empanada.jpg"
+    },
+    {
+      "id": 21,
+      "nombre": "Quiche Lorraine",
+      "precio": "13.50",
+      "stock": 4,
+      "codigo": "QUICHE_LORRAINE",
+      "categoria": "bocados",
+      "descripcion": "Masa brisée con tocino ahumado y relleno de huevo y queso.",
+      "presentacion": "210 g · Porción",
+      "imagen": "/tienda/productos/quiche.jpg"
+    }
+  ],
+  "promociones": [
+    {
+      "id": 101,
+      "producto_id": 7,
+      "descuento_pct": 20,
+      "unidades_lote": 4,
+      "vigente_hasta": "20:00"
+    },
+    {
+      "id": 102,
+      "producto_id": 1,
+      "descuento_pct": 30,
+      "unidades_lote": 6,
+      "vigente_hasta": "20:00"
+    }
+  ],
+  "categorias": [
+    {
+      "codigo": "panes",
+      "nombre": "Panes y hojaldres",
+      "descripcion": "Masa madre, brioche y laminados",
+      "imagen": "/tienda/categorias/panes.jpg"
+    },
+    {
+      "codigo": "tortas",
+      "nombre": "Tortas clásicas",
+      "descripcion": "Para celebrar",
+      "imagen": "/tienda/categorias/tortas.jpg"
+    },
+    {
+      "codigo": "kekes",
+      "nombre": "Kekes caseros",
+      "descripcion": "Recién salidos",
+      "imagen": "/tienda/categorias/kekes.jpg"
+    },
+    {
+      "codigo": "postres-personales",
+      "nombre": "Postres personales",
+      "descripcion": "Para consentirte",
+      "imagen": "/tienda/categorias/postres-personales.jpg"
+    },
+    {
+      "codigo": "postres-enteros",
+      "nombre": "Postres enteros",
+      "descripcion": "Para compartir",
+      "imagen": "/tienda/categorias/postres-enteros.jpg"
+    },
+    {
+      "codigo": "bocados",
+      "nombre": "Bocados salados",
+      "descripcion": "Empanadas y quiches",
+      "imagen": "/tienda/categorias/bocados.jpg"
+    }
+  ]
+}

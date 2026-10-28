@@ -1,0 +1,10 @@
+import { solicitar, solicitarSobre } from "./http";
+import type { CatalogoCaja, CotizacionCaja, EntradaCaja, TicketCaja } from "@/types/ventas";
+export const catalogoCaja = (token: string, signal?: AbortSignal) => solicitar<CatalogoCaja>("/ventas/catalogo", { token, signal });
+export const guardarPrecioCaja = (token: string, id: number, body: { clave_idempotencia: string; precio: string; version_actual: number }) => solicitar<{ version: number }>(`/ventas/precios/${id}`, { token, method: "PUT", body });
+export const cotizarCaja = (token: string, lineas: { producto_id: number; cantidad: number }[], clave: string) => solicitar<CotizacionCaja>("/ventas/cotizaciones", { token, method: "POST", body: { lineas, clave_idempotencia: clave } });
+export const registrarCaja = (token: string, body: EntradaCaja) => solicitar<TicketCaja>("/ventas/tickets", { token, method: "POST", body });
+export const recuperarCaja = (token: string, clave: string) => solicitar<TicketCaja>(`/ventas/tickets/por-clave/${encodeURIComponent(clave)}`, { token });
+export const detalleCaja = (token: string, id: number, signal?: AbortSignal) => solicitar<TicketCaja>(`/ventas/tickets/${id}`, { token, signal });
+export const listarCaja = (token: string, query: URLSearchParams, signal?: AbortSignal) => solicitarSobre<TicketCaja[]>(`/ventas/tickets?${query}`, { token, signal });
+export const anularCaja = (token: string, id: number, body: { clave_idempotencia: string; motivo: string; mercancia_no_entregada: true }) => solicitar<TicketCaja>(`/ventas/tickets/${id}/anular`, { token, method: "POST", body });

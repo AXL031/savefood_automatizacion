@@ -1,8 +1,12 @@
 # Rutas HTTP: existentes y objetivo del prototipo
 
+## Caja presencial · 26-10-2026 · Implementada
+
+[Contrato vigente](contrato-caja-presencial.md): precios, cotización, registro/consulta de tickets, recuperación y anulación limitada; router anterior al histórico dinámico. Integración de tienda, promociones comerciales, cierre y ML siguen como [diseño posterior](contrato-ventas-operativas.md).
+
 ## Corrección y recepción · 15-10-2026
 
-Administrador: POST `/compras/propuestas/{id}/corregir` con motivo; retorna nueva propuesta manual y preserva original/reemplazo, sin envíos. POST `/pedidos/{id}/recepciones` con clave_idempotencia, fecha_recepcion, motivo y lineas[{linea_pedido_id,cantidad_compra,codigo_lote?,fecha_caducidad?}]; retorna detalle del pedido. GET pedidos añade recepcion_estado, recepciones y cantidades recibidas/pendientes por línea; GET propuestas añade reemplazo_id. Operador solo consulta. Errores 403/404/409/422 según [contrato](contrato-pedidos.md); migración 0018. Rutas futuras de tickets/simulación no existen.
+Administrador: POST `/compras/propuestas/{id}/corregir` con motivo; retorna nueva propuesta manual y preserva original/reemplazo, sin envíos. POST `/pedidos/{id}/recepciones` con clave_idempotencia, fecha_recepcion, motivo y lineas[{linea_pedido_id,cantidad_compra,codigo_lote?,fecha_caducidad?}]; retorna detalle del pedido. GET pedidos añade recepcion_estado, recepciones y cantidades recibidas/pendientes por línea; GET propuestas añade reemplazo_id. Operador solo consulta. Errores 403/404/409/422 según [contrato](contrato-pedidos.md); migración 0018. La simulación sigue pendiente; las rutas de tickets se implementan en el corte del 26-10.
 
 **K03/K04 · 20-10-2026:** modelos y corridas añaden paginación remota con `limite`, `desplazamiento` y `metadatos.total`; corridas filtra modelo/tipo/fechas. Evaluación admite fechas inclusivas. PATCH de ventas añade IDs de reevaluaciones reservadas en su transacción. No hay rutas ni migraciones nuevas. [Detalle vigente](contratos.md#k03k04-y-frontera-e01--20-10-2026).
 
@@ -39,6 +43,12 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `POST /inicializacion/reintentar-preparacion` | Administrador; 202, sin archivos, preparación/evaluación idempotente |
 | `POST /inicializacion/confirmar` | Administrador; carga completa con recetas e inventario reales |
 | `GET /productos` | Bearer; consulta el catálogo |
+| `GET /ventas/catalogo` | Bearer; productos/precios/stock vendible |
+| `PUT /ventas/precios/{producto_id}` | Administrador; precio versionado |
+| `POST /ventas/cotizaciones`, `POST /ventas/tickets` | Bearer; caja presencial idempotente |
+| `GET /ventas/tickets`, `GET /ventas/tickets/{ticket_id}` | Bearer; historial y detalle de caja |
+| `GET /ventas/tickets/por-clave/{clave}` | Bearer; resultado propio por clave |
+| `POST /ventas/tickets/{ticket_id}/anular` | Administrador; mercancía no entregada y compensación |
 | `GET /ventas` | Bearer; consulta ventas diarias |
 | `GET /ventas/{id}/revisiones` | Bearer; historial de correcciones |
 | `PATCH /ventas/{id}` | Administrador; corrige con revisión |
@@ -47,6 +57,10 @@ Base `/api/v1`, salvo `/salud`. **La primera tabla está implementada**; las rut
 | `GET /recetas`, `GET /recetas/{id}` | Bearer; receta activa o versión concreta |
 | `GET /recetas/productos/{id}/versiones` | Bearer; historial |
 | `POST /recetas/productos/{id}/versiones` | Administrador; crea nueva versión |
+| `GET /inventario/entradas-productos/contexto` | Bearer; hoy/zona/catálogo activo |
+| `POST /inventario/entradas-productos` | Administrador; varios lotes atómicos e idempotentes |
+| `GET /inventario/entradas-productos`, `GET /inventario/entradas-productos/{id}` | Bearer; historial paginado y detalle |
+| `GET /inventario/entradas-productos/por-clave/{clave}` | Bearer; recuperar resultado propio |
 | `GET /inventario/disponibilidad`, `GET /inventario/movimientos` | Bearer; lectura por fecha/lote |
 | `POST /inventario/ajustes` | Administrador; movimiento idempotente, promoción pendiente |
 | `GET /proveedores`, `GET /proveedores/{id}/ofertas` | Bearer |
@@ -116,3 +130,20 @@ GET `/api/v1/informes/resumen` y GET `/api/v1/informes/exportar?tipo=ventas|pron
 - GET programaciones, ejecuciones y evaluaciones: `limite`, `desplazamiento`, `metadatos.total`.
 
 [Contrato y errores](contrato-flujo-promociones.md). Solo Administrador modifica; tareas despachadas conservan sus efectos y estado.
+
+
+## Proyecto Tienda independiente · 21-10-2026
+
+La API Payme vive en otro proyecto/origen: `http://localhost:8001/api/v1/pagos`.
+No añadir sus rutas ni tablas al backend de FoodSave. Configuración, cotización,
+checkout, consulta privada y S2S firmado: [contrato Payme](contrato-payme-pruebas.md).
+La tienda web corre en 3101 y consume FoodSave solo por su API pública; véase
+[ADR-010](../arquitectura/decisiones/ADR-010-tienda-independiente-payme.md).
+
+## Operaciones compatibles · 28-10-2026
+
+Nuevas rutas autenticadas /operaciones/* y portal temporal /proveedor/pedidos/{token}: [contrato](contrato-operacion-integrada.md). Ventas usa /ventas/*; no se habilita /operaciones/ventas ni checkout unido. Tienda independiente conserva ADR-010.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+Rutas implementadas en /api/v1/tienda-admin y /api/v1/integracion-tienda; réplica propia en API tienda /api/v1/integracion/catalogo, /catalogo y /stock. Recuperación privada /pagos/recuperar y reintento comercial POST /pagos/{id}/sincronizar. Esquemas/autenticación y estados en [contrato de integración](contrato-integracion-tienda.md).

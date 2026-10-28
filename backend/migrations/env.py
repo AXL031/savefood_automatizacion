@@ -12,6 +12,7 @@ from app.modules.negocios.modelos import Negocio  # noqa: F401
 from app.modules.automatizaciones.modelos import ProgramacionDemo, EjecucionAutomatizacion, IntentoAutomatizacion  # noqa: F401
 from app.modules.productos.modelos import Producto, SkuProducto  # noqa: F401
 from app.modules.ventas.modelos import ImportacionVenta, VentaDiaria, RevisionVenta  # noqa: F401
+from app.modules.ventas.modelos_caja import PrecioVenta, CotizacionVenta, TicketVenta, LineaTicketVenta, SalidaLoteVenta  # noqa: F401
 from app.modules.pronosticos.modelos import ArtefactoModelo, CorridaPronostico, Pronostico, EvaluacionPronostico  # noqa: F401
 from app.modules.inicializacion.modelos import ConfiguracionInicial  # noqa: F401
 from app.modules.ingredientes.modelos import Ingrediente  # noqa: F401
@@ -25,6 +26,9 @@ from app.modules.tienda.modelos import ClienteTienda  # noqa: F401
 config = context.config
 if config.config_file_name and config.get_section(config.config_ini_section, {}).get("loggers"):
     fileConfig(config.config_file_name)
+
+from app.modules.operaciones import modelos as operaciones_modelos  # noqa: F401
+from app.modules.comercio import modelos as comercio_modelos  # noqa: F401
 
 target_metadata = Base.metadata
 

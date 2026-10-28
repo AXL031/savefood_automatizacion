@@ -6,6 +6,7 @@ import { PanelDetalle } from "@/components/ui/PanelDetalle";
 import { EstadoBadge } from "@/components/ui/EstadoBadge";
 import { TablaPaginada } from "@/components/tables/TablaPaginada";
 import { AsistenteFlujo } from "@/features/automatizaciones/AsistenteFlujo";
+import { FlujoEjecucion } from "@/components/automatizacion/FlujoEjecucion";
 import { ejecucionesPaginadas, programacionesPaginadas } from "@/services/automatizaciones";
 import { gestionarProgramacion, reprogramar } from "@/services/flujo";
 import type { EjecucionAutomatizacion, ProgramacionDemo } from "@/types/automatizacion";
@@ -39,6 +40,10 @@ function Contenido({ token, zona, admin }: { token: string; zona: string; admin:
   return <>
     <AsistenteFlujo token={token} zona={zona} admin={admin} alProgramar={() => { setPaginaP(1); setPaginaE(1); setRevision((r) => r + 1); }} />
     {error && <p className="inline-error" role="alert">{error}</p>}
+    {!!ejecuciones.filter(e => ["EN_EJECUCION", "REINTENTANDO"].includes(e.estado)).length && <section className="execution-active section-space" aria-label="Automatizaciones en proceso">
+      <div className="section-heading"><div><h2>En proceso</h2><p>Tareas activas de esta página del historial. Abre una para seguir su ejecución.</p></div></div>
+      {ejecuciones.filter(e => ["EN_EJECUCION", "REINTENTANDO"].includes(e.estado)).slice(0, 3).map(e => <FlujoEjecucion key={e.id} ejecucion={e} zona={zona} compacto desactualizado={Boolean(error)} />)}
+    </section>}
     <section className="card section-space"><h2>Próximas tareas y programaciones recientes</h2><p>Actualización automática. Las horas se muestran en {zona}.</p>
       {cargando ? <p role="status">Consultando tareas…</p> : <TablaPaginada remota={{ pagina: paginaP, tamano: tamanoP, total: totalP, cargando, onCambio: (p, t) => { setPaginaP(p); setTamanoP(t); } }}><thead><tr><th>Tarea</th><th>Cuándo ejecutar</th><th>Día planificado</th><th>Estado</th><th>Resultado</th>{admin && <th>Gestionar</th>}</tr></thead><tbody>{programaciones.map((p) => <tr key={p.id}><td>{etiquetaDato(p.tipo)}</td><td>{formatearFechaHora(p.ejecutar_desde_utc, zona)}</td><td>{formatearEscenario(p.fecha_hora_simulada_local)}</td><td><span className="badge badge-neutral">{p.estado === "PAUSADA" ? "Pausada" : etiquetaDato(p.estado)}</span></td><td>{p.ejecucion_id && <Link href={`/automatizaciones/ejecuciones/${p.ejecucion_id}`}>Ver tarea #{p.ejecucion_id}</Link>}</td>{admin && <td>{p.tipo === "GENERAR_PROPUESTA" && ["PROGRAMADA", "PAUSADA"].includes(p.estado) && <button className="button-link" onClick={() => { setSeleccion(p); setAccion(p.estado === "PAUSADA" ? "REANUDAR" : "PAUSAR"); setMotivo(""); setHora(""); setErrorGestion(""); }}>Gestionar</button>}</td>}</tr>)}</tbody></TablaPaginada>}
       {!cargando && !programaciones.length && <p>Al confirmar el asistente aparecerá tu primera programación aquí.</p>}

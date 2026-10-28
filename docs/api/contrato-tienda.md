@@ -1,5 +1,12 @@
 # Contrato de la tienda del cliente · 20-10-2026
 
+> **Actualización 28-10-2026:** la implementación de catálogo, promociones aprobadas, reservas y ventas TIENDA por HTTP se documenta en [el contrato vigente](contrato-integracion-tienda.md). Sustituye las menciones históricas de integración pendiente de este documento para esas capacidades. El modo ejemplo sigue sin afectar inventario; Payme continúa solo en preproducción. Cierre diario, simuladores y ML siguen pendientes.
+
+> **26-10-2026 · Ampliación solo de diseño solicitada por Axel:** las [bases de Ventas](../equipo/bases-modulo-ventas.md) y el [contrato de ventas operativas](contrato-ventas-operativas.md) proponen recibir las ventas de tienda en un registro común con las presenciales, y enviar desde FoodSave los productos/promociones aprobadas por HTTP. Sustituyen para esa integración futura el límite anterior «tienda fuera de Ventas» y la idea de que el checkout terminaría sin conciliación entre sistemas. No hay caja ni integración nuevas implementadas; reserva/pago tardío, autorización técnica y acuse deben cerrarse antes de conectar. El histórico de ML sigue separado hasta una entrega de cierre/cobertura validada; pagos del catálogo de ejemplo no generan ventas ni stock. ADR-010 mantiene la independencia de los proyectos.
+
+> Actualización 21-10-2026 solicitada por Axel: la tienda es el proyecto independiente `tienda/`; solo se comunica con FoodSave por API HTTP. Payme Flex se integra exclusivamente en preproducción con cuatro botones. El inventario real sigue pendiente de T01/T03/T04. Prevalece ADR-010 y el contrato Payme; las ubicaciones y pagos simulados descritos abajo son el corte previo.
+
+
 **Estado: DISEÑO, sin implementación.** Autor y coordinador: Max Rojas (tareas T01–T05). Decisión: [ADR-009](../arquitectura/decisiones/ADR-009-tienda-cliente.md). Las rutas descritas aquí son futuras; ninguna existe todavía. Cambios a este contrato se acuerdan antes de migrar.
 
 ## Resumen del recorrido

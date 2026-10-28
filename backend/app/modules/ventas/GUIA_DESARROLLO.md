@@ -1,5 +1,7 @@
 # Guía de desarrollo — Ventas diarias e historial
 
+**26-10-2026 · Precios estimados autorizados:** `scripts/cargar-precios-estimados.py` consume `guardar_precio` con administrador activo, validación completa y una transacción. [139 estimaciones PEN, fuentes y presentaciones](../../../../datos_carga/referencias/precios_estimados_ventas_pen.md). Conserva precios existentes y no modifica stock, catálogo, histórico o tickets. No constituye publicación a tienda ni amplía la API.
+
 **Carpeta:** `backend/app/modules/ventas`.
 
 **Responsable:** Edu Sanchez. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.
@@ -66,3 +68,12 @@ Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` c
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. leer_revisiones publica versiones inmutables. PATCH coordina corregir_venta y solicitar_reevaluaciones_venta en la misma sesión antes del commit; añade reevaluaciones a la respuesta. La reserva fallida revierte la corrección; repetición conserva IDs. No recalcula planes/pedidos ni stock.
 
 [Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+
+## Caja presencial · 26-10-2026
+
+`modelos_caja.py`, `esquemas_caja.py`, `caja.py` y `rutas_caja.py` implementan precios/cotizaciones/tickets presenciales; migración 0021. Sesión compartida, sin commits internos; stock por interfaz pública de Inventario. El histórico/revisiones se mantiene separado, sin agregación de tickets a ML. Tienda/cierre/promociones comerciales/simuladores pendientes. [Contrato implementado](../../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+tienda.py amplía los tickets canónicos con canal TIENDA, identidad limitada de integración, pedido/evento/transacción únicos y segmentos por promoción/lote. No usa usuario ficticio ni inserta venta_diaria. Anulación presencial no reembolsa compras online y se bloquea para TIENDA. Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites.

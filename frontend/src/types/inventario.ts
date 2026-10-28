@@ -9,6 +9,7 @@ export type LoteDisponible = {
   lote_informado: boolean;
   fecha_caducidad: string | null;
   fecha_limite_venta: string | null;
+  fecha_ingreso?: string | null;
   saldo: string;
   estado: EstadoLote;
   dia_de_vida: number | null;
@@ -45,7 +46,7 @@ export type Movimiento = {
   lote_id: number;
   codigo_lote: string;
   item_nombre: string;
-  tipo_movimiento: "APERTURA" | "AJUSTE" | "RECEPCION";
+  tipo_movimiento: "APERTURA" | "AJUSTE" | "RECEPCION" | "VENTA" | "ANULA_VENTA" | "ENTRADA";
   delta: string;
   saldo_resultante: string;
   motivo: string;
@@ -75,4 +76,23 @@ export type ResultadoAjuste = {
   efectivo_en_demo: string;
   repetido: boolean;
   evaluacion_promocion_ejecucion_id?: number | null;
+};
+
+export type ContextoEntradas = {
+  fecha_actual: string; zona_horaria: string; vida_maxima_dias: number;
+  productos: { id: number; codigo: string; nombre: string; activo: boolean }[];
+};
+export type LineaEntrada = {
+  producto_id: number; codigo_lote: string; cantidad: number;
+  fecha_elaboracion: string; fecha_caducidad: string; fecha_limite_venta: string;
+};
+export type SolicitudEntrada = {
+  clave_operacion: string; fecha_entrada: string; motivo: string; lineas: LineaEntrada[];
+};
+export type ResumenEntrada = {
+  id: number; numero: string; fecha_entrada: string; motivo: string;
+  usuario_id: number; nombre_usuario: string; creado_en: string; lotes?: number; unidades?: number;
+};
+export type DetalleEntrada = ResumenEntrada & {
+  lineas: (LineaEntrada & { id: number; lote_id: number; movimiento_id: number; codigo_producto: string; nombre_producto: string })[];
 };

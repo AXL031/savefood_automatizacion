@@ -1,5 +1,10 @@
 # Instrucciones de trabajo para FoodSave
 
+## Tienda independiente (instrucción de Axel, 21-10-2026)
+
+La web de tienda vive en `tienda/`, con dependencias, Compose, backend de pagos y almacenamiento propios. Solo comunica con FoodSave mediante API HTTP; no importar servicios/modelos, montar sus archivos ni acceder a su PostgreSQL. Payme Flex solo preproducción, cuatro botones independientes. Credenciales en `tienda/.env`. ADR-010 y `docs/api/contrato-payme-pruebas.md` actualizan ADR-009. Pruebas de pago sobre catálogo de ejemplo no descuentan inventario real.
+
+
 ## Antes de editar
 
 1. Leer `docs/equipo/responsabilidades.md`: es la fuente vigente de responsables y tareas A01–M04.
@@ -43,3 +48,15 @@ Las instrucciones del usuario en la sesión prevalecen. Si crea una carpeta fuen
 Al finalizar un avance significativo, antes de entregar al usuario o abrir PR, actualizar `docs/equipo/avances/<apellido>.md`: resumen vigente y nueva entrada de bitácora. Registrar tareas, comportamiento disponible, archivos clave, contrato/ejemplo, configuración/migraciones, pruebas realmente ejecutadas, dependencias, siguiente paso y commit/PR si existe. Si no terminó, dejar estado parcial y bloqueo concreto. Seguir la plantilla en `docs/equipo/avances/README.md`.
 
 Actualizar también el contrato y la guía de carpeta si cambiaron. Indicar si una entrega es real, parcial o simulada. No sustituir este registro por la respuesta del chat ni marcar un bloque integrado sin verificar su consumidor. Una tarea transversal registra avance en el bloque que la coordina y enlaza los otros afectados, sin inventar autoría de los integrantes.
+
+## Acoplamiento autorizado · 28-10-2026
+
+Axel autoriza integrar lo compatible de Bohorquez con prioridad de Cueva. Producción explícita por tandas se incorpora conforme a docs/api/contrato-operacion-integrada.md; sustituye la exclusión anterior únicamente para esa operación. Se conservan caja/entradas de lotes y tienda independiente por API HTTP. No habilitar checkout compartido, semillas automáticas ni escritura inmediata de tickets al histórico/ML.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+Ampliación expresa autorizada por Axel: implementar etapas 1–3 del análisis de Bohorquez. Catálogo/promociones aprobadas publicados por HTTP; cotización/reserva autoritativas y pago verificado generan ticket TIENDA y salida en el servicio canónico. La exclusión de tienda de Ventas de los cortes anteriores queda sustituida para tickets operativos, no para venta_diaria/ML. Modo ejemplo sigue sin tocar inventario. Nunca sembrar la base habitual para demostrarlo. Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites.
+
+## Jornada en la aplicación actual · 28-10-2026
+
+Aclaración expresa de Axel: usar la instalación existente (FoodSave 3100, tienda 3101 y Telegram real configurado) para la exposición. Se autoriza preparar puntualmente ventas sintéticas del 27, continuidad histórica identificada, lotes recientes, ajustes auditados de insumos y modelo/flujo del 28, con respaldo previo y conservación de la carga/configuración anterior. No crear otra instalación ni un receptor ficticio para reemplazar los módulos actuales. El código de preparación separado anterior fue retirado y sus servicios quedaron detenidos. Guion: docs/equipo/guion-prueba-2026-10-28.md.

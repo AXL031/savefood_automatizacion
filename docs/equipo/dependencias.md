@@ -1,5 +1,28 @@
 # Dependencias y orden de entregas
 
+**28-10-2026 · Ampliación implementada por petición de Axel:** [entradas administrativas de productos](../api/contrato-entradas-productos.md) desde Inventario: varios lotes/productos, fechas y movimientos positivos auditados, con actualización de stock compartido con Ventas. Consulta actual por defecto y fechas históricas seleccionables; no cambia la fecha configurada de automatizaciones. Migración 0022. Registra producto terminado recibido sin calcular producción/consumo de ingredientes. No añade integración de tienda, simuladores o cierre/ML.
+
+**Estado vigente · 26-10-2026:** la primera caja PRESENCIAL está implementada por solicitud posterior de Axel. Rige el [contrato de caja disponible](../api/contrato-caja-presencial.md): precios versionados, cotización, ticket, stock y anulación limitada. Tienda, promociones comerciales, simuladores, cierre y ML quedan pendientes. Las notas documentales anteriores se conservan como historial.
+
+Ventas consume ya `productos.servicio.catalogo_para_ventas`, moneda/zona de Negocios e `inventario.ventas` en una sesión. Interfaces de tienda/cierre/ML siguen sin consumidor implementado. Coordinación de Codex para Axel, dominios Sanchez/Vera y fases futuras de Rojas/Bohorquez.
+
+## Bases de ventas operativas · 26-10-2026 · Solo definición
+
+**Propuesta adicional de Axel:** [dos simuladores de jornada](plan-ventas-vivo-simulacion.md#propuesta-vigente--26-10-2026--dos-simuladores-para-la-exposición). Sanchez entrega agenda/panel presencial y cierre; Rojas agenda/panel de tienda y API de ventas/acuse; Vera stock/reservas/promociones; Cueva sesión/reloj/coordinación por HTTP y recuperación; Bohorquez evaluación de P(D), nueva versión entrenada con D y pronóstico D+1. Cada dueño entrega su interfaz, lógica y pruebas. Funcionamiento individual y conjunto en instalaciones aisladas; reloj compartido, manifiestos de ambos canales y estados separados de cierre/ML son dependencias previas a declarar la exposición completa. Todo sigue propuesto, sin simuladores ni reentrenamiento diario implementados.
+
+La solicitud de Axel establece un módulo todavía en planteamiento: ventas presenciales desde FoodSave y ventas de tienda recibidas por API; FoodSave emitirá productos y promociones aprobadas por API al proyecto independiente. [Bases y orden de entrega](bases-modulo-ventas.md#entregas-futuras-y-responsables), [contrato propuesto](../api/contrato-ventas-operativas.md). No declara estas dependencias entregadas ni las rutas implementadas.
+
+| Frontera futura | Proveedor responsable | Consumidor / condición para integrar |
+|---|---|---|
+| Precio/cotización versionados y ticket por canal | Sanchez | Caja primero; Rojas consume cotización/acuse por HTTP después |
+| Salida de producto, FEFO y reserva online | Vera | Sanchez registra ticket y movimiento juntos; Rojas no descuenta por su cuenta |
+| Promoción aprobada/publicada y alcance por lote | Vera con catálogo de Sanchez | Rojas recibe solo versión comercial; sugerencias no se publican automáticamente |
+| Eventos comerciales, acuses y credencial técnica | Dominios emisores con infraestructura de Cueva; receptor de Rojas | Copia comercial en tienda, recuperación y versiones fuera de orden comprobadas |
+| Evento de venta de tienda, pago verificado y cola propia | Rojas | Ventas de Sanchez conserva recepción/ID externo y aplica una vez; reserva y pago tardío resueltos antes de activar |
+| Cierre, procedencia y cobertura por día/producto | Sanchez con Bohorquez | Fase posterior; sin sumar importado/operativo ni usar un día abierto como completo |
+
+La carga e historial existentes son antecedentes, no una caja ya disponible. Esta definición amplía en diseño la exclusión previa de ventas de tienda en Ventas; pagos sobre catálogo de ejemplo y sandbox no entran en datos del comercio. Simulación, producción y envío externo no se ejecutan por esta tarea.
+
 ## Recepción y propuesta corregida · 15-10-2026
 
 Ampliación de Axel coordinada por Codex: Compras (Aguirre) consume entrada pública de Inventario (Vera), conserva plan/corrida de Rojas y reemplaza solo borradores bloqueados. Contrato estable en contrato-pedidos.md y contratos.md. Migración 0018; pruebas de fronteras en test_recepcion_compras.py. Ventas en vivo/simulación permanecen [diseño](plan-ventas-vivo-simulacion.md) para Sanchez/Vera/Cueva/Bohorquez/Rojas/Aguirre. PROV-001 recibe temporalmente G02+G03 (28) y PROV-002 G01 (27); PROV-003 pendiente sin asignación.
@@ -123,3 +146,11 @@ Axel solicita gráficos en Inicio y Reportes de lectura. Contrato previo: [Dashb
 Conciliación 06-10-2026: E03/K01 y M02/M03 usan los contratos publicados que consumen L02–L04. Se conservan muestras y suites locales adaptadas; no se vuelve a declarar compras pendiente ni se atribuye el trabajo remoto a otro integrante. Evidencia y migración de la base local en avances/cueva.md y la guía de backend/migrations. Publicación reservada a Axel.
 
 </details>
+
+## Acoplamiento solicitado por Axel · 28-10-2026
+
+Operaciones reutiliza receta congelada del plan y servicios públicos de Inventario/Compras; producción puede venderse por la caja existente. Tienda independiente por HTTP conserva Payme y datos propios. Aprobación de promociones disponible dentro de FoodSave; publicación en tienda pendiente. Origen/adaptaciones y validación en [contrato](../api/contrato-operacion-integrada.md) y registro Cueva; responsabilidades de dominios conservadas.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites. Consumidores comprobados por dos APIs aisladas: publicación → réplica propia → reserva → pago ficticio verificado → ticket canónico y stock. La verificación real del proveedor depende de credenciales/habilitación de métodos y S2S, no del acuse comercial.

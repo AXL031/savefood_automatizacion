@@ -72,3 +72,7 @@ Ampliación expresa: Inicio con ventas diarias, ranking y pedidos; `/informes` c
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. K03 consume las revisiones conservadas en cada tarea y valida producto/fecha; serializa por corrida. Publica solicitar_reevaluaciones_venta sin commit. Resumen/detalle distinguen pares pendientes. K04 pagina modelos/corridas con total filtrado y admite fechas inclusivas en evaluación.
 
 [Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+## Preparación de jornada · 28-10-2026
+
+Preparación puntual 28/10: script coordinador scripts/preparar-jornada.py crea un artefacto nuevo con partición manual ESCENARIO_MANUAL_JORNADA_v1 para objetivo28; no cambia entrenamiento.py ni POLITICA_EVALUACION_v1. Modelo previo conservado; octubre sintético solo alimenta variables anteriores. No acreditar precisión comercial con esta jornada. Guion en docs/equipo/guion-prueba-2026-10-28.md desde la raíz.

@@ -6,15 +6,19 @@ import { useEffect, useState } from "react";
 import { ProtectedShell } from "@/components/layout/ProtectedShell";
 import { EstadoBadge } from "@/components/ui/EstadoBadge";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
+import { FlujoEjecucion } from "@/components/automatizacion/FlujoEjecucion";
 import { obtenerEjecucion } from "@/services/automatizaciones";
 import type { EjecucionAutomatizacion } from "@/types/automatizacion";
 import { etiquetaDato } from "@/utils/etiquetas";
 import { formatearDuracion, formatearFechaHora } from "@/utils/fechas";
+import { tieneId } from "@/components/automatizacion/estadoFlujo";
 
 function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHoraria: string }) {
   const [ejecucion, setEjecucion] = useState<EjecucionAutomatizacion | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [actualizadoEn, setActualizadoEn] = useState<string>();
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
     const control = new AbortController();
@@ -27,8 +31,9 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
         const dato = await obtenerEjecucion(token, id, control.signal);
         if (control.signal.aborted) return;
         setEjecucion(dato);
+        setActualizadoEn(new Date().toISOString());
         setError("");
-        continuar = dato.estado !== "COMPLETADA" && dato.estado !== "FALLIDA";
+        continuar = !["COMPLETADA", "FALLIDA", "CANCELADA"].includes(dato.estado);
       } catch (fallo) {
         if (!control.signal.aborted) setError(fallo instanceof Error ? fallo.message : "No se pudo cargar la ejecución.");
       } finally {
@@ -40,7 +45,7 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
     }
     void actualizar();
     return () => { control.abort(); clearTimeout(temporizador); };
-  }, [token, id]);
+  }, [token, id, revision]);
 
   if (cargando) return <EstadoPanel titulo="Cargando ejecución" descripcion="Consultando el estado de la tarea." />;
   if (error && !ejecucion) {
@@ -49,17 +54,9 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
   if (!ejecucion) return <EstadoPanel titulo="Ejecución no encontrada" descripcion="Comprueba el identificador o vuelve al historial." />;
 
   return <>
-    <Link className="back-link" href="/automatizaciones">← Todas las automatizaciones</Link>
+    <div className="execution-navigation"><Link className="back-link" href="/automatizaciones">← Todas las automatizaciones</Link><button className="button-secondary" onClick={() => setRevision(r => r + 1)}>Actualizar estado</button></div>
     {error && <div className="inline-error" role="alert">No se pudo actualizar: {error}</div>}
-    {ejecucion.estado === "FALLIDA" && <EstadoPanel tono="alerta" titulo="Esta ejecución requiere atención" descripcion={ejecucion.mensaje_error || "Consulta los intentos para identificar la causa."} />}
-    {ejecucion.estado === "PENDIENTE" && <EstadoPanel tono="info" titulo="Ejecución pendiente" descripcion="La tarea está guardada y espera su hora o un worker disponible. El estado se actualiza automáticamente mientras la ejecución está activa." />}
-    {ejecucion.estado === "REINTENTANDO" && <EstadoPanel tono="info" titulo="Reintento programado" descripcion={ejecucion.mensaje_error || "El motor volverá a intentar la tarea después de la espera indicada."} />}
-    <div className="stats-grid">
-      <div className="card stat"><span>Estado</span><div className="stat-badge"><EstadoBadge estado={ejecucion.estado} /></div></div>
-      <div className="card stat"><span>Intentos realizados</span><strong>{ejecucion.intentos.length}</strong></div>
-      <div className="card stat"><span>Duración</span><strong className="stat-text">{ejecucion.inicio_en ? formatearDuracion(ejecucion.inicio_en, ejecucion.fin_en) : "Aún no inicia"}</strong></div>
-      <div className="card stat"><span>Inicio real</span><strong className="stat-text">{ejecucion.inicio_en ? formatearFechaHora(ejecucion.inicio_en, zonaHoraria) : "Pendiente"}</strong></div>
-    </div>
+    <FlujoEjecucion ejecucion={ejecucion} zona={zonaHoraria} actualizadoEn={actualizadoEn} desactualizado={Boolean(error)} />
     <div className="page-grid">
       <section className="card main-card">
         <div className="section-heading"><div><h2>Intentos y trazabilidad</h2><p>Los intentos aparecen cuando el motor comienza a ejecutar la tarea.</p></div></div>
@@ -67,13 +64,15 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
       </section>
       <aside className="card aside-card">
         <h2>Datos de ejecución</h2>
+        <p><EstadoBadge estado={ejecucion.estado} /></p>
+        <p>Inicio real: {ejecucion.inicio_en ? formatearFechaHora(ejecucion.inicio_en, zonaHoraria) : "Pendiente"}</p>
         <p>Tipo: {etiquetaDato(ejecucion.tipo)}</p>
         <details><summary>Identificador técnico</summary><p>{ejecucion.clave_idempotencia}</p></details>
         <p>Primer despacho: {ejecucion.despachada_en ? formatearFechaHora(ejecucion.despachada_en, zonaHoraria) : "Pendiente"}</p>
         {typeof ejecucion.datos_entrada.ejecutar_desde_utc === "string" && <p>Hora real programada: {formatearFechaHora(ejecucion.datos_entrada.ejecutar_desde_utc, zonaHoraria)}</p>}
         {typeof ejecucion.datos_entrada.fecha_hora_simulada_local === "string" && <p>Día planificado: {ejecucion.datos_entrada.fecha_hora_simulada_local.replace("T", " ")}</p>}
         <p>Próximo intento: {ejecucion.proximo_intento_en ? formatearFechaHora(ejecucion.proximo_intento_en, zonaHoraria) : "Sin programar"}</p>
-        {ejecucion.datos_salida && <><h3>Resultado de la tarea</h3>{typeof ejecucion.datos_salida.plan_id === "number" && <p><Link href="/planificacion">Ver plan #{ejecucion.datos_salida.plan_id} y sus faltantes →</Link></p>}{typeof ejecucion.datos_salida.propuesta_compra_id === "number" && <p><Link href={`/compras?plan_id=${ejecucion.datos_salida.plan_id}`}>Ver pedidos y envíos →</Link></p>}{typeof ejecucion.datos_salida.pedidos_estado === "string" && <p>Pedidos: {etiquetaDato(ejecucion.datos_salida.pedidos_estado)}</p>}{typeof ejecucion.datos_salida.pedidos_motivo === "string" && <p>{ejecucion.datos_salida.pedidos_motivo}</p>}<details><summary>Datos técnicos del resultado</summary><pre>{JSON.stringify(ejecucion.datos_salida, null, 2)}</pre></details></>}
+        {ejecucion.datos_salida && <><h3>Resultado de la tarea</h3>{tieneId(ejecucion.datos_salida.plan_id) && <p><Link href={`/planificacion?plan_id=${ejecucion.datos_salida.plan_id}`}>Ver plan #{ejecucion.datos_salida.plan_id} y sus faltantes →</Link></p>}{tieneId(ejecucion.datos_salida.propuesta_compra_id) && tieneId(ejecucion.datos_salida.plan_id) && <p><Link href={`/compras?plan_id=${ejecucion.datos_salida.plan_id}`}>Ver pedidos y envíos →</Link></p>}{typeof ejecucion.datos_salida.pedidos_estado === "string" && <p>Pedidos: {etiquetaDato(ejecucion.datos_salida.pedidos_estado)}</p>}{typeof ejecucion.datos_salida.pedidos_motivo === "string" && <p>{ejecucion.datos_salida.pedidos_motivo}</p>}<details><summary>Datos técnicos del resultado</summary><pre>{JSON.stringify(ejecucion.datos_salida, null, 2)}</pre></details></>}
       </aside>
     </div>
   </>;
@@ -81,5 +80,5 @@ function Detalle({ token, id, zonaHoraria }: { token: string; id: string; zonaHo
 
 export default function EjecucionPage() {
   const params = useParams<{ id: string }>();
-  return <ProtectedShell titulo={`Ejecución #${params.id}`} descripcion="Estado e intentos registrados.">{({ token, negocio }) => <Detalle token={token} id={params.id} zonaHoraria={negocio.zona_horaria} />}</ProtectedShell>;
+  return <ProtectedShell titulo={`Ejecución #${params.id}`} descripcion="Sigue el flujo de la automatización y revisa sus resultados.">{({ token, negocio }) => <Detalle token={token} id={params.id} zonaHoraria={negocio.zona_horaria} />}</ProtectedShell>;
 }

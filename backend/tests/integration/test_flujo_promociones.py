@@ -147,6 +147,31 @@ def datos_flujo(producto_id, modelo_id):
             "dias": 2, "modo_envio_pedidos": "REQUIERE_APROBACION"}
 
 
+def test_calendario_repetible_diagnostico_snapshot_idempotencia_y_permisos(entorno, monkeypatch):
+    from app.modules.automatizaciones import flujo
+    c, engine = entorno
+    producto, _, _, modelo = sembrar(engine)
+    admin = _cabecera(_token(c, "admin@example.com", "clave-segura-admin"))
+    operador = _cabecera(_token(c, "operador@example.com", "clave-segura-operador"))
+    monkeypatch.setattr(flujo, "fechas_con_compra_activa", lambda *args: ["2022-08-24"])
+    datos = datos_flujo(producto, modelo)
+    assert not c.post("/api/v1/flujo-automatizacion/comprobar", headers=admin, json=datos).json()["datos"]["listo"]
+    datos["prueba_repetible"] = True
+    assert c.post("/api/v1/flujo-automatizacion/comprobar", headers=admin, json=datos).json()["datos"]["listo"]
+    solicitud = {**datos, "clave_idempotencia": "prueba-repetible-api"}
+    ruta = "/api/v1/flujo-automatizacion/programar"
+    assert c.post(ruta, headers=operador, json=solicitud).status_code == 403
+    uno = c.post(ruta, headers=admin, json=solicitud)
+    assert uno.status_code == 200, uno.text
+    tareas = uno.json()["datos"]
+    assert all(t["parametros"]["prueba_repetible"] for t in tareas)
+    assert c.post(ruta, headers=admin, json=solicitud).json()["datos"] == tareas
+    dos = c.post(ruta, headers=admin, json={**solicitud, "clave_idempotencia": "otra-prueba"})
+    assert dos.status_code == 200 and dos.json()["datos"][0]["id"] != tareas[0]["id"]
+    assert c.post(ruta, headers=admin, json={**solicitud, "prueba_repetible": "true"}).status_code == 422
+    assert c.post(ruta, headers=admin, json={**solicitud, "prueba_repetible": False}).status_code == 409
+
+
 def oferta_falsa(self, ingrediente_id):
     return SimpleNamespace(proveedor_activo=True, destino_verificado=True, proveedor_nombre="Prueba")
 

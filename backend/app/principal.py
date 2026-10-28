@@ -18,6 +18,7 @@ from app.modules.productos.rutas import router as productos_router
 from app.modules.pronosticos.rutas import router as pronosticos_router
 from app.modules.recetas.rutas import router as recetas_router
 from app.modules.ventas.rutas import router as ventas_router
+from app.modules.ventas.rutas_caja import router as caja_router
 from app.modules.proveedores.rutas import router as proveedores_router
 from app.modules.planificacion.rutas import router as planificacion_router
 from app.modules.compras.rutas import router as compras_router
@@ -26,13 +27,27 @@ from app.modules.promociones.rutas import router as promociones_router
 from app.modules.automatizaciones.rutas_flujo import router as flujo_router
 from app.modules.tienda.rutas import router as tienda_router
 
+from app.modules.operaciones.rutas import router as operaciones_router
+from app.modules.comercio.rutas import router as comercio_router
+
 app = FastAPI(title="FoodSave API", version="0.1.0")
 
 configurar_errores(app)
 
+
+@app.middleware("http")
+async def proteger_enlace_proveedor(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/v1/proveedor/pedidos/"):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return response
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")],
+    allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:3000"),
+                   os.getenv("TIENDA_ORIGIN", "http://localhost:3101")],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
@@ -46,6 +61,7 @@ app.include_router(router_ejecuciones, prefix="/api/v1")
 app.include_router(inicializacion_router, prefix="/api/v1")
 app.include_router(piloto_router, prefix="/api/v1")
 app.include_router(productos_router, prefix="/api/v1")
+app.include_router(caja_router, prefix="/api/v1")
 app.include_router(ventas_router, prefix="/api/v1")
 app.include_router(pronosticos_router, prefix="/api/v1")
 app.include_router(ingredientes_router, prefix="/api/v1")
@@ -58,6 +74,8 @@ app.include_router(informes_router, prefix="/api/v1")
 app.include_router(promociones_router, prefix="/api/v1")
 app.include_router(flujo_router, prefix="/api/v1")
 app.include_router(tienda_router, prefix="/api/v1")
+app.include_router(operaciones_router, prefix="/api/v1")
+app.include_router(comercio_router, prefix="/api/v1")
 
 
 @app.get("/salud")

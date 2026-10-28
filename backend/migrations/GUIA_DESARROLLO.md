@@ -122,3 +122,26 @@ Cabeza 0017_pruebas_proveedor sobre 0016, tabla aditiva de intentos de prueba Te
 ## Recepción y corrección autorizadas · 15-10-2026
 
 Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
+
+## Pruebas repetibles autorizadas · 21-10-2026
+
+0020_pruebas_repetibles sucede a 0019_tienda_clientes; columna booleana false en propuesta_compra e índice único parcial de activas normales (activa AND NOT prueba_repetible). Conserva registros anteriores y FK/estados. Downgrade se detiene con cualquier prueba conservada. No modificar 0011/0018 ya aplicadas. Base local anterior en 0018 requiere también 0019 aditiva (cliente vacío); backup y validación de datos antes/después en registro Cueva.
+
+
+## Caja presencial · 26-10-2026
+
+0021 sobre 0020 crea cinco tablas de caja y amplía CHECK de movimientos VENTA/ANULA_VENTA solo de producto con signo correcto. No reescribe revisiones previas ni convierte el histórico. Downgrade bloqueado si existen operaciones de caja. `env.py` importa los modelos nuevos para comparar metadatos. [Contrato implementado](../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+
+## Entradas de productos · 28-10-2026
+
+0022 sobre 0021 añade entrada_productos/linea_entrada_productos, lote_producto.fecha_ingreso nullable y CHECK de movimiento ENTRADA positivo de producto. Downgrade bloqueado si existe evidencia. Sin reescritura de revisiones anteriores; aplicar antes de reiniciar API. [Contrato implementado](../../docs/api/contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.
+
+## Acoplamiento de Bohorquez · 28-10-2026
+
+Backport adaptado 4c2a271: [contrato de operaciones](../../docs/api/contrato-operacion-integrada.md). Conserva tienda independiente por HTTP, caja y entradas múltiples de Cueva. Nueva migración 0023 sobre 0022; producción explícita, recepción asistida, avisos/monitor. No publica en tienda ni altera histórico/ML. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+0024_comercio_tienda es aditiva: cinco tablas comerciales, columnas de integración/canal y segmentos. Mantiene filas y restricciones de identidad por canal; downgrade bloqueado si hay comercio o ventas online. Probar cadena completa y Alembic check en PostgreSQL aislado. No reescribir 0001–0023.

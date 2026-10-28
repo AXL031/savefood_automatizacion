@@ -11,7 +11,7 @@ import { PanelDetalle } from "@/components/ui/PanelDetalle";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { TablaDatos, type Columna } from "@/components/tables/TablaDatos";
 import { EstadoPanel } from "@/components/ui/EstadoPanel";
-import { obtenerEstadoInicial } from "@/services/inicializacion";
+import { EntradasProductos } from "@/features/inventario/EntradasProductos";
 import { consultarDisponibilidad, listarMovimientos, registrarAjuste } from "@/services/inventario";
 import type { DisponibilidadItem, EstadoLote, LoteDisponible, Movimiento, TipoItem } from "@/types/inventario";
 import { aUnidadBase, cantidadVisible, unidadesEntrada } from "@/utils/unidades";
@@ -64,24 +64,16 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const [promocionEn, setPromocionEn] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [creandoAjuste, setCreandoAjuste] = useState(false);
+  const [revisionEntradas, setRevisionEntradas] = useState(0);
   const [unidadAjuste, setUnidadAjuste] = useState("");
   const [ajuste, setAjuste] = useState<Ajuste>({ loteClave: "", delta: "", motivo: "", fecha: "", hora: "17:45", clave: nuevaClave() });
 
-  // La fecha por defecto es el día que se planifica.
-  useEffect(() => {
-    const control = new AbortController();
-    obtenerEstadoInicial(token, control.signal)
-      .then((estado) => {
-        if (control.signal.aborted) return;
-        const objetivo = estado.fecha_objetivo_demo ?? new Date().toISOString().slice(0, 10);
-        setFecha((actual) => actual || objetivo);
-        setAjuste((actual) => ({ ...actual, fecha: actual.fecha || objetivo }));
-      })
-      .catch(() => {
-        if (!control.signal.aborted) setFecha((actual) => actual || new Date().toISOString().slice(0, 10));
-      });
-    return () => control.abort();
-  }, [token]);
+  const actualizarEntradas = useCallback((dia: string, soloProductos: boolean) => {
+    setFecha(dia);
+    if (soloProductos) setTipo("producto");
+    setAjuste(actual => ({...actual,fecha:actual.fecha || dia}));
+    setRevisionEntradas(v=>v+1);
+  }, []);
 
   const cargar = useCallback(
     (signal?: AbortSignal) => {
@@ -92,6 +84,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
         listarMovimientos(token, { tipo: tipo || undefined, limite: 50 }, signal),
       ])
         .then(([disponibilidad, historial]) => {
+          if (signal?.aborted) return;
           setItems(disponibilidad);
           setMovimientos(historial);
           setError("");
@@ -111,7 +104,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     const control = new AbortController();
     cargar(control.signal);
     return () => control.abort();
-  }, [cargar]);
+  }, [cargar, revisionEntradas]);
 
   const lotes = useMemo(
     () =>
@@ -234,6 +227,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const columnasLotes: Columna<LoteDisponible>[] = [
     { clave: "lote", encabezado: "Lote", celda: (l) => (l.lote_informado ? <span className="mono-corto">{l.codigo_lote}</span> : <span className="helper-text">Lote no informado</span>) },
     { clave: "saldo", encabezado: "Saldo", numerica: true, celda: (l) => cantidad(l.saldo, itemAbierto?.unidad ?? "") },
+    { clave: "ingreso", encabezado: "Ingreso", celda: (l) => l.fecha_ingreso ?? "—" },
     { clave: "caducidad", encabezado: "Caducidad", celda: (l) => l.fecha_caducidad ?? <span className="helper-text">Sin fecha</span> },
     { clave: "limite", encabezado: "Límite de venta", celda: (l) => l.fecha_limite_venta ?? "—" },
     { clave: "estado", encabezado: `Estado al ${fecha}`, celda: (l) => <BadgeLote lote={l} /> },
@@ -243,7 +237,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const columnasMovimientos: Columna<Movimiento>[] = [
     { clave: "efectivo", encabezado: "Fecha y hora", celda: (m) => <span className="mono-corto">{m.efectivo_en_demo.replace("T", " ").slice(0, 16)}</span> },
     { clave: "item", encabezado: "Ítem y lote", celda: (m) => `${m.item_nombre}, ${m.codigo_lote}` },
-    { clave: "tipo", encabezado: "Tipo", celda: (m) => <span className={`badge badge-${m.tipo_movimiento === "RECEPCION" ? "ok" : m.tipo_movimiento === "APERTURA" ? "info" : "neutral"}`}>{{ APERTURA: "Apertura", AJUSTE: "Ajuste", RECEPCION: "Recepción" }[m.tipo_movimiento]}</span> },
+    { clave: "tipo", encabezado: "Tipo", celda: (m) => <span className={`badge badge-${m.tipo_movimiento === "RECEPCION" || m.tipo_movimiento === "ENTRADA" ? "ok" : m.tipo_movimiento === "APERTURA" ? "info" : "neutral"}`}>{{ APERTURA: "Apertura", AJUSTE: "Ajuste", RECEPCION: "Recepción", VENTA: "Venta", ANULA_VENTA: "Anulación de venta", ENTRADA: "Entrada de productos" }[m.tipo_movimiento]}</span> },
     { clave: "delta", encabezado: "Cambio", numerica: true, celda: (m) => <strong>{m.delta.startsWith("-") ? "" : "+"}{cantidadMovimiento(m.delta, m)}</strong> },
     { clave: "saldo", encabezado: "Saldo después", numerica: true, celda: (m) => cantidadMovimiento(m.saldo_resultante, m) },
     { clave: "motivo", encabezado: "Motivo", celda: (m) => m.motivo },
@@ -251,6 +245,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
 
   return (
     <>
+      <EntradasProductos contexto={contexto} onActualizar={actualizarEntradas} />
       <section className="card main-card">
         <div className="section-heading">
           <div>

@@ -1,0 +1,7 @@
+export type ProductoCaja = { id: number; codigo: string; nombre: string; activo: boolean; precio: string | null; version_precio: number; stock_conocido: boolean; disponible: number | null; aviso_caducidad: boolean; reservado?: number };
+export type CatalogoCaja = { fecha_local: string; zona_horaria: string; moneda: string; productos: ProductoCaja[] };
+export type LineaCaja = { producto_id: number; cantidad: number; nombre: string; codigo: string; precio: string; subtotal: string; precio_id: number; version_precio: number };
+export type CotizacionCaja = { id: string; moneda: string; total: string; vence_en: string; lineas: LineaCaja[] };
+export type MedioCaja = "EFECTIVO" | "TARJETA" | "YAPE" | "QR" | "PAGOEFECTIVO";
+export type EntradaCaja = { clave_idempotencia: string; cotizacion_id: string; total_revisado: string; cobro_presencial: { medio: MedioCaja; importe_recibido: string } };
+export type TicketCaja = { id: number; numero: string; canal: string; estado: "CONFIRMADA" | "ANULADA"; total: string; moneda: string; fecha_local: string; vendida_en: string; zona_horaria: string; nombre_usuario: string; usuario_id: number | null; unidades?: number; cotizacion_id: string; cobro: { medio: MedioCaja; importe_recibido: string; vuelto: string }; anulacion: { motivo: string; nombre_usuario: string; creado_en: string } | null; lineas: (Omit<LineaCaja, "version_precio"> & { id: number; salidas: { lote_id: number; cantidad: number; movimiento_id: number; compensacion_id: number | null }[] })[] };

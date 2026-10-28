@@ -28,7 +28,7 @@ from app.core.base import Base
 TIPO_APERTURA = "APERTURA"
 TIPO_AJUSTE = "AJUSTE"
 TIPO_RECEPCION = "RECEPCION"
-TIPOS_MOVIMIENTO = (TIPO_APERTURA, TIPO_AJUSTE, TIPO_RECEPCION)
+TIPOS_MOVIMIENTO = (TIPO_APERTURA, TIPO_AJUSTE, TIPO_RECEPCION, "VENTA", "ANULA_VENTA", "ENTRADA", "PRODUCCION")
 
 
 class LoteIngrediente(Base):
@@ -69,6 +69,7 @@ class LoteProducto(Base):
     # Para pastelería, la caducidad es el último día de vida (día 5).
     fecha_caducidad: Mapped[date | None] = mapped_column(Date)
     fecha_limite_venta: Mapped[date | None] = mapped_column(Date)
+    fecha_ingreso: Mapped[date | None] = mapped_column(Date)
     saldo_disponible: Mapped[int] = mapped_column(Integer, nullable=False)
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
     actualizado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -88,7 +89,10 @@ class MovimientoInventario(Base):
             name="ck_movimiento_inventario_delta_entero_producto",
         ),
         CheckConstraint("saldo_resultante >= 0", name="ck_movimiento_inventario_saldo"),
-        CheckConstraint("tipo in ('APERTURA', 'AJUSTE', 'RECEPCION')", name="ck_movimiento_inventario_tipo"),
+        CheckConstraint("tipo in ('APERTURA', 'AJUSTE', 'RECEPCION', 'VENTA', 'ANULA_VENTA', 'ENTRADA', 'PRODUCCION')", name="ck_movimiento_inventario_tipo"),
+        CheckConstraint("tipo <> 'PRODUCCION' OR ((lote_producto_id IS NOT NULL AND delta > 0) OR (lote_ingrediente_id IS NOT NULL AND delta < 0))", name="ck_movimiento_produccion_signo"),
+        CheckConstraint("tipo <> 'ENTRADA' OR (lote_producto_id IS NOT NULL AND delta > 0)", name="ck_movimiento_entrada_producto"),
+        CheckConstraint("tipo NOT IN ('VENTA','ANULA_VENTA') OR (lote_producto_id IS NOT NULL AND ((tipo='VENTA' AND delta < 0) OR (tipo='ANULA_VENTA' AND delta > 0)))", name="ck_movimiento_venta_producto"),
         CheckConstraint("tipo <> 'RECEPCION' OR lote_producto_id IS NULL", name="ck_movimiento_recepcion_ingrediente"),
         CheckConstraint("length(trim(motivo)) > 0", name="ck_movimiento_inventario_motivo"),
         Index("ix_movimiento_inventario_lote_producto", "lote_producto_id"),
@@ -107,3 +111,36 @@ class MovimientoInventario(Base):
     # Hora local simulada del escenario; distinta del instante UTC de auditoría.
     efectivo_en_demo: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class EntradaProductos(Base):
+    __tablename__ = "entrada_productos"
+    __table_args__ = (UniqueConstraint("usuario_id", "clave", name="uq_entrada_productos_clave"),
+                     Index("ix_entrada_productos_fecha", "fecha_entrada", "id"),
+                     CheckConstraint("length(trim(motivo)) >= 3", name="ck_entrada_productos_motivo"))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuario.id", ondelete="RESTRICT"), nullable=False)
+    nombre_usuario: Mapped[str] = mapped_column(String(150), nullable=False)
+    clave: Mapped[str] = mapped_column(String(80), nullable=False)
+    huella: Mapped[str] = mapped_column(String(64), nullable=False)
+    fecha_entrada: Mapped[date] = mapped_column(Date, nullable=False)
+    motivo: Mapped[str] = mapped_column(String(300), nullable=False)
+    creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class LineaEntradaProductos(Base):
+    __tablename__ = "linea_entrada_productos"
+    __table_args__ = (CheckConstraint("cantidad BETWEEN 1 AND 1000000", name="ck_linea_entrada_cantidad"),
+                     CheckConstraint("fecha_elaboracion <= fecha_limite_venta AND fecha_limite_venta <= fecha_caducidad", name="ck_linea_entrada_fechas"))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    entrada_id: Mapped[int] = mapped_column(ForeignKey("entrada_productos.id", ondelete="RESTRICT"), nullable=False, index=True)
+    producto_id: Mapped[int] = mapped_column(ForeignKey("producto.id", ondelete="RESTRICT"), nullable=False, index=True)
+    lote_id: Mapped[int] = mapped_column(ForeignKey("lote_producto.id", ondelete="RESTRICT"), nullable=False, unique=True)
+    movimiento_id: Mapped[int] = mapped_column(ForeignKey("movimiento_inventario.id", ondelete="RESTRICT"), nullable=False, unique=True)
+    codigo_producto: Mapped[str] = mapped_column(String(160), nullable=False)
+    nombre_producto: Mapped[str] = mapped_column(String(160), nullable=False)
+    codigo_lote: Mapped[str] = mapped_column(String(80), nullable=False)
+    cantidad: Mapped[int] = mapped_column(Integer, nullable=False)
+    fecha_elaboracion: Mapped[date] = mapped_column(Date, nullable=False)
+    fecha_caducidad: Mapped[date] = mapped_column(Date, nullable=False)
+    fecha_limite_venta: Mapped[date] = mapped_column(Date, nullable=False)

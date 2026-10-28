@@ -1,5 +1,8 @@
 # Guía de desarrollo — Tienda del cliente (backend)
 
+> Actualización 21-10-2026 solicitada por Axel: la tienda es el proyecto independiente `tienda/`; solo se comunica con FoodSave por API HTTP. Payme Flex se integra exclusivamente en preproducción con cuatro botones. El inventario real sigue pendiente de T01/T03/T04. Prevalece ADR-010 y el contrato Payme; las ubicaciones y pagos simulados descritos abajo son el corte previo.
+
+
 **Carpeta:** `backend/app/modules/tienda`.
 
 **Responsable:** Max Rojas. Autor y coordinador del bloque Tienda.

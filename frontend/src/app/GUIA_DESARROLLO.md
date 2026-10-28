@@ -74,3 +74,12 @@ Patrón de gestión solicitado por Axel: listar registros primero y abrir creaci
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. Inicio, Pronósticos, Evaluación y Reportes comparten cabecera/navegación analítica, paleta hoja/yema e indicadores de datos reales. Estilos en styles.css; grid con minmax(0,1fr) y mínimos contenidos evita desbordamiento en móvil. No añade métricas económicas ni tareas externas.
 
 [Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+
+## Entradas de productos · 28-10-2026
+
+styles.css añade fieldsets entry-line para agrupar lotes, mínimos contenidos y controles sin desbordamiento. /inventario contiene la entrada de productos y consulta el día actual del negocio, con fecha histórica seleccionable. [Contrato implementado](../../../docs/api/contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+/tienda-admin administra ficha/publicación/entregas/reservas. /tienda/* sigue redirigiendo al proyecto independiente. /ventas presenta ambos canales; cierre/ML no se deducen de tickets. Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites.

@@ -61,3 +61,8 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Corte solicitado · 14-10-2026
 
 Codex para Axel. nombre_negocio(sesion) publica el nombre actual para Compras, sin commit. El nombre inicial anterior se normaliza a Mi comercio por 0016 únicamente si no fue configurado. La instalación de Axel usa Pastelería Maria Juanita mediante PATCH público.
+
+
+## Caja presencial · 26-10-2026
+
+`moneda_negocio(sesion)` complementa zona_horaria_negocio para fijar contexto de caja; primera versión admite PEN y fecha actual en la zona configurada. [Contrato implementado](../../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.

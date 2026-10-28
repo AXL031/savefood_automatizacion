@@ -1,5 +1,7 @@
 # Guía de desarrollo — Referencias de los CSV
 
+**26-10-2026 · Precios de caja solicitados por Axel:** [CSV de 139 estimaciones PEN](precios_estimados_ventas_pen.csv) y [fuentes, presentaciones y carga](precios_estimados_ventas_pen.md). Complemento independiente de los cinco archivos de inicialización. No alterar nombres/códigos ni interpretar euros de SKU como soles. Se aplican por el servicio público de precios con administrador activo y una transacción; el script conserva precios existentes y no modifica stock/histórico. Son estimaciones editables, no precios comerciales confirmados. Aplicación y evidencia en Cueva.
+
 **Responsable:** Axel Cueva, coordinación. Leer la [guía de datos](../GUIA_DESARROLLO.md) y la [guía raíz](../../GUIA_DESARROLLO.md).
 
 `supuestos_recetas.csv` es una copia intacta del archivo suministrado por Axel. Explica el origen y los supuestos de las recetas: 5 originales y 134 estimadas. Sirve para revisar el conjunto con Rojas; no acredita recetas comerciales verificadas ni forma parte de los cinco archivos aceptados por primera carga.

@@ -8,6 +8,7 @@ import { borrarToken, leerToken } from "@/services/sesion";
 import type { Negocio, Perfil } from "@/types/autenticacion";
 import { HttpError } from "@/services/http";
 import { MarcaFoodSave } from "@/components/ui/MarcaFoodSave";
+import { CampanaAvisos } from "./CampanaAvisos";
 
 export type ContextoSesion = { token: string; perfil: Perfil; negocio: Negocio; actualizarNegocioLocal: (valor: Negocio) => void; actualizarPerfilLocal: (valor: Perfil) => void };
 const SesionContext = createContext<ContextoSesion | null>(null);
@@ -25,8 +26,11 @@ const grupos = [
     enlaces: [
       { href: "/inicializacion", texto: "Datos iniciales" },
       { href: "/productos", texto: "Productos" },
-      { href: "/ventas", texto: "Ventas" },
     ],
+  },
+  {
+    titulo: "Ventas",
+    enlaces: [{ href: "/ventas", texto: "Caja e historial" }, { href: "/tienda-admin", texto: "Publicar en tienda" }],
   },
   {
     titulo: "Catálogo e inventario",
@@ -42,6 +46,7 @@ const grupos = [
     enlaces: [
       { href: "/automatizaciones", texto: "Automatización" },
       { href: "/planificacion", texto: "Planes y faltantes" },
+      { href: "/operaciones", texto: "Operación diaria" },
       { href: "/proveedores", texto: "Proveedores y Telegram" },
       { href: "/compras", texto: "Pedidos y envíos" },
     ],
@@ -56,6 +61,7 @@ const grupos = [
     enlaces: [
       { href: "/configuracion", texto: "Configuración" },
       { href: "/usuarios", texto: "Usuarios" },
+      { href: "/notificaciones", texto: "Notificaciones e incidencias" },
     ],
   },
 ];
@@ -71,7 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [revisionSesion, setRevisionSesion] = useState(0);
   // La tienda del cliente (ADR-009) tiene su propio layout y sesión; no usa la administrativa.
-  const publica = ruta === "/iniciar-sesion" || ruta === "/tienda" || ruta.startsWith("/tienda/");
+  const publica = ruta === "/iniciar-sesion" || ruta === "/tienda" || ruta.startsWith("/tienda/") || ruta.startsWith("/proveedor/");
   const enlaceActual = grupos.flatMap((grupo) => grupo.enlaces).find((enlace) => ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`)));
   const grupoActual = grupos.find((grupo) => grupo.enlaces.some((enlace) => ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`))));
 
@@ -150,7 +156,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="sidebar-bottom"><span>{perfil.nombre}</span><small>{perfil.rol === "ADMINISTRADOR" ? "Administrador" : "Operador"}</small><button className="button-link" onClick={cerrarSesion}>Cerrar sesión</button></div>
       </aside>
       <div className="app-main">
-        <header className="topbar"><span><Link href="/">FoodSave</Link> / {enlaceActual?.texto ?? "Detalle"}</span><span className="business-chip">{negocio.nombre}</span></header>
+        <header className="topbar"><span><Link href="/">FoodSave</Link> / {enlaceActual?.texto ?? "Detalle"}</span><div className="action-row">{perfil.rol === "ADMINISTRADOR" && <CampanaAvisos token={token} />}<span className="business-chip">{negocio.nombre}</span></div></header>
         <main className="page-content" id="contenido-principal">
           {children}
         </main>

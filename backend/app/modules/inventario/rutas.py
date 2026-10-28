@@ -6,6 +6,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy import select, func
 
 from app.core.base_datos import obtener_sesion
 from app.core.errores import ErrorAPI
@@ -14,6 +15,8 @@ from app.modules.autenticacion.modelos import Usuario
 from app.modules.automatizaciones.servicio import consultar_ejecucion_por_clave
 from app.modules.inventario import vigencia
 from app.modules.inventario.esquemas import AjusteEntrada
+from app.modules.inventario import entradas
+from app.modules.inventario.modelos import EntradaProductos, LineaEntradaProductos
 from app.modules.inventario.servicio import (
     INGREDIENTE,
     PRODUCTO,
@@ -78,6 +81,7 @@ def disponibilidad(
                         "lote_informado": lote.lote_informado,
                         "fecha_caducidad": _fecha(lote.fecha_caducidad),
                         "fecha_limite_venta": _fecha(lote.fecha_limite_venta),
+                        "fecha_ingreso": _fecha(lote.fecha_ingreso),
                         "saldo": _num(item.tipo, lote.saldo),
                         "estado": lote.estado,
                         "dia_de_vida": lote.dia_de_vida,
@@ -161,3 +165,52 @@ def ajustar(
     evaluacion = consultar_ejecucion_por_clave(sesion, f"promocion-movimiento-{resultado.movimiento_id}")
     salida["evaluacion_promocion_ejecucion_id"] = evaluacion.id if evaluacion else None
     return {"datos": salida}
+
+
+@router.get("/entradas-productos/contexto")
+def contexto_entradas(_usuario=Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
+    return {"datos": entradas.contexto(sesion)}
+
+
+@router.post("/entradas-productos", status_code=201)
+def crear_entrada(cuerpo: entradas.EntradaCrear, respuesta: Response, usuario=Depends(requiere_administrador),
+                  sesion: Session = Depends(obtener_sesion)):
+    try:
+        entrada, repetida = entradas.registrar(sesion, cuerpo, usuario)
+        sesion.commit()
+    except IntegrityError:
+        sesion.rollback()
+        raise ErrorAPI(409, "ENTRADA_EN_CONFLICTO", "Otra operación registró el lote o la clave. Consulta el resultado antes de repetir.") from None
+    respuesta.status_code = 200 if repetida else 201
+    return {"datos": entradas.detalle(sesion, entrada.id)}
+
+
+@router.get("/entradas-productos")
+def listar_entradas(desde: date | None = None, hasta: date | None = None, limite: int = Query(25, ge=1, le=100),
+                    desplazamiento: int = Query(0, ge=0), _usuario=Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
+    if desde and hasta and desde > hasta:
+        raise ErrorAPI(422, "RANGO_INVALIDO", "La fecha inicial supera la final.")
+    filtros = []
+    if desde: filtros.append(EntradaProductos.fecha_entrada >= desde)
+    if hasta: filtros.append(EntradaProductos.fecha_entrada <= hasta)
+    q = select(EntradaProductos).where(*filtros)
+    total = sesion.scalar(select(func.count()).select_from(q.subquery()))
+    filas = list(sesion.scalars(q.order_by(EntradaProductos.id.desc()).offset(desplazamiento).limit(limite)))
+    resumen = {id_: (n, u) for id_, n, u in sesion.execute(select(LineaEntradaProductos.entrada_id,
+        func.count(), func.sum(LineaEntradaProductos.cantidad)).where(LineaEntradaProductos.entrada_id.in_([e.id for e in filas]))
+        .group_by(LineaEntradaProductos.entrada_id))}
+    return {"datos": [{**entradas.resumen(e), "lotes": resumen[e.id][0], "unidades": resumen[e.id][1]} for e in filas],
+            "metadatos": {"total": total, "limite": limite, "desplazamiento": desplazamiento}}
+
+
+@router.get("/entradas-productos/por-clave/{clave}")
+def recuperar_entrada(clave: str, usuario=Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
+    id_ = sesion.scalar(select(EntradaProductos.id).where(EntradaProductos.usuario_id == usuario.id, EntradaProductos.clave == clave))
+    if id_ is None:
+        raise ErrorAPI(404, "ENTRADA_NO_ENCONTRADA", "No hay una entrada confirmada con esa clave para tu usuario.")
+    return {"datos": entradas.detalle(sesion, id_)}
+
+
+@router.get("/entradas-productos/{entrada_id}")
+def detalle_entrada(entrada_id: int, _usuario=Depends(identidad_actual), sesion: Session = Depends(obtener_sesion)):
+    return {"datos": entradas.detalle(sesion, entrada_id)}

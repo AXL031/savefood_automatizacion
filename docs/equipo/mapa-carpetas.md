@@ -98,7 +98,7 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `frontend/src/app/pronosticos` | Kevin Bohorquez | Demo · Pronósticos y evaluación histórica | [Abrir](../../frontend/src/app/pronosticos/GUIA_DESARROLLO.md) |
 | `frontend/src/app/proveedores` | Leonardo Aguirre | Demo · Proveedores y ofertas | [Abrir](../../frontend/src/app/proveedores/GUIA_DESARROLLO.md) |
 | `frontend/src/app/recetas` | Max Rojas | Demo · Recetas versionadas | [Abrir](../../frontend/src/app/recetas/GUIA_DESARROLLO.md) |
-| `frontend/src/app/tienda` | Max Rojas | Tienda del cliente · rutas (ADR-009) | [Abrir](../../frontend/src/app/tienda/GUIA_DESARROLLO.md) |
+| `tienda/frontend/src/app/tienda` | Max Rojas | Tienda del cliente · rutas (ADR-009) | [Abrir](../../tienda/frontend/src/app/tienda/GUIA_DESARROLLO.md) |
 | `frontend/src/app/ventas` | Edu Sanchez | Demo · Ventas diarias e historial | [Abrir](../../frontend/src/app/ventas/GUIA_DESARROLLO.md) |
 | `frontend/src/components` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/components/GUIA_DESARROLLO.md) |
 | `frontend/src/components/automatizacion` | Axel Cueva | Compartida; coordinación | [Abrir](../../frontend/src/components/automatizacion/GUIA_DESARROLLO.md) |
@@ -127,11 +127,49 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `frontend/src/features/ventas` | Edu Sanchez | Demo · Ventas diarias e historial | [Abrir](../../frontend/src/features/ventas/GUIA_DESARROLLO.md) |
 | `frontend/src/hooks` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/hooks/GUIA_DESARROLLO.md) |
 | `frontend/src/services` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/services/GUIA_DESARROLLO.md) |
-| `frontend/src/tienda` | Max Rojas | Tienda del cliente · tipos, servicios y contexto | [Abrir](../../frontend/src/tienda/GUIA_DESARROLLO.md) |
-| `frontend/src/tienda/componentes` | Max Rojas | Tienda del cliente · componentes visuales | [Abrir](../../frontend/src/tienda/componentes/GUIA_DESARROLLO.md) |
+| `tienda/frontend/src/tienda` | Max Rojas | Tienda del cliente · tipos, servicios y contexto | [Abrir](../../tienda/frontend/src/tienda/GUIA_DESARROLLO.md) |
+| `tienda/frontend/src/tienda/componentes` | Max Rojas | Tienda del cliente · componentes visuales | [Abrir](../../tienda/frontend/src/tienda/componentes/GUIA_DESARROLLO.md) |
 | `frontend/src/types` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/types/GUIA_DESARROLLO.md) |
 | `frontend/src/utils` | Edu Sanchez | Compartida; coordinación | [Abrir](../../frontend/src/utils/GUIA_DESARROLLO.md) |
 | `scripts` | Axel Cueva | Compartida; coordinación | [Abrir](../../scripts/GUIA_DESARROLLO.md) |
 ## Ampliación local · Gestión de usuarios
 
 - [frontend/src/app/usuarios](../../frontend/src/app/usuarios/GUIA_DESARROLLO.md): A01 de Axel, cuentas/roles/activación, API bajo autenticacion/usuarios.py.
+
+## Proyecto independiente de tienda · ADR-010
+
+- `tienda/backend/checkout`: [Guía](../../tienda/backend/checkout/GUIA_DESARROLLO.md).
+- `tienda/backend`: [Guía](../../tienda/backend/GUIA_DESARROLLO.md).
+- `tienda/backend/tests`: [Guía](../../tienda/backend/tests/GUIA_DESARROLLO.md).
+- `tienda/frontend`: [Guía](../../tienda/frontend/GUIA_DESARROLLO.md).
+- `tienda/frontend/public`: [Guía](../../tienda/frontend/public/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/app`: [Guía](../../tienda/frontend/src/app/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/app/tienda/carrito`: [Guía](../../tienda/frontend/src/app/tienda/carrito/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/app/tienda`: [Guía](../../tienda/frontend/src/app/tienda/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/app/tienda/menu`: [Guía](../../tienda/frontend/src/app/tienda/menu/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/app/tienda/pedido/[id]`: [Guía](../../tienda/frontend/src/app/tienda/pedido/[id]/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/app/tienda/pedidos`: [Guía](../../tienda/frontend/src/app/tienda/pedidos/GUIA_DESARROLLO.md).
+- `tienda/frontend/src`: [Guía](../../tienda/frontend/src/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/tienda/componentes`: [Guía](../../tienda/frontend/src/tienda/componentes/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/tienda`: [Guía](../../tienda/frontend/src/tienda/GUIA_DESARROLLO.md).
+- `tienda/frontend/tests`: [Guía](../../tienda/frontend/tests/GUIA_DESARROLLO.md).
+- `tienda`: [Guía](../../tienda/GUIA_DESARROLLO.md).
+- `tienda/frontend/src/app/tienda/pedido`: [Guía](../../tienda/frontend/src/app/tienda/pedido/GUIA_DESARROLLO.md).
+- `tienda/frontend/public/tienda`: [Guía](../../tienda/frontend/public/tienda/GUIA_DESARROLLO.md).
+- `tienda/frontend/public/tienda/categorias`: [Guía](../../tienda/frontend/public/tienda/categorias/GUIA_DESARROLLO.md).
+- `tienda/frontend/public/tienda/productos`: [Guía](../../tienda/frontend/public/tienda/productos/GUIA_DESARROLLO.md).
+- `tienda/frontend/public/tienda/iconos`: [Guía](../../tienda/frontend/public/tienda/iconos/GUIA_DESARROLLO.md).
+
+## Acoplamiento operativo · 28-10-2026
+
+- [Backend Operaciones](../../backend/app/modules/operaciones/GUIA_DESARROLLO.md): coordinación Cueva; consume Inventario/Compras/Planes.
+- [Pantalla Operación diaria](../../frontend/src/app/operaciones/GUIA_DESARROLLO.md): UI Sanchez y dominios correspondientes.
+- [Portal proveedor](../../frontend/src/app/proveedor/GUIA_DESARROLLO.md), [pedido](../../frontend/src/app/proveedor/pedido/GUIA_DESARROLLO.md), [token](../../frontend/src/app/proveedor/pedido/[token]/GUIA_DESARROLLO.md): dominio Aguirre.
+- [BPMN F02/F05](../automatizacion/bpmn/GUIA_DESARROLLO.md): referencias importadas de Bohorquez; alcance vigente en [contrato](../api/contrato-operacion-integrada.md).
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+| Carpeta | Responsable | Alcance | Guía |
+|---|---|---|---|
+| backend/app/modules/comercio | Cueva (coordinación), Rojas/Sanchez/Vera (dominios) | Publicación HTTP y reserva comercial | [Abrir](../../backend/app/modules/comercio/GUIA_DESARROLLO.md) |
+| frontend/src/app/tienda-admin | Cueva (coordinación), Rojas/Sanchez | Ficha/publicación/entregas/reservas | [Abrir](../../frontend/src/app/tienda-admin/GUIA_DESARROLLO.md) |

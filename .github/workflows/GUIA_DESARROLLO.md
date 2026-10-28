@@ -89,3 +89,17 @@ Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: do
 ## Compatibilidad Cueva/Bohorquez · 20-10-2026
 
 El corte PostgreSQL/Redis ejecuta también test_evaluacion_revisiones.py junto con test_recepcion_compras.py y prueba_mensaje_proveedor.py. Verifica corrección de ventas→reevaluación exacta junto con nuevos modelos/recepciones; la suite general conserva pruebas SQLite. No transmite mensajes reales ni cambia la base habitual. Evidencia y nueva PR en avances/cueva.md.
+
+
+## Caja presencial · 26-10-2026
+
+CI incluye instalación Node 22, tipos y regresión React de caja; el corte PostgreSQL añade pruebas de tickets y cadena completa de migraciones. Suite Python general conserva descubrimiento automático. Cambio local: no se acredita ejecución remota. [Contrato implementado](../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+
+## Entradas de productos · 28-10-2026
+
+CI incluye regresión React de entradas y test_entradas_productos.py/test_migracion_entradas.py en corte PostgreSQL, además de descubrimiento general Python. CI remoto pendiente de publicación. [Contrato implementado](../../docs/api/contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.
+
+## Integración comercial · 28-10-2026
+
+Job independiente para tienda: requisitos propios, tests Payme/HTTP ficticio, trece controles frontend, tipos/build y Compose sin credenciales. El corte PostgreSQL de FoodSave incluye comercio y concurrencia de reservas. Configuración local validada; CI remoto pendiente hasta publicar.

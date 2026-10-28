@@ -37,6 +37,15 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     environment:
+      TIENDA_INTEGRACION_HABILITADA: ${TIENDA_INTEGRACION_HABILITADA:-0}
+      TIENDA_INTEGRACION_ID: ${TIENDA_INTEGRACION_ID:-tienda-local}
+      TIENDA_INTEGRACION_TOKEN: ${TIENDA_INTEGRACION_TOKEN:-}
+      TIENDA_PUBLICACION_TOKEN: ${TIENDA_PUBLICACION_TOKEN:-}
+      TIENDA_API_INTERNA_URL: ${TIENDA_API_INTERNA_URL:-http://host.docker.internal:8001}
+      RESERVA_TIENDA_MINUTOS: ${RESERVA_TIENDA_MINUTOS:-20}
+      HABILITAR_ENLACES_PROVEEDOR: ${HABILITAR_ENLACES_PROVEEDOR:-0}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3100}
+      TIENDA_ORIGIN: ${TIENDA_ORIGIN:-http://localhost:3101}
       DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
@@ -66,6 +75,8 @@ services:
       dockerfile: backend/Dockerfile
     command: celery -A app.workers.celery_app:celery_app worker --loglevel=info --concurrency=2
     environment:
+      HABILITAR_ENLACES_PROVEEDOR: ${HABILITAR_ENLACES_PROVEEDOR:-0}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3100}
       DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
@@ -97,6 +108,23 @@ services:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
+
+  comercio:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: python -m app.modules.comercio.despachador
+    environment:
+      DATABASE_URL: postgresql+psycopg://foodsave:${POSTGRES_PASSWORD}@postgres:5432/foodsave
+      TIENDA_INTEGRACION_HABILITADA: ${TIENDA_INTEGRACION_HABILITADA:-0}
+      TIENDA_PUBLICACION_TOKEN: ${TIENDA_PUBLICACION_TOKEN:-}
+      TIENDA_API_INTERNA_URL: ${TIENDA_API_INTERNA_URL:-http://host.docker.internal:8001}
+    depends_on:
+      migraciones:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
   frontend:
     build:

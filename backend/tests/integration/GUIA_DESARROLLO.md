@@ -106,3 +106,26 @@ Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: do
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. test_evaluacion_revisiones.py agrega seis regresiones: snapshot antiguo/nuevo y reentrega, snapshot vacío/ajeno, PATCH con reserva idempotente, rollback de reserva, más de 50 corridas con filtros/roles y lectura limitada/duplicados/presupuesto. Usa fixtures aisladas existentes, sin red externa. Pruebas de locks reales siguen requiriendo PostgreSQL.
 
 [Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+
+## Pruebas repetibles autorizadas · 21-10-2026
+
+test_compras_l02 verifica fechas normales protegidas, pruebas sobre pedidos previos enviados/inciertos sin alterarlos, marca/mensaje e idempotencia del motor; test_flujo_promociones verifica diagnóstico, permisos, snapshots y calendario repetible. test_migraciones_entregas cubre 0020 y downgrade protegido, cadena vacía/metadata PostgreSQL en esquema repetibles_test_<uuid> con E03_POSTGRES_TEST=1. Fixtures de API usan esquemas e03_test y transporte falso, nunca public ni Telegram real. Resultados reales en avances/cueva.md.
+
+
+## Caja presencial · 26-10-2026
+
+`test_ventas_presenciales.py`: HTTP, roles, versiones, formatos, expiración, FEFO, stock compartido/rollback, centavos, paginación, compensación e idempotencia; E03_POSTGRES_TEST=1 prueba última unidad y misma clave concurrentes en esquemas aislados. `test_migraciones_entregas.py` verifica 0021 y cadena completa vacía con metadatos, downgrade y protección de evidencia. [Contrato implementado](../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+
+## Entradas de productos · 28-10-2026
+
+test_entradas_productos.py verifica registro múltiple, mismo producto/diferentes lotes, validaciones, rollback, roles, recuperación, consulta anterior al ingreso y venta real sobre nuevos lotes. E03_POSTGRES_TEST=1 habilita dos carreras: misma clave y mismo lote con claves distintas. test_migracion_entradas.py verifica preservación de saldo, metadatos/reversión y evidencia; la cadena completa exige cabeza 0022. [Contrato implementado](../../../docs/api/contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.
+
+## Acoplamiento de Bohorquez · 28-10-2026
+
+Backport adaptado 4c2a271: [contrato de operaciones](../../../docs/api/contrato-operacion-integrada.md). Conserva tienda independiente por HTTP, caja y entradas múltiples de Cueva. Nueva migración 0023 sobre 0022; producción explícita, recepción asistida, avisos/monitor. No publica en tienda ni altera histórico/ML. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+test_comercio_tienda valida publicación, reserva, promoción parcial, stock compartido, ajustes, expiración y reentrega de eventos. test_migracion_comercio conserva filas previas y contrasta DDL. PostgreSQL usa esquemas temporales E03_POSTGRES_TEST=1; no ejecutar pg_dump de todos los esquemas en paralelo con su eliminación. Pagos siempre ficticios.
