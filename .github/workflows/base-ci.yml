@@ -21,6 +21,17 @@ jobs:
           python -m pytest backend/tests/unit backend/tests/integration foodsave-ml/tests -q
       - name: Validar Compose
         run: docker compose config --quiet
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Tipos y recuperación de caja presencial
+        run: |
+          npm ci --prefix frontend
+          npm run typecheck --prefix frontend
+          node scripts/verificar-caja.cjs
+          node scripts/verificar-entradas.cjs
       - name: Construir y arrancar
         run: docker compose up --build -d
       - name: Confirmar migración aplicada al arrancar
@@ -32,8 +43,8 @@ jobs:
           docker compose exec -T worker python -c "from pathlib import Path; import os; p = Path(os.environ['MODEL_ARTIFACT_DIR']) / '.ci-probe'; p.write_text('ok'); assert p.read_text() == 'ok'"
           docker compose exec -T api python -c "from pathlib import Path; import os; p = Path(os.environ['MODEL_ARTIFACT_DIR']) / '.ci-probe'; assert p.read_text() == 'ok'"
           docker compose exec -T worker python -c "from pathlib import Path; import os; (Path(os.environ['MODEL_ARTIFACT_DIR']) / '.ci-probe').unlink()"
-      - name: Motor A03, inventario V02, inicialización E03 plan M02/M03, usuarios y compras L02 con PostgreSQL y Redis
-        run: docker compose run --rm --no-deps --user root -e A03_POSTGRES_TEST=1 -e V02_POSTGRES_TEST=1 -e E03_POSTGRES_TEST=1 api sh -c "pip install -q '.[test]' && python -m pytest tests/integration/test_motor_a03.py tests/integration/test_inventario_concurrencia_pg.py tests/integration/test_api_inicializacion_ventas.py tests/integration/test_inicializacion_ml.py tests/integration/test_planificacion_m02.py tests/integration/test_necesidades_m03.py tests/integration/test_usuarios.py tests/integration/test_compras_l02.py tests/integration/test_telegram_config_l03.py tests/integration/test_aprobacion_envio_l03.py tests/integration/test_recuperacion_l04.py tests/integration/test_preparacion_e03.py tests/integration/test_planificacion_conciliada.py tests/integration/test_conciliacion_migraciones.py tests/integration/test_flujo_promociones.py tests/integration/test_prueba_mensaje_proveedor.py tests/integration/test_recepcion_compras.py tests/integration/test_evaluacion_revisiones.py -q"
+      - name: Motor, inventario, inicialización, compras y ventas con PostgreSQL y Redis
+        run: docker compose run --rm --no-deps --user root -e A03_POSTGRES_TEST=1 -e V02_POSTGRES_TEST=1 -e E03_POSTGRES_TEST=1 api sh -c "pip install -q '.[test]' && python -m pytest tests/integration/test_motor_a03.py tests/integration/test_inventario_concurrencia_pg.py tests/integration/test_api_inicializacion_ventas.py tests/integration/test_inicializacion_ml.py tests/integration/test_planificacion_m02.py tests/integration/test_necesidades_m03.py tests/integration/test_usuarios.py tests/integration/test_compras_l02.py tests/integration/test_telegram_config_l03.py tests/integration/test_aprobacion_envio_l03.py tests/integration/test_recuperacion_l04.py tests/integration/test_preparacion_e03.py tests/integration/test_planificacion_conciliada.py tests/integration/test_conciliacion_migraciones.py tests/integration/test_flujo_promociones.py tests/integration/test_prueba_mensaje_proveedor.py tests/integration/test_recepcion_compras.py tests/integration/test_evaluacion_revisiones.py tests/integration/test_ventas_presenciales.py tests/integration/test_comercio_tienda.py tests/integration/test_entradas_productos.py tests/integration/test_migracion_entradas.py tests/integration/test_migraciones_entregas.py::test_cadena_postgresql_vacia_y_metadatos -q"
       - name: Comprobar servicios
         run: |
           curl --fail --retry 10 --retry-delay 2 --retry-connrefused http://localhost:8000/salud
@@ -45,3 +56,29 @@ jobs:
       - name: Detener servicios
         if: always()
         run: docker compose down
+
+  comprobar-tienda-independiente:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pruebas de tienda sin proveedor externo
+        working-directory: tienda/backend
+        run: |
+          python -m pip install -r requirements.txt 'pytest>=8,<10'
+          python -m pytest tests -q
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tienda/frontend/package-lock.json
+      - name: Checkout, tipos y compilación independientes
+        run: |
+          npm ci --prefix tienda/frontend
+          npm test --prefix tienda/frontend
+          npm run typecheck --prefix tienda/frontend
+          npm run build --prefix tienda/frontend
+      - name: Validar Compose propio sin credenciales
+        run: docker compose -f tienda/compose.yaml config --quiet

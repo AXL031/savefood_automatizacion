@@ -1,0 +1,48 @@
+name: maria-juanita-tienda
+services:
+  api:
+    build: ./backend
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      TIENDA_MODO: ${TIENDA_MODO:-ejemplo}
+      FOODSAVE_API_INTERNA_URL: ${FOODSAVE_API_INTERNA_URL:-http://host.docker.internal:8000}
+      FOODSAVE_INTEGRACION_TOKEN: ${FOODSAVE_INTEGRACION_TOKEN:-}
+      FOODSAVE_PUBLICACION_TOKEN: ${FOODSAVE_PUBLICACION_TOKEN:-}
+      TIENDA_ORIGIN: ${TIENDA_ORIGIN:-http://localhost:3101}
+      TIENDA_DATABASE_URL: sqlite:////datos/tienda.db
+      PAYME_HABILITADO: ${PAYME_HABILITADO:-false}
+      PAYME_CLIENT_ID: ${PAYME_CLIENT_ID:-}
+      PAYME_CLIENT_SECRET: ${PAYME_CLIENT_SECRET:-}
+      PAYME_MERCHANT_CODE: ${PAYME_MERCHANT_CODE:-}
+      PAYME_WEBHOOK_PUBLIC_KEY: ${PAYME_WEBHOOK_PUBLIC_KEY:-}
+    volumes:
+      - pagos:/datos
+    restart: unless-stopped
+  conciliador:
+    build: ./backend
+    command: python -m checkout.conciliador
+    environment:
+      TIENDA_DATABASE_URL: sqlite:////datos/tienda.db
+      FOODSAVE_API_INTERNA_URL: ${FOODSAVE_API_INTERNA_URL:-http://host.docker.internal:8000}
+      FOODSAVE_INTEGRACION_TOKEN: ${FOODSAVE_INTEGRACION_TOKEN:-}
+    volumes:
+      - pagos:/datos
+    depends_on:
+      - api
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_FOODSAVE_API_URL: ${FOODSAVE_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_TIENDA_API_URL: ${TIENDA_API_URL:-http://localhost:8001}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        NEXT_PUBLIC_TIENDA_MODO: ${TIENDA_MODO:-ejemplo}
+    ports:
+      - "127.0.0.1:3101:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+volumes:
+  pagos:

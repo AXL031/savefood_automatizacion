@@ -24,6 +24,10 @@ La carpeta contiene documentación o estructura de destino; su existencia no dec
 
 ## Trabajo en esta carpeta
 
+**26-10-2026 · Dos simuladores, propuesta adicional:** el [contrato de Ventas](contrato-ventas-operativas.md#ampliación-propuesta-contexto-de-los-dos-simuladores-y-cierre) incorpora contexto aislado de sesión/reloj, agendas por canal, manifiestos de cierre y claves por fase/revisión. Todavía no fija ni implementa endpoints de control o reentrenamiento diario; su definición depende de Sanchez/Vera/Rojas/Bohorquez/Cueva. [Propuesta de exposición](../equipo/plan-ventas-vivo-simulacion.md#propuesta-vigente--26-10-2026--dos-simuladores-para-la-exposición).
+
+**26-10-2026 · Contrato propuesto de Ventas:** [contrato-ventas-operativas.md](contrato-ventas-operativas.md) define cotización/ticket presencial y futuras APIs de publicación comercial/recepción de ventas con tienda independiente. Todas sus rutas son diseño; no añadirlas a la tabla de implementadas. [Bases y etapas](../equipo/bases-modulo-ventas.md). Compatibilidad con GET/PATCH de agregados históricos, permisos, idempotencia y reserva/pago tardío pendientes de implementación por sus dominios; ML se conserva hasta otro corte validado.
+
 La [guía de Telegram](configurar-telegram.md) documenta el bot público indicado por Axel, configuración desde la aplicación, métodos externos consumidos y rutas internas, con diagrama. Mantenerla alineada con el adaptador y Proveedores; nunca guardar tokens, chats privados ni URLs con credenciales en la documentación. La guía es reproducción documental, no evidencia de transmisión en otra instalación.
 
 1. Cada dueño define cuerpos, campos, permisos, errores y ejemplos de sus rutas.
@@ -83,3 +87,25 @@ Las notas fechadas de cortes anteriores son historial; no usar sus pendientes co
 ## Corte solicitado · 14-10-2026
 
 Codex para Axel. Contratos de flujo/pedidos documentan EJECUTAR_AHORA y formato comercial nuevo. configurar-whatsapp.md identifica claramente preparación pendiente, activos Meta y adaptación requerida; no representa un canal implementado.
+
+## Tienda separada · 21-10-2026
+
+[Contrato Payme](contrato-payme-pruebas.md): API del proyecto independiente tienda/, sin migraciones Payme en FoodSave. ADR-010 prevalece sobre la ubicación y pago ficticio anteriores de ADR-009. Catálogo/inventario/pedido reales por API siguen pendientes.
+
+[Diagnóstico Yape/QR](diagnostico-payme-sandbox-2026-10-21.md): HTTP 500 externo y
+lista de métodos de Flex sin YAPE/QR observada el 21-10-2026. No confundir pruebas
+locales correctas con habilitación efectiva del comercio en el proveedor.
+
+
+## Caja presencial · 26-10-2026
+
+`contrato-caja-presencial.md` describe la primera caja realmente implementada. `contrato-ventas-operativas.md` conserva fases futuras. Consultar el contrato nuevo para campos/estados/rutas de caja; no conectar tienda con los ejemplos de diseño. [Contrato implementado](contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+
+## Entradas de productos · 28-10-2026
+
+contrato-entradas-productos.md documenta la ampliación vigente: entrada administrativa múltiple, historial, límites, fechas, recuperación y relación con caja. No es fabricación con consumo de recetas ni integración de tienda. [Contrato implementado](contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+contrato-integracion-tienda.md es vigente para catálogo/versiones, reservas/cotización y tickets TIENDA; amplía ADR-010 y contrato Payme. Contratos históricos de cliente/caja se conservan con su corte temporal.

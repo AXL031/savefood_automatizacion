@@ -80,3 +80,8 @@ Codex para Axel. Gestionar admite EJECUTAR_AHORA con motivo administrativo: adel
 ## Gestión y avisos · 14-10-2026 · Codex para Axel
 
 comprobar devuelve requisitos del plan y avisos de compras separados: listo depende de productos, modelo/fechas, recetas, ingredientes activos, stock y protección de recompra. Ofertas/proveedores/destinos incompletos solo generan avisos con recomendación/enlace; compras_listas es false mientras existan. Destinos pendientes deduplicados por proveedor. La generación/envío de compras mantiene validación propia.
+
+
+## Pruebas repetibles autorizadas · 21-10-2026
+
+Codex para Axel. ConfigurarFlujo/ProgramarFlujo/ProgramarPropuesta admiten prueba_repetible, booleano estricto false por defecto. Diagnóstico permite repetir la fecha solo si true y programación lo congela; solicitud_flujo omite false para conservar calendarios existentes. Nueva clave genera otra prueba, misma clave recupera resultado. AUTO exige autorización como antes; leer contrato-flujo-promociones.md y contrato-pedidos.md.

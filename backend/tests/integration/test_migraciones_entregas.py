@@ -23,7 +23,7 @@ def compare_metadata(contexto, metadata):
     esperado = MetaData()
     for tabla in metadata.sorted_tables:
         tabla.to_metadata(esperado)
-    for tabla, columna in (("lote_ingrediente", "fecha_ingreso"), ("propuesta_compra", "reemplazo_id")):
+    for tabla, columna in (("lote_ingrediente", "fecha_ingreso"), ("lote_producto", "fecha_ingreso"), ("propuesta_compra", "reemplazo_id"), ("propuesta_compra", "prueba_repetible")):
         existentes = {c["name"] for c in inspect(contexto.bind).get_columns(tabla)}
         if columna not in existentes:
             copia = esperado.tables[tabla]
@@ -39,6 +39,112 @@ def cargar_revision(nombre):
     spec = importlib.util.spec_from_file_location(nombre, ruta)
     modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
     return modulo
+
+
+def test_migracion_0021_metadata_reversible_y_bloquea_borrar_precios():
+    from sqlalchemy import CheckConstraint, insert, select, func
+    from app.modules.productos.modelos import Producto
+    from app.modules.autenticacion.modelos import Usuario
+    from app.modules.ventas.modelos_caja import PrecioVenta
+    motor = create_engine("sqlite://")
+    @event.listens_for(motor,"connect")
+    def funciones(c,_): c.create_function("char_length",1,len)
+    previo=MetaData()
+    nuevas={"precio_producto_venta","cotizacion_venta","ticket_venta","linea_ticket_venta","salida_lote_venta"}
+    for tabla in Base.metadata.sorted_tables: tabla.to_metadata(previo)
+    movimiento=previo.tables["movimiento_inventario"]
+    for con in list(movimiento.constraints):
+        if con.name in {"ck_movimiento_venta_producto","ck_movimiento_inventario_tipo"}:movimiento.constraints.remove(con)
+    movimiento.append_constraint(CheckConstraint("tipo in ('APERTURA', 'AJUSTE', 'RECEPCION')",name="ck_movimiento_inventario_tipo"))
+    previo.create_all(motor,tables=[t for t in previo.sorted_tables if t.name not in nuevas])
+    revision=cargar_revision("0021_ventas_presenciales")
+    with motor.begin() as c:
+        ctx=MigrationContext.configure(c)
+        with Operations.context(ctx):
+            revision.upgrade()
+            # Este delta es 0021. Aplicar la ampliación comercial posterior antes
+            # de comparar con metadata actual, retirándola para probar el retroceso.
+            comercio=cargar_revision('0024_comercio_tienda')
+            nuevas_comercio={'configuracion_comercio','publicacion_producto','evento_publicacion','reserva_tienda','asignacion_reserva'}
+            for tabla in reversed(Base.metadata.sorted_tables):
+                if tabla.name in nuevas_comercio:tabla.drop(c)
+            comercio.upgrade()
+            assert comparar_modelos_actuales(ctx,Base.metadata)==[]
+            comercio.downgrade()
+            # Restituir las tablas posteriores vacías para el resto del fixture histórico.
+            Base.metadata.create_all(c,tables=[t for t in Base.metadata.sorted_tables if t.name in nuevas_comercio])
+            revision.downgrade()
+            assert not nuevas.intersection(inspect(c).get_table_names())
+            revision.upgrade()
+            c.execute(insert(Usuario).values(id=1,correo="fixture@example.com",nombre="Fixture",rol="ADMINISTRADOR",activo=True,hash_contrasena="fixture"))
+            c.execute(insert(Producto).values(id=1,codigo="fixture",nombre="Fixture",activo=True,demostrar=False))
+            c.execute(insert(PrecioVenta).values(producto_id=1,version=1,precio=2,usuario_id=1,clave="precio-fixture",huella="a"*64))
+            with pytest.raises(RuntimeError,match="operaciones de caja"):
+                revision.downgrade()
+            assert c.execute(select(func.count()).select_from(PrecioVenta)).scalar_one()==1
+    motor.dispose()
+
+
+@pytest.mark.parametrize("crear_pruebas", [False, True])
+def test_migracion_0020_conserva_compras_y_protege_normales(crear_pruebas):
+    from sqlalchemy import text
+    from sqlalchemy.exc import IntegrityError
+    motor = create_engine("sqlite://")
+    with motor.begin() as c:
+        c.execute(text("CREATE TABLE propuesta_compra (id INTEGER PRIMARY KEY, fecha_objetivo DATE NOT NULL, activa BOOLEAN NOT NULL)"))
+        c.execute(text("CREATE UNIQUE INDEX uq_propuesta_compra_fecha_activa ON propuesta_compra(fecha_objetivo) WHERE activa = 1"))
+        c.execute(text("INSERT INTO propuesta_compra VALUES (1,'2022-08-24',true)"))
+        revision = cargar_revision("0020_pruebas_repetibles")
+        with Operations.context(MigrationContext.configure(c)):
+            revision.upgrade()
+            assert c.execute(text("SELECT prueba_repetible FROM propuesta_compra WHERE id=1")).scalar_one() == 0
+            with pytest.raises(IntegrityError):
+                with c.begin_nested():
+                    c.execute(text("INSERT INTO propuesta_compra VALUES (2,'2022-08-24',true,false)"))
+            if crear_pruebas:
+                c.execute(text("INSERT INTO propuesta_compra VALUES (2,'2022-08-24',true,true),(3,'2022-08-24',true,true)"))
+                with pytest.raises(RuntimeError, match="Hay pruebas repetibles"):
+                    revision.downgrade()
+                assert c.execute(text("SELECT count(*) FROM propuesta_compra")).scalar_one() == 3
+            else:
+                revision.downgrade()
+                assert "prueba_repetible" not in {col["name"] for col in inspect(c).get_columns("propuesta_compra")}
+                assert c.execute(text("SELECT count(*) FROM propuesta_compra")).scalar_one() == 1
+    motor.dispose()
+
+
+def test_cadena_postgresql_vacia_y_metadatos(monkeypatch):
+    import os
+    from uuid import uuid4
+    from sqlalchemy import text
+    from sqlalchemy.engine import make_url
+    from alembic import command
+    if os.getenv("E03_POSTGRES_TEST") != "1":
+        pytest.skip("Requiere PostgreSQL en esquema aislado")
+    url = os.environ["DATABASE_URL"]
+    assert url.startswith("postgresql")
+    esquema = "repetibles_test_" + uuid4().hex
+    admin = create_engine(url)
+    with admin.begin() as c:
+        c.execute(text(f'CREATE SCHEMA "{esquema}"'))
+    destino = make_url(url).update_query_dict({"options": f"-csearch_path={esquema}"})
+    monkeypatch.setenv("DATABASE_URL", destino.render_as_string(hide_password=False))
+    cfg = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
+    cfg.set_main_option("script_location", str(Path(__file__).resolve().parents[2] / "migrations"))
+    motor = create_engine(destino)
+    try:
+        command.upgrade(cfg, "head")
+        with motor.connect() as c:
+            assert c.execute(text("SELECT version_num FROM alembic_version")).scalar_one() == "0024_comercio_tienda"
+            assert comparar_modelos_actuales(MigrationContext.configure(c), Base.metadata) == []
+        command.downgrade(cfg, "0019_tienda_clientes")
+        command.upgrade(cfg, "head")
+    finally:
+        motor.dispose()
+        assert esquema.startswith("repetibles_test_") and len(esquema) == len("repetibles_test_") + 32
+        with admin.begin() as c:
+            c.execute(text(f'DROP SCHEMA "{esquema}" CASCADE'))
+        admin.dispose()
 
 
 def test_nombre_inicial_se_normaliza_sin_reemplazar_comercio_configurado():
@@ -86,7 +192,7 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0019_tienda_clientes"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0024_comercio_tienda"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")

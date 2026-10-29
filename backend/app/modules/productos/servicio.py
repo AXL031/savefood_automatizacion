@@ -178,3 +178,14 @@ def nombres_productos(sesion: Session, producto_ids: list[int]) -> dict[int, str
     return dict(sesion.execute(
         select(Producto.id, Producto.nombre).where(Producto.id.in_(producto_ids))
     ).all())
+
+
+def catalogo_para_ventas(sesion: Session, ids: list[int] | None = None, *, bloquear=False) -> list[dict]:
+    """Frontera comercial de lectura/bloqueo, sin commit ni exposición del modelo."""
+    q = select(Producto).order_by(Producto.id)
+    if ids is not None:
+        q = q.where(Producto.id.in_(ids))
+    if bloquear:
+        q = q.with_for_update().execution_options(populate_existing=True)
+    return [{"id": p.id, "codigo": p.codigo, "nombre": p.nombre, "activo": p.activo}
+            for p in sesion.scalars(q)]

@@ -1,108 +1,546 @@
 erDiagram
-    PROVEEDOR {
-        int id PK
-        string codigo UK
-        string nombre
-        boolean activo
-        string chat_id_pruebas "nullable"
-        boolean destino_verificado
-        datetime destino_verificado_en "nullable"
-        string destino_credencial_huella "sha256 nullable, sin token"
-    }
-    PRODUCTO ||--o{ SKU_PRODUCTO : mapea
-    PRODUCTO ||--o{ RECETA : versiona
-    RECETA ||--o{ RECETA_INGREDIENTE : contiene
-    INGREDIENTE ||--o{ RECETA_INGREDIENTE : se_usa
+    %% Esquema de código hasta 0019_tienda_clientes; no certifica despliegue.
+    %% Cada movimiento afecta un lote de producto O uno de ingrediente (XOR).
+    %% UK se marca solo para unicidad individual e incondicional.
+    %% UQ(...) en comentario identifica participación en clave compuesta.
+    %% Las relaciones punteadas son no identificadoras (FK fuera de la PK).
 
-    IMPORTACION_VENTA ||--o{ VENTA_DIARIA : carga
-    PRODUCTO ||--o{ VENTA_DIARIA : se_observa
-    VENTA_DIARIA ||--o{ REVISION_VENTA : audita
-    IMPORTACION_VENTA ||--o{ REVISION_VENTA : origina
-
-    INGREDIENTE ||--o{ LOTE_INGREDIENTE : tiene
-    PRODUCTO ||--o{ LOTE_PRODUCTO : tiene
-    LOTE_INGREDIENTE ||--o{ MOVIMIENTO_INVENTARIO : afecta
-    LOTE_PRODUCTO ||--o{ MOVIMIENTO_INVENTARIO : afecta
-
-    ARTEFACTO_MODELO ||--o{ CORRIDA_PRONOSTICO : usa
-    EJECUCION_AUTOMATIZACION ||--o{ CORRIDA_PRONOSTICO : genera
-    CORRIDA_PRONOSTICO ||--o{ PRONOSTICO : genera
-    PRODUCTO ||--o{ PRONOSTICO : predice
-    PRONOSTICO ||--o{ EVALUACION_PRONOSTICO : se_compara
-    REVISION_VENTA ||--o{ EVALUACION_PRONOSTICO : es_real
-    EJECUCION_AUTOMATIZACION ||--o{ EVALUACION_PRONOSTICO : registra
-    CORRIDA_PRONOSTICO ||--o{ PLAN_PRODUCCION : origina
-    EJECUCION_AUTOMATIZACION ||--o{ PLAN_PRODUCCION : registra
-    PLAN_PRODUCCION ||--o{ ELEMENTO_PLAN : contiene
-    PRODUCTO ||--o{ ELEMENTO_PLAN : propone
-    PRONOSTICO ||--o{ ELEMENTO_PLAN : conserva
-    RECETA |o--o{ ELEMENTO_PLAN : calcula_si_existe
-    PLAN_PRODUCCION ||--o{ NECESIDAD_INGREDIENTE : genera
-    INGREDIENTE ||--o{ NECESIDAD_INGREDIENTE : falta
-    PLAN_PRODUCCION ||--o{ PEDIDO_COMPRA : propone
-    PLAN_PRODUCCION ||--o| PROPUESTA_COMPRA : agrupa_compras
-    PROPUESTA_COMPRA ||--o{ PEDIDO_COMPRA : contiene
-    USUARIO |o--o{ PROPUESTA_COMPRA : cancela
-    PROVEEDOR ||--o{ OFERTA_INGREDIENTE : ofrece
-    INGREDIENTE ||--o{ OFERTA_INGREDIENTE : se_compra
-    PROVEEDOR ||--o{ PEDIDO_COMPRA : recibe
-    PEDIDO_COMPRA ||--o{ LINEA_PEDIDO : contiene
-    NECESIDAD_INGREDIENTE ||--o| LINEA_PEDIDO : justifica
-    OFERTA_INGREDIENTE ||--o{ LINEA_PEDIDO : convierte
-    USUARIO |o--o{ PEDIDO_COMPRA : decide
-    PEDIDO_COMPRA ||--o{ ENVIO_PEDIDO : intentos_conservados
-    ENVIO_PEDIDO ||--o{ RECUPERACION_ENVIO : revisiones
-    ENVIO_PEDIDO |o--o{ RECUPERACION_ENVIO : nuevo_intento
-    USUARIO ||--o{ RECUPERACION_ENVIO : registra
-
-    RECUPERACION_ENVIO {
-        int id PK
-        int envio_id FK
-        string clave_idempotencia UK
-        string accion
-        int usuario_id FK
-        string nombre_usuario
-        datetime creado_en
-        string evidencia
-        json solicitud_json
-        json resultado_anterior_json
-        int nuevo_envio_id FK
+    artefacto_modelo {
+        integer id PK "NOT NULL"
+        varchar(80) version_modelo UK "NOT NULL"
+        varchar(160) ruta_local "NOT NULL"
+        varchar(64) sha256 "NOT NULL"
+        varchar(64) huella_datos_entrenamiento "NOT NULL"
+        date fecha_corte_entrenamiento "NOT NULL"
+        jsonb particion_json "NOT NULL"
+        varchar(16) estado "NOT NULL"
+        jsonb metricas_json "NULL"
+        timestamptz entrenado_en "NOT NULL"
     }
 
-    PROGRAMACION_DEMO ||--o| EJECUCION_AUTOMATIZACION : dispara
-    EJECUCION_AUTOMATIZACION o|--o| CONFIGURACION_INICIAL : prepara
-    EJECUCION_AUTOMATIZACION ||--o{ INTENTO_AUTOMATIZACION : intenta
-    EJECUCION_AUTOMATIZACION ||--o{ EVALUACION_PROMOCION : evalua
-    REGLA_PROMOCION_DEMO ||--o{ EVALUACION_PROMOCION : aplica
-    LOTE_PRODUCTO ||--o{ EVALUACION_PROMOCION : examina
+    cliente {
+        integer id PK "NOT NULL"
+        varchar(255) google_sub UK "NOT NULL"
+        varchar(254) correo "NOT NULL"
+        varchar(160) nombre "NOT NULL"
+        boolean activo "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        timestamptz ultimo_acceso_en "NOT NULL"
+    }
 
-    %% Ampliación autorizada 0018, 15-10-2026
-    PEDIDO_COMPRA ||--o{ RECEPCION_PEDIDO : recibe_mercancia
-    USUARIO ||--o{ RECEPCION_PEDIDO : confirma
-    RECEPCION_PEDIDO ||--|{ LINEA_RECEPCION_PEDIDO : detalla
-    LINEA_PEDIDO ||--o{ LINEA_RECEPCION_PEDIDO : entregas_parciales
-    LOTE_INGREDIENTE ||--o| LINEA_RECEPCION_PEDIDO : entrada
-    MOVIMIENTO_INVENTARIO ||--o| LINEA_RECEPCION_PEDIDO : audita
-    PROPUESTA_COMPRA |o--o{ PROPUESTA_COMPRA : reemplazo_conservado
-    RECEPCION_PEDIDO {
-        int id PK
-        int pedido_id FK
-        string clave_idempotencia UK
-        int usuario_id FK
-        string nombre_usuario
-        date fecha_recepcion
-        string motivo
-        json solicitud_json
-        datetime creado_en
+    configuracion_flujo {
+        integer id PK "NOT NULL"
+        jsonb parametros "NOT NULL"
+        integer actualizado_por FK "NOT NULL; ref usuario.id"
+        timestamptz actualizado_en "NOT NULL"
     }
-    LINEA_RECEPCION_PEDIDO {
-        int id PK
-        int recepcion_id FK
-        int linea_pedido_id FK
-        numeric cantidad_compra
-        numeric cantidad_base
-        int lote_id FK,UK
-        int movimiento_id FK,UK
-        string codigo_lote
-        date fecha_caducidad
+
+    configuracion_inicial {
+        integer preparacion_ejecucion_id FK "NULL; ref ejecucion_automatizacion.id"
+        integer modelo_id FK "NULL; ref artefacto_modelo.id"
+        integer preparacion_numero "NOT NULL"
+        integer id PK "NOT NULL"
+        varchar(20) estado "NOT NULL"
+        varchar(64) huella_ventas "NULL"
+        varchar(64) huella_catalogo "NULL"
+        varchar(64) huella_solicitud "NULL"
+        date fecha_objetivo_demo "NULL"
+        date fecha_referencia_stock "NULL"
+        timestamptz iniciada_en "NULL"
+        timestamptz completada_en "NULL"
+        text mensaje_error "NULL"
+        timestamptz actualizado_en "NOT NULL"
     }
+
+    corrida_pronostico {
+        integer id PK "NOT NULL"
+        integer ejecucion_id FK "NOT NULL; ref ejecucion_automatizacion.id"
+        varchar(20) tipo "NOT NULL"
+        varchar(128) clave_ejecucion UK "NOT NULL"
+        varchar(64) huella_datos_entrada "NOT NULL"
+        date fecha_objetivo "NOT NULL"
+        integer modelo_id FK "NOT NULL; ref artefacto_modelo.id"
+        varchar(20) estado "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        timestamptz finalizado_en "NULL"
+    }
+
+    ejecucion_automatizacion {
+        integer id PK "NOT NULL"
+        integer programacion_id FK,UK "NULL; ref programacion_demo.id"
+        varchar(32) tipo "NOT NULL"
+        varchar(128) clave_idempotencia UK "NOT NULL"
+        varchar(64) huella_entrada "NOT NULL"
+        jsonb datos_entrada_json "NOT NULL"
+        varchar(16) estado "NOT NULL"
+        timestamptz inicio_en "NULL"
+        timestamptz fin_en "NULL"
+        timestamptz proximo_intento_en "NULL"
+        timestamptz despachada_en "NULL"
+        timestamptz lease_hasta "NULL"
+        varchar(36) token_despacho "NULL"
+        jsonb datos_salida_json "NULL"
+        text mensaje_error "NULL"
+    }
+
+    elemento_plan {
+        integer id PK "NOT NULL"
+        integer plan_id FK "NOT NULL; ref plan_produccion.id; UQ(uq_elemento_plan_producto)"
+        integer producto_id FK "NOT NULL; ref producto.id; UQ(uq_elemento_plan_producto)"
+        integer pronostico_id FK "NOT NULL; ref pronostico.id"
+        integer receta_id FK "NULL; ref receta.id"
+        integer cantidad_pronosticada "NULL"
+        integer stock_disponible "NULL"
+        integer cantidad_producir "NULL"
+        varchar(32) estado "NOT NULL"
+        jsonb receta_json "NULL"
+        jsonb stock_json "NOT NULL"
+        jsonb avisos_json "NOT NULL"
+    }
+
+    envio_pedido {
+        integer id PK "NOT NULL"
+        integer pedido_id FK "NOT NULL; ref pedido_compra.id; UQ(uq_envio_pedido_intento)"
+        integer numero_intento "NOT NULL; UQ(uq_envio_pedido_intento)"
+        varchar(24) estado "NOT NULL"
+        varchar(64) chat_id "NOT NULL; UQ(uq_envio_evidencia_telegram)"
+        varchar(64) credencial_huella "NOT NULL"
+        text texto "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        timestamptz inicio_en "NULL"
+        timestamptz fin_en "NULL"
+        timestamptz fecha_telegram "NULL"
+        bigint message_id "NULL; UQ(uq_envio_evidencia_telegram)"
+        varchar(64) codigo_error "NULL"
+        varchar(500) detalle_error "NULL"
+        timestamptz despachado_en "NULL"
+        timestamptz lease_hasta "NULL"
+        varchar(36) token_despacho "NULL"
+    }
+
+    evaluacion_promocion {
+        integer id PK "NOT NULL"
+        integer regla_id FK "NOT NULL; ref regla_promocion_demo.id"
+        integer movimiento_id FK,UK "NOT NULL; ref movimiento_inventario.id"
+        integer ejecucion_id FK,UK "NOT NULL; ref ejecucion_automatizacion.id"
+        boolean proponer "NOT NULL"
+        varchar(300) motivo "NOT NULL"
+        integer descuento_pct "NULL"
+        json lectura "NOT NULL"
+        timestamp fecha_hora_simulada "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    evaluacion_pronostico {
+        integer id PK "NOT NULL"
+        integer ejecucion_id FK "NOT NULL; ref ejecucion_automatizacion.id"
+        integer corrida_id FK "NOT NULL; ref corrida_pronostico.id; UQ(uq_evaluacion_pronostico_revision)"
+        integer pronostico_id FK "NOT NULL; ref pronostico.id"
+        integer revision_venta_id FK "NOT NULL; ref revision_venta.id; UQ(uq_evaluacion_pronostico_revision)"
+        integer producto_id FK "NOT NULL; ref producto.id; UQ(uq_evaluacion_pronostico_revision)"
+        integer cantidad_pronosticada "NOT NULL"
+        integer unidades_reales "NOT NULL"
+        integer error_absoluto "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    importacion_venta {
+        integer id PK "NOT NULL"
+        varchar(40) origen "NOT NULL; UQ(uq_importacion_venta_clave)"
+        varchar(128) clave_importacion "NOT NULL; UQ(uq_importacion_venta_clave)"
+        varchar(64) huella_contenido "NOT NULL"
+        integer filas_aceptadas "NOT NULL"
+        varchar(16) estado "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    ingrediente {
+        integer id PK "NOT NULL"
+        varchar(160) codigo UK "NOT NULL"
+        varchar(160) nombre "NOT NULL"
+        varchar(10) unidad_base "NOT NULL"
+        boolean activo "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    intento_automatizacion {
+        integer id PK "NOT NULL"
+        integer ejecucion_id FK "NOT NULL; ref ejecucion_automatizacion.id; UQ(uq_intento_automatizacion_numero)"
+        integer numero_intento "NOT NULL; UQ(uq_intento_automatizacion_numero)"
+        timestamptz inicio_en "NOT NULL"
+        timestamptz fin_en "NULL"
+        varchar(16) estado "NOT NULL"
+        text mensaje_error "NULL"
+    }
+
+    linea_pedido {
+        integer id PK "NOT NULL"
+        integer pedido_id FK "NOT NULL; ref pedido_compra.id"
+        integer necesidad_ingrediente_id FK,UK "NOT NULL; ref necesidad_ingrediente.id"
+        integer oferta_ingrediente_id FK "NOT NULL; ref oferta_ingrediente.id"
+        integer ingrediente_id FK "NOT NULL; ref ingrediente.id"
+        numeric faltante_base "NOT NULL; numeric(14, 3)"
+        numeric cantidad_compra "NOT NULL; numeric(20, 4)"
+        numeric cantidad_base_pedida "NOT NULL; numeric(30, 8)"
+        varchar(16) unidad_base "NOT NULL"
+        varchar(30) unidad_compra "NOT NULL"
+        jsonb oferta_json "NOT NULL"
+        jsonb ingrediente_json "NOT NULL"
+    }
+
+    linea_recepcion_pedido {
+        integer id PK "NOT NULL"
+        integer recepcion_id FK "NOT NULL; ref recepcion_pedido.id; UQ(uq_recepcion_linea)"
+        integer linea_pedido_id FK "NOT NULL; ref linea_pedido.id; UQ(uq_recepcion_linea)"
+        numeric cantidad_compra "NOT NULL; numeric(20, 4)"
+        numeric cantidad_base "NOT NULL; numeric(14, 3)"
+        integer lote_id FK,UK "NOT NULL; ref lote_ingrediente.id"
+        integer movimiento_id FK,UK "NOT NULL; ref movimiento_inventario.id"
+        varchar(80) codigo_lote "NOT NULL"
+        date fecha_caducidad "NULL"
+    }
+
+    lote_ingrediente {
+        integer id PK "NOT NULL"
+        integer ingrediente_id FK "NOT NULL; ref ingrediente.id; UQ(uq_lote_ingrediente_codigo)"
+        varchar(80) codigo_lote "NOT NULL; UQ(uq_lote_ingrediente_codigo)"
+        boolean lote_informado "NOT NULL"
+        date fecha_caducidad "NULL"
+        date fecha_ingreso "NULL"
+        numeric saldo_disponible "NOT NULL; numeric(14, 3)"
+        timestamptz creado_en "NOT NULL"
+        timestamptz actualizado_en "NOT NULL"
+    }
+
+    lote_producto {
+        integer id PK "NOT NULL"
+        integer producto_id FK "NOT NULL; ref producto.id; UQ(uq_lote_producto_codigo)"
+        varchar(80) codigo_lote "NOT NULL; UQ(uq_lote_producto_codigo)"
+        boolean lote_informado "NOT NULL"
+        date fecha_caducidad "NULL"
+        date fecha_limite_venta "NULL"
+        integer saldo_disponible "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        timestamptz actualizado_en "NOT NULL"
+    }
+
+    movimiento_inventario {
+        integer id PK "NOT NULL"
+        integer lote_ingrediente_id FK "NULL; ref lote_ingrediente.id"
+        integer lote_producto_id FK "NULL; ref lote_producto.id"
+        numeric delta "NOT NULL; numeric(14, 3)"
+        numeric saldo_resultante "NOT NULL; numeric(14, 3)"
+        varchar(12) tipo "NOT NULL"
+        varchar(200) clave_operacion UK "NOT NULL"
+        varchar(300) motivo "NOT NULL"
+        integer usuario_id FK "NULL; ref usuario.id"
+        timestamp efectivo_en_demo "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    necesidad_ingrediente {
+        integer id PK "NOT NULL"
+        integer plan_id FK "NOT NULL; ref plan_produccion.id; UQ(uq_necesidad_plan_ingrediente)"
+        integer ingrediente_id FK "NOT NULL; ref ingrediente.id; UQ(uq_necesidad_plan_ingrediente)"
+        varchar(16) unidad_base "NOT NULL"
+        numeric cantidad_necesaria "NOT NULL; numeric(14, 3)"
+        numeric stock_disponible "NULL; numeric(14, 3)"
+        numeric faltante "NULL; numeric(14, 3)"
+        varchar(24) estado "NOT NULL"
+        jsonb aportes_json "NOT NULL"
+        jsonb stock_json "NOT NULL"
+    }
+
+    negocio {
+        integer id PK "NOT NULL"
+        varchar(160) nombre "NOT NULL"
+        varchar(80) zona_horaria "NOT NULL"
+        varchar(3) moneda "NOT NULL"
+        varchar(20) modo_envio_pedidos "NOT NULL"
+        time_without_time_zone hora_apertura "NULL"
+        time_without_time_zone hora_cierre "NULL"
+        timestamptz creado_en "NOT NULL"
+        timestamptz actualizado_en "NOT NULL"
+    }
+
+    oferta_ingrediente {
+        integer id PK "NOT NULL"
+        integer proveedor_id FK "NOT NULL; ref proveedor.id"
+        integer ingrediente_id FK "NOT NULL; ref ingrediente.id"
+        varchar(120) descripcion "NOT NULL"
+        varchar(30) unidad_compra "NOT NULL"
+        numeric factor_conversion "NOT NULL; numeric(14, 4)"
+        numeric minimo "NOT NULL; numeric(14, 4)"
+        numeric multiplo "NOT NULL; numeric(14, 4)"
+        boolean activa "NOT NULL"
+        boolean preferida "NOT NULL"
+    }
+
+    pedido_compra {
+        integer id PK "NOT NULL"
+        integer propuesta_id FK "NOT NULL; ref propuesta_compra.id"
+        integer plan_id FK "NOT NULL; ref plan_produccion.id; UQ(uq_pedido_plan_proveedor)"
+        integer proveedor_id FK "NOT NULL; ref proveedor.id; UQ(uq_pedido_plan_proveedor)"
+        jsonb proveedor_json "NOT NULL"
+        varchar(24) estado "NOT NULL"
+        varchar(24) modo_envio "NOT NULL"
+        jsonb bloqueos_json "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        varchar(80) clave_decision UK "NULL"
+        integer decidido_por FK "NULL; ref usuario.id"
+        timestamptz decidido_en "NULL"
+        jsonb decision_json "NULL"
+    }
+
+    plan_produccion {
+        integer id PK "NOT NULL"
+        integer corrida_id FK "NOT NULL; ref corrida_pronostico.id"
+        integer ejecucion_id FK "NOT NULL; ref ejecucion_automatizacion.id"
+        varchar(128) clave_ejecucion UK "NOT NULL"
+        varchar(64) huella_stock_recetas "NOT NULL"
+        date fecha_objetivo "NOT NULL"
+        timestamptz stock_leido_en "NOT NULL"
+        varchar(16) estado "NOT NULL"
+        varchar(16) version_calculo "NOT NULL"
+        jsonb origen_pronostico_json "NOT NULL"
+        varchar(24) necesidades_estado "NOT NULL"
+        jsonb necesidades_meta_json "NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    producto {
+        integer id PK "NOT NULL"
+        varchar(160) codigo UK "NOT NULL"
+        varchar(160) nombre "NOT NULL"
+        boolean demostrar "NOT NULL"
+        boolean activo "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    programacion_demo {
+        integer id PK "NOT NULL"
+        varchar(32) tipo "NOT NULL"
+        timestamptz ejecutar_desde_utc "NOT NULL"
+        timestamp fecha_hora_simulada_local "NOT NULL"
+        jsonb parametros_json "NOT NULL"
+        varchar(128) clave_idempotencia UK "NOT NULL"
+        varchar(64) huella_entrada "NOT NULL"
+        varchar(16) estado "NOT NULL"
+        timestamptz despachada_en "NULL"
+        timestamptz lease_hasta "NULL"
+        integer creado_por FK "NULL; ref usuario.id"
+        timestamptz creado_en "NOT NULL"
+        jsonb cambios_json "NOT NULL"
+    }
+
+    pronostico {
+        integer id PK "NOT NULL"
+        integer corrida_id FK "NOT NULL; ref corrida_pronostico.id; UQ(uq_pronostico_corrida_producto)"
+        integer producto_id FK "NOT NULL; ref producto.id; UQ(uq_pronostico_corrida_producto)"
+        integer cantidad_pronosticada "NULL"
+        varchar(32) estado "NOT NULL"
+    }
+
+    propuesta_compra {
+        integer id PK "NOT NULL"
+        integer plan_id FK,UK "NOT NULL; ref plan_produccion.id"
+        date fecha_objetivo "NOT NULL"
+        varchar(24) estado "NOT NULL"
+        boolean activa "NOT NULL"
+        varchar(24) modo_envio "NOT NULL"
+        jsonb necesidades_json "NOT NULL"
+        jsonb incidencias_json "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        timestamptz cancelado_en "NULL"
+        integer cancelado_por FK "NULL; ref usuario.id"
+        varchar(500) motivo_cancelacion "NULL"
+        integer reemplazo_id FK "NULL; ref propuesta_compra.id"
+    }
+
+    proveedor {
+        integer id PK "NOT NULL"
+        varchar(30) codigo UK "NOT NULL"
+        varchar(120) nombre "NOT NULL"
+        boolean activo "NOT NULL"
+        varchar(64) chat_id_pruebas "NULL"
+        boolean destino_verificado "NOT NULL"
+        timestamptz destino_verificado_en "NULL"
+        varchar(64) destino_credencial_huella "NULL"
+    }
+
+    prueba_mensaje_proveedor {
+        integer id PK "NOT NULL"
+        integer proveedor_id FK "NOT NULL; ref proveedor.id"
+        integer usuario_id FK "NOT NULL; ref usuario.id"
+        varchar(80) clave_idempotencia UK "NOT NULL"
+        varchar(64) chat_id "NOT NULL"
+        varchar(64) credencial_huella "NOT NULL"
+        text texto "NOT NULL"
+        boolean revision_chat_confirmada "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        varchar(24) estado "NOT NULL"
+        bigint message_id "NULL"
+        timestamptz fecha_telegram "NULL"
+        varchar(300) detalle "NOT NULL"
+    }
+
+    recepcion_pedido {
+        integer id PK "NOT NULL"
+        integer pedido_id FK "NOT NULL; ref pedido_compra.id"
+        varchar(80) clave_idempotencia UK "NOT NULL"
+        integer usuario_id FK "NOT NULL; ref usuario.id"
+        varchar(150) nombre_usuario "NOT NULL"
+        date fecha_recepcion "NOT NULL"
+        varchar(300) motivo "NOT NULL"
+        jsonb solicitud_json "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    receta {
+        integer id PK "NOT NULL"
+        integer producto_id FK "NOT NULL; ref producto.id; UQ(uq_receta_producto_version)"
+        integer version "NOT NULL; UQ(uq_receta_producto_version)"
+        boolean activo "NOT NULL"
+        varchar(300) motivo "NULL"
+        integer creado_por FK "NULL; ref usuario.id"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    receta_ingrediente {
+        integer id PK "NOT NULL"
+        integer receta_id FK "NOT NULL; ref receta.id; UQ(uq_receta_ingrediente_pareja)"
+        integer ingrediente_id FK "NOT NULL; ref ingrediente.id; UQ(uq_receta_ingrediente_pareja)"
+        numeric cantidad_por_unidad "NOT NULL; numeric(14, 3)"
+    }
+
+    recuperacion_envio {
+        integer id PK "NOT NULL"
+        integer envio_id FK "NOT NULL; ref envio_pedido.id"
+        varchar(80) clave_idempotencia UK "NOT NULL"
+        varchar(24) accion "NOT NULL"
+        integer usuario_id FK "NOT NULL; ref usuario.id"
+        varchar(150) nombre_usuario "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        varchar(1500) evidencia "NOT NULL"
+        jsonb solicitud_json "NOT NULL"
+        jsonb resultado_anterior_json "NOT NULL"
+        integer nuevo_envio_id FK "NULL; ref envio_pedido.id"
+    }
+
+    regla_promocion_demo {
+        integer id PK "NOT NULL"
+        integer version UK "NOT NULL"
+        json parametros "NOT NULL"
+        integer creado_por FK "NOT NULL; ref usuario.id"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    revision_venta {
+        integer id PK "NOT NULL"
+        integer venta_id FK "NOT NULL; ref venta_diaria.id; UQ(uq_revision_venta_numero)"
+        integer numero_revision "NOT NULL; UQ(uq_revision_venta_numero)"
+        integer unidades_vendidas "NOT NULL"
+        varchar(32) origen_cambio "NOT NULL"
+        varchar(255) motivo "NOT NULL"
+        integer usuario_id FK "NULL; ref usuario.id"
+        integer importacion_id FK "NULL; ref importacion_venta.id"
+        timestamptz creado_en "NOT NULL"
+    }
+
+    sku_producto {
+        integer id PK "NOT NULL"
+        integer producto_id FK "NOT NULL; ref producto.id"
+        varchar(40) origen "NOT NULL; UQ(uq_sku_producto_origen_sku)"
+        varchar(160) sku_externo "NOT NULL; UQ(uq_sku_producto_origen_sku)"
+        boolean activo "NOT NULL"
+    }
+
+    usuario {
+        integer id PK "NOT NULL"
+        varchar(254) correo "NOT NULL"
+        varchar(512) hash_contrasena "NOT NULL"
+        varchar(160) nombre "NOT NULL"
+        varchar(20) rol "NOT NULL"
+        boolean activo "NOT NULL"
+        timestamptz creado_en "NOT NULL"
+        timestamptz actualizado_en "NOT NULL"
+    }
+
+    venta_diaria {
+        integer id PK "NOT NULL"
+        integer producto_id FK "NOT NULL; ref producto.id; UQ(uq_venta_diaria_producto_fecha)"
+        date fecha_local "NOT NULL; UQ(uq_venta_diaria_producto_fecha)"
+        integer unidades_vendidas "NOT NULL"
+        integer importacion_id FK "NULL; ref importacion_venta.id"
+        integer revision_actual "NOT NULL"
+        timestamptz actualizado_en "NOT NULL"
+    }
+
+    %% Relaciones físicas, una por cada FK
+    artefacto_modelo |o..o{ configuracion_inicial : modelo_id
+    artefacto_modelo ||..o{ corrida_pronostico : modelo_id
+    corrida_pronostico ||..o{ evaluacion_pronostico : corrida_id
+    corrida_pronostico ||..o{ plan_produccion : corrida_id
+    corrida_pronostico ||..o{ pronostico : corrida_id
+    ejecucion_automatizacion |o..o{ configuracion_inicial : preparacion_ejecucion_id
+    ejecucion_automatizacion ||..o{ corrida_pronostico : ejecucion_id
+    ejecucion_automatizacion ||..o{ evaluacion_pronostico : ejecucion_id
+    ejecucion_automatizacion ||..o{ intento_automatizacion : ejecucion_id
+    ejecucion_automatizacion ||..o{ plan_produccion : ejecucion_id
+    ejecucion_automatizacion ||..o| evaluacion_promocion : ejecucion_id
+    envio_pedido |o..o{ recuperacion_envio : nuevo_envio_id
+    envio_pedido ||..o{ recuperacion_envio : envio_id
+    importacion_venta |o..o{ revision_venta : importacion_id
+    importacion_venta |o..o{ venta_diaria : importacion_id
+    ingrediente ||..o{ linea_pedido : ingrediente_id
+    ingrediente ||..o{ lote_ingrediente : ingrediente_id
+    ingrediente ||..o{ necesidad_ingrediente : ingrediente_id
+    ingrediente ||..o{ oferta_ingrediente : ingrediente_id
+    ingrediente ||..o{ receta_ingrediente : ingrediente_id
+    linea_pedido ||..o{ linea_recepcion_pedido : linea_pedido_id
+    lote_ingrediente |o..o{ movimiento_inventario : lote_ingrediente_id
+    lote_ingrediente ||..o| linea_recepcion_pedido : lote_id
+    lote_producto |o..o{ movimiento_inventario : lote_producto_id
+    movimiento_inventario ||..o| evaluacion_promocion : movimiento_id
+    movimiento_inventario ||..o| linea_recepcion_pedido : movimiento_id
+    necesidad_ingrediente ||..o| linea_pedido : necesidad_ingrediente_id
+    oferta_ingrediente ||..o{ linea_pedido : oferta_ingrediente_id
+    pedido_compra ||..o{ envio_pedido : pedido_id
+    pedido_compra ||..o{ linea_pedido : pedido_id
+    pedido_compra ||..o{ recepcion_pedido : pedido_id
+    plan_produccion ||..o{ elemento_plan : plan_id
+    plan_produccion ||..o{ necesidad_ingrediente : plan_id
+    plan_produccion ||..o{ pedido_compra : plan_id
+    plan_produccion ||..o| propuesta_compra : plan_id
+    producto ||..o{ elemento_plan : producto_id
+    producto ||..o{ evaluacion_pronostico : producto_id
+    producto ||..o{ lote_producto : producto_id
+    producto ||..o{ pronostico : producto_id
+    producto ||..o{ receta : producto_id
+    producto ||..o{ sku_producto : producto_id
+    producto ||..o{ venta_diaria : producto_id
+    programacion_demo |o..o| ejecucion_automatizacion : programacion_id
+    pronostico ||..o{ elemento_plan : pronostico_id
+    pronostico ||..o{ evaluacion_pronostico : pronostico_id
+    propuesta_compra |o..o{ propuesta_compra : reemplazo_id
+    propuesta_compra ||..o{ pedido_compra : propuesta_id
+    proveedor ||..o{ oferta_ingrediente : proveedor_id
+    proveedor ||..o{ pedido_compra : proveedor_id
+    proveedor ||..o{ prueba_mensaje_proveedor : proveedor_id
+    recepcion_pedido ||..o{ linea_recepcion_pedido : recepcion_id
+    receta |o..o{ elemento_plan : receta_id
+    receta ||..o{ receta_ingrediente : receta_id
+    regla_promocion_demo ||..o{ evaluacion_promocion : regla_id
+    revision_venta ||..o{ evaluacion_pronostico : revision_venta_id
+    usuario |o..o{ movimiento_inventario : usuario_id
+    usuario |o..o{ pedido_compra : decidido_por
+    usuario |o..o{ programacion_demo : creado_por
+    usuario |o..o{ propuesta_compra : cancelado_por
+    usuario |o..o{ receta : creado_por
+    usuario |o..o{ revision_venta : usuario_id
+    usuario ||..o{ configuracion_flujo : actualizado_por
+    usuario ||..o{ prueba_mensaje_proveedor : usuario_id
+    usuario ||..o{ recepcion_pedido : usuario_id
+    usuario ||..o{ recuperacion_envio : usuario_id
+    usuario ||..o{ regla_promocion_demo : creado_por
+    venta_diaria ||..o{ revision_venta : venta_id

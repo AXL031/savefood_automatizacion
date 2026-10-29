@@ -19,6 +19,11 @@ celery_app.conf.update(
     broker_transport_options={"socket_connect_timeout": 5, "socket_timeout": 5},
     task_publish_retry=False,  # El lease durable gobierna las publicaciones inciertas.
     beat_schedule={
+        "control-operativo": {
+            "task": "foodsave.control_operativo",
+            "schedule": 30.0,
+            "options": {"expires": 30},
+        },
         "despachar-pedidos-aprobados": {
             "task": "foodsave.despachar_envios_pedidos",
             "schedule": 30.0,
@@ -50,6 +55,14 @@ def ejecutar_automatizacion(ejecucion_id: int, token: str):
 @celery_app.task(name="foodsave.prueba")
 def tarea_prueba(valor: str) -> dict[str, str]:
     return {"resultado": valor}
+
+
+@celery_app.task(name="foodsave.control_operativo", ignore_result=True)
+def control_operativo():
+    from app.core.base_datos import SessionLocal
+    from app.modules.operaciones.monitoreo import revisar
+    with SessionLocal.begin() as sesion:
+        return revisar(sesion)
 
 
 @celery_app.task(name="foodsave.despachar_envios_pedidos", ignore_result=True)

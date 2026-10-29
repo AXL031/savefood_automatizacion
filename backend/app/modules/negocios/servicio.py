@@ -30,3 +30,10 @@ def obtener_modo_envio_pedidos(sesion: Session) -> ModoEnvio:
     if negocio is None:
         raise ErrorAPI(503, "NEGOCIO_NO_CONFIGURADO", "Falta aplicar la migración inicial")
     return negocio.modo_envio_pedidos
+
+
+def moneda_negocio(sesion: Session) -> str:
+    negocio = sesion.get(Negocio, 1)
+    if negocio is None:
+        raise ErrorAPI(503, "NEGOCIO_NO_CONFIGURADO", "Configura el negocio primero.")
+    return negocio.moneda

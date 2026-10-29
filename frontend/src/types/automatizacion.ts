@@ -26,6 +26,7 @@ export type ProgramacionDemo = {
 };
 
 export type CrearProgramacionDemo = {
+  prueba_repetible?: boolean;
   tipo: "GENERAR_PROPUESTA";
   ejecutar_desde_utc: string;
   fecha_hora_simulada_local: string;

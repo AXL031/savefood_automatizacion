@@ -19,7 +19,7 @@ ESTADOS_CANCELABLES = {"BLOQUEADO", "PENDIENTE_APROBACION", "RECHAZADO"}
 def fechas_con_compra_activa(sesion: Session, desde: date, hasta: date) -> list[str]:
     """Frontera de lectura para diagnóstico del calendario, sin cancelar ni reservar."""
     return [fecha.isoformat() for fecha in sesion.scalars(select(PropuestaCompra.fecha_objetivo).where(
-        PropuestaCompra.activa.is_(True), PropuestaCompra.fecha_objetivo >= desde,
+        PropuestaCompra.activa.is_(True), PropuestaCompra.prueba_repetible.is_(False), PropuestaCompra.fecha_objetivo >= desde,
         PropuestaCompra.fecha_objetivo <= hasta).order_by(PropuestaCompra.fecha_objetivo))]
 
 ESTADOS_REPORTE = ("BLOQUEADO", "PENDIENTE_APROBACION", "CANCELADO", "RECHAZADO",
@@ -59,7 +59,7 @@ def estado_compras_del_plan(sesion: Session, plan_id: int) -> str:
 
 
 def _conflicto_fecha(sesion, fecha):
-    anterior = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.fecha_objetivo == fecha, PropuestaCompra.activa.is_(True)))
+    anterior = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.fecha_objetivo == fecha, PropuestaCompra.activa.is_(True), PropuestaCompra.prueba_repetible.is_(False)))
     if anterior is not None:
         estados = set(sesion.scalars(select(PedidoCompra.estado).where(PedidoCompra.propuesta_id == anterior.id)))
         referencia = f"La fecha {fecha.isoformat()} ya tiene la propuesta #{anterior.id} del plan #{anterior.plan_id}."
@@ -84,7 +84,9 @@ def _cantidades(faltante, oferta):
         return cantidad, base
 
 
-def generar_pedidos(sesion: Session, plan_id: int, *, modo_envio: str | None = None) -> PropuestaCompra:
+def generar_pedidos(sesion: Session, plan_id: int, *, modo_envio: str | None = None, prueba_repetible: bool = False) -> PropuestaCompra:
+    if type(prueba_repetible) is not bool:
+        raise ErrorAPI(422, "PRUEBA_INVALIDA", "Prueba repetible debe ser verdadero o falso.")
     entrada = obtener_contexto_compras(sesion, plan_id)
     fecha = date.fromisoformat(entrada["fecha_objetivo"])
     _bloquear_fecha(sesion, fecha)
@@ -117,14 +119,14 @@ def generar_pedidos(sesion: Session, plan_id: int, *, modo_envio: str | None = N
             "cantidad_base_pedida": base, "unidad_base": n["unidad_base"], "unidad_compra": oferta.unidad_compra,
             "oferta_json": oferta.model_dump(mode="json"), "ingrediente_json": n})
     sin_faltantes = not positivas and not incidencias
-    if not sin_faltantes:
+    if not sin_faltantes and not prueba_repetible:
         _conflicto_fecha(sesion, fecha)
     bloqueada = bool(incidencias or any(g["bloqueos"] for g in grupos.values()))
     try:
         with sesion.begin_nested():
             propuesta = PropuestaCompra(plan_id=plan_id, fecha_objetivo=fecha, modo_envio=modo,
                 estado="SIN_FALTANTES" if sin_faltantes else "BLOQUEADA" if bloqueada else "GENERADA",
-                activa=not sin_faltantes, necesidades_json=entrada, incidencias_json=incidencias)
+                activa=not sin_faltantes, prueba_repetible=prueba_repetible, necesidades_json=entrada, incidencias_json=incidencias)
             sesion.add(propuesta); sesion.flush()
             for proveedor_id, grupo in sorted(grupos.items()):
                 bloqueos = grupo["bloqueos"] + (["NECESIDADES_SIN_PROVEEDOR"] if incidencias else [])
@@ -163,7 +165,8 @@ def generar_pedidos(sesion: Session, plan_id: int, *, modo_envio: str | None = N
         previo = sesion.scalar(select(PropuestaCompra).where(PropuestaCompra.plan_id == plan_id))
         if previo is not None:
             return previo
-        _conflicto_fecha(sesion, fecha)
+        if not prueba_repetible:
+            _conflicto_fecha(sesion, fecha)
         raise
     return propuesta
 
@@ -187,6 +190,7 @@ def detalle_pedido(sesion: Session, pedido_id: int) -> dict:
     lineas = list(sesion.scalars(select(LineaPedido).where(LineaPedido.pedido_id == pedido.id).order_by(LineaPedido.ingrediente_id)))
     recepciones = resumen_recepciones(sesion, pedido_id, lineas)
     return {"id": pedido.id, "propuesta_id": pedido.propuesta_id, "plan_id": pedido.plan_id,
+        "prueba_repetible": propuesta.prueba_repetible,
         "fecha_objetivo": propuesta.fecha_objetivo.isoformat(), "proveedor": pedido.proveedor_json,
         "estado": pedido.estado, "modo_envio": pedido.modo_envio, "bloqueos": pedido.bloqueos_json,
         "creado_en": pedido.creado_en.isoformat(), "envio_estado": envio.estado if envio else "SIN_ENVIO",
@@ -217,7 +221,7 @@ def detalle_propuesta(sesion: Session, propuesta_id: int) -> dict:
     if propuesta is None:
         raise ErrorAPI(404, "PROPUESTA_NO_ENCONTRADA", "La propuesta no existe.")
     return {"id": propuesta.id, "plan_id": propuesta.plan_id, "fecha_objetivo": propuesta.fecha_objetivo.isoformat(),
-        "estado": propuesta.estado, "activa": propuesta.activa, "modo_envio": propuesta.modo_envio, "reemplazo_id": propuesta.reemplazo_id,
+        "estado": propuesta.estado, "activa": propuesta.activa, "prueba_repetible": propuesta.prueba_repetible, "modo_envio": propuesta.modo_envio, "reemplazo_id": propuesta.reemplazo_id,
         "necesidades": propuesta.necesidades_json, "incidencias": propuesta.incidencias_json,
         "creado_en": propuesta.creado_en.isoformat(), "motivo_cancelacion": propuesta.motivo_cancelacion,
         "cancelado_por": propuesta.cancelado_por, "cancelado_en": propuesta.cancelado_en.isoformat() if propuesta.cancelado_en else None,
@@ -274,7 +278,7 @@ def corregir_propuesta(sesion: Session, propuesta_id: int, usuario_id: int, moti
     origen = detalle_plan(sesion, original.plan_id)
     cancelar_propuesta(sesion, propuesta_id, usuario_id, motivo)
     nuevo_plan = generar_plan(sesion, corrida_id=origen["corrida_id"], clave_ejecucion=f"corregir-propuesta-{propuesta_id}")
-    nueva = generar_pedidos(sesion, nuevo_plan.id, modo_envio="REQUIERE_APROBACION")
+    nueva = generar_pedidos(sesion, nuevo_plan.id, modo_envio="REQUIERE_APROBACION", prueba_repetible=original.prueba_repetible)
     if nueva.estado == "BLOQUEADA":
         raise ErrorAPI(409, "CONFIGURACION_INCOMPLETA", "Todavía faltan ofertas o destinos válidos. Completa Proveedores antes de preparar la corrección.")
     original.reemplazo_id = nueva.id
@@ -301,6 +305,8 @@ def construir_mensaje(sesion: Session, pedido: PedidoCompra) -> str:
     partes = [f"{linea_texto(nombre_negocio(sesion))} · Pedido #{pedido.id}",
         f"Fecha de planificación: {propuesta.fecha_objetivo.isoformat()}",
         f"Proveedor: {linea_texto(pedido.proveedor_json['nombre'])}", f"Plan de origen: #{pedido.plan_id}", "", "Insumos:"]
+    if propuesta.prueba_repetible:
+        partes.insert(0, "PRUEBA REPETIBLE — NO SURTIR")
     for linea in sesion.scalars(select(LineaPedido).where(LineaPedido.pedido_id == pedido.id).order_by(LineaPedido.ingrediente_id)):
         partes.append(f"• {linea_texto(linea.ingrediente_json['stock']['nombre'])}: {cantidad_texto(linea.cantidad_compra, linea.unidad_compra)} "
                       f"(equivale a {cantidad_texto(linea.cantidad_base_pedida, linea.unidad_base)}; faltante {cantidad_texto(linea.faltante_base, linea.unidad_base)})")
@@ -327,6 +333,11 @@ def _preparar_envio(sesion: Session, pedido: PedidoCompra, *, chat_id_revisado: 
     if chat_id_revisado is not None and chat_id_revisado != destino.chat_id_pruebas:
         raise ErrorAPI(409, "DESTINO_CAMBIO", "El chat cambió desde tu revisión. Actualiza el pedido y revisa el nuevo destino.")
     texto = construir_mensaje(sesion, pedido)
+    import os
+    if os.getenv('HABILITAR_ENLACES_PROVEEDOR') == '1':
+        from app.modules.operaciones.proveedores import crear_enlace
+        enlace = crear_enlace(sesion, pedido.id)
+        texto += '\n\nRevisar y responder en una hora:\n' + enlace['url']
     if len(texto.encode("utf-16-le")) // 2 > 4096:
         raise ErrorAPI(422, "MENSAJE_FUERA_DE_RANGO", "El pedido supera el tamaño de un mensaje de Telegram; reduce sus líneas antes de enviarlo.")
     return EnvioPedido(pedido_id=pedido.id, estado="PENDIENTE_ENVIO", chat_id=destino.chat_id_pruebas,

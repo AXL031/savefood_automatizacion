@@ -1,5 +1,7 @@
 # Guía de desarrollo — Ventas diarias e historial
 
+**26-10-2026 · Selector sin elegibles:** el diálogo informa catálogo activo, precios ausentes y productos sin stock vendible; ofrece revisar catálogo/precios e inventario. La primera acción cierra el diálogo y abre el catálogo. Reinicia producto seleccionado al abrir una venta nueva y deshabilita el selector vacío. Disposición del selector mediante `sale-product-picker`, sin alineación global de acciones al extremo derecho. No sustituye faltantes por stock ni precio inventado. Regresión React cubre diálogo abierto, falta de precio/stock, cotización bloqueada y apertura del catálogo.
+
 **Carpeta:** `frontend/src/features/ventas`.
 
 **Responsable:** Edu Sanchez. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.
@@ -44,3 +46,12 @@ Agrupar aquí formularios, hooks y vistas específicos del dominio. Consumir `sr
 ## Documentar el avance y entregar al siguiente
 
 Al finalizar un avance significativo, actualizar [el registro del responsable](../../../../docs/equipo/avances/sanchez.md) siguiendo [la plantilla](../../../../docs/equipo/avances/README.md): resumen vigente, tarea, comportamiento disponible, contrato/ejemplo, archivos clave, pruebas, bloqueos y próximo consumidor. En carpetas compartidas, el autor del dominio registra en su propio archivo y enlaza la coordinación. Actualizar esta guía y el contrato si cambian. No dejar el único resumen en el chat.
+
+
+## Caja presencial · 26-10-2026
+
+`CajaPresencial.tsx` implementa catálogo/precios administrativos, carrito, cotización, confirmación, filtros, detalle y anulación. Solicitud pendiente en sessionStorage por usuario antes de POST; mismo payload/clave tras fallo incierto y consulta por clave al remontar. Doble clic bloqueado; no borrar almacenamiento con una venta pendiente. [Contrato implementado](../../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+CajaPresencial conserva el registro presencial, agrega filtro/identificación TIENDA y no ofrece anular pagos online. Mostrar subtotales conservados, que pueden contener unidades promocionadas, sin afirmar cantidad × precio base cuando hay descuento.

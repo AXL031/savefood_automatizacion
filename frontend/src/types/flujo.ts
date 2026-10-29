@@ -1,4 +1,5 @@
 export type ConfiguracionFlujo = {
+  prueba_repetible?: boolean;
   producto_ids: number[]; modelo_id: number | null; fecha_objetivo_demo: string;
   hora_simulada: string; primera_ejecucion_local: string; dias: number;
   modo_envio_pedidos: "REQUIERE_APROBACION" | "AUTOMATICO";

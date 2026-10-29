@@ -99,6 +99,7 @@ def programar_propuesta(
     creado_por: int,
     modo_envio_pedidos: str | None = None,
     modelo_id: int | None = None,
+    prueba_repetible: bool = False,
 ) -> ProgramacionDemo:
     """Reserva programación y ejecución pendiente en la misma transacción."""
     if fecha_hora_simulada_local.tzinfo is not None:
@@ -110,6 +111,10 @@ def programar_propuesta(
     ):
         raise ValueError("Se requiere al menos un producto, con IDs positivos y únicos")
     parametros = {"fecha_objetivo_demo": fecha_objetivo_demo, "producto_ids": sorted(producto_ids)}
+    if type(prueba_repetible) is not bool:
+        raise ValueError("Prueba repetible debe ser verdadero o falso")
+    if prueba_repetible:
+        parametros["prueba_repetible"] = True
     if modelo_id is not None:
         parametros["modelo_id"] = modelo_id
     if modo_envio_pedidos is not None:

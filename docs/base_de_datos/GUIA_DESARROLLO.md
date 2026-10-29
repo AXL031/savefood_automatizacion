@@ -24,6 +24,8 @@ Archivos técnicos observados al preparar esta guía: `diagrama-entidad-relacion
 
 ## Trabajo en esta carpeta
 
+**21-10-2026 · ER completo para presentación:** `diagrama-entidad-relacion.mmd` contiene todas las tablas, columnas y FK de los modelos locales hasta `0019_tienda_clientes`, con tipos PostgreSQL, PK/FK/UK, nulabilidad y claves compuestas identificadas. `estructura-fisica.md` complementa defaults, UNIQUE/CHECK, índices parciales/funcionales y acciones de borrado. El ER representa código, no una inspección del despliegue: `cliente` depende de 0019; SQLite de pagos de `tienda/` queda fuera por ADR-010. No inventar relaciones de `negocio`, referencias directas de promoción a lote ni UK individuales a partir de restricciones compuestas. Evidencia y límites en [Cueva](../equipo/avances/cueva.md).
+
 1. Cada dueño define columnas, nulabilidad, precisión, FK, CHECK e índices de sus entidades.
 2. Axel coordina consistencia ER/diccionario/esquema y orden de migración.
 3. Edu posee producto/venta/inicialización; Max receta/plan; Kevin ML; Vera stock/promoción; Aguirre compra.
@@ -67,3 +69,17 @@ Migración aditiva 0014_l04_recuperacion sobre 0013, sin reescribir anteriores; 
 ## Ampliación 0018 · 15-10-2026
 
 Esquema y ER incluyen recepcion_pedido/linea_recepcion_pedido, lote_ingrediente.fecha_ingreso y propuesta_compra.reemplazo_id. Contrato público en contrato-pedidos.md y contratos.md; cantidades/movimientos/idempotencia atómicos. Migración aditiva con downgrade protegido. No crea tablas de tickets ni simulación. Evidencia de PostgreSQL/SQLite y despliegue en avances/cueva.md.
+
+
+## Caja presencial · 26-10-2026
+
+0021 agrega cinco tablas de caja: el esquema actual tiene 43 tablas. ER/estructura física del corte anterior de 38 tablas hasta 0019 permanecen como snapshot fechado; no incluyen esta ampliación. Migración 0021 y contrato de caja son la referencia de sus columnas/restricciones. [Contrato implementado](../api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+
+## Entradas de productos · 28-10-2026
+
+Esquema actual de 45 tablas tras 0022; dos nuevas de entrada y línea, y fecha_ingreso de producto. ER/estructura física de 38 tablas siguen como snapshot hasta 0019; revisar 0021/0022 y contratos para ampliaciones posteriores. [Contrato implementado](../api/contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.
+
+## Acoplamiento · 28-10-2026
+
+0023 agrega cinco tablas a las45 existentes (50 entidades). El ER físico fechado0019 es histórico; consultar DDL0021–0023 y contrato-operacion-integrada.md. No presentar ese snapshot de38 tablas como esquema desplegado actual.

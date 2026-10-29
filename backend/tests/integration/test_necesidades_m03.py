@@ -105,7 +105,7 @@ def test_migracion_preserva_plan_previo(escenario):
     migracion = importlib.util.module_from_spec(spec); spec.loader.exec_module(migracion)
     posteriores = []
     for nombre in ("0011_l02_compras", "0012_l03_telegram_config",
-                   "0013_l03_aprobacion_envio", "0014_l04_recuperacion", "0018_recepcion_compras"):
+                   "0013_l03_aprobacion_envio", "0014_l04_recuperacion", "0018_recepcion_compras", "0023_operaciones_compatibles"):
         spec = importlib.util.spec_from_file_location(nombre, ruta.parent / f"{nombre}.py")
         modulo = importlib.util.module_from_spec(spec); spec.loader.exec_module(modulo)
         posteriores.append(modulo)

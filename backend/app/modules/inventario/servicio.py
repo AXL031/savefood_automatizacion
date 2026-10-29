@@ -162,6 +162,11 @@ def _aplicar(
         return _resultado(existente, repetido=True)
 
     saldo_final = _saldo(tipo, lote) + delta
+    if tipo == PRODUCTO and delta < 0:
+        from .reservas import cantidades_reservadas
+        apartado = cantidades_reservadas(sesion, [lote.id]).get(lote.id, 0)
+        if apartado and saldo_final < apartado:
+            raise ErrorAPI(409, 'STOCK_RESERVADO', 'Esta salida afectaría unidades reservadas para una compra en curso.')
     if saldo_final < 0:
         raise ErrorAPI(
             409,
@@ -369,6 +374,8 @@ def registrar_ajuste(sesion: Session, solicitud: SolicitudAjuste, usuario_id: in
         raise ErrorAPI(422, "HORA_INVALIDA", "efectivo_en_demo es hora local del escenario, sin zona horaria.")
 
     lote = _bloquear_lote(sesion, tipo, solicitud.lote_id)
+    if lote.fecha_ingreso is not None and efectivo.date() < lote.fecha_ingreso:
+        raise ErrorAPI(422, "AJUSTE_ANTERIOR_AL_INGRESO", "La fecha del ajuste no puede ser anterior al ingreso del lote.")
     resultado = _aplicar(
         sesion,
         tipo=tipo,
@@ -418,6 +425,7 @@ class LoteLeido:
     dia_de_vida: int | None
     cuenta: bool
     motivo: str
+    fecha_ingreso: date | None = None
 
 
 @dataclass
@@ -466,6 +474,7 @@ def _lote_leido(tipo: str, lote, fecha: date) -> LoteLeido:
         dia_de_vida=vig.dia_de_vida,
         cuenta=vig.cuenta,
         motivo=vig.motivo,
+        fecha_ingreso=lote.fecha_ingreso,
     )
 
 
@@ -504,7 +513,7 @@ def consultar_disponibilidad(
 
     if tipo in (None, PRODUCTO):
         ids = set(producto_ids) if producto_ids is not None else None
-        consulta = select(LoteProducto)
+        consulta = select(LoteProducto).where((LoteProducto.fecha_ingreso.is_(None)) | (LoteProducto.fecha_ingreso <= fecha))
         if ids is not None:
             consulta = consulta.where(LoteProducto.producto_id.in_(ids)) if ids else None
         lotes = list(sesion.scalars(consulta)) if consulta is not None else []

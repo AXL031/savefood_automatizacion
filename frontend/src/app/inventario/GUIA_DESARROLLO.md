@@ -1,5 +1,7 @@
 # Guía de desarrollo — Inventario por lotes y movimientos
 
+**28-10-2026 · Entradas:** Inventario monta `features/inventario/EntradasProductos`, admite varios productos/lotes y consulta hoy por defecto desde el contexto del servidor. Conserva fecha histórica seleccionable, ajustes y lectura de ingredientes. Fecha de ingreso visible en detalle de lotes; etiqueta ENTRADA y recarga transaccional después de confirmación. [Contrato](../../../../docs/api/contrato-entradas-productos.md); Codex para Axel, dominio de Vera.
+
 **Carpeta:** `frontend/src/app/inventario`.
 
 **Responsable:** Leonardo Vera. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.
@@ -77,3 +79,8 @@ Disponibilidad/listados primero; Registrar ajuste abre PanelDetalle bajo demanda
 ## Recepción y corrección autorizadas · 15-10-2026
 
 Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
+
+## Caja presencial · 26-10-2026
+
+El historial etiqueta VENTA y ANULA_VENTA para las salidas/compensaciones de caja. No añade una edición manual de estos tipos. [Contrato implementado](../../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.

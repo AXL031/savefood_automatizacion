@@ -227,7 +227,8 @@ def test_repeticion_concurrente_de_un_plan_no_duplica_pedidos(compra):
         assert sesion.scalar(select(func.count()).select_from(LineaPedido)) == 1
 
 
-def test_motor_recompra_conserva_nuevo_plan_y_evaluacion(compra, monkeypatch):
+@pytest.mark.parametrize("repetible", [False, True])
+def test_motor_recompra_conserva_nuevo_plan_y_evaluacion(compra, monkeypatch, repetible):
     from datetime import date
     from app.modules.automatizaciones.servicio import crear_o_recuperar_ejecucion
     from app.modules.pronosticos.modelos import ArtefactoModelo
@@ -247,14 +248,62 @@ def test_motor_recompra_conserva_nuevo_plan_y_evaluacion(compra, monkeypatch):
     for clave in ("propuesta-original", "propuesta-recalculada"):
         with sesiones.begin() as sesion:
             ejecucion = crear_o_recuperar_ejecucion(sesion, "GENERAR_PROPUESTA", clave, {
-                "parametros":{"fecha_objetivo_demo":"2022-08-24", "producto_ids":list(productos.values())}})
+                "parametros":{"fecha_objetivo_demo":"2022-08-24", "producto_ids":list(productos.values()), "prueba_repetible": repetible}})
         mensajes = []
         motor.despachar_pendientes(lambda id_, token_: mensajes.append((id_,token_)))
-        assert motor.ejecutar(*next(m for m in mensajes if m[0]==ejecucion.id))["resultado"] == "COMPLETADA"
+        mensaje = next(m for m in mensajes if m[0]==ejecucion.id)
+        assert motor.ejecutar(*mensaje)["resultado"] == "COMPLETADA"
+        assert motor.ejecutar(*mensaje)["resultado"] == "IGNORADA"
     from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
     with sesiones() as sesion:
         segunda = sesion.get(EjecucionAutomatizacion, ejecucion.id)
-        assert segunda.datos_salida_json["pedidos_estado"] == "RECOMPRA_FECHA"
+        assert segunda.datos_salida_json["pedidos_estado"] == ("GENERADA" if repetible else "RECOMPRA_FECHA")
         assert segunda.datos_salida_json["evaluacion_ejecucion_id"]
         assert sesion.scalar(select(func.count()).select_from(PlanProduccion)) == 2
-        assert sesion.scalar(select(func.count()).select_from(PropuestaCompra)) == 1
+        assert sesion.scalar(select(func.count()).select_from(PropuestaCompra)) == (2 if repetible else 1)
+        if repetible:
+            assert all(p.prueba_repetible for p in sesion.scalars(select(PropuestaCompra)))
+
+
+@pytest.mark.parametrize("estado_previo", ["PENDIENTE_APROBACION", "ENVIADO", "PENDIENTE_VERIFICACION"])
+def test_pruebas_repetibles_no_cambian_compras_previas_y_normal_sigue_protegida(compra, estado_previo):
+    from app.modules.compras.servicio import detalle_propuesta, fechas_con_compra_activa
+    from datetime import date
+    entorno, _, _, _ = compra
+    _, sesiones, _, _, _, _ = entorno
+    primero = solicitar(entorno, "normal").json()["datos"]
+    with sesiones.begin() as s:
+        normal = generar_pedidos(s, primero["id"])
+        pedido = s.scalar(select(PedidoCompra).where(PedidoCompra.propuesta_id == normal.id))
+        pedido.estado = estado_previo  # Fixture del estado; no transmite mensajes.
+        normal_id, pedido_id = normal.id, pedido.id
+    for clave in ("prueba-uno", "prueba-dos"):
+        plan = solicitar(entorno, clave).json()["datos"]
+        with sesiones.begin() as s:
+            prueba = generar_pedidos(s, plan["id"], prueba_repetible=True)
+            assert generar_pedidos(s, plan["id"], prueba_repetible=True).id == prueba.id
+            datos = detalle_propuesta(s, prueba.id)
+            assert datos["prueba_repetible"] and datos["pedidos"][0]["prueba_repetible"]
+            assert "PRUEBA REPETIBLE — NO SURTIR" in datos["pedidos"][0]["mensaje"]
+    final = solicitar(entorno, "normal-repetida").json()["datos"]
+    with sesiones.begin() as s:
+        with pytest.raises(ErrorAPI, match="La fecha"):
+            generar_pedidos(s, final["id"])
+        assert s.get(PedidoCompra, pedido_id).estado == estado_previo
+        assert s.get(PropuestaCompra, normal_id).activa
+        assert s.scalar(select(func.count()).select_from(PropuestaCompra)) == 3
+        assert fechas_con_compra_activa(s, date(2022,8,24), date(2022,8,24)) == ["2022-08-24"]
+
+
+def test_prueba_repetible_no_reserva_fecha_para_la_primera_compra_normal(compra):
+    from app.modules.compras.servicio import fechas_con_compra_activa
+    from datetime import date
+    entorno, _, _, _ = compra
+    _, sesiones, _, _, _, _ = entorno
+    prueba = solicitar(entorno, "solo-prueba").json()["datos"]
+    with sesiones.begin() as s:
+        generar_pedidos(s, prueba["id"], prueba_repetible=True)
+        assert fechas_con_compra_activa(s, date(2022,8,24), date(2022,8,24)) == []
+    normal = solicitar(entorno, "primera-normal").json()["datos"]
+    with sesiones.begin() as s:
+        assert not generar_pedidos(s, normal["id"]).prueba_repetible

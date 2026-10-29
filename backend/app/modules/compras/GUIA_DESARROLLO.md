@@ -101,3 +101,12 @@ Codex para Axel. Pedidos nuevos incorporan nombre_negocio(sesion), fecha de plan
 ## Recepción y corrección autorizadas · 15-10-2026
 
 Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: docs/api/contrato-pedidos.md y frontera de inventario en docs/api/contratos.md. Migración aditiva 0018: corrección enlazada de propuesta bloqueada sin envíos, nuevo plan y modo manual; recepción administrativa parcial/completa sobre pedido ENVIADO, con factor guardado, lotes y movimientos RECEPCION atómicos e idempotentes. UI distingue envío del mensaje y llegada física, muestra pendientes/historial y tabla de cantidades. Inventario etiqueta Recepción y filtra nuevas entradas anteriores a fecha_ingreso. Pruebas test_recepcion_compras.py; CI incluye su corte PostgreSQL. No implementa ventas en vivo ni simulación: solo plan en docs/equipo/plan-ventas-vivo-simulacion.md. Registro transversal y resultados reales en avances/cueva.md.
+
+
+## Pruebas repetibles autorizadas · 21-10-2026
+
+Codex para Axel, L02/A02. generar_pedidos añade prueba_repetible=False estricto. True permite otra propuesta para la fecha, con una propuesta por plan e idempotencia conservadas; false consulta solo propuestas normales. Marca serializada en propuesta/pedido, visible en mensaje PRUEBA REPETIBLE — NO SURTIR y conservada al corregir. Índice parcial de 0020 limita únicamente activas normales. No cambia aprobación, verificación de destino, recuperación, recepción ni envío incierto. Usar contrato-pedidos.md del 21-10; no interpretar notas anteriores como prohibición de esta prueba explícita.
+
+## Acoplamiento de Bohorquez · 28-10-2026
+
+Backport adaptado 4c2a271: [contrato de operaciones](../../../../docs/api/contrato-operacion-integrada.md). Conserva tienda independiente por HTTP, caja y entradas múltiples de Cueva. Nueva migración 0023 sobre 0022; producción explícita, recepción asistida, avisos/monitor. No publica en tienda ni altera histórico/ML. Evidencia y límites en el registro de Cueva.

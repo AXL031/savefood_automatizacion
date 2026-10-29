@@ -1,5 +1,7 @@
 # Guía de desarrollo — Ventas diarias e historial
 
+**26-10-2026 · Navegación:** Ventas tiene sección propia en el menú, **Ventas → Caja e historial**, y contexto de página Ventas. Ya no forma parte de Preparar datos; las pestañas presencial/histórico permanecen dentro del módulo.
+
 **Carpeta:** `frontend/src/app/ventas`.
 
 **Responsable:** Edu Sanchez. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.
@@ -56,3 +58,12 @@ Tablas con paginador común y tamaños 10/25/50/100. Sesión/marco persistentes 
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. La corrección consume reevaluaciones devueltas por API e informa las tareas reservadas. El mensaje no atribuye trabajo manual a un integrante ni presenta la reserva como evaluación terminada. Historial/roles y paginación conservados.
 
 [Contrato y ejemplos vigentes](../../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+
+## Caja presencial · 26-10-2026
+
+La página ofrece Ventas presenciales por defecto y conserva Histórico importado con revisión/corrección. `features/ventas/CajaPresencial.tsx` consume DTOs/servicios propios; nunca calcula precios definitivos ni escribe stock directamente. [Contrato implementado](../../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+Caja e historial admite canales PRESENCIAL/TIENDA y detalle de pagos verificados por la tienda. El histórico importado permanece en su pestaña, sin mezclar tickets automáticamente. Publicación comercial se administra en /tienda-admin.

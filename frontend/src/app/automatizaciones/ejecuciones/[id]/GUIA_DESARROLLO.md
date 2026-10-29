@@ -21,6 +21,8 @@ Archivos técnicos observados al preparar esta guía: `page.tsx`. Su presencia n
 
 ## Trabajo en esta carpeta
 
+**Seguimiento visual · 21-10-2026:** `FlujoEjecucion` muestra Programada/Registrada → Despacho → procesamiento del tipo de tarea → Resultado. Fecha objetivo y horas reales separadas, reloj de duración, reintentos, errores, última consulta, enlaces a corrida/plan/propuesta y evaluación posterior cuando existen. Consulta secuencial cada tres segundos; se detiene en COMPLETADA/FALLIDA/CANCELADA. Ante error conserva el último dato e identifica desconexión; botón «Actualizar estado» reinicia la consulta. Las fases internas de negocio no tienen telemetría independiente: no se marcan avances ni porcentajes inventados. Se conservan intentos y JSON desplegable.
+
 **A03 disponible:** `page.tsx` consulta el ID real y refresca estados activos, muestra despacho, lease, siguiente intento, horas e intentos registrados. No ofrece reintento manual ni afirma efectos externos; un handler de dominio ausente deja error visible.
 
 1. Obtener ejecución por ID de la URL y distinguir ID inválido, no encontrado y falta de permisos.

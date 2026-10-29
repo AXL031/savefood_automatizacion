@@ -16,6 +16,7 @@ class ProgramarPropuesta(BaseModel):
     producto_ids: list[PositiveInt] = Field(min_length=1)
     modo_envio_pedidos: Literal["REQUIERE_APROBACION", "AUTOMATICO"] | None = None
     modelo_id: PositiveInt | None = None
+    prueba_repetible: bool = Field(default=False, strict=True)
     clave_idempotencia: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$")
 
     @field_validator("ejecutar_desde_utc")
@@ -48,6 +49,7 @@ class ProgramarPropuesta(BaseModel):
 
 class ConfigurarFlujo(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    prueba_repetible: bool = Field(default=False, strict=True)
     producto_ids: list[PositiveInt] = Field(min_length=1)
     modelo_id: PositiveInt | None = None
     fecha_objetivo_demo: date

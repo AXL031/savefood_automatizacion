@@ -102,3 +102,17 @@ Codex para Axel coordina Compras/Inventario/Planificación. Contrato vigente: do
 Codex a solicitud del usuario; se conserva la responsabilidad de los dominios. EvaluacionDia/EvaluacionTramo añaden pares_pendientes_evaluacion opcional; CorreccionVenta añade reevaluaciones. Contratos existentes de cantidades, revisiones y fechas conservados. Consumidores web distinguen reserva, resultado pendiente y dato ausente.
 
 [Contrato y ejemplos vigentes](../../../docs/api/contratos.md#k03k04-y-frontera-e01--20-10-2026). [Pruebas, consumidores y límites del corte](../../../docs/equipo/avances/bohorquez.md). Sin migraciones nuevas; no se acredita PostgreSQL/Redis, CI remoto ni envío real por la QA visual.
+
+
+## Caja presencial · 26-10-2026
+
+`ventas.ts` tipa catálogo, cotización, tickets, cobro declarado y movimientos; inventario.ts añade VENTA/ANULA_VENTA. Dinero viaja como cadena decimal. [Contrato implementado](../../../docs/api/contrato-caja-presencial.md). Autor de este corte: Codex para Axel; se conservan las responsabilidades de cada dominio. Evidencia y límites en el registro de Cueva.
+
+
+## Entradas de productos · 28-10-2026
+
+inventario.ts añade DTOs de entrada/contexto, fecha_ingreso opcional de lote y tipo de movimiento ENTRADA. Cantidad de producto entero, fechas de calendario como cadenas ISO; auditoría UTC separada. [Contrato implementado](../../../docs/api/contrato-entradas-productos.md). Autor Codex para Axel; dominio Inventario de Vera y responsabilidades de los demás integrantes conservados. Evidencia en avances/cueva.md.
+
+## Ampliación vigente · 28-10-2026 · Tienda por API
+
+ventas.ts admite canal TIENDA, usuario_id nullable para integrador y segmentos promocionales; inventario.ts distingue reservado de saldo físico. No introducir secretos de servidor en tipos de configuración del navegador.

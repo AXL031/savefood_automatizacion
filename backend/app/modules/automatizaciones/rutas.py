@@ -99,6 +99,7 @@ def crear_programacion(
         creado_por=usuario.id,
         modo_envio_pedidos=datos.modo_envio_pedidos,
         modelo_id=datos.modelo_id,
+        prueba_repetible=datos.prueba_repetible,
     )
     sesion.commit()
     return {"datos": serializar_programacion(sesion, programacion)}

@@ -1,5 +1,9 @@
 # Guía de desarrollo — Inventario por lotes y movimientos
 
+## Entradas múltiples · 28-10-2026
+
+`EntradasProductos.tsx` implementa formulario/revisión de hasta 100 lotes, confirmación, historial/detalle y recuperación por clave conservada en sessionStorage antes de POST. Solo Administrador registra; Operador consulta. Fechas propuestas según contexto del servidor, código editable y cantidades enteras. Callback estable al contenedor consulta hoy inicialmente y actualiza stock de productos en fecha de la entrada tras confirmar/recuperar. [Contrato implementado](../../../../docs/api/contrato-entradas-productos.md). Autor Codex para Axel, dominio de Vera conservado; registro transversal en Cueva.
+
 **Carpeta:** `frontend/src/features/inventario`.
 
 **Responsable:** Leonardo Vera. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.
