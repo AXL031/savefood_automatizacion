@@ -3169,6 +3169,16 @@
           "route": "/",
           "check": "Subrayado, etiqueta de Avisos y dos fuentes precargadas",
           "ok": true
+        },
+        {
+          "route": "/tienda-admin",
+          "check": "Enlaces del parrafo subrayados",
+          "ok": true
+        },
+        {
+          "route": "/inicializacion",
+          "check": "Enlaces del parrafo subrayados",
+          "ok": true
         }
       ],
       "errors": [],
@@ -3178,11 +3188,23 @@
           "status": 404
         },
         {
+          "path": "/api/v1/inventario/entradas-productos/contexto",
+          "status": 404
+        },
+        {
           "path": "/api/v1/inventario/entradas-productos",
           "status": 404
         },
         {
-          "path": "/api/v1/inventario/entradas-productos/contexto",
+          "path": "/api/v1/tienda-admin/estado",
+          "status": 404
+        },
+        {
+          "path": "/api/v1/tienda-admin/productos",
+          "status": 404
+        },
+        {
+          "path": "/api/v1/tienda-admin/reservas",
           "status": 404
         }
       ]
@@ -3190,6 +3212,8 @@
     "limites": [
       "Portal de proveedor sin propuestas ni enlaces existentes; no se crearon pedidos.",
       "Las respuestas HTTP 404 indicadas corresponden a endpoints de la API instalada; no se modifico backend."
-    ]
+    ],
+    "compilacionFinal": "ff3b59d (cambios de codigo hasta d16a160; guias incluidas)",
+    "revalidacion": "Tipos, 3 regresiones React y 8 comprobaciones de navegador correctos tras las ultimas correcciones; Lighthouse repetido tres veces en tienda-admin e inicializacion."
   }
 }
