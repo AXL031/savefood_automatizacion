@@ -161,6 +161,82 @@
           ]
         }
       ]
+    },
+    "/compras": {
+      "antes": [
+        {
+          "run": 1,
+          "finalUrl": "http://localhost:3000/compras",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 170.05831083374022,
+            "largest-contentful-paint": 288.4302,
+            "cumulative-layout-shift": 0.10448197530864203,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 2,
+          "finalUrl": "http://localhost:3000/compras",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 170.46426083374024,
+            "largest-contentful-paint": 293.665,
+            "cumulative-layout-shift": 0.10448197530864203,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 3,
+          "finalUrl": "http://localhost:3000/compras",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 169.88891083374023,
+            "largest-contentful-paint": 287.6376,
+            "cumulative-layout-shift": 0.10448197530864203,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        }
+      ]
     }
   }
 }
