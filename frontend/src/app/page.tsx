@@ -40,8 +40,10 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
     <NavegacionAnalitica />
     <section className="analytics-hero"><div><span className="analytics-eyebrow"><IconoAnalitica tipo="inicio" /> {contexto.negocio.nombre}</span><h2>Tu negocio,<br />de un vistazo.</h2><p>Bienvenido, {contexto.perfil.nombre}. Encuentra tus últimos resultados, revisa pendientes y prepara el siguiente paso.</p></div><div className="analytics-hero-note"><span className="analytics-status-dot" /><strong>{inicial ? estados[inicial.estado] : "Resumen del negocio"}</strong><span>Información de tus datos disponibles</span><button className="button-secondary" disabled={cargando} onClick={() => setRevision((r) => r + 1)}>{cargando ? "Actualizando…" : "↻ Actualizar resumen"}</button></div></section>
     {errores.length > 0 && <EstadoPanel tono="alerta" titulo="Algunas secciones no están disponibles" descripcion={[...new Set(errores)].join(" ")} />}
-    {cargando && <p role="status">Consultando el estado de tu negocio…</p>}
-    {!cargando && inicial && <section className="home-next-step"><span className="model-symbol"><IconoAnalitica tipo="grafico" /></span><div><span className="analytics-eyebrow">Tu siguiente paso</span><h2>{siguiente.titulo}</h2><p>{siguiente.detalle}</p></div><Link href={siguiente.enlace} className="button-primary">Continuar →</Link></section>}
+    {(cargando || inicial) && <div className="home-next-step-slot">
+      {cargando && <p role="status">Consultando el estado de tu negocio…</p>}
+      {!cargando && inicial && <section className="home-next-step"><span className="model-symbol"><IconoAnalitica tipo="grafico" /></span><div><span className="analytics-eyebrow">Tu siguiente paso</span><h2>{siguiente.titulo}</h2><p>{siguiente.detalle}</p></div><Link href={siguiente.enlace} className="button-primary">Continuar →</Link></section>}
+    </div>}
     <DashboardInicio token={contexto.token} revision={revision} />
     <div className="home-grid workflow-cards">
       <section className="card"><h2>Datos y modelo</h2><strong className="home-stat">{inicial ? estados[inicial.estado] : cargando ? "Consultando…" : "Sin consulta disponible"}</strong><p>{inicial?.modelo_id ? `Modelo #${inicial.modelo_id}` : "Primera carga y preparación del modelo."}</p><Link href="/inicializacion">Abrir primera carga</Link>{inicial?.modelo_id && <p><Link href="/pronosticos">Ver pronósticos</Link></p>}</section>
