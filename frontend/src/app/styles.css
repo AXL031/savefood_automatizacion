@@ -190,6 +190,7 @@ p { line-height: 1.55; }
 .detail-dialog-body > .card { border: 0; box-shadow: none; margin: 0; padding: 0; }
 @media (max-width: 720px) { .detail-dialog { width: calc(100vw - 16px); max-height: 94dvh; border-radius: 10px; } .detail-dialog-header { padding: 14px; align-items: flex-start; } .detail-dialog-body { padding: 16px; } .pagination-actions { gap: 5px; } }
 .topbar { min-height: 70px; padding: 16px 36px; background: #fff; border-bottom: 1px solid var(--color-borde); display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--color-texto-secundario); font-size: .8rem; }
+/* El enlace está dentro de una frase: el color por sí solo no lo distingue. */
 .topbar > span > a { text-decoration: underline; text-underline-offset: .2em; }
 .business-chip { max-width: 45vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--color-neutro-suave); border-radius: 999px; padding: 8px 13px; color: var(--color-texto-medio); font-weight: 700; }
 .page-content { max-width: 1450px; margin: 0 auto; padding: 37px 38px 64px; }
