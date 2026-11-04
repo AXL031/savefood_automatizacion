@@ -1,5 +1,7 @@
 # Guía de desarrollo — Reparto, coordinación y traspasos
 
+04-11-2026 · [Auditoría Lighthouse Desktop de Vera](lighthouse-2026-11-04.md): comparación de 23 rutas, condiciones, métricas y límites de la API instalada. [Evidencia de las tres ejecuciones por corte](lighthouse-2026-11-04.json). Es evidencia local de presentación y carga; no sustituye contratos de dominio ni acredita integraciones que devuelven error.
+
 ## Plan de ampliación · 15-10-2026
 
 **26-10-2026 · Ampliación de propuesta:** el [plan vigente de dos simuladores](plan-ventas-vivo-simulacion.md#propuesta-vigente--26-10-2026--dos-simuladores-para-la-exposición) añade controles desde Ventas y desde tienda, ejecución individual/conjunta, reloj por API, tablas en vivo y cierre D → evaluación del pronóstico previo → nuevo modelo con D → pronóstico D+1. Datos/modelos/colas aislados; simuladores y ciclo ML siguen sin implementar. Jornada acelerada y tiempo real de cierre/entrenamiento se muestran separados. Prevalece esta ampliación sobre las decisiones preliminares de la simulación única del 15-10.
