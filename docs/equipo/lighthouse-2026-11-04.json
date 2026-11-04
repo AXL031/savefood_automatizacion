@@ -1760,5 +1760,67 @@
     "sesion": "administrativa, sin credenciales en evidencia",
     "versionBase": "ae44ca4",
     "metodo": "Tres navegaciones por ruta; comparar medianas. No ejecutar builds durante las mediciones."
+  },
+  "verificacion": {
+    "build": "Correcto, 25 rutas generadas en Next 15.5.26",
+    "typecheck": "npm run typecheck -- --incremental false: correcto",
+    "regresionesExistentes": [
+      "verificar-marco-pagina.cjs: correcto",
+      "verificar-notificaciones.cjs: correcto",
+      "verificar-flujo-automatizacion.cjs: correcto, 8 estados/escenarios"
+    ],
+    "navegador": {
+      "results": [
+        {
+          "route": "/ingredientes",
+          "check": "Abrir por teclado, foco dentro, Tab, Escape y foco devuelto",
+          "ok": true
+        },
+        {
+          "route": "/inventario",
+          "check": "Abrir por teclado, foco dentro, Tab, Escape y foco devuelto",
+          "ok": true
+        },
+        {
+          "route": "/inventario",
+          "check": "Filtro de tipo y restablecer",
+          "ok": true
+        },
+        {
+          "route": "/productos",
+          "check": "Paginación siguiente y anterior",
+          "ok": true
+        },
+        {
+          "route": "/recetas",
+          "check": "Navegación contextual",
+          "ok": true
+        },
+        {
+          "route": "/",
+          "check": "Subrayado, etiqueta de Avisos y dos fuentes precargadas",
+          "ok": true
+        }
+      ],
+      "errors": [],
+      "http": [
+        {
+          "path": "/api/v1/operaciones/avisos",
+          "status": 404
+        },
+        {
+          "path": "/api/v1/inventario/entradas-productos",
+          "status": 404
+        },
+        {
+          "path": "/api/v1/inventario/entradas-productos/contexto",
+          "status": 404
+        }
+      ]
+    },
+    "limites": [
+      "Portal de proveedor sin propuestas ni enlaces existentes; no se crearon pedidos.",
+      "Las respuestas HTTP 404 indicadas corresponden a endpoints de la API instalada; no se modifico backend."
+    ]
   }
 }
