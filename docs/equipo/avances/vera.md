@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **04-11-2026 · Lighthouse, Codex por encargo de Vera (V04/E04 transversal): PARCIAL.** Frontend actual de `vera` compilado y montado en3000; login Desktop medido tres veces: Performance100/Accessibility100. Las tres mediciones de la instalación anterior redirigen al login (97/100), no acreditan Inicio. Build25 rutas y tipos correctos. Sin correcciones de interfaz todavía; falta iniciar sesión en el navegador de auditoría para medir módulos protegidos. [Reporte y límites](../lighthouse-2026-11-04.md).
+
 - **11-10-2026 · Codex para Axel, V03/V04 con frontera V02/A03:** Reglas versionadas habilitables, reserva atómica EVALUAR_PROMOCION tras cada ajuste nuevo de producto, lectura pública del inventario, evaluación idempotente con descuento o rechazo explicado y pantalla real con historial paginado/detalle. La lectura sustituida, vencida, sin fecha, antigua o fuera de horario se descarta. Evaluar no publica precios ni modifica stock.
 - **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
 - **Contrato:** [flujo y promociones](../../api/contrato-flujo-promociones.md). Migración aditiva `0015_flujo_promociones` sobre 0014; conservar revisiones aplicadas.
@@ -13,6 +15,20 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 04-11-2026 · Preparación y línea base pública de Lighthouse
+
+- **Fecha y zona:** 04-11-2026, America/Bogota (misma hora civil que America/Lima).
+- **Autor:** Codex por encargo del usuario en `vera`; tareas V04/E04 transversales, conservando responsables de cada dominio.
+- **Estado:** PARCIAL. Sin cambios funcionales ni correcciones de interfaz; auditoría autenticada pendiente.
+- **Disponible:** frontend de la rama actual montado en localhost:3000, tres mediciones Desktop de login anterior/redirección y tres de login actual directo. [Resultados, métricas y condiciones](../lighthouse-2026-11-04.md).
+- **Archivos clave/contrato:** reporte Lighthouse y este registro; contratos HTTP y tipos de negocio sin cambios. Evidencia privada en `.tmp/lighthouse/`.
+- **Configuración/migraciones:** herramientas Lighthouse/Puppeteer temporales fuera del proyecto; reconstruido solo frontend mediante Compose, sin migraciones, semillas ni envíos externos.
+- **Pruebas reales:** build Next correcto (25 rutas); `docker compose exec -T frontend npm run typecheck -- --incremental false` correcto. Intento incremental previo impedido por EACCES en tsconfig.tsbuildinfo. No se declara revisión de módulos, teclado o regresiones de componentes todavía.
+- **Dependencia/bloqueo concreto:** el navegador dedicado no comparte sessionStorage de la pestaña original. Solicitado inicio de sesión al usuario en esa ventana; no se solicita contraseña por chat.
+- **Siguiente paso:** tras el login, medir rutas protegidas tres veces, corregir hallazgos atómicos, verificar consumidores y repetir mediciones. Sin esos resultados no se inventan mejoras ni commits de comentarios.
+- **Git:** diagnóstico en `c986b1f`; este registro se publica en `origin/vera`. Sin PR ni integración a main.
+
 
 ### 11-10-2026 19:28 America/Lima — Promociones, flujo configurable y claridad
 
