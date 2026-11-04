@@ -15,7 +15,7 @@ import { listarCorridas } from "@/services/pronosticos";
 import type { Plan, ResumenPlan } from "@/types/planificacion";
 import type { Corrida } from "@/types/pronostico";
 import { etiquetaDato } from "@/utils/etiquetas";
-import { cantidadVisible } from "@/utils/unidades";
+import { DetalleIngredientes } from "@/features/planificacion/DetalleIngredientes";
 
 const ETIQUETA: Record<string, string> = {
   CALCULADO: "Calculado", HISTORIAL_INSUFICIENTE: "Historial insuficiente",
@@ -119,8 +119,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       {plan.necesidades_estado === "INCOMPLETAS" && <EstadoPanel tono="alerta" titulo="Necesidades incompletas" descripcion="Las cantidades son subtotales de los productos calculables. Hay producción o stock desconocido; este resultado no permite generar compras automáticas." />}
       {plan.necesidades_meta && <p>Lectura de ingredientes: {new Date(plan.necesidades_meta.stock_leido_en).toLocaleString("es")} · {plan.necesidades_meta.version}{plan.necesidades_meta.vigencia_desconocida ? " · Hay lotes con vigencia desconocida" : ""}</p>}
       {plan.necesidades_meta?.productos_excluidos.map((p) => <p key={p.producto_id}>{p.nombre}: {ETIQUETA[p.estado] ?? p.estado}; sin aporte calculable.</p>)}
-      {plan.necesidades.length > 0 && <TablaPaginada><thead><tr><th>Ingrediente</th><th>Necesario</th><th>En inventario</th><th>Falta comprar</th></tr></thead><tbody>{plan.necesidades.map((n) => <tr key={n.ingrediente_id}><td>{n.stock.nombre}</td><td>{cantidadVisible(n.cantidad_necesaria, n.unidad_base)}</td><td>{cantidadVisible(n.stock_disponible, n.unidad_base)}</td><td>{cantidadVisible(n.faltante, n.unidad_base)}</td></tr>)}</tbody></TablaPaginada>}
-      {plan.necesidades.map((n) => <details key={n.ingrediente_id}><summary>Aportes y lotes de {n.stock.nombre}</summary><ul>{n.aportes.map((a) => <li key={a.producto_id}>Producto #{a.producto_id} · receta #{a.receta_id} versión {a.version_receta}: {a.cantidad_producir} × {a.cantidad_por_unidad} = {a.aporte} {n.unidad_base}</li>)}</ul><ul>{n.stock.lotes.map((l) => <li key={l.lote_id}>{l.codigo_lote}: {l.saldo} {n.unidad_base} · {l.cuenta ? "incluido" : "excluido"} · {l.motivo}</li>)}</ul></details>)}
+      <DetalleIngredientes key={plan.id} necesidades={plan.necesidades} elementos={plan.elementos} />
       <p>Modelo {plan.origen_pronostico.version_modelo} · cálculo {plan.version_calculo} · lectura de stock {new Date(plan.stock_leido_en).toLocaleString("es")}</p>
       <p><Link href={`/automatizaciones/ejecuciones/${plan.ejecucion_id}`}>Ver ejecución de origen</Link> · <Link href="/pronosticos">Ver pronósticos</Link></p>
       <TablaPaginada><thead><tr><th scope="col">Producto</th><th scope="col">Pronóstico</th><th scope="col">Stock disponible</th><th scope="col">Producción sugerida</th><th scope="col">Resultado</th></tr></thead>

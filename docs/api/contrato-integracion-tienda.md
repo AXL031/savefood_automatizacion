@@ -10,6 +10,9 @@ Base /api/v1, sobres datos/error habituales. /tienda-admin requiere sesión admi
 
 - GET /tienda-admin/productos: precio vigente de caja, metadatos/publicación/versiones y disponibilidad; no cambia precios ni stock.
 - PUT /tienda-admin/productos/{id}: version_actual, publicado, categoria, descripcion, presentacion, imagen. Precio canónico sigue en Ventas; versión incorrecta 409. Publicación requiere producto activo con precio.
+
+Clasificación comercial: la tabla `producto` conserva la identidad del SKU y no tiene columna de categoría. La categoría de tienda se persiste en `publicacion_producto.datos.categoria`, se modifica con la versión de la ficha y viaja en el snapshot HTTP. Códigos admitidos: `panes`, `tortas`, `kekes`, `postres-personales`, `postres-enteros`, `bocados`, `comidas`, `bebidas`, `otros`. Comidas preparadas y Bebidas se añaden el 04-11-2026; no requieren migración porque el campo es JSON. Categorías nuevas sin imagen propia usan cadena vacía, sin URL a un archivo inexistente. El menú de tienda consume las categorías publicadas dinámicamente. [Clasificación curada del catálogo](../../datos_carga/referencias/clasificacion_catalogo_tienda.json): inferencia por código/nombre/formato, con casos ambiguos señalados; no certifica recetas o composición.
+
 - POST /tienda-admin/sincronizar: prepara snapshot durable; publicación/reintentos por despachador separado de Telegram.
 - GET /tienda-admin/estado y /tienda-admin/reservas: estado de entregas y reservas, sin secretos.
 - GET /integracion-tienda/stock: disponibilidad y promoción públicas actuales; no revela lotes/cantidades al navegador.

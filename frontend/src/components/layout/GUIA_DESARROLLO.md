@@ -1,5 +1,9 @@
 # Guía de desarrollo — Layout y navegación protegida
 
+## Estilo administrativo unificado · 04-11-2026
+
+Solicitud de Axel: aplicar a todo FoodSave administrativo el lenguaje visual de Resultados y conservar la tienda. `ProtectedShell` delega presentación en `MarcoPagina.tsx`: título/descripcion originales, portada verde compacta y navegación contextual del grupo. Solo recibe enlaces visibles según rol; los permisos de servicios/API no cambian. Inicio, Pronósticos, Evaluación y Reportes mantienen sus portadas/navegación propias para evitar duplicarlas. El retorno al flujo y los hijos del módulo se conservan. `styles.css` aplica tarjetas, tablas, pestañas e indicadores dentro de `.workspace-page`; no copiar esos estilos por cada ruta. Sesión y marco AppShell siguen montados en el layout raíz. `node scripts/verificar-marco-pagina.cjs` comprueba enlaces activos/detalle, título único, contenido/retorno y enlaces según rol, con React real sin API.
+
 ## Ventas como módulo independiente · 26-10-2026
 
 Por solicitud de Axel, `/ventas` pertenece a su propia sección **Ventas**, con acceso **Caja e historial**, fuera de Preparar datos. La misma definición de navegación actualiza el encabezado de contexto, el indicador de ruta y el menú móvil. Primera carga y Productos conservan su ubicación. No cambia la API ni los permisos. Autor: Codex para Axel, coordinación E04; responsabilidad de UI de Sanchez conservada.

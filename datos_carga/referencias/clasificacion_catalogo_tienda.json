@@ -1,0 +1,1025 @@
+{
+  "fecha": "2026-11-04",
+  "autor": "Codex para Axel",
+  "alcance": "Clasificación comercial de fichas de tienda en FoodSave; no añade categoría a producto ni altera recetas, precios o stock.",
+  "criterio": "Curación por nombre/código y presentación de referencia; inferencia comercial, no certificación del fabricante. Los casos ambiguos quedan señalados para revisión.",
+  "fuentes": [
+    {
+      "titulo": "Referencia local de presentaciones y precios (supuestos existentes)",
+      "ruta": "precios_estimados_ventas_pen.csv"
+    },
+    {
+      "titulo": "Moisson, familia de panes Banette",
+      "url": "https://www.banette.fr/nos-produits/pains/banette-moisson"
+    },
+    {
+      "titulo": "Viennoiseries Deherripon: pain au chocolat, chausson, brioche suisse",
+      "url": "https://www.boulangerie-deherripon.fr/272-viennoiseries"
+    },
+    {
+      "titulo": "Armoricain, pâtisserie Gavet",
+      "url": "https://www.patisserie-gavet.fr/produit/larmoricain/"
+    },
+    {
+      "titulo": "Noix japonaise, pâtisserie Maison Chavanne",
+      "url": "https://maison-chavanne.com/product/noix-japonaise/"
+    }
+  ],
+  "reglas": {
+    "panes": "Pan, pan dulce o viennoiserie; incluye hojaldres, brioche y bolsas de piezas de panadería.",
+    "kekes": "Bizcochos y piezas tipo cake/financier/nantais, incluidos sus formatos pequeños o grandes.",
+    "tortas": "Tortas completas identificadas como bûche o royal para varias personas.",
+    "postres-enteros": "Tartas, galettes, postres familiares y cajas de dulces para compartir; formato indicado por SKU/presentación.",
+    "postres-personales": "Pastelería individual, porciones, galletas y dulces; formato individual según referencia local existente.",
+    "bocados": "Sándwiches, triángulos salados y bandejas de bocaditos.",
+    "comidas": "Platos preparados, pasta y combos de comida; no inferir ingredientes de los códigos de precio.",
+    "bebidas": "Bebidas o infusiones; CHOCOLAT conserva la interpretación provisional de la referencia local.",
+    "otros": "Identidad insuficiente: COUPE puede ser un servicio de corte/rebanado; pendiente de confirmación."
+  },
+  "resumen": {
+    "panes": 45,
+    "kekes": 6,
+    "tortas": 5,
+    "postres-enteros": 18,
+    "bocados": 6,
+    "comidas": 12,
+    "bebidas": 4,
+    "otros": 1,
+    "postres-personales": 42
+  },
+  "productos": [
+    {
+      "codigo": "12_macaron",
+      "nombre": "12 MACARON",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "armoricain",
+      "nombre": "ARMORICAIN",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "baguette",
+      "nombre": "BAGUETTE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "baguette_apero",
+      "nombre": "BAGUETTE APERO",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "baguette_graine",
+      "nombre": "BAGUETTE GRAINE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "banette",
+      "nombre": "BANETTE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "banettine",
+      "nombre": "BANETTINE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "boisson_33cl",
+      "nombre": "BOISSON 33CL",
+      "categoria": "bebidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "bottereau",
+      "nombre": "BOTTEREAU",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "boule_200g",
+      "nombre": "BOULE 200G",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "boule_400g",
+      "nombre": "BOULE 400G",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "boule_polka",
+      "nombre": "BOULE POLKA",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "brioche",
+      "nombre": "BRIOCHE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "brioche_de_noel",
+      "nombre": "BRIOCHE DE NOEL",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "briochette",
+      "nombre": "BRIOCHETTE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "brownies",
+      "nombre": "BROWNIES",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "buche_4pers",
+      "nombre": "BUCHE 4PERS",
+      "categoria": "tortas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "buche_6pers",
+      "nombre": "BUCHE 6PERS",
+      "categoria": "tortas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "buche_8pers",
+      "nombre": "BUCHE 8PERS",
+      "categoria": "tortas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "cafe_ou_eau",
+      "nombre": "CAFE OU EAU",
+      "categoria": "bebidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "cake",
+      "nombre": "CAKE",
+      "categoria": "kekes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "campagne",
+      "nombre": "CAMPAGNE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "caramel_noix",
+      "nombre": "CARAMEL NOIX",
+      "categoria": "postres-personales",
+      "requiere_revision": true,
+      "nota": "Nombre de sabor; se infiere postre individual de la presentación local, falta ficha del comercio."
+    },
+    {
+      "codigo": "cereal_baguette",
+      "nombre": "CEREAL BAGUETTE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "chausson_aux_pommes",
+      "nombre": "CHAUSSON AUX POMMES",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "chocolat",
+      "nombre": "CHOCOLAT",
+      "categoria": "bebidas",
+      "requiere_revision": true,
+      "nota": "Puede significar bebida de chocolate o producto de chocolatería; se conserva la hipótesis de bebida de la referencia previa."
+    },
+    {
+      "codigo": "chou_chantilly",
+      "nombre": "CHOU CHANTILLY",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "complet",
+      "nombre": "COMPLET",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "cookie",
+      "nombre": "COOKIE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "coupe",
+      "nombre": "COUPE",
+      "categoria": "otros",
+      "requiere_revision": true,
+      "nota": "Confirmar si representa corte/rebanado u otro artículo antes de tratarlo como alimento."
+    },
+    {
+      "codigo": "croissant",
+      "nombre": "CROISSANT",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "croissant_amandes",
+      "nombre": "CROISSANT AMANDES",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "crumble",
+      "nombre": "CRUMBLE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "crumblecaramel_ou_pistae",
+      "nombre": "CRUMBLECARAMEL OU PISTAE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "delicetropical",
+      "nombre": "DELICETROPICAL",
+      "categoria": "postres-personales",
+      "requiere_revision": true,
+      "nota": "Nombre comercial; formato individual asumido por referencia previa, falta ficha del comercio."
+    },
+    {
+      "codigo": "demi_baguette",
+      "nombre": "DEMI BAGUETTE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "demi_pain",
+      "nombre": "DEMI PAIN",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "douceur_d_hiver",
+      "nombre": "DOUCEUR D HIVER",
+      "categoria": "postres-personales",
+      "requiere_revision": true,
+      "nota": "Nombre comercial; formato individual asumido por referencia previa, falta ficha del comercio."
+    },
+    {
+      "codigo": "eclair",
+      "nombre": "ECLAIR",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "eclair_fraise_pistache",
+      "nombre": "ECLAIR FRAISE PISTACHE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "entremets",
+      "nombre": "ENTREMETS",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "ficelle",
+      "nombre": "FICELLE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "financier",
+      "nombre": "FINANCIER",
+      "categoria": "kekes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "financier_x5",
+      "nombre": "FINANCIER X5",
+      "categoria": "kekes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "flan",
+      "nombre": "FLAN",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "flan_abricot",
+      "nombre": "FLAN ABRICOT",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "fondant_chocolat",
+      "nombre": "FONDANT CHOCOLAT",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "formule_pate",
+      "nombre": "FORMULE PATE",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "formule_plat_prepare",
+      "nombre": "FORMULE PLAT PREPARE",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "formule_sandwich",
+      "nombre": "FORMULE SANDWICH",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "fraisier",
+      "nombre": "FRAISIER",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "framboisier",
+      "nombre": "FRAMBOISIER",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gache",
+      "nombre": "GACHE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gal_frangipane_4p",
+      "nombre": "GAL FRANGIPANE 4P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gal_frangipane_6p",
+      "nombre": "GAL FRANGIPANE 6P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gal_poire_choco_4p",
+      "nombre": "GAL POIRE CHOCO 4P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gal_poire_choco_6p",
+      "nombre": "GAL POIRE CHOCO 6P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gal_pomme_4p",
+      "nombre": "GAL POMME 4P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gal_pomme_6p",
+      "nombre": "GAL POMME 6P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "galette_8_pers",
+      "nombre": "GALETTE 8 PERS",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gd_far_breton",
+      "nombre": "GD FAR BRETON",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gd_kouign_amann",
+      "nombre": "GD KOUIGN AMANN",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gd_nantais",
+      "nombre": "GD NANTAIS",
+      "categoria": "kekes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "gd_plateau_sale",
+      "nombre": "GD PLATEAU SALE",
+      "categoria": "bocados",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "grand_far_breton",
+      "nombre": "GRAND FAR BRETON",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "grande_sucette",
+      "nombre": "GRANDE SUCETTE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "guerandais",
+      "nombre": "GUERANDAIS",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "kouign_amann",
+      "nombre": "KOUIGN AMANN",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "macaron",
+      "nombre": "MACARON",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "meringue",
+      "nombre": "MERINGUE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "milles_feuilles",
+      "nombre": "MILLES FEUILLES",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "moisson",
+      "nombre": "MOISSON",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "nantais",
+      "nombre": "NANTAIS",
+      "categoria": "kekes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "nid_de_poule",
+      "nombre": "NID DE POULE",
+      "categoria": "postres-personales",
+      "requiere_revision": true,
+      "nota": "Nombre comercial ambiguo; clasificación provisional como pastelería individual."
+    },
+    {
+      "codigo": "noix_japonaise",
+      "nombre": "NOIX JAPONAISE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "paille",
+      "nombre": "PAILLE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain",
+      "nombre": "PAIN",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_au_chocolat",
+      "nombre": "PAIN AU CHOCOLAT",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_aux_raisins",
+      "nombre": "PAIN AUX RAISINS",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_banette",
+      "nombre": "PAIN BANETTE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_choco_amandes",
+      "nombre": "PAIN CHOCO AMANDES",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_de_mie",
+      "nombre": "PAIN DE MIE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_graines",
+      "nombre": "PAIN GRAINES",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_noir",
+      "nombre": "PAIN NOIR",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_s_sel",
+      "nombre": "PAIN S/SEL",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pain_suisse_pepito",
+      "nombre": "PAIN SUISSE PEPITO",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "palet_breton",
+      "nombre": "PALET BRETON",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "palmier",
+      "nombre": "PALMIER",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "paris_brest",
+      "nombre": "PARIS BREST",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pates",
+      "nombre": "PATES",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "plaque_tarte_25p",
+      "nombre": "PLAQUE TARTE 25P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "plat_6_50e",
+      "nombre": "PLAT 6.50E",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "plat_7_00",
+      "nombre": "PLAT 7.00",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "plat_7_60e",
+      "nombre": "PLAT 7.60E",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "plat_8_30e",
+      "nombre": "PLAT 8.30E",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "platprepare5_50",
+      "nombre": "PLATPREPARE5,50",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "platprepare6_00",
+      "nombre": "PLATPREPARE6,00",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "platprepare6_50",
+      "nombre": "PLATPREPARE6,50",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "platprepare7_00",
+      "nombre": "PLATPREPARE7,00",
+      "categoria": "comidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pt_nantais",
+      "nombre": "PT NANTAIS",
+      "categoria": "kekes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "pt_plateau_sale",
+      "nombre": "PT PLATEAU SALE",
+      "categoria": "bocados",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "quim_bread",
+      "nombre": "QUIM BREAD",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "reduction_sucrees_12",
+      "nombre": "REDUCTION SUCREES 12",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "reduction_sucrees_24",
+      "nombre": "REDUCTION SUCREES 24",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "religieuse",
+      "nombre": "RELIGIEUSE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "royal",
+      "nombre": "ROYAL",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "royal_4p",
+      "nombre": "ROYAL 4P",
+      "categoria": "tortas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "royal_6p",
+      "nombre": "ROYAL 6P",
+      "categoria": "tortas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sable_f_p",
+      "nombre": "SABLE F  P",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sachet_de_crouton",
+      "nombre": "SACHET DE CROUTON",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sachet_de_viennoiserie",
+      "nombre": "SACHET DE VIENNOISERIE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sachet_viennoiserie",
+      "nombre": "SACHET VIENNOISERIE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sand_jb",
+      "nombre": "SAND JB",
+      "categoria": "bocados",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sand_jb_emmental",
+      "nombre": "SAND JB EMMENTAL",
+      "categoria": "bocados",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sandwich_complet",
+      "nombre": "SANDWICH COMPLET",
+      "categoria": "bocados",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "savarin",
+      "nombre": "SAVARIN",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "seigle",
+      "nombre": "SEIGLE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "special_bread",
+      "nombre": "SPECIAL BREAD",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "special_bread_kg",
+      "nombre": "SPECIAL BREAD KG",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "st_honore",
+      "nombre": "ST HONORE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "sucette",
+      "nombre": "SUCETTE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tarte_fine",
+      "nombre": "TARTE FINE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tarte_fraise_4per",
+      "nombre": "TARTE FRAISE 4PER",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tarte_fraise_6p",
+      "nombre": "TARTE FRAISE 6P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tarte_fruits_4p",
+      "nombre": "TARTE FRUITS 4P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tarte_fruits_6p",
+      "nombre": "TARTE FRUITS 6P",
+      "categoria": "postres-enteros",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tartelette",
+      "nombre": "TARTELETTE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tartelette_choc",
+      "nombre": "TARTELETTE CHOC",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tartelette_cocktail",
+      "nombre": "TARTELETTE COCKTAIL",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tartelette_fraise",
+      "nombre": "TARTELETTE FRAISE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "the",
+      "nombre": "THE",
+      "categoria": "bebidas",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "traditional_baguette",
+      "nombre": "TRADITIONAL BAGUETTE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "triangles",
+      "nombre": "TRIANGLES",
+      "categoria": "bocados",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "trois_chocolat",
+      "nombre": "TROIS CHOCOLAT",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tropezienne",
+      "nombre": "TROPEZIENNE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tropezienne_framboise",
+      "nombre": "TROPEZIENNE FRAMBOISE",
+      "categoria": "postres-personales",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "tulipe",
+      "nombre": "TULIPE",
+      "categoria": "postres-personales",
+      "requiere_revision": true,
+      "nota": "Forma/nombre comercial; clasificación provisional como pastelería individual."
+    },
+    {
+      "codigo": "viennoise",
+      "nombre": "VIENNOISE",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    },
+    {
+      "codigo": "vik_bread",
+      "nombre": "VIK BREAD",
+      "categoria": "panes",
+      "requiere_revision": false,
+      "nota": ""
+    }
+  ]
+}

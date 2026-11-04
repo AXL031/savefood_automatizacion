@@ -1,5 +1,7 @@
 # Guía de desarrollo — Catálogo de productos y SKU
 
+04-11-2026: `producto` no dispone de clasificación propia. La categoría comercial de tienda se guarda como metadato versionado en `publicacion_producto.datos.categoria`, administrada por Comercio y publicada por API. [Contrato](../../../../docs/api/contrato-integracion-tienda.md); [clasificación curada por código](../../../../datos_carga/referencias/clasificacion_catalogo_tienda.json). No duplicar esa categoría en Producto sin acordar un cambio de dominio y contrato.
+
 **Carpeta:** `backend/app/modules/productos`.
 
 **Responsable:** Edu Sanchez. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

@@ -1,5 +1,11 @@
 # Guía de desarrollo — Rutas y navegación
 
+04-11-2026 · Segunda revisión de controles a partir de captura de Notificaciones: además de `.field` y `.operation-form`, `styles.css` protege controles nativos dentro de formularios con selectores `:where` de baja especificidad. Etiquetas encima del control, textareas112px y texto/selects48px; casillas/rango/archivo y paginadores se excluyen de reglas de texto. Avisos, recepción y conciliación incorporan estructura compartida explícita. Mantener guía de Forms y pruebas de los consumidores; no afirmar cobertura solo por revisar formularios que ya usan clases comunes.
+
+04-11-2026 · Estilo de Resultados extendido a FoodSave administrativo por solicitud de Axel: `ProtectedShell` usa `layout/MarcoPagina.tsx`, portada verde/pestañas por sección y superficies/jerarquía comunes en `.workspace-page`. Inicio y las tres vistas de Resultados conservan sus portadas existentes. Textos, formularios y lógica siguen perteneciendo a cada módulo. Tienda independiente conserva su diseño; el login administrativo adopta el fondo verde de la referencia. Mantener correcciones de campos de48px y comprobar escritorio/móvil al añadir estilos. [Especificación visual vigente](../../../docs/diseno/especificacion-visual.md).
+
+04-11-2026 · Formularios compartidos: `styles.css` alinea `.form-grid` al inicio y evita que `.field` estire sus filas por ayuda/error del vecino. Inputs/selects comunes y de operaciones mantienen 48px; textareas conservan altura propia. Ayuda/error de campo sin margen externo, controles con min-width0, acciones con separación/gap y casillas de 18px fuera de reglas de texto. Fieldsets de operaciones usan cuadrícula/espaciado explícitos. No fijar altura de toda la fila ni añadir márgenes compensatorios por pantalla. En móviles estrechos el mínimo del body se ajusta al ancho disponible, sin imponer desbordamiento de 320px. Ver evidencia/alcance en avances de Cueva; no cambia API ni datos.
+
 **Carpeta:** `frontend/src/app`.
 
 **Responsable:** Edu Sanchez. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.

@@ -1,5 +1,11 @@
 # Guía de desarrollo — Planificación y necesidades de ingredientes
 
+## Explorador de ingredientes del plan · 04-11-2026
+
+`DetalleIngredientes.tsx` sustituye la lista repetida de desplegables por una tabla única con búsqueda por nombre/código (sin distinguir tildes), filtros Todos/Con faltantes/Stock sin confirmar y un solo panel seleccionado. Ver detalle está junto al nombre del ingrediente para que pueda abrirse en móvil sin desplazar horizontalmente la tabla. El panel alterna Aportes por producto y Lotes consultados; usa nombres de productos conservados en `elementos`, receta/versiones e importes/unidades del snapshot. No suma ni recalcula cantidades ni consulta inventario actual. Stock/faltante null siguen como No disponible, distintos de cero.
+
+Listas mayores de diez filas usan `TablaPaginada`; listas cortas no muestran paginadores vacíos. Cambiar búsqueda/filtro cierra el detalle, selección nueva vuelve a Aportes y foco pasa al panel; cerrar retorna a la fila o buscador si la fila ya no está montada. La página usa key del plan para limpiar selección al cambiarlo. Mantener lotes incluidos y excluidos/motivo visibles: el detalle muestra la lectura conservada y no la disponibilidad comercial actual. Prueba aislada: `node scripts/verificar-ingredientes-plan.cjs`, complementada con QA interactiva de55 ingredientes y móvil.
+
 **Carpeta:** `frontend/src/features/planificacion`.
 
 **Responsable:** Max Rojas. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

@@ -1,5 +1,7 @@
 # Guía de desarrollo — Pedidos, aprobación y envío
 
+04-11-2026 · Formularios: recepción usa `receipt-entry-form` y `field` para fecha/observaciones; conciliación usa `field` y evidencia/confirmación a ancho completo. Los inputs de la tabla de recepción reciben el estilo base nativo de formularios, incluidos número/lote/fecha. Etiquetas encima, controles48px y textarea112px; la paginación conserva tamaño compacto38px. No cambian handlers, datos, validaciones, autorización, recepción de inventario ni reglas de recuperación/envío. QA con componentes reales y transporte bloqueado; registro en Cueva.
+
 **Carpeta:** `frontend/src/app/compras`.
 
 **Responsable:** Leonardo Aguirre. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

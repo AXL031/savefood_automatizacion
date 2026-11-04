@@ -9,6 +9,7 @@ import type { Negocio, Perfil } from "@/types/autenticacion";
 import { HttpError } from "@/services/http";
 import { MarcaFoodSave } from "@/components/ui/MarcaFoodSave";
 import { CampanaAvisos } from "./CampanaAvisos";
+import { MarcoPagina } from "./MarcoPagina";
 
 export type ContextoSesion = { token: string; perfil: Perfil; negocio: Negocio; actualizarNegocioLocal: (valor: Negocio) => void; actualizarPerfilLocal: (valor: Perfil) => void };
 const SesionContext = createContext<ContextoSesion | null>(null);
@@ -172,9 +173,9 @@ export function ProtectedShell({ titulo, descripcion, children }: Props) {
   useEffect(() => { setVolverFlujo(new URLSearchParams(window.location.search).get("volver") === "automatizaciones"); }, [ruta]);
   const grupoActual = grupos.find((grupo) => grupo.enlaces.some((enlace) => ruta === enlace.href || (enlace.href !== "/" && ruta.startsWith(`${enlace.href}/`))));
   if (!contexto) return null;
-  return <>
-    <div className="page-heading"><div><div className="eyebrow">{grupoActual?.titulo ?? "FoodSave"}</div><h1>{titulo}</h1><p>{descripcion}</p></div></div>
-    {volverFlujo && <p className="return-flow"><Link href="/automatizaciones">← Continuar configurando mi automatización</Link><span>Tu selección está guardada.</span></p>}
+  return <MarcoPagina titulo={titulo} descripcion={descripcion} grupo={grupoActual?.titulo ?? "FoodSave"}
+    enlaces={grupoActual?.enlaces.filter(enlace => enlace.href !== "/usuarios" || contexto.perfil.rol === "ADMINISTRADOR") ?? []}
+    ruta={ruta} retorno={volverFlujo && <p className="return-flow"><Link href="/automatizaciones">← Continuar configurando mi automatización</Link><span>Tu selección está guardada.</span></p>}>
     {children(contexto)}
-  </>;
+  </MarcoPagina>;
 }

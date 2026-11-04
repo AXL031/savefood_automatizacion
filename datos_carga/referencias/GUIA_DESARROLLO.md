@@ -1,5 +1,7 @@
 # Guía de desarrollo — Referencias de los CSV
 
+04-11-2026: [clasificacion_catalogo_tienda.json](clasificacion_catalogo_tienda.json) registra una clasificación comercial curada para los 139 códigos existentes: nueve categorías, criterios, fuentes y siete casos de revisión. Referencia por código sin IDs ni secretos; se aplica a `publicacion_producto.datos.categoria` mediante servicios públicos de Comercio, no añade columna a `producto` ni altera precios/recetas/stock. Es inferencia por nombre/formato y supuestos previos, no ficha técnica del fabricante. COUPE queda en Otros por identidad insuficiente; CHOCOLAT se considera provisionalmente bebida conforme a la referencia local anterior. Aplicación real y evidencia en avances/Cueva; no se importa con los cinco CSV de primera carga.
+
 **26-10-2026 · Precios de caja solicitados por Axel:** [CSV de 139 estimaciones PEN](precios_estimados_ventas_pen.csv) y [fuentes, presentaciones y carga](precios_estimados_ventas_pen.md). Complemento independiente de los cinco archivos de inicialización. No alterar nombres/códigos ni interpretar euros de SKU como soles. Se aplican por el servicio público de precios con administrador activo y una transacción; el script conserva precios existentes y no modifica stock/histórico. Son estimaciones editables, no precios comerciales confirmados. Aplicación y evidencia en Cueva.
 
 **Responsable:** Axel Cueva, coordinación. Leer la [guía de datos](../GUIA_DESARROLLO.md) y la [guía raíz](../../GUIA_DESARROLLO.md).

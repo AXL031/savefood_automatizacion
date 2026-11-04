@@ -154,6 +154,22 @@ def test_publicacion_durable_reintenta_misma_version(comercio,monkeypatch):
     assert despachar(sesiones,lambda _:pytest.fail('No reenviar confirmado'))==0
 
 
+@pytest.mark.parametrize('categoria', ['bebidas', 'comidas'])
+def test_categoria_nueva_se_publica_sin_imagen_inexistente_y_conserva_cotizacion(comercio, categoria):
+    esc=comercio;(c,sesiones,admin,op,ids),cab,_,_=esc
+    antes=c.post('/api/v1/integracion-tienda/cotizar',headers=cab,json=consulta(esc,1)).json()['datos']
+    r=c.put(f'/api/v1/tienda-admin/productos/{ids[0]}',headers=admin,json={
+        'version_actual':1,'publicado':True,'categoria':categoria,'presentacion':'Unidad'})
+    assert r.status_code==200,r.text
+    with sesiones() as s:
+        snapshot=s.scalar(select(EventoPublicacion).order_by(EventoPublicacion.version.desc())).datos
+        assert snapshot['productos'][0]['categoria']==categoria
+        assert snapshot['categorias'][0]['codigo']==categoria
+        assert snapshot['categorias'][0]['imagen']==''
+    despues=c.post('/api/v1/integracion-tienda/cotizar',headers=cab,json=consulta(esc,1)).json()['datos']
+    assert despues['total']==antes['total'] and despues['lineas'][0]['disponible']
+
+
 def test_reservas_concurrentes_y_ultima_unidad_postgresql(comercio):
     from threading import Barrier
     esc=comercio;(c,sesiones,admin,op,ids),cab,_,_=esc

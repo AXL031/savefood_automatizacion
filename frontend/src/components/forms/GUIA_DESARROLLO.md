@@ -1,5 +1,9 @@
 # Guía de desarrollo — Controles de formularios
 
+04-11-2026 · Cobertura nativa: `styles.css` incluye una base de baja especificidad con `:where` para labels/controles HTML dentro de formularios, aunque no usen Campo o una clase particular. Etiqueta arriba, ancho disponible, controles48px y textareas112px; estilos de componentes conservan prioridad. Excluir checkbox/radio/hidden/range/color/file/botones de reglas de texto y excluir descendientes de `.pagination` del tamaño de campo de formulario. Paginación conserva38px y anchos propios. No incluir textareas en reglas posteriores de min-height44px, porque anulaba su altura mínima. Preferir Campo para ayuda/error/asociación de etiqueta y usar la base como protección, no como sustituto de estructura semántica.
+
+04-11-2026 · Alineación: `Campo` admite ayuda/error opcionales sin estirar el input vecino. Los estilos comunes en `app/styles.css` fijan inputs/selects a 48px y contenido de `.field` al inicio; ayuda/error no heredan el margen de párrafos. Textareas crecen por separado, checkboxes/radios no usan el ancho/padding de inputs de texto. Mantener min-width0 y la cuadrícula móvil; no añadir alturas/márgenes por formulario para compensar campos con distinta cantidad de descripciones. Verificación visual con los componentes reales y datos ficticios; registro transversal en Cueva.
+
 **Carpeta:** `frontend/src/components/forms`.
 
 **Responsable:** Edu Sanchez. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.

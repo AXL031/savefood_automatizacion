@@ -10,7 +10,7 @@ type Producto = { id: number; nombre: string; codigo: string; precio: string | n
 type Entrega = { version: number; estado: string; intentos: number; ultimo_error: string | null };
 type Estado = { habilitada: boolean; credenciales_configuradas: boolean; origen: string | null; version: number; entregas: Entrega[] };
 type Reserva = { id: string; estado: string; vence_en: string; cotizacion: { total: string } };
-const categorias = [{ id: "panes", nombre: "Panes y hojaldres" }, { id: "tortas", nombre: "Tortas" }, { id: "kekes", nombre: "Kekes" }, { id: "postres-personales", nombre: "Postres personales" }, { id: "postres-enteros", nombre: "Postres para compartir" }, { id: "bocados", nombre: "Bocados salados" }, { id: "otros", nombre: "Otros" }];
+const categorias = [{ id: "panes", nombre: "Panes y hojaldres" }, { id: "tortas", nombre: "Tortas" }, { id: "kekes", nombre: "Kekes" }, { id: "postres-personales", nombre: "Postres personales" }, { id: "postres-enteros", nombre: "Postres para compartir" }, { id: "bocados", nombre: "Bocados salados" }, { id: "comidas", nombre: "Comidas preparadas" }, { id: "bebidas", nombre: "Bebidas" }, { id: "otros", nombre: "Otros" }];
 const soles = (n: string) => new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(Number(n));
 
 function Contenido({ contexto }: { contexto: ContextoSesion }) {

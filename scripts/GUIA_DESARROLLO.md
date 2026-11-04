@@ -1,5 +1,11 @@
 # Guía de desarrollo — Herramientas de desarrollo y verificación
 
+04-11-2026 · `verificar-notificaciones.cjs`: página real con ProtectedShell/transporte simulados. Comprueba etiqueta textarea asociada, restricciones5–1000, cancelación sin PATCH, reapertura limpia, payload de resolución conservado y exclusión de Operador. No toca avisos reales ni envía mensajes. Complementar con QA del CSS en navegador sobre campos nativos, recepción, conciliación, checkbox/rango y paginación compacta.
+
+04-11-2026 · `verificar-ingredientes-plan.cjs`: React/jsdom real del explorador M04, snapshots ficticios y fetch prohibido. Comprueba búsqueda sin tildes, filtros de faltantes/stock desconocido, panel único y foco, receta/versiones/nombre de producto, alternancia aportes/lotes, incluidos/excluidos, null conservado y ausencia de mutación. No escribe en la instalación ni sustituye la QA visual.
+
+04-11-2026 · `verificar-marco-pagina.cjs`: React/SSR real con navegación Next simulada, sin red/API. Comprueba portada y título único, contexto activo en rutas/detalle, retorno/contenido conservados, ausencia de duplicación de portadas de Resultados y filtro de enlaces de Usuarios por rol en ProtectedShell. Complementar con QA visual responsive y build; no acredita recorridos autenticados de negocio.
+
 ## Operaciones compatibles · 28-10-2026
 
 `node scripts/verificar-operaciones.cjs` ejecuta el componente React real con API falsa y sin red: enlace a caja existente, ausencia de segunda caja/tienda acoplada, respuesta perdida tras confirmar, remontaje, recuperación con la misma clave y nueva tanda con clave nueva. No sustituye la prueba de stock/concurrencia PostgreSQL de `test_operacion_integrada.py`.

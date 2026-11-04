@@ -1,5 +1,18 @@
 # Especificación visual de FoodSave
 
+## Sistema administrativo unificado · 04-11-2026
+
+Axel solicita que todas las pantallas administrativas usen el estilo implementado en Resultados (Pronósticos, Evaluación y Reportes). **La tienda del cliente conserva su diseño**, por aclaración expresa en esta sesión. Esta sección actualiza la presentación de los cortes anteriores sin cambiar contratos de negocio.
+
+- `MarcoPagina` es el marco visual común bajo `ProtectedShell`: navegación contextual en pestañas, portada verde de190px como mínimo, categoría en yema, título Bricolage y descripción clara. Los textos siguen siendo los originales del módulo; no añadir métricas ni información ficticia para llenar la portada.
+- Inicio/Pronósticos/Evaluación/Reportes ya tienen portada y navegación propias: conservarlas y no añadir una segunda. Siempre hay un único h1 de página. Los enlaces contextuales respetan el filtro del rol, además de la autorización real de cada ruta/API.
+- Mantener paleta hoja/yema y fuentes autoalojadas. Tarjetas blancas con borde sutil, radio16px, espaciado24px y sombra suave; títulos de sección1.2rem, tablas legibles con cifras/unidades/estados originales. Navegación activa verde/blanco, tanto en sidebar como en pestañas. No usar color como único indicador de estado.
+- Formularios comunes conservan inputs/selects48px y ayuda/error sin estirar vecinos. Los filtros de Resultados adoptan el mismo borde/radio/foco que los formularios. Las textareas conservan su altura independiente y casillas su tamaño de18px. Diálogos comparten bordes, cabecera y espaciado del sistema.
+- Columnas principales/laterales pasan a una columna antes de1000px; navegación de sección con scroll interno cuando no cabe. Por debajo de700px, espaciado18/20px y portada compacta. Preservar menú móvil, foco, paginación y desplazamiento interno de tablas; no generar scroll horizontal de toda la página.
+- El acceso administrativo usa el mismo fondo verde de Resultados. No cambiar credenciales, flujo de autenticación, permisos, datos, cálculos, API o diseño de tienda por esta unificación.
+
+Referencia implementada: `frontend/src/components/panel/Analitica.tsx` y vistas de Resultados de Bohorquez. Generalización de Codex para Axel, coordinación E04/A04 con UI de Sanchez; responsabilidades de dominio conservadas. QA/registros en avances de Cueva.
+
 ## Identidad visual vigente · 14-10-2026
 
 Paleta hoja/yema y tipografía Bricolage Grotesque (títulos) + Manrope (interfaz, cifras con `tabular-nums`), autoalojadas con `@fontsource-variable` para que funcionen sin conexión. Todos los colores viven como variables en `:root` de `styles.css`; los valores de las tablas de abajo quedan reemplazados por estos:

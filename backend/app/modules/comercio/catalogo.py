@@ -15,7 +15,7 @@ from .modelos import ConfiguracionComercio, PublicacionProducto
 
 CATEGORIAS = {'panes':'Panes y hojaldres','tortas':'Tortas clásicas','kekes':'Kekes caseros',
               'postres-personales':'Postres personales','postres-enteros':'Postres para compartir',
-              'bocados':'Bocados salados','otros':'Otros productos'}
+              'bocados':'Bocados salados','comidas':'Comidas preparadas','bebidas':'Bebidas','otros':'Otros productos'}
 
 
 def dinero(n):
@@ -101,7 +101,7 @@ def catalogo_publicado(s):
                        'estado_stock':estado_stock(stock[id_]['disponible']),'promocion':promo})
     return {'origen':c.origen if c else None,'fecha_local':local.date().isoformat(),'moneda':moneda,
             'categorias':[{'codigo':k,'nombre':CATEGORIAS[k],'descripcion':'',
-                           'imagen':f'/tienda/categorias/{k}.jpg' if k!='otros' else ''} for k in CATEGORIAS if k in categorias],
+                           'imagen':f'/tienda/categorias/{k}.jpg' if k not in ('otros','comidas','bebidas') else ''} for k in CATEGORIAS if k in categorias],
             'productos':salida}
 
 

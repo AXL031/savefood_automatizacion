@@ -11,7 +11,7 @@ class Entrada(BaseModel):
 class Ficha(Entrada):
     version_actual: int = Field(ge=0, strict=True)
     publicado: bool
-    categoria: Literal['panes','tortas','kekes','postres-personales','postres-enteros','bocados','otros'] = 'otros'
+    categoria: Literal['panes','tortas','kekes','postres-personales','postres-enteros','bocados','comidas','bebidas','otros'] = 'otros'
     descripcion: str = Field(default='', max_length=500)
     presentacion: str = Field(default='Unidad', max_length=100)
     imagen: str = Field(default='', max_length=300, pattern=r'^(|/tienda/[^\s]+|https://[^\s]+)$')
