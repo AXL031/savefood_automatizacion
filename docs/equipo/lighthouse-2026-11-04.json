@@ -237,6 +237,82 @@
           ]
         }
       ]
+    },
+    "/ingredientes": {
+      "antes": [
+        {
+          "run": 1,
+          "finalUrl": "http://localhost:3000/ingredientes",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 169.78171083374022,
+            "largest-contentful-paint": 285.6948,
+            "cumulative-layout-shift": 0.10470350517484851,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 2,
+          "finalUrl": "http://localhost:3000/ingredientes",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 169.69806083374024,
+            "largest-contentful-paint": 286.8222,
+            "cumulative-layout-shift": 0.10470350517484851,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 3,
+          "finalUrl": "http://localhost:3000/ingredientes",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 169.79286083374024,
+            "largest-contentful-paint": 290.4989,
+            "cumulative-layout-shift": 0.10470350517484851,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        }
+      ]
     }
   }
 }
