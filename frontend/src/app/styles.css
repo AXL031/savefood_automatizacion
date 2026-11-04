@@ -131,6 +131,7 @@ td.number-cell, th.number-cell { text-align: right; font-variant-numeric: tabula
 .dashboard-kpis { margin: 24px 0; }
 .workflow-cards > .card { border-top: 3px solid var(--color-primario-borde); }
 .home-next-step { display: flex; align-items: center; gap: 20px; padding: 20px 24px; border: 1px solid var(--color-advertencia-borde); border-radius: 14px; background: var(--color-analitica-crema); }
+/* Reserva la altura observada en escritorio sin limitar el crecimiento del texto en móvil. */
 .home-next-step-slot { min-height: 114px; }
 .home-next-step > div { flex: 1; }
 .home-next-step h2 { font-size: 1rem; margin-bottom: 5px; }
