@@ -168,6 +168,7 @@ p { line-height: 1.55; }
 .nav-link.active { background: var(--color-primario-suave); color: var(--color-primario); }
 .sidebar-bottom { flex-shrink: 0; padding: 14px 12px 0; border-top: 1px solid var(--color-borde); display: grid; gap: 4px; font-size: .86rem; font-weight: 700; }
 .home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.home-grid .card a { display: inline-block; min-height: 24px; line-height: 24px; }
 .home-stat { font-size: 1.7rem; color: var(--color-primario); display: block; margin: 12px 0; }
 .pedido-mensaje { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: .85rem; line-height: 1.6; padding: 16px; border-radius: 8px; background: var(--color-fondo); border: 1px solid var(--color-borde); }
 .sidebar-bottom small { color: var(--color-texto-secundario); font-weight: 500; }
