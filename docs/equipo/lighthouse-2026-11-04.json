@@ -1743,5 +1743,22 @@
         }
       ]
     }
+  },
+  "condiciones": {
+    "url": "http://localhost:3000",
+    "viewport": {
+      "width": 1350,
+      "height": 940,
+      "deviceScaleFactor": 1
+    },
+    "throttling": {
+      "rttMs": 40,
+      "throughputKbps": 10240,
+      "cpuSlowdownMultiplier": 1
+    },
+    "disableStorageReset": true,
+    "sesion": "administrativa, sin credenciales en evidencia",
+    "versionBase": "ae44ca4",
+    "metodo": "Tres navegaciones por ruta; comparar medianas. No ejecutar builds durante las mediciones."
   }
 }
