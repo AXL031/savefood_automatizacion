@@ -2,6 +2,7 @@
 .flow-step { border: 0; padding: 24px 0 0; margin: 0; min-height: 220px; }
 .flow-step h3 { margin-bottom: 20px; }
 .flow-step p a { text-decoration: underline; text-underline-offset: .2em; }
+.shop-catalog-links a { text-decoration: underline; text-underline-offset: .2em; }
 .flow-assistant .steps-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; }
 .flow-assistant .steps-list li { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; border: 1px solid var(--color-borde); border-radius: 10px; }
 .flow-assistant .steps-list li[aria-current="step"] { border-color: var(--color-primario); background: var(--color-fondo); }
