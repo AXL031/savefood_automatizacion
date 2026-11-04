@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { solicitar } from "@/services/http";
+import { Campo } from "@/components/forms/Campo";
 type Aviso = { id: number; titulo: string; leido: boolean; resolucion: string | null; creado_en: string; datos: { pedido_id?: number; descripcion?: string; trabajador?: string; diferencias?: { linea_pedido_id: number; pendiente: string; aceptada: string }[] } };
 function Bandeja({ contexto }: { contexto: ContextoSesion }) {
   const [avisos, setAvisos] = useState<Aviso[]>([]); const [error, setError] = useState(""); const [ocupado, setOcupado] = useState(false); const [id, setId] = useState<number | null>(null); const [resolucion, setResolucion] = useState("");
@@ -10,6 +11,33 @@ function Bandeja({ contexto }: { contexto: ContextoSesion }) {
   useEffect(() => { if (contexto.perfil.rol !== "ADMINISTRADOR") return; const c = new AbortController(); cargar(c.signal).catch(e => { if (!c.signal.aborted) setError(e.message); }); return () => c.abort(); }, [cargar, contexto.perfil.rol]);
   if (contexto.perfil.rol !== "ADMINISTRADOR") return <p>Las incidencias se enviaron al administrador. Puedes continuar en <Link href="/operaciones">Operación diaria</Link>.</p>;
   async function actualizar(id: number, resolucion?: string) { if (ocupado) return; setOcupado(true); setError(""); try { await solicitar(`/operaciones/avisos/${id}`, { token: contexto.token, method: "PATCH", body: { leido: true, ...(resolucion ? { resolucion } : {}) } }); await cargar(); setId(null); setResolucion(""); } catch (e) { setError(e instanceof Error ? e.message : "No se pudo guardar."); } finally { setOcupado(false); } }
-  return <><p>Los avisos permanecen después de leerlos. La resolución registra lo acordado internamente con el proveedor.</p>{error && <p role="alert">{error}</p>}<div className="operation-notices">{avisos.map(a => <article className={`card ${a.leido ? "" : "notice-unread"}`} key={a.id}><div className="action-row"><h2>{a.titulo}</h2><span className="badge">{a.resolucion ? "Resuelta" : "Pendiente de resolución"}</span></div><p>{new Date(a.creado_en).toLocaleString("es-PE")}{a.datos.trabajador ? ` · ${a.datos.trabajador}` : ""}</p>{a.datos.descripcion && <p>{a.datos.descripcion}</p>}{a.datos.diferencias?.map(d => <p key={d.linea_pedido_id}>Línea #{d.linea_pedido_id}: pendientes {d.pendiente}, aceptadas {d.aceptada}.</p>)}{a.resolucion && <p><strong>Resolución:</strong> {a.resolucion}</p>}<div className="action-row">{a.datos.pedido_id && <Link href="/operaciones">Ver recepción del pedido #{a.datos.pedido_id} →</Link>}{!a.leido && <button disabled={ocupado} className="button-secondary" onClick={() => actualizar(a.id)}>Marcar leído</button>}{!a.resolucion && <button disabled={ocupado} onClick={() => { setId(a.id); setResolucion(""); }}>Registrar resolución</button>}</div>{id === a.id && <form onSubmit={e => { e.preventDefault(); actualizar(a.id, resolucion); }}><label>Acuerdo o acción interna<textarea required minLength={5} maxLength={1000} value={resolucion} onChange={e => setResolucion(e.target.value)} /></label><div className="action-row"><button disabled={ocupado}>Guardar resolución</button><button type="button" disabled={ocupado} className="button-secondary" onClick={() => setId(null)}>Cancelar</button></div></form>}</article>)}{!avisos.length && <div className="card">No hay avisos registrados.</div>}</div></>;
+  return <>
+    <p>Los avisos permanecen después de leerlos. La resolución registra lo acordado internamente con el proveedor.</p>
+    {error && <p role="alert">{error}</p>}
+    <div className="operation-notices">
+      {avisos.map(a => <article className={`card ${a.leido ? "" : "notice-unread"}`} key={a.id}>
+        <div className="action-row"><h2>{a.titulo}</h2><span className="badge">{a.resolucion ? "Resuelta" : "Pendiente de resolución"}</span></div>
+        <p>{new Date(a.creado_en).toLocaleString("es-PE")}{a.datos.trabajador ? ` · ${a.datos.trabajador}` : ""}</p>
+        {a.datos.descripcion && <p>{a.datos.descripcion}</p>}
+        {a.datos.diferencias?.map(d => <p key={d.linea_pedido_id}>Línea #{d.linea_pedido_id}: pendientes {d.pendiente}, aceptadas {d.aceptada}.</p>)}
+        {a.resolucion && <p><strong>Resolución:</strong> {a.resolucion}</p>}
+        <div className="action-row">
+          {a.datos.pedido_id && <Link href="/operaciones">Ver recepción del pedido #{a.datos.pedido_id} →</Link>}
+          {!a.leido && <button disabled={ocupado} className="button-secondary" onClick={() => actualizar(a.id)}>Marcar leído</button>}
+          {!a.resolucion && <button type="button" disabled={ocupado} className="button-primary" onClick={() => { setId(a.id); setResolucion(""); }}>Registrar resolución</button>}
+        </div>
+        {id === a.id && <form className="operation-form notice-resolution-form" onSubmit={e => { e.preventDefault(); actualizar(a.id, resolucion); }}>
+          <Campo etiqueta="Acuerdo o acción interna" htmlFor={`aviso-${a.id}-resolucion`}>
+            <textarea id={`aviso-${a.id}-resolucion`} required minLength={5} maxLength={1000} value={resolucion} onChange={e => setResolucion(e.target.value)} />
+          </Campo>
+          <div className="form-actions">
+            <button className="button-primary" disabled={ocupado}>Guardar resolución</button>
+            <button type="button" disabled={ocupado} className="button-secondary" onClick={() => setId(null)}>Cancelar</button>
+          </div>
+        </form>}
+      </article>)}
+      {!avisos.length && <div className="card">No hay avisos registrados.</div>}
+    </div>
+  </>;
 }
 export default function Notificaciones() { return <ProtectedShell titulo="Notificaciones e incidencias" descripcion="Respuesta de proveedores y diferencias en recepción.">{contexto => <Bandeja contexto={contexto} />}</ProtectedShell>; }

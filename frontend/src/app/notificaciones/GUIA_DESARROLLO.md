@@ -1,5 +1,9 @@
 # Guía de desarrollo — Notificaciones externas futuras
 
+## Corte vigente · 04-11-2026 · Avisos internos y resolución
+
+La ampliación de operaciones del28/10 ya implementa consulta de avisos y resolución interna administrativa mediante `/operaciones/avisos`; los límites de función futura de cortes anteriores no describen este comportamiento implementado. Notificaciones externas siguen fuera de este ajuste. El formulario existente usa `Campo` y `operation-form notice-resolution-form`: etiqueta asociada al textarea, ancho disponible, altura mínima112px y acciones separadas. Se conservan mínimo5/máximo1000 caracteres, guardado PATCH, cancelación y permisos; no se envían mensajes al registrar una resolución. Regresión React con API falsa: `node scripts/verificar-notificaciones.cjs`. Evidencia visual y despliegue en avances de Cueva.
+
 **Carpeta:** `frontend/src/app/notificaciones`.
 
 **Responsable:** Axel Cueva. Custodia documental de una función posterior.
