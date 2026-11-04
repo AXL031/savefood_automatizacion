@@ -1,31 +1,31 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import type { ReactNode } from "react";
-import "@fontsource-variable/manrope";
-import "@fontsource-variable/bricolage-grotesque";
-import "./styles.css";
-import { AppShell } from "@/components/layout/ProtectedShell";
-
-// Precargamos el alfabeto habitual; los imports de Fontsource conservan los dem醩 caracteres.
-const manrope = localFont({
-  src: "../../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2",
-  variable: "--fuente-manrope",
-  display: "swap",
-  weight: "200 800",
-});
-
-const bricolage = localFont({
-  src: "../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2",
-  variable: "--fuente-bricolage",
-  display: "swap",
-  weight: "200 800",
-});
-
-export const metadata: Metadata = {
-  title: "FoodSave",
-  description: "Planificaci贸n de producci贸n y compras para negocios de alimentos",
-};
-
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  return <html lang="es" className={`${manrope.variable} ${bricolage.variable}`}><body><AppShell>{children}</AppShell></body></html>;
-}
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import type { ReactNode } from "react";
+import "@fontsource-variable/manrope";
+import "@fontsource-variable/bricolage-grotesque";
+import "./styles.css";
+import { AppShell } from "@/components/layout/ProtectedShell";
+
+// Precargamos el alfabeto habitual; los imports de Fontsource conservan los dem谩s caracteres.
+const manrope = localFont({
+  src: "../../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2",
+  variable: "--fuente-manrope",
+  display: "swap",
+  weight: "200 800",
+});
+
+const bricolage = localFont({
+  src: "../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2",
+  variable: "--fuente-bricolage",
+  display: "swap",
+  weight: "200 800",
+});
+
+export const metadata: Metadata = {
+  title: "FoodSave",
+  description: "Planificaci贸n de producci贸n y compras para negocios de alimentos",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  return <html lang="es" className={`${manrope.variable} ${bricolage.variable}`}><body><AppShell>{children}</AppShell></body></html>;
+}
