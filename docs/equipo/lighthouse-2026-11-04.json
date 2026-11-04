@@ -1708,16 +1708,15 @@
           "finalUrl": "http://localhost:3000/tienda-admin",
           "categories": {
             "performance": 1,
-            "accessibility": 0.96
+            "accessibility": 1
           },
           "metrics": {
-            "first-contentful-paint": 174.08912553100586,
-            "largest-contentful-paint": 289.4512,
+            "first-contentful-paint": 170.3302253112793,
+            "largest-contentful-paint": 287.574,
             "cumulative-layout-shift": 0.004043141836675131,
             "total-blocking-time": 0
           },
           "hallazgos": [
-            "link-in-text-block",
             "legacy-javascript-insight",
             "network-dependency-tree-insight",
             "render-blocking-insight"
@@ -1728,16 +1727,15 @@
           "finalUrl": "http://localhost:3000/tienda-admin",
           "categories": {
             "performance": 1,
-            "accessibility": 0.96
+            "accessibility": 1
           },
           "metrics": {
-            "first-contentful-paint": 173.24817553100587,
-            "largest-contentful-paint": 289.12190000000004,
+            "first-contentful-paint": 170.2318753112793,
+            "largest-contentful-paint": 288.5071,
             "cumulative-layout-shift": 0.004043141836675131,
             "total-blocking-time": 0
           },
           "hallazgos": [
-            "link-in-text-block",
             "legacy-javascript-insight",
             "network-dependency-tree-insight",
             "render-blocking-insight"
@@ -1748,16 +1746,15 @@
           "finalUrl": "http://localhost:3000/tienda-admin",
           "categories": {
             "performance": 1,
-            "accessibility": 0.96
+            "accessibility": 1
           },
           "metrics": {
-            "first-contentful-paint": 173.27072553100587,
-            "largest-contentful-paint": 287.2481,
+            "first-contentful-paint": 174.22082553100586,
+            "largest-contentful-paint": 287.359,
             "cumulative-layout-shift": 0.004043141836675131,
             "total-blocking-time": 0
           },
           "hallazgos": [
-            "link-in-text-block",
             "legacy-javascript-insight",
             "network-dependency-tree-insight",
             "render-blocking-insight"
