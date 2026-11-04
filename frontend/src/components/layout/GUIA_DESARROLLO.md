@@ -1,5 +1,7 @@
 # Guía de desarrollo — Layout y navegación protegida
 
+04-11-2026 · Lighthouse Desktop: el nombre accesible de CampanaAvisos incluye el texto visible Avisos y su contador para el control por voz. El enlace de retorno FoodSave de la cabecera se subraya para distinguirlo del texto que lo rodea. Mantener ambas condiciones al cambiar etiquetas o estilos; no se modifican consultas, intervalos ni sesión.
+
 ## Estilo administrativo unificado · 04-11-2026
 
 Solicitud de Axel: aplicar a todo FoodSave administrativo el lenguaje visual de Resultados y conservar la tienda. `ProtectedShell` delega presentación en `MarcoPagina.tsx`: título/descripcion originales, portada verde compacta y navegación contextual del grupo. Solo recibe enlaces visibles según rol; los permisos de servicios/API no cambian. Inicio, Pronósticos, Evaluación y Reportes mantienen sus portadas/navegación propias para evitar duplicarlas. El retorno al flujo y los hijos del módulo se conservan. `styles.css` aplica tarjetas, tablas, pestañas e indicadores dentro de `.workspace-page`; no copiar esos estilos por cada ruta. Sesión y marco AppShell siguen montados en el layout raíz. `node scripts/verificar-marco-pagina.cjs` comprueba enlaces activos/detalle, título único, contenido/retorno y enlaces según rol, con React real sin API.
