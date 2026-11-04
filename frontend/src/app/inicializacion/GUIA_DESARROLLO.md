@@ -1,5 +1,7 @@
 # Guía de desarrollo — Asistente y primera carga
 
+04-11-2026 · Accesibilidad: los estados de preparación del modelo y evaluación histórica usan `.initialization-task-status` para subrayar sus enlaces de ejecución. El resultado debe poder distinguirse del texto del estado sin depender del color. No cambia el refresco, la carga ni el entrenamiento.
+
 **Carpeta:** `frontend/src/app/inicializacion`.
 
 **Responsable:** Edu Sanchez. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

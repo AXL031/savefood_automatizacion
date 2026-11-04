@@ -1,5 +1,7 @@
 # Guía de desarrollo — Programaciones, ejecuciones e intentos
 
+04-11-2026 · Accesibilidad: los enlaces dentro de párrafos de los pasos del asistente se subrayan para distinguirlos del texto sin depender del color. Comprobado como hallazgo de Lighthouse Desktop en el enlace Datos iniciales cuando no hay modelos disponibles. No cambia la selección ni la programación.
+
 **Carpeta:** `frontend/src/app/automatizaciones`.
 
 **Responsable:** Axel Cueva. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

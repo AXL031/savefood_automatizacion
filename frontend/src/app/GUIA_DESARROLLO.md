@@ -1,5 +1,11 @@
 # Guía de desarrollo — Rutas y navegación
 
+04-11-2026 · Lighthouse Desktop: layout.tsx precarga las variantes latinas locales de Manrope y Bricolage mediante next/font/local, conservando los imports Fontsource como respaldo para los demás alfabetos. Las variables de estilos priorizan esas fuentes precargadas. Los enlaces de las tarjetas de Inicio mantienen al menos 24px de alto para evitar objetivos contiguos demasiado próximos. No generalizar esta regla a todo enlace de la aplicación.
+
+Inicio reserva con `.home-next-step-slot` la altura de escritorio del siguiente paso durante la consulta (114px observados); es un mínimo, permite crecer al texto y no fija la altura móvil. El aviso de carga sigue siendo un estado accesible y se conserva la condición original que muestra el siguiente paso. Esta reserva evita que el dashboard salte cuando llega el resumen.
+
+`body` usa `display: flow-root` para contener el margen vertical de `.access-state` durante la carga de sesión. No sustituirlo por un contenedor con overflow: la navegación lateral conserva su posicionamiento sticky y la página debe seguir desplazándose normalmente.
+
 04-11-2026 · Segunda revisión de controles a partir de captura de Notificaciones: además de `.field` y `.operation-form`, `styles.css` protege controles nativos dentro de formularios con selectores `:where` de baja especificidad. Etiquetas encima del control, textareas112px y texto/selects48px; casillas/rango/archivo y paginadores se excluyen de reglas de texto. Avisos, recepción y conciliación incorporan estructura compartida explícita. Mantener guía de Forms y pruebas de los consumidores; no afirmar cobertura solo por revisar formularios que ya usan clases comunes.
 
 04-11-2026 · Estilo de Resultados extendido a FoodSave administrativo por solicitud de Axel: `ProtectedShell` usa `layout/MarcoPagina.tsx`, portada verde/pestañas por sección y superficies/jerarquía comunes en `.workspace-page`. Inicio y las tres vistas de Resultados conservan sus portadas existentes. Textos, formularios y lógica siguen perteneciendo a cada módulo. Tienda independiente conserva su diseño; el login administrativo adopta el fondo verde de la referencia. Mantener correcciones de campos de48px y comprobar escritorio/móvil al añadir estilos. [Especificación visual vigente](../../../docs/diseno/especificacion-visual.md).
