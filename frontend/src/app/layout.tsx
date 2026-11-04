@@ -13,11 +13,18 @@ const manrope = localFont({
   weight: "200 800",
 });
 
+const bricolage = localFont({
+  src: "../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2",
+  variable: "--fuente-bricolage",
+  display: "swap",
+  weight: "200 800",
+});
+
 export const metadata: Metadata = {
   title: "FoodSave",
   description: "Planificación de producción y compras para negocios de alimentos",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  return <html lang="es" className={manrope.variable}><body><AppShell>{children}</AppShell></body></html>;
+  return <html lang="es" className={`${manrope.variable} ${bricolage.variable}`}><body><AppShell>{children}</AppShell></body></html>;
 }
