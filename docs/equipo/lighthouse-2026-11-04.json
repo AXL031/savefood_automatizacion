@@ -567,6 +567,65 @@
             "render-blocking-insight"
           ]
         }
+      ],
+      "final": [
+        {
+          "run": 1,
+          "finalUrl": "http://localhost:3000/inventario",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 170.36478348999023,
+            "largest-contentful-paint": 294.2234755310059,
+            "cumulative-layout-shift": 0.01375748666351497,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 2,
+          "finalUrl": "http://localhost:3000/inventario",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 174.47062553100585,
+            "largest-contentful-paint": 288.68219999999997,
+            "cumulative-layout-shift": 0.01375748666351497,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 3,
+          "finalUrl": "http://localhost:3000/inventario",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 174.27037553100587,
+            "largest-contentful-paint": 288.7537,
+            "cumulative-layout-shift": 0.01375748666351497,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        }
       ]
     },
     "/operaciones": {
