@@ -6,7 +6,7 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
-- **04-11-2026 · Lighthouse, Codex por encargo de Vera (V04/E04 transversal): PARCIAL.** Frontend actual de `vera` compilado y montado en3000; login Desktop medido tres veces: Performance100/Accessibility100. Las tres mediciones de la instalación anterior redirigen al login (97/100), no acreditan Inicio. Build25 rutas y tipos correctos. Sin correcciones de interfaz todavía; falta iniciar sesión en el navegador de auditoría para medir módulos protegidos. [Reporte y límites](../lighthouse-2026-11-04.md).
+- **04-11-2026 · Lighthouse, Codex por encargo del usuario en Vera (V04/E04 transversal): LISTO_PARA_INTEGRAR.** 23 rutas Desktop con tres mediciones antes y tres finales: accesibilidad 100 en todas; rendimiento 100 en 22 y Automatización 81→88. Correcciones pequeñas de nombres/enlaces/objetivos, precarga de fuentes y estabilidad durante la carga; frontend final montado en 3000. Build de 25 rutas, tipos, tres regresiones React y ocho comprobaciones de navegador correctos. API instalada con 404 en avisos/entradas/tienda administrativa; portal proveedor sin enlace existente, tienda externa excluida. [Reporte y límites](../lighthouse-2026-11-04.md), [evidencia por ruta](../lighthouse-2026-11-04.json).
 
 - **11-10-2026 · Codex para Axel, V03/V04 con frontera V02/A03:** Reglas versionadas habilitables, reserva atómica EVALUAR_PROMOCION tras cada ajuste nuevo de producto, lectura pública del inventario, evaluación idempotente con descuento o rechazo explicado y pantalla real con historial paginado/detalle. La lectura sustituida, vencida, sin fecha, antigua o fuera de horario se descarta. Evaluar no publica precios ni modifica stock.
 - **Estado:** implementación real integrada en la instalación local. Consumidores de Promociones/motor/inventario verificados con PostgreSQL/Redis y navegación QA aislada; migración 0015 aplicada. CI remoto, otro PC y nuevo Telegram real no acreditados; ver entrada más reciente.
@@ -15,6 +15,21 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 04-11-2026 · Auditoría Desktop y correcciones de accesibilidad/rendimiento
+
+- **Fecha/hora y zona:** 04-11-2026, 15:07, America/Bogota (misma hora civil que America/Lima).
+- **Autor/responsabilidad:** Codex por encargo del usuario en la rama Vera, V04/E04 transversal. Conserva dominios de [Sanchez](sanchez.md) (UI), [Cueva](cueva.md) (acceso/asistente), [Bohorquez](bohorquez.md) (Inicio) y Rojas (administración de tienda), sin atribuirles esta implementación.
+- **Estado:** LISTO_PARA_INTEGRAR. Cambios reales montados y consumidores visuales revisados; no se declara integración a main ni certificación de todos los flujos.
+- **Disponible:** Avisos con nombre accesible que conserva texto/contador; enlaces dentro de frases distinguibles; objetivos de Inicio con altura mínima; fuentes locales precargadas; body sin colapso del margen de acceso y reserva flexible del siguiente paso. No se cambian reglas ni consultas.
+- **Archivos clave:** [layout](../../../frontend/src/app/layout.tsx), [estilos](../../../frontend/src/app/styles.css), [reporte](../lighthouse-2026-11-04.md) y [mediciones](../lighthouse-2026-11-04.json). Guías locales actualizadas en los consumidores afectados.
+- **Contrato/ejemplo:** navegación de lectura de Inventario, abrir Registrar ajuste con teclado, Tab/Escape y retorno al botón sin guardar; misma API y tipos públicos. Sesión usada solo para la auditoría, sin credenciales publicadas.
+- **Configuración/migraciones:** solo frontend reconstruido y montado por Compose en 3000; herramientas temporales fuera del proyecto. Sin migraciones, cambios de datos, semillas, pagos ni envíos externos.
+- **Pruebas reales:** build Next de 25 rutas y `npm run typecheck -- --incremental false` correctos. Regresiones `verificar-marco-pagina.cjs`, `verificar-notificaciones.cjs` y `verificar-flujo-automatizacion.cjs` correctas con React real/API falsa. Ocho comprobaciones de navegador correctas, sin errores JavaScript, incluidos diálogos/foco, filtro, paginación, navegación, precargas y enlaces.
+- **Evidencia:** 69 mediciones iniciales y 69 finales comparadas; revalidación adicional de Tienda administrativa e Inicialización tras sus ajustes acotados. Las series intermedias no forman parte de las medianas finales. 100 de accesibilidad en las 23 rutas; 100 de rendimiento en 22, Automatización mejora 81→88.
+- **Límites/dependencias:** API instalada devuelve 404 en avisos, entradas y administración de tienda; se mide su presentación disponible, no integración completa. Portal proveedor sin propuestas/enlaces existentes, no se crean datos para auditarlo. Tienda independiente excluida. Automatización conserva desplazamiento al recuperar el asistente. CI remoto, otros equipos y operaciones de escritura no comprobados en esta tarea.
+- **Siguiente paso:** equipo revisa el corte y compatibilidad de su API instalada como trabajo separado; conservar mediciones Desktop para comparar nuevas interfaces. No alterar gestión del foco o reglas del asistente solo para subir la puntuación.
+- **Git:** commits atómicos desde `ae44ca4` en `vera`, incluidos comentarios y evidencia por página; publicación autorizada a `origin/vera`, sin PR ni merge a main.
 
 ### 04-11-2026 · Preparación y línea base pública de Lighthouse
 
