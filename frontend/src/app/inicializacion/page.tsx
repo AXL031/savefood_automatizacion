@@ -89,8 +89,8 @@ function TarjetaEstado({ estado, administrador, reintentando, alReintentar }: {
       {estado.mensaje_error ? (
         <EstadoPanel tono="alerta" titulo="Preparación pendiente" descripcion={estado.mensaje_error} />
       ) : null}
-      {estado.preparacion && <p role="status">Preparación del modelo: {ESTADOS_TAREA[estado.preparacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.preparacion.id}`}>Ver ejecución #{estado.preparacion.id}</Link></p>}
-      {estado.evaluacion && <p role="status">Evaluación histórica: {ESTADOS_TAREA[estado.evaluacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.evaluacion.id}`}>Ver ejecución #{estado.evaluacion.id}</Link></p>}
+      {estado.preparacion && <p className="initialization-task-status" role="status">Preparación del modelo: {ESTADOS_TAREA[estado.preparacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.preparacion.id}`}>Ver ejecución #{estado.preparacion.id}</Link></p>}
+      {estado.evaluacion && <p className="initialization-task-status" role="status">Evaluación histórica: {ESTADOS_TAREA[estado.evaluacion.estado]} · <Link href={`/automatizaciones/ejecuciones/${estado.evaluacion.id}`}>Ver ejecución #{estado.evaluacion.id}</Link></p>}
       {estado.evaluacion?.mensaje_error && <EstadoPanel tono="alerta" titulo="La evaluación necesita revisión" descripcion={estado.evaluacion.mensaje_error} />}
       {estado.modelo_id && estado.estado === "MODELO_LISTO" && <p><Link href={`/panel?modelo_id=${estado.modelo_id}`}>Ver evaluación del modelo #{estado.modelo_id}</Link></p>}
       {puedeReintentar && administrador && <div className="form-actions"><BotonEnviar type="button" enviando={reintentando} textoEnviando="Solicitando…" onClick={alReintentar}>Preparar modelo sin volver a cargar</BotonEnviar></div>}
