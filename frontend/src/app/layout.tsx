@@ -6,6 +6,7 @@ import "@fontsource-variable/bricolage-grotesque";
 import "./styles.css";
 import { AppShell } from "@/components/layout/ProtectedShell";
 
+// Precargamos el alfabeto habitual; los imports de Fontsource conservan los demás caracteres.
 const manrope = localFont({
   src: "../../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2",
   variable: "--fuente-manrope",
