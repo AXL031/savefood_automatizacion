@@ -1603,6 +1603,65 @@
             "render-blocking-insight"
           ]
         }
+      ],
+      "final": [
+        {
+          "run": 1,
+          "finalUrl": "http://localhost:3000/ventas",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 174.56752553100586,
+            "largest-contentful-paint": 291.61285,
+            "cumulative-layout-shift": 0.01030331829565183,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 2,
+          "finalUrl": "http://localhost:3000/ventas",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 175.07702553100586,
+            "largest-contentful-paint": 291.9544255310059,
+            "cumulative-layout-shift": 0.01030331829565183,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 3,
+          "finalUrl": "http://localhost:3000/ventas",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 171.31308348999025,
+            "largest-contentful-paint": 311.5973755310058,
+            "cumulative-layout-shift": 0.01030331829565183,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        }
       ]
     },
     "/configuracion": {
