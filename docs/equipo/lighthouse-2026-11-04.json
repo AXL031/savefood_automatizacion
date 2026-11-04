@@ -2109,6 +2109,65 @@
             "render-blocking-insight"
           ]
         }
+      ],
+      "final": [
+        {
+          "run": 1,
+          "finalUrl": "http://localhost:3000/informes",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 170.38313348999023,
+            "largest-contentful-paint": 287.8620255310059,
+            "cumulative-layout-shift": 1.641676985766358e-05,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 2,
+          "finalUrl": "http://localhost:3000/informes",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 173.74197553100586,
+            "largest-contentful-paint": 291.0116,
+            "cumulative-layout-shift": 1.641676985766358e-05,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 3,
+          "finalUrl": "http://localhost:3000/informes",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 170.39753348999022,
+            "largest-contentful-paint": 291.69172553100583,
+            "cumulative-layout-shift": 1.641676985766358e-05,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        }
       ]
     },
     "/panel": {
