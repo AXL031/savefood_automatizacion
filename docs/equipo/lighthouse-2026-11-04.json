@@ -450,6 +450,82 @@
           ]
         }
       ]
+    },
+    "/operaciones": {
+      "antes": [
+        {
+          "run": 1,
+          "finalUrl": "http://localhost:3000/operaciones",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 169.73016083374023,
+            "largest-contentful-paint": 285.8426,
+            "cumulative-layout-shift": 0.10447004115226344,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 2,
+          "finalUrl": "http://localhost:3000/operaciones",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 169.84691083374022,
+            "largest-contentful-paint": 287.5686,
+            "cumulative-layout-shift": 0.10447004115226344,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 3,
+          "finalUrl": "http://localhost:3000/operaciones",
+          "categories": {
+            "performance": 0.97,
+            "accessibility": 0.96
+          },
+          "metrics": {
+            "first-contentful-paint": 170.14196083374023,
+            "largest-contentful-paint": 287.86479999999995,
+            "cumulative-layout-shift": 0.10447004115226344,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "cumulative-layout-shift",
+            "layout-shifts",
+            "label-content-name-mismatch",
+            "link-in-text-block",
+            "cls-culprits-insight",
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        }
+      ]
     }
   }
 }
