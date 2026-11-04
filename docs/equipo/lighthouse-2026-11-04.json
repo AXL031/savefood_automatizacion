@@ -1262,6 +1262,65 @@
             "render-blocking-insight"
           ]
         }
+      ],
+      "final": [
+        {
+          "run": 1,
+          "finalUrl": "http://localhost:3000/recetas",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 170.18973348999023,
+            "largest-contentful-paint": 368.32399999999996,
+            "cumulative-layout-shift": 0.0001532867563644894,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 2,
+          "finalUrl": "http://localhost:3000/recetas",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 170.92413348999023,
+            "largest-contentful-paint": 287.7766,
+            "cumulative-layout-shift": 0.0001532867563644894,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        },
+        {
+          "run": 3,
+          "finalUrl": "http://localhost:3000/recetas",
+          "categories": {
+            "performance": 1,
+            "accessibility": 1
+          },
+          "metrics": {
+            "first-contentful-paint": 175.10867553100587,
+            "largest-contentful-paint": 304.0018755310059,
+            "cumulative-layout-shift": 0.0001532867563644894,
+            "total-blocking-time": 0
+          },
+          "hallazgos": [
+            "legacy-javascript-insight",
+            "network-dependency-tree-insight",
+            "render-blocking-insight"
+          ]
+        }
       ]
     },
     "/tienda-admin": {
