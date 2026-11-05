@@ -17,6 +17,7 @@ export type Negocio = {
   zona_horaria: string;
   moneda: string;
   modo_envio_pedidos: "REQUIERE_APROBACION" | "AUTOMATICO";
+  modo_publicacion_promociones: "REQUIERE_APROBACION" | "AUTOMATICO";
 };
 
-export type CambioNegocio = Partial<Pick<Negocio, "nombre" | "zona_horaria" | "moneda" | "modo_envio_pedidos">>;
+export type CambioNegocio = Partial<Pick<Negocio, "nombre" | "zona_horaria" | "moneda" | "modo_envio_pedidos" | "modo_publicacion_promociones">>;

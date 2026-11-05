@@ -1,5 +1,7 @@
 # Dependencias y orden de entregas
 
+04-11-2026 · A01→V03/T05: Negocios entrega `obtener_modo_publicacion_promociones` al monitor; cada evaluación nueva conserva modo y solo las válidas automáticas nacen aprobadas. Comercio y API de tienda comprobados con aprobación automática por Beat y manual. Migración0025. Preparación de jornada coordinada por Cueva con interfaces públicas de ventas, stock, ML, planes y pedidos; [guion y límites](guion-demo-2026-11-04.md),[registro transversal](avances/cueva.md). Sin atribuir autoría nueva a los integrantes ni incorporar tickets automáticamente a ML.
+
 **28-10-2026 · Ampliación implementada por petición de Axel:** [entradas administrativas de productos](../api/contrato-entradas-productos.md) desde Inventario: varios lotes/productos, fechas y movimientos positivos auditados, con actualización de stock compartido con Ventas. Consulta actual por defecto y fechas históricas seleccionables; no cambia la fecha configurada de automatizaciones. Migración 0022. Registra producto terminado recibido sin calcular producción/consumo de ingredientes. No añade integración de tienda, simuladores o cierre/ML.
 
 **Estado vigente · 26-10-2026:** la primera caja PRESENCIAL está implementada por solicitud posterior de Axel. Rige el [contrato de caja disponible](../api/contrato-caja-presencial.md): precios versionados, cotización, ticket, stock y anulación limitada. Tienda, promociones comerciales, simuladores, cierre y ML quedan pendientes. Las notas documentales anteriores se conservan como historial.

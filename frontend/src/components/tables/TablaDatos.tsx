@@ -20,7 +20,13 @@ type Props<T> = {
   /** Pie opcional para totales o para advertir que la lista está recortada. */
   pie?: ReactNode;
   paginacion?: PaginacionRemota;
+  /** Omite controles cuando todas las filas locales caben en la primera página. */
+  compacta?: boolean;
 };
+
+function TablaCorta({ children }: { children: ReactNode; remota?: PaginacionRemota }) {
+  return <div className="table-wrap"><table>{children}</table></div>;
+}
 
 /**
  * Tabla común con encabezados, estado de carga y estado vacío.
@@ -29,7 +35,7 @@ type Props<T> = {
  * de su dominio. Así una cantidad decimal no se ordena como texto ni pierde
  * precisión al pasar por aquí.
  */
-export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, vacioDescripcion, pie, paginacion }: Props<T>) {
+export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, vacioDescripcion, pie, paginacion, compacta }: Props<T>) {
   if (cargando) {
     return <EstadoPanel tono="info" titulo="Cargando datos…" descripcion="Consultando la información." />;
   }
@@ -42,9 +48,10 @@ export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, 
       />
     );
   }
+  const Tabla = compacta && !paginacion && filas.length <= 10 ? TablaCorta : TablaPaginada;
   return (
     <div>
-      <TablaPaginada remota={paginacion}>
+      <Tabla remota={paginacion}>
         <thead>
           <tr>
             {columnas.map((columna) => (
@@ -65,7 +72,7 @@ export function TablaDatos<T>({ columnas, filas, idFila, cargando, vacioTitulo, 
             </tr>
           ))}
         </tbody>
-      </TablaPaginada>
+      </Tabla>
       {pie ? <small className="helper-text">{pie}</small> : null}
     </div>
   );

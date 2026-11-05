@@ -1,5 +1,7 @@
 # Guía de desarrollo — Tipos de contratos
 
+04-11-2026 · Negocio/CambioNegocio agregan modo_publicacion_promociones, enumeración manual/automático independiente de pedidos; consumidor Configuración y API A01 en migración 0025.
+
 **Carpeta:** `frontend/src/types`.
 
 **Responsable:** Edu Sanchez. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.

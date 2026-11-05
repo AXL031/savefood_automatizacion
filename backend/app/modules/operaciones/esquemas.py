@@ -60,6 +60,21 @@ class Respuesta(Estricto):
         return self
 
 
+class ProgramarPromocion(Estricto):
+    clave_idempotencia:str=Field(min_length=8,max_length=80,pattern=r'^[A-Za-z0-9._:-]+$')
+    fecha_hora_local:datetime
+    modo_publicacion:Literal['REQUIERE_APROBACION','AUTOMATICO']
+
+    @model_validator(mode='after')
+    def local(self):
+        if self.fecha_hora_local.tzinfo:raise ValueError('Usa fecha y hora local del negocio, sin zona.')
+        return self
+
+
+class CancelarPromocion(Estricto):
+    programacion_id:int=Field(gt=0)
+
+
 class LineaRecepcion(Estricto):
     linea_pedido_id:int=Field(gt=0)
     cantidad_compra:Decimal=Field(ge=0,max_digits=20,decimal_places=4)

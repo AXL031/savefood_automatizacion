@@ -484,6 +484,7 @@
 .tienda .t-payme-marco[hidden] { display: none; }
 .tienda .t-payme-flex { width: 415px; transform-origin: top left; }
 .tienda .t-payme-resultado, .tienda .t-payme-historial { padding: 20px; margin: 20px 0; background: var(--t-crema); border: 1px solid var(--t-borde-fuerte); border-radius: 12px; overflow-wrap: anywhere; }
+.tienda .t-payme-transicion { padding: 16px 20px; border-left: 3px solid var(--t-marron); background: var(--t-crema); border-radius: 8px; line-height: 1.6; }
 @media (max-width: 390px) { .tienda .t-payme-metodos { gap: 8px; } .tienda .t-payme-metodo { padding: 12px; } }
 
 .tienda .t-demo-banner { margin: 0; padding: 10px 20px; text-align: center; font-size: .8rem; color: var(--t-marron-oscuro); background: var(--t-durazno); }

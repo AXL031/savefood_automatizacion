@@ -52,11 +52,14 @@ class SolicitudProveedor(Base):
 
 class PromocionOperacion(Base):
     __tablename__ = 'promocion_operacion'
+    __table_args__ = (CheckConstraint("modo_publicacion in ('REQUIERE_APROBACION','AUTOMATICO')", name='ck_promocion_modo_publicacion'),)
     id: Mapped[int] = mapped_column(primary_key=True)
     clave: Mapped[str] = mapped_column(String(120), unique=True)
     lote_id: Mapped[int] = mapped_column(ForeignKey('lote_producto.id', ondelete='RESTRICT'), index=True)
     regla_id: Mapped[int] = mapped_column(ForeignKey('regla_promocion_demo.id', ondelete='RESTRICT'), index=True)
     estado: Mapped[str] = mapped_column(String(24))
+    modo_publicacion: Mapped[str] = mapped_column(String(20), server_default='REQUIERE_APROBACION')
+    programacion: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     descuento: Mapped[int | None] = mapped_column(Integer)
     motivo: Mapped[str] = mapped_column(String(500))
     fecha: Mapped[date] = mapped_column(Date)

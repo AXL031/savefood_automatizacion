@@ -37,3 +37,10 @@ def moneda_negocio(sesion: Session) -> str:
     if negocio is None:
         raise ErrorAPI(503, "NEGOCIO_NO_CONFIGURADO", "Configura el negocio primero.")
     return negocio.moneda
+
+
+def obtener_modo_publicacion_promociones(sesion: Session) -> ModoEnvio:
+    negocio = sesion.get(Negocio, 1)
+    if negocio is None:
+        raise ErrorAPI(503, "NEGOCIO_NO_CONFIGURADO", "Configura el negocio primero.")
+    return negocio.modo_publicacion_promociones

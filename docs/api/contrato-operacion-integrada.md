@@ -1,5 +1,27 @@
 # Operaciones compatibles con Cueva · 28-10-2026
 
+## Programación puntual de promociones · 05-11-2026
+
+Ampliación pedida por Axel para mostrar publicación automática dos minutos después. `POST /operaciones/promociones/{id}/programar` (Admin) recibe `clave_idempotencia`, `fecha_hora_local` sin zona y `modo_publicacion` (`AUTOMATICO` o `REQUIERE_APROBACION`). Solo admite sugerencias PENDIENTE/APROBADA y un horario futuro que cumpla la versión de regla de esa promoción, el día límite del lote y su vigencia/stock. Resuelve la zona IANA del negocio; horarios inexistentes/ambiguos se rechazan. Misma clave/actor/contenido recupera la reserva; cambio de contenido produce 409.
+
+Confirmar cambia esa promoción a PROGRAMADA y la retira del catálogo comercial hasta la ejecución. Otras promociones de otros lotes continúan vigentes. No cambia saldos. La vigilancia ignora el lote programado para no adelantarlo. El motor existente reserva ProgramacionDemo/EjecucionAutomatizacion de tipo EVALUAR_PROMOCION y conserva horario, actor, modo y regla; el adaptador diferencia esta acción de la evaluación heredada por movimiento.
+
+Al llegar la hora, revalida producto activo, ingreso, caducidad, stock, día y ventana de la regla conservada con la hora real del negocio. Resultado válido: APROBADA automática o PENDIENTE manual. Resultado no válido: NO_APLICA con motivo, sin publicar. Reentrega recupera el resultado y no duplica el aviso. Comercio entrega aprobaciones vigentes por HTTP; no se equipara aprobación a acuse. Hasta unos 30 segundos de despacho y segundos adicionales de publicación; no es un temporizador exacto del navegador.
+
+`POST /operaciones/promociones/{id}/cancelar-programacion` recibe `programacion_id` y requiere Admin. Solo antes de que el motor reclame la tarea; usa bloqueo ejecución → programación → dominio. Cancela reserva/ejecución y deja la promoción PENDIENTE, sin restaurar su aprobación anterior. Repetición recupera; identificador sustituido o tarea iniciada producen 409. La cancelación se gestiona en Operación diaria; el gestor genérico de propuestas mantiene su alcance anterior.
+
+`GET /operaciones/resumen` añade producto, código de lote, disponibilidad, límite de venta, programación y `activa_en_tienda`, calculada con aprobación, fecha real, lote vendible, reservas y publicación del producto. La UI muestra filtros Activas/Programadas/Pendientes, búsqueda y cuenta atrás. Conserva el límite de cien evaluaciones recientes. Migración aditiva `0026_programar_promocion`, sin modificar 0001–0025. El puente de revisiones locales incluye la nueva cabeza; 0025 conserva su protección de downgrade y 0026 solo permite retroceso sin trazas de programación.
+
+Ejemplo: `{"clave_idempotencia":"exposicion-promo-001","fecha_hora_local":"2026-11-05T19:02:00","modo_publicacion":"AUTOMATICO"}`. Los IDs/fechas son ilustrativos, no datos nuevos cargados automáticamente.
+
+## Ampliación autorizada · 04-11-2026 · Publicación de promociones
+
+`GET/PATCH /negocios/actual` agrega `modo_publicacion_promociones`: `REQUIERE_APROBACION` (inicial) o `AUTOMATICO`, independiente del envío de pedidos. Solo Admin modifica; null/valores ajenos se rechazan con 422. Migración aditiva `0025_modo_promociones` sobre 0024.
+
+El monitor periódico y `POST /operaciones/revisar` conservan el modo en cada evaluación nueva (`modo_publicacion` del resumen). Las propuestas válidas nacen PENDIENTE en manual y APROBADA en automático; el aviso registra regla, lote y modo. La aprobación automática tiene `decidido_por=null`; las decisiones humanas conservan su actor. Cambiar la preferencia no decide pendientes, no reabre rechazos y no revoca aprobaciones previas. Se siguen finalizando por agotamiento/vencimiento. El modo automático conserva las validaciones de producto activo, ingreso, caducidad, fecha límite, ventana y umbral de stock.
+
+Comercio consume las aprobaciones vigentes para productos publicados y las entrega por HTTP a la tienda independiente. La entrega conserva su estado/acuse separado; aprobación no equivale a acuse de publicación. No cambia precios de Caja, inventario ni histórico ML. Ejemplo: `PATCH /api/v1/negocios/actual` con `{"modo_publicacion_promociones":"AUTOMATICO"}`. Guardar no ejecuta la revisión; Beat la despacha cada 30 segundos respetando la ventana durable de diez minutos.
+
 Integración selectiva solicitada por Axel desde origin/bohorquez en 4c2a2715c4887dae205ec96240681bc4a202fc88, principalmente 1462b8c, 4239c1d y ba76bbb. Implementación original registrada como Codex en esa rama; adaptación de Codex para Axel. Cueva coordina; inventario/promociones Vera, compras Aguirre, planes/recetas Rojas y ventas/UI Sanchez conservan su responsabilidad.
 
 Prevalecen [ADR-010](../arquitectura/decisiones/ADR-010-tienda-independiente-payme.md), [caja presencial](contrato-caja-presencial.md) y [entradas de productos](contrato-entradas-productos.md). Tienda continúa en tienda/, independiente por API HTTP; Payme sobre catálogo de ejemplo no mueve inventario real.

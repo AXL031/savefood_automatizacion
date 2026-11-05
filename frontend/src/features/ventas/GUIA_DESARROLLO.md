@@ -1,5 +1,7 @@
 # Guía de desarrollo — Ventas diarias e historial
 
+04-11-2026 · Detalle de venta: `DetalleLineasVenta` sustituye lista y desplegable Trazabilidad de stock por línea por tabla buscable/paginada y un solo panel de movimientos del producto. Conserva cantidades, precio base, subtotal canónico, lote/movimiento/compensación; no reconstruye subtotal multiplicando precio por cantidad porque puede haber promociones. Componente compartido `ExploradorDetalle`, key del ticket. No cambia cotización, cobro, permisos ni anulación. Regresiones `verificar-trazas.cjs` y `verificar-caja.cjs` con API falsa.
+
 **26-10-2026 · Selector sin elegibles:** el diálogo informa catálogo activo, precios ausentes y productos sin stock vendible; ofrece revisar catálogo/precios e inventario. La primera acción cierra el diálogo y abre el catálogo. Reinicia producto seleccionado al abrir una venta nueva y deshabilita el selector vacío. Disposición del selector mediante `sale-product-picker`, sin alineación global de acciones al extremo derecho. No sustituye faltantes por stock ni precio inventado. Regresión React cubre diálogo abierto, falta de precio/stock, cotización bloqueada y apertura del catálogo.
 
 **Carpeta:** `frontend/src/features/ventas`.

@@ -658,24 +658,29 @@ th { font-size: .8rem; font-weight: 700; color: var(--color-texto-medio); }
 .plan-ingredients-summary strong { color:var(--color-texto); font-variant-numeric:tabular-nums; }
 .plan-ingredients-filters { display:grid; grid-template-columns:minmax(0,1fr) minmax(190px,240px) auto; gap:14px; align-items:end; margin-top:18px; }
 .plan-ingredients-hint { margin:12px 0 18px; }
-.plan-ingredient-name { display:grid; gap:5px; min-width:130px; max-width:300px; border:0; padding:0; background:transparent; color:var(--color-primario); text-align:left; font:inherit; }
-.plan-ingredient-name strong { color:var(--color-texto); }
-.plan-ingredient-name span { font-size:.78rem; }
-.plan-ingredient-name:hover span { text-decoration:underline; }
+:is(.plan-ingredient-name, .record-explorer-name) { display:grid; gap:5px; min-width:130px; max-width:300px; border:0; padding:0; background:transparent; color:var(--color-primario); text-align:left; font:inherit; }
+:is(.plan-ingredient-name, .record-explorer-name) strong { color:var(--color-texto); }
+:is(.plan-ingredient-name, .record-explorer-name) span { font-size:.78rem; }
+:is(.plan-ingredient-name, .record-explorer-name):hover span { text-decoration:underline; }
 .plan-ingredient-selected { background:var(--color-primario-tenue); }
-.plan-ingredient-detail { min-width:0; margin-top:20px; padding:24px; border:1px solid var(--color-primario-borde); border-radius:16px; background:var(--color-superficie); }
-.plan-ingredient-detail[hidden] { display:none; }
-.plan-ingredient-detail:focus { outline:2px solid var(--color-primario-borde); outline-offset:3px; }
-.plan-ingredient-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:16px; }
-.plan-ingredient-heading > div { min-width:0; }
-.plan-ingredient-heading h4 { margin:0; font:600 1.35rem/1.35 var(--fuente-titulos); overflow-wrap:anywhere; }
-.plan-ingredient-heading button { flex-shrink:0; }
+:is(.plan-ingredient-detail, .record-explorer-detail) { min-width:0; margin-top:20px; padding:24px; border:1px solid var(--color-primario-borde); border-radius:16px; background:var(--color-superficie); }
+:is(.plan-ingredient-detail, .record-explorer-detail)[hidden] { display:none; }
+:is(.plan-ingredient-detail, .record-explorer-detail):focus { outline:2px solid var(--color-primario-borde); outline-offset:3px; }
+:is(.plan-ingredient-heading, .record-explorer-heading) { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:16px; }
+:is(.plan-ingredient-heading, .record-explorer-heading) > div { min-width:0; }
+:is(.plan-ingredient-heading, .record-explorer-heading) h4 { margin:0; font:600 1.35rem/1.35 var(--fuente-titulos); overflow-wrap:anywhere; }
+:is(.plan-ingredient-heading, .record-explorer-heading) button { flex-shrink:0; }
 .plan-ingredient-quantities { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; padding:18px; margin:20px 0; border-radius:12px; background:var(--color-fondo); }
 .plan-ingredient-quantities > div { min-width:0; }
 .plan-ingredient-quantities dt { color:var(--color-texto-secundario); font-size:.78rem; }
 .plan-ingredient-quantities dd { margin:8px 0 0; font:600 1.25rem/1.35 var(--fuente-titulos); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
-.plan-ingredient-detail .operation-tabs { margin-bottom:18px; }
-.plan-ingredient-detail td { vertical-align:top; }
-.plan-ingredient-detail td small { display:block; margin-top:6px; color:var(--color-texto-secundario); font-size:.78rem; }
-.plan-ingredient-detail table { font-size:.85rem; }
-@media(max-width:700px) { .plan-ingredients-filters { grid-template-columns:minmax(0,1fr); } .plan-ingredients-filters > button { justify-self:start; } .plan-ingredient-detail { padding:18px; } .plan-ingredient-quantities { grid-template-columns:minmax(0,1fr); gap:14px; } .plan-ingredient-quantities > div { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 16px; } .plan-ingredient-quantities dd { margin:0; } .plan-ingredient-heading button { max-width:100%; } }
+:is(.plan-ingredient-detail, .record-explorer-detail) .operation-tabs { margin-bottom:18px; }
+:is(.plan-ingredient-detail, .record-explorer-detail) td { vertical-align:top; }
+:is(.plan-ingredient-detail, .record-explorer-detail) td small { display:block; margin-top:6px; color:var(--color-texto-secundario); font-size:.78rem; }
+:is(.plan-ingredient-detail, .record-explorer-detail) table { font-size:.85rem; }
+@media(max-width:700px) { .plan-ingredients-filters { grid-template-columns:minmax(0,1fr); } .plan-ingredients-filters > button { justify-self:start; } :is(.plan-ingredient-detail, .record-explorer-detail) { padding:18px; } .plan-ingredient-quantities { grid-template-columns:minmax(0,1fr); gap:14px; } .plan-ingredient-quantities > div { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 16px; } .plan-ingredient-quantities dd { margin:0; } :is(.plan-ingredient-heading, .record-explorer-heading) button { max-width:100%; } }
+
+.record-explorer { margin:18px 0; min-width:0; }
+.record-explorer-filters { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:14px; align-items:end; margin-bottom:12px; }
+.record-explorer-filters.has-filters { grid-template-columns:minmax(0,1fr) minmax(190px,260px) auto; }
+@media(max-width:700px) { .record-explorer-filters, .record-explorer-filters.has-filters { grid-template-columns:minmax(0,1fr); } .record-explorer-filters > button { justify-self:start; } }

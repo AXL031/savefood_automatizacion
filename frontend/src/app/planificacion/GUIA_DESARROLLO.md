@@ -1,5 +1,7 @@
 # Guía de desarrollo — Planificación y necesidades de ingredientes
 
+04-11-2026 · Segunda revisión: la tabla de productos compone `DetalleProductos` con key del plan y reemplaza toda la lista Trazas de… por un panel único de receta/lotes. Los productos excluidos de aportes dejan de imprimirse como párrafos largos y pasan a búsqueda/tabla paginada. Conservar null, avisos, receta/versiones y motivos/fechas de lotes del snapshot; no cambiar generación de plan/compras ni inventario. Ver guía del feature y `scripts/verificar-trazas.cjs`.
+
 04-11-2026 · Detalle de ingredientes: page.tsx compone `features/planificacion/DetalleIngredientes.tsx` con `necesidades`, `elementos` y key del plan. Una tabla filtrable/paginada y un único panel de Aportes/Lotes reemplazan los55 desplegables repetidos; nombres de producto, recetas/versiones, cantidades, lotes y exclusiones siguen siendo snapshots. El detalle se abre desde el nombre del ingrediente, con manejo de foco y ayudas de stock desconocido. No cambia cálculo, API, generación de compras, permisos ni inventario. Guía y prueba del feature contienen comportamiento/validación; coordinación registrada en Cueva, responsabilidad M04 de Rojas conservada.
 
 **Carpeta:** `frontend/src/app/planificacion`.

@@ -39,6 +39,22 @@ def confirmar(s):
 
 @router.get('/operaciones/resumen')
 def resumen(u=Depends(identidad_actual),s:Session=Depends(obtener_sesion)):
+    from zoneinfo import ZoneInfo
+    from app.modules.negocios.servicio import zona_horaria_negocio
+    from app.modules.comercio.catalogo import catalogo_publicado
+    from app.modules.inventario.ventas import lote_vendible
+    from app.modules.inventario.reservas import cantidades_reservadas
+    fecha_actual=datetime.now(timezone.utc).astimezone(ZoneInfo(zona_horaria_negocio(s))).date()
+    publicados={p['id'] for p in catalogo_publicado(s)['productos']}
+    promociones=[]
+    for p in s.scalars(select(PromocionOperacion).order_by(PromocionOperacion.id.desc()).limit(100)):
+        lote=s.get(LoteProducto,p.lote_id);producto=s.get(Producto,lote.producto_id)
+        reservado=cantidades_reservadas(s,[lote.id]).get(lote.id,0)
+        promociones.append({'id':p.id,'lote_id':p.lote_id,'producto_id':producto.id,'producto':producto.nombre,'codigo_lote':lote.codigo_lote,
+            'estado':p.estado,'modo_publicacion':p.modo_publicacion,'descuento':p.descuento,'motivo':p.motivo,'fecha':str(p.fecha),
+            'stock_disponible':max(0,lote.saldo_disponible-reservado),'fecha_limite_venta':str(lote.fecha_limite_venta) if lote.fecha_limite_venta else None,
+            'activa_en_tienda':p.estado=='APROBADA' and p.fecha==fecha_actual and lote_vendible(lote,fecha_actual) and lote.saldo_disponible>reservado and producto.id in publicados,
+            'programacion':p.programacion})
     planes=[]
     for p in s.scalars(select(PlanProduccion).order_by(PlanProduccion.id.desc()).limit(100)):
         hechos=producidos(s,p.id)
@@ -56,7 +72,7 @@ def resumen(u=Depends(identidad_actual),s:Session=Depends(obtener_sesion)):
         pedidos.append(d)
     datos={'fecha_operativa':str(fecha_operativa(s)),'configuracion':configuracion(s, crear=False).datos,'planes':planes,'pedidos':pedidos,
         'productos':[{'id':p.id,'nombre':p.nombre,'codigo':p.codigo} for p in s.scalars(select(Producto).where(Producto.activo.is_(True)).order_by(Producto.id))],
-        'promociones':[{'id':p.id,'lote_id':p.lote_id,'estado':p.estado,'descuento':p.descuento,'motivo':p.motivo,'fecha':str(p.fecha)} for p in s.scalars(select(PromocionOperacion).order_by(PromocionOperacion.id.desc()).limit(100))],
+        'promociones':promociones,
         'registros':[{'id':r.id,'tipo':r.tipo,'fecha':str(r.fecha),'plan_id':r.plan_id,'resultado':r.resultado} for r in s.scalars(select(RegistroOperacion).order_by(RegistroOperacion.id.desc()).limit(100))]}
     return {'datos':datos}
 
@@ -84,6 +100,18 @@ def revision(u=Depends(requiere_administrador),s:Session=Depends(obtener_sesion)
 
 class Decision(e.Estricto):
     aprobar:bool
+
+
+@router.post('/operaciones/promociones/{id}/programar')
+def programar_promocion(id:int,entrada:e.ProgramarPromocion,u=Depends(requiere_administrador),s:Session=Depends(obtener_sesion)):
+    from .promociones_programadas import programar
+    r=programar(s,id,entrada,u.id);confirmar(s);return {'datos':r}
+
+
+@router.post('/operaciones/promociones/{id}/cancelar-programacion')
+def cancelar_promocion(id:int,entrada:e.CancelarPromocion,u=Depends(requiere_administrador),s:Session=Depends(obtener_sesion)):
+    from .promociones_programadas import cancelar
+    r=cancelar(s,id,entrada.programacion_id,u.id);confirmar(s);return {'datos':r}
 
 
 @router.post('/operaciones/promociones/{id}/decision')

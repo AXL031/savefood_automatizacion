@@ -16,6 +16,8 @@ import type { Plan, ResumenPlan } from "@/types/planificacion";
 import type { Corrida } from "@/types/pronostico";
 import { etiquetaDato } from "@/utils/etiquetas";
 import { DetalleIngredientes } from "@/features/planificacion/DetalleIngredientes";
+import { DetalleProductos } from "@/features/planificacion/DetalleProductos";
+import { ExploradorDetalle } from "@/components/tables/ExploradorDetalle";
 
 const ETIQUETA: Record<string, string> = {
   CALCULADO: "Calculado", HISTORIAL_INSUFICIENTE: "Historial insuficiente",
@@ -24,7 +26,6 @@ const ETIQUETA: Record<string, string> = {
   LOTES_EXCLUIDOS: "Lotes excluidos del disponible",
 };
 function nuevaClave() { return `plan-${crypto.randomUUID()}`; }
-const unidades = (valor: number | null) => valor === null ? "No disponible" : `${valor} u.`;
 
 function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const { token, perfil } = contexto;
@@ -118,19 +119,11 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       }}>Completar necesidades del plan anterior</button>}
       {plan.necesidades_estado === "INCOMPLETAS" && <EstadoPanel tono="alerta" titulo="Necesidades incompletas" descripcion="Las cantidades son subtotales de los productos calculables. Hay producción o stock desconocido; este resultado no permite generar compras automáticas." />}
       {plan.necesidades_meta && <p>Lectura de ingredientes: {new Date(plan.necesidades_meta.stock_leido_en).toLocaleString("es")} · {plan.necesidades_meta.version}{plan.necesidades_meta.vigencia_desconocida ? " · Hay lotes con vigencia desconocida" : ""}</p>}
-      {plan.necesidades_meta?.productos_excluidos.map((p) => <p key={p.producto_id}>{p.nombre}: {ETIQUETA[p.estado] ?? p.estado}; sin aporte calculable.</p>)}
+      {!!plan.necesidades_meta?.productos_excluidos.length && <details><summary>Productos sin aporte calculable ({plan.necesidades_meta.productos_excluidos.length})</summary><ExploradorDetalle filas={plan.necesidades_meta.productos_excluidos} idFila={p => p.producto_id} nombre={p => p.nombre} textoBusqueda={p => p.nombre} etiquetaBusqueda="Buscar producto sin aporte" columnas={[{ clave: "estado", encabezado: "Motivo", celda: p => ETIQUETA[p.estado] ?? etiquetaDato(p.estado) }]} /></details>}
       <DetalleIngredientes key={plan.id} necesidades={plan.necesidades} elementos={plan.elementos} />
       <p>Modelo {plan.origen_pronostico.version_modelo} · cálculo {plan.version_calculo} · lectura de stock {new Date(plan.stock_leido_en).toLocaleString("es")}</p>
       <p><Link href={`/automatizaciones/ejecuciones/${plan.ejecucion_id}`}>Ver ejecución de origen</Link> · <Link href="/pronosticos">Ver pronósticos</Link></p>
-      <TablaPaginada><thead><tr><th scope="col">Producto</th><th scope="col">Pronóstico</th><th scope="col">Stock disponible</th><th scope="col">Producción sugerida</th><th scope="col">Resultado</th></tr></thead>
-        <tbody>{plan.elementos.map((e) => <tr key={e.producto_id}><td>{e.stock.nombre}</td><td>{unidades(e.cantidad_pronosticada)}</td><td>{unidades(e.stock_disponible)}</td><td>{unidades(e.cantidad_producir)}</td><td>{ETIQUETA[e.estado]}</td></tr>)}</tbody>
-      </TablaPaginada>
-      {plan.elementos.map((e) => <details key={e.producto_id}><summary>Trazas de {e.stock.nombre}</summary>
-        {e.avisos.length > 0 && <p>{e.avisos.map((a) => ETIQUETA[a] ?? a).join(" · ")}</p>}
-        <p>Pronóstico #{e.pronostico_id} · receta {e.receta ? `#${e.receta.receta_id}, versión ${e.receta.version}` : "no disponible"}.</p>
-        {e.receta && <ul>{e.receta.lineas.map((l) => <li key={l.ingrediente_id}>{l.nombre}: {l.cantidad_por_unidad} {l.unidad_base} por unidad</li>)}</ul>}
-        {e.stock.lotes.length === 0 ? <p>No había lotes registrados.</p> : <ul>{e.stock.lotes.map((l) => <li key={l.lote_id}>{l.codigo_lote}: {l.saldo} u. · {l.cuenta ? "incluido" : "excluido"} · {l.motivo}. Caducidad: {l.fecha_caducidad ?? "desconocida"}; límite de venta: {l.fecha_limite_venta ?? "desconocido"}.</li>)}</ul>}
-      </details>)}
+      <DetalleProductos key={plan.id} elementos={plan.elementos} />
     </section>}
     </PanelDetalle>}
   </>;

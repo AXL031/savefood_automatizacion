@@ -51,10 +51,12 @@ def revisar(s, ahora=None, forzar=False):
         if l.saldo_disponible <= 0 or not l.fecha_limite_venta or l.fecha_limite_venta < local.date() or not l.fecha_caducidad or l.fecha_caducidad < local.date():
             p.estado = 'FINALIZADA'
     d = ConfigurarRegla(**regla.parametros)
+    from app.modules.negocios.servicio import obtener_modo_publicacion_promociones
+    modo = obtener_modo_publicacion_promociones(s)
     n = 0
     for l in lotes:
         if s.scalar(select(PromocionOperacion.id).where(PromocionOperacion.lote_id==l.id,
-            PromocionOperacion.fecha==local.date(),PromocionOperacion.estado.in_(['PENDIENTE','APROBADA']))):continue
+            (PromocionOperacion.estado=='PROGRAMADA') | ((PromocionOperacion.fecha==local.date()) & PromocionOperacion.estado.in_(['PENDIENTE','APROBADA'])))):continue
         clave = f'lote:{l.id}:regla:{regla.id}:{local.date()}'
         if s.scalar(select(PromocionOperacion.id).where(PromocionOperacion.clave == clave)): continue
         if l.fecha_ingreso and l.fecha_ingreso > local.date():
@@ -69,8 +71,11 @@ def revisar(s, ahora=None, forzar=False):
         if not resultado.proponer:
             clave += ':no:'+hashlib.sha256(resultado.motivo.encode()).hexdigest()[:12]
             if s.scalar(select(PromocionOperacion.id).where(PromocionOperacion.clave == clave)): continue
-        p = PromocionOperacion(clave=clave, lote_id=l.id, regla_id=regla.id, estado='PENDIENTE' if resultado.proponer else 'NO_APLICA',
+        estado = ('APROBADA' if modo == 'AUTOMATICO' else 'PENDIENTE') if resultado.proponer else 'NO_APLICA'
+        p = PromocionOperacion(clave=clave, lote_id=l.id, regla_id=regla.id, estado=estado, modo_publicacion=modo,
             descuento=resultado.descuento_pct, motivo=resultado.motivo, fecha=local.date())
         s.add(p); s.flush(); n+=1
-        if resultado.proponer: aviso(s,f'promocion:{p.id}','Promoción sugerida pendiente de aprobación',{'promocion_id':p.id,'lote_id':l.id})
+        if resultado.proponer:
+            titulo = 'Promoción aprobada automáticamente para tienda' if modo == 'AUTOMATICO' else 'Promoción sugerida pendiente de aprobación'
+            aviso(s,f'promocion:{p.id}',titulo,{'promocion_id':p.id,'lote_id':l.id,'modo_publicacion':modo,'regla_id':regla.id})
     return {'revisada':True,'evaluadas':n}

@@ -26,6 +26,10 @@ recibida se verifica incluso si pertenece al formulario anterior. Para transacci
 registradas, mostrar Consulta; no simular cancelación ni borrar su referencia.
 Regresión de interacción: `npm test` (jsdom/SDK simulado, sin llamadas Payme).
 
+## Resultado antes de navegar · 04-11-2026
+
+`configuracionFlex` habilita `display_result_screen`. Al recibir `pagado=true` de la API propia, `PagoPayme` conserva Flex montado cuatro segundos, anuncia la próxima navegación y bloquea métodos/datos del comprador. Después termina la instancia, libera el borrador y llama `alAprobar` una sola vez; el carrito se vacía en ese consumidor, sin cortar antes el resultado. El callback solo inicia la verificación, nunca confirma por sí mismo. Repeticiones/cierres tardíos no reinician la espera; desmontar cancela el temporizador y conserva la referencia recuperable. Recuperar un pago ya confirmado sin Flex activo navega directamente. La pausa es de presentación, no retrasa la confirmación del servidor ni el registro comercial. No garantiza la duración interna de una versión del SDK; comprobarla con sandbox en una prueba autorizada.
+
 ## Ampliación vigente · 28-10-2026 · Tienda por API
 
 PagoPayme usa quote autoritativa, conserva reserva/importe al cambiar de método y recupera el pago pendiente. DetallePagoPayme muestra pago y venta por separado y permite reintentar entrega HTTP sin volver a cobrar. Imágenes ausentes usan marcador neutral y catálogo vacío indica publicación pendiente. Coordinación Codex para Axel (A04), conservando dominios Rojas (Tienda), Sanchez (Ventas/UI) y Vera (Inventario/Promociones). La ampliación usa dos proyectos y bases independientes: solo API HTTP, sin importar modelos, montar carpetas ni consultar PostgreSQL desde tienda. Payme solo preproducción y comprador invitado; cuatro botones independientes. Ver docs/api/contrato-integracion-tienda.md desde la raíz y registro Cueva para evidencia y límites.

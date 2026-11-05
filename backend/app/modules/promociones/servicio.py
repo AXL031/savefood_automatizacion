@@ -44,6 +44,9 @@ def reservar_tras_ajuste(sesion: Session, movimiento_id: int, usuario_id: int | 
 def evaluar_programada(sesion: Session, contexto):
     from app.modules.inventario.servicio import lectura_para_promocion
     parametros = contexto.datos_entrada["parametros"]
+    if parametros.get('accion') == 'PUBLICAR_PROMOCION_OPERATIVA':
+        from app.modules.operaciones.promociones_programadas import ejecutar_programada
+        return ejecutar_programada(sesion, contexto)
     movimiento_id = parametros["movimiento_id"]
     existente = sesion.scalar(select(EvaluacionPromocion).where(EvaluacionPromocion.movimiento_id == movimiento_id))
     if existente:

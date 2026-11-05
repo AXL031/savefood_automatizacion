@@ -1,5 +1,7 @@
 # Guía de desarrollo — Programaciones, ejecuciones e intentos
 
+04-11-2026 · Resumen del asistente: Ver productos conserva la selección completa pero muestra `ExploradorDetalle` sin panel, con búsqueda por nombre/código y paginación. Sustituye la lista de139 nombres al confirmar, sin cambiar configuración, selección, diagnóstico, autorización de envíos ni programación. Los registros no encontrados conservan el ID como nombre de respaldo; no se ocultan del resumen. Comprobación compartida con139 filas en `verificar-trazas.cjs`; no ejecutar una programación real para revisar esta presentación.
+
 **Carpeta:** `frontend/src/features/automatizaciones`.
 
 **Responsable:** Axel Cueva. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

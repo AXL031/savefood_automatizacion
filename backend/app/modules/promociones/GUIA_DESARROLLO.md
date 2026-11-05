@@ -1,5 +1,7 @@
 # Guía de desarrollo — Promociones sugeridas
 
+05-11-2026 · El adaptador `evaluar_programada` distingue la acción PUBLICAR_PROMOCION_OPERATIVA y delega por interfaz pública de Operaciones. Conserva intacto el contrato de evaluación por movimiento. Programación puntual, estados y cancelación en [contrato operativo](../../../../docs/api/contrato-operacion-integrada.md); migración 0026.
+
 **Carpeta:** `backend/app/modules/promociones`.
 
 **Responsable:** Leonardo Vera. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

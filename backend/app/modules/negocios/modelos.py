@@ -15,6 +15,7 @@ class Negocio(Base):
             "modo_envio_pedidos IN ('REQUIERE_APROBACION', 'AUTOMATICO')",
             name="ck_negocio_modo_envio_pedidos",
         ),
+        CheckConstraint("modo_publicacion_promociones IN ('REQUIERE_APROBACION', 'AUTOMATICO')", name="ck_negocio_modo_promociones"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -25,6 +26,9 @@ class Negocio(Base):
         String(20), nullable=False, server_default=text("'REQUIERE_APROBACION'")
     )
     hora_apertura: Mapped[time | None] = mapped_column(Time, nullable=True)
+    modo_publicacion_promociones: Mapped[str] = mapped_column(
+        String(20), nullable=False, server_default=text("'REQUIERE_APROBACION'")
+    )
     hora_cierre: Mapped[time | None] = mapped_column(Time, nullable=True)
     creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     actualizado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

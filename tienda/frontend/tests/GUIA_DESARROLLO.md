@@ -22,6 +22,8 @@ recorrido visual del checkout. Registrar pruebas reales y bloqueos en
 
 `npm test` ejecuta los tests Node y las interacciones React/jsdom con fetch/Flex simulados. Verificar cambio de método con UUID único, desmontaje anterior, cierre, errores de nonce y callback tardío. No usar credenciales reales ni una API de operación en estas pruebas.
 
+04-11-2026: veinte escenarios correctos en Windows. La transición se prueba para CARD/YAPE/QR/PAGOEFECTIVO: Flex permanece montado hasta4000ms, botones bloqueados, redirección única, cierre/callback repetidos sin reiniciar el plazo y liberación del borrador al continuar. Se verifica cancelación al desmontar, ausencia de transición si falla la consulta y recuperación inmediata de un pago ya aprobado. El reloj simulado controla solo la pausa de4000ms, sin interceptar esperas de React/crypto. Estos casos no certifican animación interna del SDK real ni cobros externos.
+
 ## Ampliación vigente · 28-10-2026 · Tienda por API
 
 payme-integracion.test.cjs prueba respuesta perdida y recuperación del mismo intento, quote congelada, rechazo de otra compra y reintento comercial con capacidad privada. No es comprobación visual ni prueba de un pago real de Payme.

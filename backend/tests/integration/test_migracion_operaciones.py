@@ -1,6 +1,5 @@
 """Backport 0023 sobre stock/caja de Cueva: sin reescribir revisiones remotas."""
 import pytest
-from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
 from sqlalchemy import create_engine, MetaData, CheckConstraint, event, text, inspect, insert
@@ -8,7 +7,7 @@ from app.modules.autenticacion.modelos import Usuario
 from app.modules.productos.modelos import Producto
 from app.core.base import Base
 from app.principal import app  # noqa
-from test_migraciones_entregas import cargar_revision
+from test_migraciones_entregas import cargar_revision,compare_metadata
 
 
 def test_0023_preserva_movimientos_entrada_venta_anulacion_y_evidencia():

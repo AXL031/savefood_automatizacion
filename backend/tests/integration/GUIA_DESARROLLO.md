@@ -1,5 +1,9 @@
 # Guía de desarrollo — Pruebas de transacciones y fronteras
 
+05-11-2026 · `test_promociones_programadas.py`: retirada del catálogo, hora futura, recuperación por clave, vigilancia sin adelanto, permisos, cancelación con ID revisado, modo congelado, revalidación de stock/caducidad, reentrega y consumo por motor real con transporte de cola capturado. Bases temporales, sin Telegram/Payme/HTTP externo; PostgreSQL requiere Docker activo.
+
+04-11-2026 · test_modo_promociones.py usa escenario temporal: permisos, valores inválidos, independencia de pedidos, aprobación automática de nuevos lotes válidos, pendientes no retroactivos, idempotencia, aviso con modo, consumo del filtro comercial y finalización al agotar. Sin transporte externo; compatible con E03_POSTGRES_TEST=1.
+
 **Carpeta:** `backend/tests/integration`.
 
 **Responsable:** Axel Cueva. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.

@@ -7,6 +7,8 @@ import csv
 import hashlib
 import json
 import os
+import re
+import sys
 import statistics
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
@@ -18,8 +20,8 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import select, text
 from sqlalchemy.engine import make_url
 
-if os.getenv('PREPARAR_JORNADA_AUTORIZADA')!='2026-10-28' or make_url(os.environ['DATABASE_URL']).database!='foodsave':
-    raise RuntimeError('Requiere preparación expresa del 28/10 en la instalación actual y respaldo previo.')
+if os.getenv('PREPARAR_JORNADA_AUTORIZADA') not in {'2026-10-28','2026-11-04'} or make_url(os.environ['DATABASE_URL']).database!='foodsave':
+    raise RuntimeError('Requiere una jornada autorizada en la instalación actual y respaldo previo.')
 
 from app.principal import app  # noqa: registra los modelos de la aplicación existente.
 from app.core.base_datos import SessionLocal
@@ -51,7 +53,9 @@ from app.modules.promociones.servicio import guardar_regla
 from app.modules.promociones.esquemas import ConfigurarRegla
 from pwdlib import PasswordHash
 
-HOY=date.fromisoformat(os.environ['PREPARAR_JORNADA_AUTORIZADA']);AYER=HOY-timedelta(days=1)
+HOY=date.fromisoformat(os.environ['PREPARAR_JORNADA_AUTORIZADA'])
+AYER=HOY if HOY==date(2026,11,4) else HOY-timedelta(days=1)  # Último día sintético, cerrado para la demo.
+OBJETIVO=HOY+timedelta(days=1) if HOY==date(2026,11,4) else HOY
 MARCA=f'prueba-jornada-{HOY.isoformat()}'
 EVIDENCIA=Path('/evidencia');EVIDENCIA.mkdir(exist_ok=True)
 CODIGOS=['baguette','croissant','brioche','pain_au_chocolat','briochette','brownies','cookie','eclair','tartelette','tartelette_fraise','pain_de_mie','sand_jb_emmental']
@@ -59,19 +63,24 @@ REMANENTES=[18,12,9,0,4,8,3,0,10,6,0,5]
 
 
 def entrenar(s,ids):
-    version=MARCA+'-particion-manual'
+    version=os.getenv('VERSION_MODELO_DEMO') or MARCA+'-particion-manual'
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,79}',version):
+        raise ValueError('Versión de modelo inválida.')
     existente=s.scalar(select(ArtefactoModelo).where(ArtefactoModelo.version_modelo==version))
     if existente:return existente
     preparar_ruta_ml()
     from particion import Particion
     from artefacto import entrenar_y_exportar
     from metadata import verificar_artefacto_completo
-    # Entrenar hasta agosto y validar septiembre; octubre queda fuera de ambos.
+    # Partición explícita de exposición; ninguna venta del objetivo entra al modelo.
     inicio_mes=HOY.replace(day=1);fin_val=inicio_mes-timedelta(days=1)
     inicio_val=fin_val.replace(day=1);fin_train=inicio_val-timedelta(days=1)
     principio=s.scalar(select(VentaDiaria.fecha_local).order_by(VentaDiaria.fecha_local).limit(1))
-    p=Particion(str(principio),str(fin_train),str(inicio_val),str(fin_val),str(inicio_mes),str(HOY),20,1,1)
-    ventas=leer_historial(s,ids,principio,HOY)
+    if HOY==date(2026,11,4):
+        fin_train=HOY-timedelta(days=2);inicio_val=HOY-timedelta(days=1);fin_val=HOY
+        inicio_mes=OBJETIVO
+    p=Particion(str(principio),str(fin_train),str(inicio_val),str(fin_val),str(inicio_mes),str(OBJETIVO),20,1,1)
+    ventas=leer_historial(s,ids,principio,AYER+timedelta(days=1))
     h=hashlib.sha256(json.dumps([(v.producto_id,str(v.fecha_local),v.unidades_vendidas,v.revision_venta_id) for v in ventas]).encode()).hexdigest()
     carpeta=Path(os.environ['MODEL_ARTIFACT_DIR'])/version;carpeta.mkdir(exist_ok=True)
     archivo=EVIDENCIA/'ventas-modelo-demo.csv'
@@ -81,7 +90,7 @@ def entrenar(s,ids):
     entrenar_y_exportar(archivo,'piloto','principal',p,carpeta,version)
     meta=json.loads((carpeta/'metadata.json').read_text())
     meta['particion']['version_politica']='ESCENARIO_MANUAL_JORNADA_v1'
-    meta['nota']='Partición manual para exposición del 28/10; octubre reservado. Historia añadida sintética. No evaluar como evidencia comercial.'
+    meta['nota']=f'Partición manual para exposición del {HOY}; objetivo {OBJETIVO} reservado. Historia añadida sintética. No evaluar como evidencia comercial.'
     meta['huella_datos_entrenamiento']=h
     (carpeta/'metadata.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2)+'\n')
     verificar_artefacto_completo(carpeta,'piloto','principal')
@@ -143,7 +152,7 @@ def preparar_datos():
                 caja.registrar_ticket(s,RegistrarVenta(clave_idempotencia=f'{MARCA}-ticket-ayer-{turno}',cotizacion_id=q.id,
                     total_revisado=f'{q.total:.2f}',cobro_presencial={'medio':'EFECTIVO','importe_recibido':f'{q.total:.2f}'}),u)
         finally:caja.ahora=reloj
-        frescos=[{'producto_id':ids[i],'codigo_lote':f'DEMO-{HOY}-{ids[i]}','cantidad':cantidad,
+        frescos=[{'producto_id':ids[i],'codigo_lote':f'DEMO-FRESCO-{HOY}-{ids[i]}' if AYER==HOY else f'DEMO-{HOY}-{ids[i]}','cantidad':cantidad,
             'fecha_elaboracion':str(HOY),'fecha_limite_venta':str(HOY+timedelta(days=2)),
             'fecha_caducidad':str(HOY+timedelta(days=2))} for i,cantidad in [(3,10),(7,7),(10,6)]]
         registrar_entrada(s,EntradaCrear(clave_operacion=MARCA+'-entrada-hoy',fecha_entrada=HOY,
@@ -165,14 +174,17 @@ def preparar_datos():
         for codigo in CODIGOS:
             p=productos[codigo];f=s.get(PublicacionProducto,p.id)
             categoria='panes' if codigo in CODIGOS[:5] or codigo=='pain_de_mie' else 'bocados' if codigo=='sand_jb_emmental' else 'postres-personales'
+            if HOY==date(2026,11,4) and f:
+                guardar_ficha(s,p.id,Ficha(version_actual=f.version,publicado=True,**f.datos),u)
+                continue
             guardar_ficha(s,p.id,Ficha(version_actual=f.version if f else 0,publicado=True,categoria=categoria,
-                descripcion='Producto del escenario de demostración del 28/10.',presentacion='Unidad',
+                descripcion=f'Producto del escenario de demostración del {HOY}.',presentacion='Unidad',
                 imagen=f'/tienda/productos/{fotos[codigo]}.jpg' if codigo in fotos else ''),u)
         guardar_regla(s,ConfigurarRegla(habilitada=True,hora_revision='00:00',hora_cierre='23:59',stock_umbral=5,descuento_pct=25,descuento_maximo_pct=30),u.id)
         c=configuracion(s);c.datos={'reloj':'ACTUAL','fecha_escenario':None,'hora_escenario':'17:15:00','producto_ids':ids,'habilitada':True};c.proxima_revision=None
         revisar(s,forzar=True);preparar(s)
         local=(datetime.now(ZoneInfo('America/Lima'))+timedelta(minutes=3)).replace(tzinfo=None)
-        datos=ConfigurarFlujo(producto_ids=ids,modelo_id=modelo.id,fecha_objetivo_demo=HOY,hora_simulada='08:00',
+        datos=ConfigurarFlujo(producto_ids=ids,modelo_id=modelo.id,fecha_objetivo_demo=OBJETIVO,hora_simulada='08:00',
             primera_ejecucion_local=local,dias=1,modo_envio_pedidos='REQUIERE_APROBACION',prueba_repetible=True)
         guardar_configuracion(s,datos,u.id);diagnostico=comprobar(s,datos)
         assert diagnostico['listo'],diagnostico
@@ -181,11 +193,39 @@ def preparar_datos():
         marca=crear_o_recuperar_ejecucion(s,'PREPARAR_MODELO',MARCA+'-lista',{'escenario':MARCA,'sintetico':True})
         marca.estado='COMPLETADA';marca.fin_en=datetime.now(timezone.utc)
         marca.datos_salida_json={'modelo_id':modelo.id,'producto_ids':ids,'programacion_id':ps[0].id,'ventas_sinteticas':len(diarios)}
-        resumen={'fecha':str(HOY),'ayer':str(AYER),'modelo_id':modelo.id,'producto_ids':ids,'programacion_id':ps[0].id,
+        resumen={'fecha':str(HOY),'fecha_objetivo':str(OBJETIVO),'ayer':str(AYER),'modelo_id':modelo.id,'producto_ids':ids,'programacion_id':ps[0].id,
             'ventas_ayer':ayer,'stock_apertura':{ids[i]:REMANENTES[i]+({3:10,7:7,10:6}.get(i,0)) for i in range(len(ids))},
             'sintetico':True,'particion_manual':modelo.particion_json,'diagnostico':diagnostico}
+        from app.modules.inventario.ventas import disponibilidad_para_venta
+        resumen['stock_apertura_estimado_nuevo']=resumen.pop('stock_apertura')
+        resumen['stock_disponible_tras_preparar']=disponibilidad_para_venta(s,ids,HOY)
         (EVIDENCIA/'escenario.json').write_text(json.dumps(resumen,ensure_ascii=False,indent=2,default=str)+'\n')
-        print('Datos preparados: 12 productos, cuatro ventas del día anterior, lotes recientes y programación PAUSADA.')
+        print(f'Datos preparados: 12 productos, cuatro tickets del {AYER}, lotes recientes y programación PAUSADA.')
 
 
-if __name__=='__main__':preparar_datos()
+def reentrenar_jornada():
+    """Nueva versión y programación pausada; conserva ventas, stock y ensayos previos."""
+    assert HOY==date(2026,11,4),'Reentrenamiento de esta demo únicamente.'
+    archivo=EVIDENCIA/'escenario.json';resumen=json.loads(archivo.read_text())
+    os.environ['VERSION_MODELO_DEMO']=MARCA+'-reentreno-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')
+    with SessionLocal.begin() as s:
+        u=s.scalar(select(Usuario).where(Usuario.rol=='ADMINISTRADOR',Usuario.activo.is_(True)).order_by(Usuario.id))
+        e=crear_o_recuperar_ejecucion(s,'PREPARAR_MODELO',os.environ['VERSION_MODELO_DEMO'],{'escenario':MARCA,'sintetico':True,'particion':'ESCENARIO_MANUAL_JORNADA_v1'})
+        e.inicio_en=datetime.now(timezone.utc)
+        modelo=entrenar(s,resumen['producto_ids'])
+        datos=ConfigurarFlujo(producto_ids=resumen['producto_ids'],modelo_id=modelo.id,fecha_objetivo_demo=OBJETIVO,hora_simulada='08:00',
+            primera_ejecucion_local=(datetime.now(ZoneInfo('America/Lima'))+timedelta(minutes=3)).replace(tzinfo=None),
+            dias=1,modo_envio_pedidos='REQUIERE_APROBACION',prueba_repetible=True)
+        guardar_configuracion(s,datos,u.id);diagnostico=comprobar(s,datos);assert diagnostico['listo'],diagnostico
+        ps=programar_flujo(s,ProgramarFlujo(**datos.model_dump(),clave_idempotencia=os.environ['VERSION_MODELO_DEMO']+'-flujo'),u.id)
+        for p in ps:gestionar(s,p.id,u.id,'Nuevo entrenamiento de demo; ejecutar durante la exposición.',accion='PAUSAR')
+        e.estado='COMPLETADA';e.fin_en=datetime.now(timezone.utc);e.datos_salida_json={'modelo_id':modelo.id,'programacion_id':ps[0].id,'particion_manual':True}
+        resumen.update(modelo_id=modelo.id,programacion_id=ps[0].id,diagnostico=diagnostico,particion_manual=modelo.particion_json)
+        from app.modules.inventario.ventas import disponibilidad_para_venta
+        resumen['stock_disponible_actual']=disponibilidad_para_venta(s,resumen['producto_ids'],HOY)
+    archivo.write_text(json.dumps(resumen,ensure_ascii=False,indent=2,default=str)+'\n')
+    print(json.dumps({'modelo_id':modelo.id,'programacion_id':ps[0].id,'estado':'PAUSADA','sin_cambiar_ventas_stock':True}))
+
+
+if __name__=='__main__':
+    reentrenar_jornada() if '--reentrenar' in sys.argv else preparar_datos()

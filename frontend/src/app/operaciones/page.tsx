@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import Link from "next/link";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { HttpError, solicitar } from "@/services/http";
+import { PromocionesOperacion, type PromocionOperativa } from "@/features/promociones/PromocionesOperacion";
 
 type Producto = { id: number; nombre: string; codigo: string };
 type Plan = { id: number; fecha: string; lineas: { producto_id: number; nombre: string; previsto: number | null; producido: number; pendiente: number | null }[] };
@@ -11,7 +12,7 @@ type LineaRecepcion = { id: number; nombre: string; cantidad_pendiente: string; 
 type Pedido = { id: number; proveedor: { nombre: string }; estado: string; respuesta_proveedor: string; recepcion_estado: string; lineas: LineaRecepcion[] };
 type Config = { reloj: "ACTUAL" | "ESCENARIO"; fecha_escenario: string | null; hora_escenario: string; producto_ids: number[]; habilitada: boolean };
 type Resumen = { fecha_operativa: string; productos: Producto[]; planes: Plan[]; pedidos: Pedido[]; configuracion: Config;
-  promociones: { id: number; lote_id: number; estado: string; descuento: number | null; motivo: string; fecha: string }[];
+  promociones: PromocionOperativa[];
   registros: { id: number; tipo: string; fecha: string; plan_id: number | null }[] };
 type Ejecutar = (ruta: string, body: unknown, method?: "POST" | "PUT") => Promise<boolean>;
 type EnvioPendiente = { ruta: string; body: unknown; method: "POST" | "PUT" };
@@ -53,7 +54,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
   const ejecutar: Ejecutar = async (ruta, body, method = "POST") => {
     if (pendiente.current) return false;
     pendiente.current = true; setOcupado(true); setError(""); setMensaje("");
-    const durable = ruta === "/operaciones/producciones" || ruta.startsWith("/operaciones/recepciones/");
+    const durable = ruta === "/operaciones/producciones" || ruta.startsWith("/operaciones/recepciones/") || /^\/operaciones\/promociones\/\d+\/programar$/.test(ruta);
     const envio = { ruta, body, method };
     try {
       if (durable) {
@@ -88,7 +89,7 @@ function Contenido({ contexto }: { contexto: ContextoSesion }) {
       {tab === "Producción" && <Produccion key={versionFormulario} datos={datos} ejecutar={ejecutar} />}
       
       {tab === "Recepciones" && <Recepciones key={versionFormulario} datos={datos} ejecutar={ejecutar} token={contexto.token} admin={admin} />}
-      {tab === "Promociones" && <section className="card"><h2>Sugerencias y aprobación</h2><p>La revisión automática consulta los productos vigilados cada diez minutos. La aprobación conserva la decisión administrativa. Las promociones aprobadas y vigentes se envían a la tienda para los productos publicados.</p><div className="action-row"><Link href="/promociones">Configurar regla de descuento →</Link><Link href="/tienda-admin">Revisar publicación en tienda →</Link><button onClick={() => ejecutar("/operaciones/revisar", {})}>Revisar ahora</button></div><div className="table-scroll"><table><thead><tr><th>Lote</th><th>Resultado</th><th>Motivo</th><th>Decisión</th></tr></thead><tbody>{datos.promociones.map(p => <tr key={p.id}><td>#{p.lote_id}<small>{p.fecha}</small></td><td>{p.estado}{p.descuento ? ` · ${p.descuento}%` : ""}</td><td>{p.motivo}</td><td>{p.estado === "PENDIENTE" && <div className="action-row"><button onClick={() => ejecutar(`/operaciones/promociones/${p.id}/decision`, { aprobar: true })}>Aprobar</button><button className="button-secondary" onClick={() => ejecutar(`/operaciones/promociones/${p.id}/decision`, { aprobar: false })}>Rechazar</button></div>}</td></tr>)}</tbody></table></div>{!datos.promociones.length && <p>Aún no hay evaluaciones. Selecciona productos en Configuración y habilita su regla.</p>}</section>}
+      {tab === "Promociones" && <PromocionesOperacion filas={datos.promociones} ejecutar={ejecutar} zona={contexto.negocio.zona_horaria} modoPredeterminado={contexto.negocio.modo_publicacion_promociones ?? "REQUIERE_APROBACION"} ocupado={ocupado} bloqueado={!!recuperar} error={error} />}
       
       {tab === "Configuración" && <Configuracion datos={datos} ejecutar={ejecutar} />}
     </fieldset>

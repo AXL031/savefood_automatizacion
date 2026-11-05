@@ -1,5 +1,9 @@
 # Guía de desarrollo — Revisiones Alembic
 
+05-11-2026 · 0026_programar_promocion sobre 0025 añade JSON nullable de reserva/resultado/historial a promocion_operacion. No cambia revisiones aplicadas. Downgrade rechaza trazas existentes; base sin trazas permite retirar la columna. Pruebas históricas comparan el corte de su delta y la cadena completa verifica la cabeza 0026. No ejecutar sobre datos habituales sin respaldo y actualización coordinada de API/worker.
+
+04-11-2026 · 0025_modo_promociones sobre 0024: preferencia independiente en negocio y snapshot en promocion_operacion, ambos restringidos e inicialmente manuales. No reescribe revisiones. Downgrade se detiene para conservar la evidencia de autorización; respaldo privado previo.
+
 **Carpeta:** `backend/migrations/versions`.
 
 **Responsable:** Axel Cueva. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.

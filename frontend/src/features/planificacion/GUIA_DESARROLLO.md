@@ -1,5 +1,9 @@
 # Guía de desarrollo — Planificación y necesidades de ingredientes
 
+## Productos y trazas compactas · 04-11-2026
+
+`DetalleProductos.tsx` integra resumen y trazas en una tabla con búsqueda por nombre/código sin tildes, filtros de avisos/datos incompletos, producción sugerida y stock desconocido. Diez filas por página de forma predeterminada; Ver detalle junto al nombre abre un solo panel con receta conservada o lotes consultados. Cambiar producto reinicia la vista a receta; cerrar devuelve foco. Preserva pronóstico ID, receta ID/versión/líneas, avisos, saldo, incluidos/excluidos/motivo y ambas fechas de lote, sin recalcular ni consultar stock. Null sigue No disponible, receta/lotes ausentes tienen estado explícito. Los productos sin aporte calculable usan también búsqueda/paginación en un único bloque. Sustituye los139 desplegables Trazas de…; el explorador de ingredientes anterior se conserva. Prueba: `node scripts/verificar-trazas.cjs` y regresión de ingredientes.
+
 ## Explorador de ingredientes del plan · 04-11-2026
 
 `DetalleIngredientes.tsx` sustituye la lista repetida de desplegables por una tabla única con búsqueda por nombre/código (sin distinguir tildes), filtros Todos/Con faltantes/Stock sin confirmar y un solo panel seleccionado. Ver detalle está junto al nombre del ingrediente para que pueda abrirse en móvil sin desplazar horizontalmente la tabla. El panel alterna Aportes por producto y Lotes consultados; usa nombres de productos conservados en `elementos`, receta/versiones e importes/unidades del snapshot. No suma ni recalcula cantidades ni consulta inventario actual. Stock/faltante null siguen como No disponible, distintos de cero.

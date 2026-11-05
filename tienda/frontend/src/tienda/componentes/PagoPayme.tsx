@@ -9,6 +9,7 @@ import { recuperarPagoPendiente, reabrirPayme } from "../payme";
 import type { Cotizacion } from "../servicios";
 
 const TERMINALES = ["DENEGADO", "INVALIDO", "EXPIRADO", "CANCELADO", "EXTORNADO"];
+const PAUSA_RESULTADO_MS = 4000;
 export function ResumenPagoPayme({ pago }: { pago: Pago }) {
   const etiqueta = METODOS_PAYME.find(m => m.id === pago.metodo)?.nombre;
   const estadosComerciales: Record<string,string> = { PREPARANDO: "Preparando la reserva", RESERVADA: "Stock reservado para esta compra", RESERVA_VENCIDA: "Reserva vencida · revisa el pago", PENDIENTE_VENTA: "Pago verificado · registro de venta pendiente", LIBERACION_PENDIENTE: "Liberación de la reserva pendiente", LIBERADA: "Reserva liberada", REVISION_REQUERIDA: "Compra en revisión" };
@@ -41,6 +42,8 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
   const [pago, setPago] = useState<Pago | null>(null);
   const [visible, setVisible] = useState(false);
   const [resultadoRecibido, setResultadoRecibido] = useState(false);
+  const [finalizando, setFinalizando] = useState(false);
+  const aprobacionIniciada = useRef(false), redireccion = useRef<number | null>(null);
   const respuestaEnCurso = useRef(false), pagoActual = useRef<Pago | null>(null);
   const marco = useRef<HTMLDivElement>(null), contenedor = useRef<HTMLDivElement>(null);
   const metodoVisible = useRef<MetodoPayme | null>(null);
@@ -51,7 +54,8 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
     recuperarPagoPendiente().then(p => {
       if (!activa || !p) return;
       pagoActual.current = p; setPago(p); alBloquear(true);
-      if (p.pagado) { liberarBorradorPayme(); aprobarRef.current(p.id); }
+      // Al recuperar una compra no hay una animación de Flex activa que esperar.
+      if (p.pagado) confirmarPago(p, false);
     }).catch(e => { if (activa) setError(e.message); });
     return () => { activa = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -61,7 +65,11 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
     configuracionPayme(control.signal).then(c => setListo(c.configurado)).catch(() => { if (!control.signal.aborted) { setListo(false); setError("No se pudo consultar la disponibilidad de los pagos de prueba."); } });
     return () => control.abort();
   }, []);
-  useEffect(() => { montado.current = true; return () => { montado.current = false; instancia.current?.terminate?.(); }; }, []);
+  useEffect(() => { montado.current = true; return () => {
+    montado.current = false;
+    if (redireccion.current !== null) window.clearTimeout(redireccion.current);
+    instancia.current?.terminate?.(); instancia.current = null;
+  }; }, []);
   useEffect(() => {
     if (!visible || !marco.current || !contenedor.current) return;
     const padre = marco.current, interior = contenedor.current;
@@ -75,14 +83,27 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
     return () => observer.disconnect();
   }, [visible]);
 
+  function confirmarPago(actual: Pago, esperarResultado = true) {
+    if (!montado.current || aprobacionIniciada.current) return;
+    aprobacionIniciada.current = true; setFinalizando(true); setError(""); alBloquear(true);
+    const continuar = () => {
+      redireccion.current = null;
+      if (!montado.current) return;
+      const sdk = instancia.current; instancia.current = null;
+      sdk?.terminate?.(); liberarBorradorPayme(); aprobarRef.current(actual.id);
+    };
+    // Conservar Flex montado para que presente su resultado antes de navegar.
+    if (esperarResultado) redireccion.current = window.setTimeout(continuar, PAUSA_RESULTADO_MS);
+    else continuar();
+  }
   function actualizar(actual: Pago) {
-    if (!montado.current) return;
+    if (!montado.current || aprobacionIniciada.current) return;
     pagoActual.current = actual; setPago(actual);
     if (actual.transaction_id && metodoVisible.current !== actual.metodo) {
       const sdk = instancia.current; instancia.current = null;
       sdk?.terminate?.(); setVisible(false);
     }
-    if (actual.pagado) { instancia.current?.terminate?.(); liberarBorradorPayme(); aprobarRef.current(actual.id); }
+    if (actual.pagado) confirmarPago(actual);
   }
   async function comprobar(id: string, tid?: string) {
     if (iniciado.current && !tid) return;
@@ -106,7 +127,7 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
   }, [pago?.id, pago?.estado]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function abrir(metodo: MetodoPayme) {
-    if (iniciado.current) return;
+    if (iniciado.current || aprobacionIniciada.current) return;
     if (!puedeCambiarMetodo(pagoActual.current, respuestaEnCurso.current)) {
       if (pagoActual.current?.metodo === metodo) await comprobar(pagoActual.current.id);
       else setError("Hay una transacción pendiente de verificación. Consulta su estado antes de cambiar de método.");
@@ -135,6 +156,7 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
       setVisible(true);
       const sdk = new window.FlexPaymentForms(configuracionFlex(checkout.flex)); instancia.current = sdk; metodoVisible.current = checkout.flex.metodo;
       sdk.init(contenedor.current, (respuesta: unknown) => {
+        if (!montado.current || aprobacionIniciada.current) return;
         // Incluso una respuesta tardía del formulario anterior se concilia con la misma operación.
         respuestaEnCurso.current = true; setResultadoRecibido(true);
         const r = respuesta as { transaction?: { transaction_id?: unknown } } | null;
@@ -142,7 +164,7 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
         if (typeof tid === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(tid)) void comprobar(checkout.pago.id, tid);
         else { setError("Payme no entregó una transacción verificable. Revisa el estado antes de volver a pagar."); void comprobar(checkout.pago.id); }
       }, () => {}, (fallo: unknown) => {
-        if (instancia.current !== sdk) return;
+        if (instancia.current !== sdk || aprobacionIniciada.current) return;
         const mensaje = typeof fallo === "string" ? fallo : (fallo as { message?: string })?.message;
         if (mensaje === "cerro el carrito") { instancia.current = null; sdk.terminate?.(); setVisible(false); void comprobar(checkout.pago.id); }
         else setError("Payme no pudo completar el formulario. Revisa el estado de la operación antes de intentar otro pago.");
@@ -155,15 +177,15 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
   return <>
     <p className="t-aviso-simulado">Ambiente de pruebas Payme. Usa únicamente los datos de prueba del proveedor.</p>
     <div className="t-campos">
-      <label className="t-campo"><span>Nombres del comprador</span><span className="t-campo-caja"><input value={comprador.nombres} disabled={ocupado || enCurso} maxLength={80} onChange={e => setComprador(c => ({ ...c, nombres: e.target.value }))} /></span></label>
-      <label className="t-campo"><span>Apellidos del comprador</span><span className="t-campo-caja"><input value={comprador.apellidos} disabled={ocupado || enCurso} maxLength={80} onChange={e => setComprador(c => ({ ...c, apellidos: e.target.value }))} /></span></label>
-      <label className="t-campo t-campo-ancho"><span>Correo del comprador (sin iniciar sesión)</span><span className="t-campo-caja"><input type="email" placeholder="nombre@ejemplo.com" autoComplete="email" value={comprador.correo} disabled={ocupado || enCurso} maxLength={254} onChange={e => setComprador(c => ({ ...c, correo: e.target.value }))} /></span></label>
+      <label className="t-campo"><span>Nombres del comprador</span><span className="t-campo-caja"><input value={comprador.nombres} disabled={ocupado || enCurso || finalizando} maxLength={80} onChange={e => setComprador(c => ({ ...c, nombres: e.target.value }))} /></span></label>
+      <label className="t-campo"><span>Apellidos del comprador</span><span className="t-campo-caja"><input value={comprador.apellidos} disabled={ocupado || enCurso || finalizando} maxLength={80} onChange={e => setComprador(c => ({ ...c, apellidos: e.target.value }))} /></span></label>
+      <label className="t-campo t-campo-ancho"><span>Correo del comprador (sin iniciar sesión)</span><span className="t-campo-caja"><input type="email" placeholder="nombre@ejemplo.com" autoComplete="email" value={comprador.correo} disabled={ocupado || enCurso || finalizando} maxLength={254} onChange={e => setComprador(c => ({ ...c, correo: e.target.value }))} /></span></label>
     </div>
     {listo === false && <p role="status">Los pagos de prueba están pendientes de configuración.</p>}
     <div className="t-payme-metodos" aria-label="Pagar con Payme">
       {METODOS_PAYME.map(m => <button type="button" className="t-payme-metodo" key={m.id}
         aria-pressed={pago?.metodo === m.id}
-        disabled={!listo || ocupado || Boolean(!cambiable && pago?.metodo !== m.id)} onClick={() => void abrir(m.id)}>
+        disabled={!listo || ocupado || finalizando || Boolean(!cambiable && pago?.metodo !== m.id)} onClick={() => void abrir(m.id)}>
         <strong>{m.nombre}</strong><small>{ocupado && pago?.metodo === m.id ? "Preparando…" : !cambiable && pago?.metodo === m.id ? "Consultar estado" : m.detalle}</small>
       </button>)}
     </div>
@@ -171,7 +193,8 @@ export function PagoPayme({ lineas, entrega, nombre, correo, cotizacion, alInten
     {enCurso && !cambiable && <p role="status">Hay una transacción en verificación. Consulta su estado antes de iniciar otro pago.</p>}
     {error && <p className="t-error" role="alert">{error}</p>}
     <div className="t-payme-marco" ref={marco} hidden={!visible}><div className="t-payme-flex" ref={contenedor} /></div>
-    {pago && <><ResumenPagoPayme pago={pago} /><Link href={`/tienda/pedido/payme-${pago.id}`}>Consultar este pago</Link>
+    {finalizando && <p className="t-payme-transicion" role="status">Pago confirmado. En unos segundos te llevaremos al detalle de tu compra.</p>}
+    {pago && <><ResumenPagoPayme pago={pago} />{!finalizando && <Link href={`/tienda/pedido/payme-${pago.id}`}>Consultar este pago</Link>}
       {TERMINALES.includes(pago.estado) && <button type="button" className="t-boton-contorno" onClick={() => { instancia.current?.terminate?.(); instancia.current = null; liberarBorradorPayme(); pagoActual.current = null; respuestaEnCurso.current = false; setResultadoRecibido(false); setPago(null); setVisible(false); alBloquear(false); }}>Elegir un método para un nuevo intento</button>}</>}
   </>;
 }

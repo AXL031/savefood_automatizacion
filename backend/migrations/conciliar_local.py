@@ -21,7 +21,7 @@ PUBLICADAS = (
     "0014_l04_recuperacion", "0015_flujo_promociones", "0016_nombre_comercio", "0017_pruebas_proveedor", "0018_recepcion_compras",
     "0019_tienda_clientes",
     "0020_pruebas_repetibles", "0021_ventas_presenciales", "0022_entradas_productos",
-    "0023_operaciones_compatibles", "0024_comercio_tienda",
+    "0023_operaciones_compatibles", "0024_comercio_tienda", "0025_modo_promociones", "0026_programar_promocion",
 )
 
 

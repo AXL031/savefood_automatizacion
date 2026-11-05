@@ -13,7 +13,7 @@ for (const metodo of ["CARD", "YAPE", "QR", "PAGOEFECTIVO"]) {
   test(`Flex presenta exclusivamente ${metodo}`, () => {
     const config = configuracionFlex({ nonce: "nonce", payload: {}, metodo });
     assert.deepEqual(config.display_settings.methods, [metodo]);
-    assert.equal(config.settings.display_result_screen, false);
+    assert.equal(config.settings.display_result_screen, true);
   });
 }
 test("renderiza los cuatro botones, sin campos locales de tarjeta", () => {

@@ -1,5 +1,7 @@
 # Guía de desarrollo — Negocio y configuración
 
+04-11-2026 · A01: `modo_publicacion_promociones` independiente de pedidos, inicial REQUIERE_APROBACION. Lectura pública `obtener_modo_publicacion_promociones`; el monitor conserva el modo en cada evaluación nueva y aprueba automáticamente solo las válidas en AUTOMATICO. 0025 aditiva, UI en Configuración, [contrato](../../../../docs/api/contrato-operacion-integrada.md). Cambiar preferencia no resuelve pendientes anteriores.
+
 **Carpeta:** `backend/app/modules/negocios`.
 
 **Responsable:** Axel Cueva. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

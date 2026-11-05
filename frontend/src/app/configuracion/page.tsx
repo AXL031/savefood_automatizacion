@@ -12,7 +12,7 @@ import { borrarToken } from "@/services/sesion";
 function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
   const router = useRouter();
   const { token, negocio, perfil, actualizarNegocioLocal } = contexto;
-  const [formulario, setFormulario] = useState<Required<CambioNegocio>>({ nombre: negocio.nombre, zona_horaria: negocio.zona_horaria, moneda: negocio.moneda, modo_envio_pedidos: negocio.modo_envio_pedidos });
+  const [formulario, setFormulario] = useState<Required<CambioNegocio>>({ nombre: negocio.nombre, zona_horaria: negocio.zona_horaria, moneda: negocio.moneda, modo_envio_pedidos: negocio.modo_envio_pedidos, modo_publicacion_promociones: negocio.modo_publicacion_promociones });
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
@@ -40,6 +40,7 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
       zona_horaria: formulario.zona_horaria.trim(),
       moneda: formulario.moneda.trim().toUpperCase(),
       modo_envio_pedidos: formulario.modo_envio_pedidos,
+      modo_publicacion_promociones: formulario.modo_publicacion_promociones,
     };
     if (!datos.nombre || !datos.zona_horaria || !/^[A-Z]{3}$/.test(datos.moneda)) {
       setError("Completa el nombre y la zona horaria; la moneda debe tener tres letras.");
@@ -55,7 +56,7 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
     try {
       const actualizado = await actualizarNegocio(token, datos);
       actualizarNegocioLocal(actualizado);
-      setFormulario({ nombre: actualizado.nombre, zona_horaria: actualizado.zona_horaria, moneda: actualizado.moneda, modo_envio_pedidos: actualizado.modo_envio_pedidos });
+      setFormulario({ nombre: actualizado.nombre, zona_horaria: actualizado.zona_horaria, moneda: actualizado.moneda, modo_envio_pedidos: actualizado.modo_envio_pedidos, modo_publicacion_promociones: actualizado.modo_publicacion_promociones });
       setMensaje("Los datos del comercio se guardaron correctamente.");
     } catch (fallo) {
       if (fallo instanceof HttpError && fallo.status === 401) {
@@ -83,6 +84,16 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
             </select>
             <small>Predeterminado para pedidos nuevos. En Programar tareas puedes elegir un modo para cada ejecución. El envío exige chat verificado y ofertas completas.</small>
           </label>
+          <label className="field field-full">Publicación de promociones en tienda
+            <select value={formulario.modo_publicacion_promociones} onChange={(e) => {
+              setFormulario((actual) => ({ ...actual, modo_publicacion_promociones: e.target.value as Required<CambioNegocio>["modo_publicacion_promociones"] }));
+              setMensaje(""); setError("");
+            }} disabled={!administrador || guardando}>
+              <option value="REQUIERE_APROBACION">Revisar y aprobar cada promoción</option>
+              <option value="AUTOMATICO">Publicar automáticamente las promociones válidas</option>
+            </select>
+            <small>Rige para sugerencias nuevas. La revisión programada comprueba la regla, el stock y el vencimiento. Solo aparecen en tienda los productos publicados; las sugerencias pendientes conservan su decisión manual.</small>
+          </label>
           {error && <div className="inline-error field-full" role="alert">{error}</div>}
           {mensaje && <div className="inline-success field-full" role="status">{mensaje}</div>}
           <div className="form-actions field-full"><button type="submit" className="button-primary" disabled={!administrador || guardando}>{guardando ? "Guardando…" : "Guardar cambios"}</button></div>
@@ -95,5 +106,5 @@ function FormularioNegocio({ contexto }: { contexto: ContextoSesion }) {
 }
 
 export default function ConfiguracionPage() {
-  return <ProtectedShell titulo="Configuración" descripcion="Administra los datos del comercio y revisa los controles previstos para la operación.">{(contexto) => <FormularioNegocio contexto={contexto} />}</ProtectedShell>;
+  return <ProtectedShell titulo="Configuración" descripcion="Administra el comercio, la aprobación de pedidos y la publicación de promociones.">{(contexto) => <FormularioNegocio contexto={contexto} />}</ProtectedShell>;
 }

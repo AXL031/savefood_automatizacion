@@ -1,5 +1,7 @@
 # Guía de desarrollo — Promociones sugeridas
 
+05-11-2026 · `PromocionesOperacion.tsx` presenta las promociones operativas reales de /operaciones/resumen, con nombre/lote, actividad comercial, filtros/búsqueda y programación puntual. Fecha +2 minutos en la zona del negocio, selector automático/manual por reserva, aviso de retirada y cancelación. Recuperación durable coordinada por la página. Prueba sin red `scripts/verificar-promociones-programadas.cjs`; requiere 0026 y no certifica ejecución real del motor ni entrega de tienda por sí sola.
+
 **Carpeta:** `frontend/src/features/promociones`.
 
 **Responsable:** Leonardo Vera. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

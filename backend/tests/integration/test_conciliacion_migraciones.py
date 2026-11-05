@@ -26,7 +26,16 @@ def preparar_local(entorno, revision="0009_m02_planes"):
     _, sesiones, _ = entorno
     engine = sesiones.kw['bind']
     with engine.begin() as c, Operations.context(MigrationContext.configure(c)):
+        # El fixture nace de metadata actual, sin historial de estas ampliaciones.
+        # Reconstruir el corte anterior sin invocar un downgrade protegido de producción.
+        from alembic import op
+        op.drop_column('promocion_operacion','programacion')
+        with op.batch_alter_table('promocion_operacion') as b:
+            b.drop_constraint('ck_promocion_modo_publicacion',type_='check');b.drop_column('modo_publicacion')
+        with op.batch_alter_table('negocio') as b:
+            b.drop_constraint('ck_negocio_modo_promociones',type_='check');b.drop_column('modo_publicacion_promociones')
         for nombre in reversed(puente.PUBLICADAS):
+            if nombre in {'0025_modo_promociones','0026_programar_promocion'}:continue
             puente.cargar_revision(nombre, puente.RAIZ / "versions").downgrade()
         for nombre in puente.LOCALES:
             puente.cargar_revision(nombre, puente.RAIZ).upgrade()
@@ -63,14 +72,14 @@ def test_concilia_y_conserva_inicializacion_catalogo_y_enlace(entorno, revision)
         anterior = c.execute(text("SELECT huella_solicitud,fecha_objetivo_demo FROM configuracion_inicial")).all()
         c.execute(text("UPDATE configuracion_inicial SET preparacion_ejecucion_id = :id"), {'id': ejecucion_id})
     with engine.begin() as c:
-        assert puente.conciliar(c) == "0024_comercio_tienda"
+        assert puente.conciliar(c) == "0026_programar_promocion"
     with engine.begin() as c:
         assert c.execute(text("SELECT huella_solicitud,fecha_objetivo_demo FROM configuracion_inicial")).all() == anterior
         assert c.execute(text("SELECT codigo,nombre FROM producto")).one() == ('conservar','Conservar')
         assert c.execute(text("SELECT count(*) FROM plan_produccion")).scalar_one() == 0
         assert c.execute(text("SELECT count(*) FROM envio_pedido")).scalar_one() == 0
         assert c.execute(text("SELECT preparacion_ejecucion_id,modelo_id,preparacion_numero FROM configuracion_inicial")).one() == (ejecucion_id, modelo_id, 1)
-        assert puente.conciliar(c) == "0024_comercio_tienda"
+        assert puente.conciliar(c) == "0026_programar_promocion"
 
 
 def test_fallo_intermedio_revierte_ddl_revision_y_datos(entorno, monkeypatch):

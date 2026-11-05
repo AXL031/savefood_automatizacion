@@ -1,5 +1,7 @@
 # Guía de desarrollo — Negocio y configuración
 
+04-11-2026 · A01: selector independiente «Publicación de promociones en tienda», manual/automático, solo Admin. Guarda `modo_publicacion_promociones` mediante PATCH de Negocios; explica que afecta sugerencias nuevas y productos publicados. Requiere 0025; [contrato del consumidor](../../../../docs/api/contrato-operacion-integrada.md).
+
 **Carpeta:** `frontend/src/app/configuracion`.
 
 **Responsable:** Axel Cueva. Responsable de interfaz, API, datos, reglas y pruebas de este dominio.

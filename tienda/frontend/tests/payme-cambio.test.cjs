@@ -27,14 +27,15 @@ const pagar = (metodo = "CARD", estado = "CREADO", tid = null) => ({
   cotizacion: { lineas: [], total: "9.10", moneda: "PEN" }, creado_en: "2026-10-21T12:00:00Z", continuacion: {}
 });
 
-async function montar() {
+async function montar({ recuperado = null } = {}) {
   const dom = new JSDOM('<!doctype html><div id="raiz"></div>', { url: "http://localhost:3101/tienda/carrito" });
   global.window = dom.window; global.self = dom.window; global.document = dom.window.document; global.localStorage = dom.window.localStorage;
   global.ResizeObserver = class { observe() {} disconnect() {} };
   global.IS_REACT_ACT_ENVIRONMENT = true;
+  if (recuperado) localStorage.setItem("foodsave-payme-checkout-borrador", JSON.stringify({ clave: "capacidad-de-prueba" }));
   const fetchOriginal = global.fetch;
   const solicitudes = [], eventos = [], instancias = [], aprobados = [];
-  let actual = pagar(), fallo = false, resultado = null;
+  let actual = pagar(), fallo = false, resultado = null, falloVerificacion = false;
   class Flex {
     constructor(config) { this.config = config; this.terminaciones = 0; instancias.push(this); }
     init(contenedor, respuesta, tracking, error) {
@@ -49,7 +50,9 @@ async function montar() {
     const cuerpo = opciones.body ? JSON.parse(opciones.body) : null;
     solicitudes.push({ url, cuerpo });
     if (url.endsWith("/configuracion")) return Response.json({ datos: { configurado: true } });
+    if (url.endsWith("/recuperar")) return Response.json({ datos: recuperado });
     if (url.endsWith("/verificar")) {
+      if (falloVerificacion) throw new TypeError("Sin conexión para verificar");
       if (resultado) actual = resultado;
       return Response.json({ datos: actual });
     }
@@ -66,7 +69,7 @@ async function montar() {
     alIntentar: () => true, alAprobar: id => aprobados.push(id), alBloquear: () => {}
   })); });
   const boton = metodo => [...document.querySelectorAll(".t-payme-metodo")].find(b => b.querySelector("strong").textContent === nombres[metodo]);
-  await esperar(() => boton("CARD") && !boton("CARD").disabled);
+  await esperar(() => recuperado?.pagado ? aprobados.length === 1 : boton("CARD") && !boton("CARD").disabled);
   return { solicitudes, eventos, instancias, aprobados, boton,
     async elegir(metodo) {
       assert.equal(boton(metodo).disabled, false);
@@ -76,7 +79,22 @@ async function montar() {
         ((instancias.length > anteriores && typeof instancias.at(-1).error === "function") || document.querySelector(".t-error")));
     },
     fallarNonce() { fallo = true; },
+    fallarVerificacion() { falloVerificacion = true; },
     resultado(pago) { resultado = pago; },
+    reloj() {
+      // Controlar la pausa del resultado; React/crypto conservan sus esperas reales.
+      let ahora = 0, secuencia = 10000;
+      const tareas = new Map(), cancelar = dom.window.clearTimeout.bind(dom.window), programar = dom.window.setTimeout.bind(dom.window);
+      dom.window.setTimeout = (fn, ms, ...args) => {
+        if (ms !== 4000) return programar(fn, ms, ...args);
+        const id = ++secuencia; tareas.set(id, { fn, cuando: ahora + ms }); return id;
+      };
+      dom.window.clearTimeout = id => { if (!tareas.delete(id)) cancelar(id); };
+      return { get pendientes() { return tareas.size; }, async avanzar(ms) {
+        ahora += ms;
+        await act(async () => { for (const [id, t] of tareas) if (t.cuando <= ahora) { tareas.delete(id); t.fn(); } });
+      } };
+    },
     async cerrar() { await act(async () => root.unmount()); dom.window.close(); global.fetch = fetchOriginal; }
   };
 }
@@ -141,4 +159,60 @@ test("la política distingue preparación, respuesta incierta y transacción reg
   assert.equal(puedeCambiarMetodo(pagar(), true), false);
   assert.equal(puedeCambiarMetodo(pagar("CARD", "CREADO", "tx")), false);
   for (const estado of ["PENDIENTE", "REGISTRADO", "AUTORIZADO", "CANCELADO"]) assert.equal(puedeCambiarMetodo(pagar("QR", estado)), false);
+});
+
+for (const metodo of Object.keys(nombres)) test(`resultado de ${metodo}: conserva Flex cuatro segundos y redirige una sola vez`, async () => {
+  const ui = await montar();
+  try {
+    await ui.elegir(metodo); const reloj = ui.reloj(), sdk = ui.instancias[0];
+    assert.equal(sdk.config.settings.display_result_screen, true);
+    ui.resultado(pagar(metodo, "AUTORIZADO", "tx-confirmada"));
+    await act(async () => sdk.respuesta({ transaction: { transaction_id: "tx-confirmada" } }));
+    assert.deepEqual(ui.aprobados, []); assert.equal(sdk.terminaciones, 0);
+    assert.equal(document.querySelector(".t-payme-marco").hidden, false);
+    assert.match(document.querySelector(".t-payme-transicion").textContent, /Pago confirmado/);
+    for (const otro of Object.keys(nombres)) assert.equal(ui.boton(otro).disabled, true);
+    assert.ok(localStorage.getItem("foodsave-payme-checkout-borrador"));
+    await reloj.avanzar(3999); assert.deepEqual(ui.aprobados, []);
+    // Repetición/cierre tardíos no reinician la espera ni cortan la animación.
+    await act(async () => { sdk.respuesta({ transaction: { transaction_id: "tx-confirmada" } }); sdk.error("cerro el carrito"); });
+    assert.equal(sdk.terminaciones, 0); assert.equal(reloj.pendientes, 1);
+    await reloj.avanzar(1);
+    assert.deepEqual(ui.aprobados, ["pago-de-prueba"]); assert.equal(sdk.terminaciones, 1);
+    assert.equal(localStorage.getItem("foodsave-payme-checkout-borrador"), null);
+    assert.equal(ui.solicitudes.filter(r => r.url.endsWith("/verificar")).length, 1);
+    await reloj.avanzar(5000); assert.equal(ui.aprobados.length, 1);
+  } finally { await ui.cerrar(); }
+});
+
+test("salir durante el resultado cancela la navegación y conserva la referencia recuperable", async () => {
+  const ui = await montar(); let cerrado = false;
+  try {
+    await ui.elegir("CARD"); const reloj = ui.reloj();
+    ui.resultado(pagar("CARD", "AUTORIZADO", "tx-confirmada"));
+    await act(async () => ui.instancias[0].respuesta({ transaction: { transaction_id: "tx-confirmada" } }));
+    assert.equal(JSON.parse(localStorage.getItem("foodsave-payme-pruebas-v1"))[0].estado, "AUTORIZADO");
+    await ui.cerrar(); cerrado = true;
+    assert.equal(reloj.pendientes, 0); await reloj.avanzar(5000);
+    assert.deepEqual(ui.aprobados, []); assert.equal(ui.instancias[0].terminaciones, 1);
+  } finally { if (!cerrado) await ui.cerrar(); }
+});
+
+test("una aprobación del callback sin verificación del servidor no inicia la transición", async () => {
+  const ui = await montar();
+  try {
+    await ui.elegir("CARD"); const reloj = ui.reloj(); ui.fallarVerificacion();
+    await act(async () => ui.instancias[0].respuesta({ transaction: { transaction_id: "tx-incierta", state: "AUTORIZADO" } }));
+    await reloj.avanzar(5000);
+    assert.deepEqual(ui.aprobados, []); assert.equal(reloj.pendientes, 0);
+    assert.equal(document.querySelector(".t-payme-transicion"), null);
+    assert.match(document.querySelector(".t-error").textContent, /Sin conexión/);
+    assert.equal(ui.instancias[0].terminaciones, 0);
+  } finally { await ui.cerrar(); }
+});
+
+test("recuperar un pago ya confirmado lleva al detalle sin esperar una animación inexistente", async () => {
+  const ui = await montar({ recuperado: pagar("CARD", "AUTORIZADO", "tx-previa") });
+  try { assert.deepEqual(ui.aprobados, ["pago-de-prueba"]); assert.equal(ui.instancias.length, 0); }
+  finally { await ui.cerrar(); }
 });

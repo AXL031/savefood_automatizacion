@@ -1,5 +1,11 @@
 # Guía de desarrollo — Tablas comunes
 
+## Exploración de detalles · 04-11-2026
+
+`ExploradorDetalle<T>` recibe filas, idFila, nombre, textoBusqueda, etiquetaBusqueda, columnas y filtros opcionales `{valor,etiqueta,acepta}`. Con `detalle(fila)` agrega una acción junto al nombre y un solo panel, con foco al abrir/cerrar. Sin detalle es una lista de solo lectura con búsqueda/paginación. Normaliza tildes, busca también por código cuando lo entrega el consumidor, cierra selección al filtrar y reinicia página. Usar key de la entidad padre al cambiar plan/ticket. No consulta API, modifica filas ni interpreta números del dominio.
+
+Consumidores reales: productos/trazas de Planificación, líneas/movimientos de Ventas, productos seleccionados de Automatizaciones y exclusiones de aportes del plan. Las trazas largas se consultan desde la tabla, sin otro desplegable por registro. `TablaDatos compacta` omite paginación para hasta10 filas locales; con más filas o paginación remota se conserva el contrato previo. El valor predeterminado no cambia otros consumidores. `node scripts/verificar-trazas.cjs` comprueba139 productos y los paneles con snapshots ficticios.
+
 **Carpeta:** `frontend/src/components/tables`.
 
 **Responsable:** Edu Sanchez. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.

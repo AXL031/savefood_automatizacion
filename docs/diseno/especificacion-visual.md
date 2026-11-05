@@ -15,6 +15,10 @@ Referencia implementada: `frontend/src/components/panel/Analitica.tsx` y vistas 
 
 ## Identidad visual vigente · 14-10-2026
 
+### Listas largas y trazas · revisión 04-11-2026
+
+Evitar un desplegable por cada producto/ingrediente en consultas masivas. Mostrar nombre, cifras y resultado en una tabla buscable/paginada; abrir un único panel desde el nombre con vistas de receta/aportes/lotes/movimientos según dominio. Conservar los datos y estados desconocidos sin recalcularlos. Listas de resumen largas también llevan búsqueda y páginas. Omitir controles de paginación si una tabla compacta local cabe en diez filas; los registros siguen completos. Desplazamiento horizontal interno para columnas en móvil, sin ampliar la página. Aplicado a Planificación, detalle de Ventas y resumen de Automatizaciones; grupos del menú e historiales de una entidad conservan sus desplegables.
+
 Paleta hoja/yema y tipografía Bricolage Grotesque (títulos) + Manrope (interfaz, cifras con `tabular-nums`), autoalojadas con `@fontsource-variable` para que funcionen sin conexión. Todos los colores viven como variables en `:root` de `styles.css`; los valores de las tablas de abajo quedan reemplazados por estos:
 
 | Token | Valor | Uso |

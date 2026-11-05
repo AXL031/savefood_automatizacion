@@ -1,5 +1,7 @@
 # Alcance vigente de FoodSave
 
+**04-11-2026 · Ampliación expresa de Axel en sesión:** preparar la demo en instalación actual con respaldo, ventas/continuidad sintéticas identificadas, lotes vigentes próximos al límite, faltantes, nueva versión ML para05/11 y prueba Telegram real a destinos configurados. Se implementa selección independiente manual/automática para promociones nuevas; [contrato](api/contrato-operacion-integrada.md) y [guion/evidencia](equipo/guion-demo-2026-11-04.md). La publicación sigue por HTTP a tienda independiente. No incorpora cierre automático de tickets al histórico, rolling en UI ni pagos de producción. La partición manual del escenario está rotulada y no demuestra precisión comercial.
+
 **28-10-2026 · Acoplamiento autorizado de Bohorquez:** producción explícita por tandas, recepción asistida/respuesta de proveedor y avisos/monitor incorporados según [contrato](api/contrato-operacion-integrada.md). Se conservan caja e ingresos múltiples; aprobación interna de promociones sin publicación a tienda. Tienda independiente por HTTP y Payme, cierre/ML y simuladores mantienen su alcance previo. Esta ampliación sustituye únicamente la exclusión anterior de producción física.
 
 

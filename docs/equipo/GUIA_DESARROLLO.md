@@ -1,5 +1,9 @@
 # Guía de desarrollo — Reparto, coordinación y traspasos
 
+05-11-2026 · [Guion programado de exposición](guion-demo-programada.md): promoción puntual en dos minutos, inferencia/plan/pedidos a hora próxima y distinción entre entrenar y predecir. Requiere migración 0026 y datos vigentes; el corte anterior de jornada conserva su fecha y evidencia.
+
+04-11-2026 · [Guion de demo actual](guion-demo-2026-11-04.md): datos/IDs, recorrido, reentrenamiento de jornada, recibos reales y límites de fecha/ML/Payme. Coordinación y evidencia en avances/cueva.md; responsabilidades de dominio conservadas.
+
 ## Plan de ampliación · 15-10-2026
 
 **26-10-2026 · Ampliación de propuesta:** el [plan vigente de dos simuladores](plan-ventas-vivo-simulacion.md#propuesta-vigente--26-10-2026--dos-simuladores-para-la-exposición) añade controles desde Ventas y desde tienda, ejecución individual/conjunta, reloj por API, tablas en vivo y cierre D → evaluación del pronóstico previo → nuevo modelo con D → pronóstico D+1. Datos/modelos/colas aislados; simuladores y ciclo ML siguen sin implementar. Jornada acelerada y tiempo real de cierre/entrenamiento se muestran separados. Prevalece esta ampliación sobre las decisiones preliminares de la simulación única del 15-10.

@@ -20,6 +20,7 @@ class CambioNegocio(BaseModel):
     zona_horaria: str | None = Field(default=None, min_length=1, max_length=80)
     moneda: str | None = Field(default=None, min_length=3, max_length=3)
     modo_envio_pedidos: ModoEnvio | None = None
+    modo_publicacion_promociones: ModoEnvio | None = None
 
     @field_validator("nombre", "zona_horaria", "moneda", mode="before")
     @classmethod
@@ -57,6 +58,7 @@ def serializar(negocio: Negocio):
         "zona_horaria": negocio.zona_horaria,
         "moneda": negocio.moneda,
         "modo_envio_pedidos": negocio.modo_envio_pedidos,
+        "modo_publicacion_promociones": negocio.modo_publicacion_promociones,
     }
 
 

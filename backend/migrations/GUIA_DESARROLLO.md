@@ -1,5 +1,7 @@
 # Guía de desarrollo — Migraciones y metadatos
 
+05-11-2026 · El puente `conciliar_local.py` llega a 0026 al adoptar revisiones locales antiguas; las bases ya publicadas siguen por Alembic normal. 0025 conserva su bloqueo de downgrade para no borrar el modo de autorización. El fixture de conciliación reconstruye el esquema antiguo vacío sin invocar ese retroceso protegido. No se reescriben revisiones aplicadas.
+
 ## Conciliación de las revisiones locales · 06-10-2026
 
 La cadena publicada de `origin/cueva` conserva sus revisiones y llega a

@@ -138,7 +138,7 @@ export function puedeCambiarMetodo(pago: PagoPayme | null, resultadoRecibido = f
 
 export function configuracionFlex(datos: FlexDatos) {
   return { nonce: datos.nonce, payload: datos.payload,
-    settings: { display_result_screen: false, show_close_button: true, show_border: false, show_operation_number: true },
+    settings: { display_result_screen: true, show_close_button: true, show_border: false, show_operation_number: true },
     display_settings: { methods: [datos.metodo] },
     i18n: { mode: "multi", default_language: "es", languages: ["es"] } };
 }

@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from sqlalchemy import select, func
 from sqlalchemy.engine import make_url
 
-if os.getenv('PREPARAR_JORNADA_AUTORIZADA')!='2026-10-28' or make_url(os.environ['DATABASE_URL']).database!='foodsave':
+if os.getenv('PREPARAR_JORNADA_AUTORIZADA') not in {'2026-10-28','2026-11-04'} or make_url(os.environ['DATABASE_URL']).database!='foodsave':
     raise RuntimeError('La verificación exige la jornada autorizada en la aplicación actual.')
 
 from app.principal import app  # noqa
@@ -23,7 +23,7 @@ from app.modules.comercio.modelos import ReservaTienda
 evidencia=Path('/evidencia');esc=json.loads((evidencia/'escenario.json').read_text())
 with SessionLocal() as s:
     antes=s.scalar(select(func.count()).select_from(PedidoCompra))
-    datos={'parametros':{'fecha_objetivo_demo':esc['fecha'],'producto_ids':esc['producto_ids'],
+    datos={'parametros':{'fecha_objetivo_demo':esc.get('fecha_objetivo',esc['fecha']),'producto_ids':esc['producto_ids'],
         'modelo_id':esc['modelo_id'],'modo_envio_pedidos':'REQUIERE_APROBACION','prueba_repetible':True}}
     e=crear_o_recuperar_ejecucion(s,'GENERAR_PROPUESTA','qa-transaccional-'+esc['fecha'],datos)
     resultado=generar_propuesta(s,SimpleNamespace(id=e.id,datos_entrada=datos))

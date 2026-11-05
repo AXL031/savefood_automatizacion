@@ -45,6 +45,10 @@ FoodSave disponible. Las APIs reales de catálogo/stock/pedido siguen pendientes
   recibido sin verificar bloquea temporalmente el cambio; el botón activo permite
   consultar el estado. Cerrar el SDK sin resultado permite volver a elegir.
 
+## Presentación del resultado · 04-11-2026
+
+Flex muestra su pantalla de resultado (`settings.display_result_screen: true`). Cuando la API propia devuelve `pagado=true`, el checkout espera cuatro segundos antes de cerrar Flex y navegar al detalle, con nuevos intentos bloqueados y un anuncio de continuación. El carrito se vacía al navegar. La pausa es solo visual: Consulta/S2S y el registro de venta mantienen sus reglas y tiempos. Un callback sin verificación no activa esta transición. La recuperación de un pago ya confirmado sin formulario activo no añade espera. El temporizador se cancela al salir de la página, manteniendo la referencia privada para recuperar el pago. [Configuración oficial de Flex](https://docs.pay-me.com/checkout-web/flex/inicializar-el-componente).
+
 ## Rutas bajo `/api/v1/pagos`
 
 | Ruta | Entrada / comportamiento |

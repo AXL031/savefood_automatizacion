@@ -23,12 +23,12 @@ def compare_metadata(contexto, metadata):
     esperado = MetaData()
     for tabla in metadata.sorted_tables:
         tabla.to_metadata(esperado)
-    for tabla, columna in (("lote_ingrediente", "fecha_ingreso"), ("lote_producto", "fecha_ingreso"), ("propuesta_compra", "reemplazo_id"), ("propuesta_compra", "prueba_repetible")):
+    for tabla, columna in (("lote_ingrediente", "fecha_ingreso"), ("lote_producto", "fecha_ingreso"), ("propuesta_compra", "reemplazo_id"), ("propuesta_compra", "prueba_repetible"), ("negocio", "modo_publicacion_promociones"), ("promocion_operacion", "modo_publicacion"), ("promocion_operacion", "programacion")):
         existentes = {c["name"] for c in inspect(contexto.bind).get_columns(tabla)}
         if columna not in existentes:
             copia = esperado.tables[tabla]
             for restriccion in list(copia.constraints):
-                if columna in restriccion.columns:
+                if columna in restriccion.columns or columna in str(getattr(restriccion,'sqltext','')):
                     copia.constraints.remove(restriccion)
             copia._columns.remove(copia.c[columna])
     return comparar_modelos_actuales(contexto, esperado)
@@ -135,9 +135,10 @@ def test_cadena_postgresql_vacia_y_metadatos(monkeypatch):
     try:
         command.upgrade(cfg, "head")
         with motor.connect() as c:
-            assert c.execute(text("SELECT version_num FROM alembic_version")).scalar_one() == "0024_comercio_tienda"
+            assert c.execute(text("SELECT version_num FROM alembic_version")).scalar_one() == "0026_programar_promocion"
             assert comparar_modelos_actuales(MigrationContext.configure(c), Base.metadata) == []
-        command.downgrade(cfg, "0019_tienda_clientes")
+        with pytest.raises(RuntimeError,match='Conservar el modo'):
+            command.downgrade(cfg, "0019_tienda_clientes")
         command.upgrade(cfg, "head")
     finally:
         motor.dispose()
@@ -192,7 +193,7 @@ def test_migraciones_delta_reversible_y_unica_cabeza():
     backend = Path(__file__).resolve().parents[2]
     config = Config()
     config.set_main_option("script_location", str(backend / "migrations"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["0024_comercio_tienda"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0026_programar_promocion"]
     motor = create_engine("sqlite://")
 
     @event.listens_for(motor, "connect")

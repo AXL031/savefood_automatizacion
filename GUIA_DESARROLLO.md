@@ -1,5 +1,7 @@
 # Guía de desarrollo — Raíz y coordinación del repositorio
 
+04-11-2026 · Demo actual autorizada: [guion](docs/equipo/guion-demo-2026-11-04.md). Hoy04/11, predicción05/11, datos sintéticos identificados y respaldo previo en instalación3100/3101; Telegram real de prueba acreditado. Configuración añade aprobación de promociones manual/automática independiente de pedidos, migración0025; [contrato](docs/api/contrato-operacion-integrada.md). `node scripts/preparar-demo-noviembre.cjs --reentrenar` crea modelo de jornada y programación pausada sin reiniciar stock/ventas. Botón de entrenamiento estándar conserva política histórica; cierre/rolling UI sigue pendiente. Evidencia y límites en Cueva.
+
 **Carpeta:** `.`.
 
 **Responsable:** Axel Cueva. Coordina esta carpeta compartida; los dueños de cada dominio implementan sus cambios.
