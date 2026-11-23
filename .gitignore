@@ -31,3 +31,7 @@ Thumbs.db
 .idea/
 .vscode/
 backend/build/
+
+# Instalaciones de pip dentro del contenedor
+backend/.local/
+backend/.cache/
