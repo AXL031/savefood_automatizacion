@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContextoSesion } from "@/components/layout/ProtectedShell";
 import { PanelDetalle } from "@/components/ui/PanelDetalle";
+import { CierreDia } from "./CierreDia";
 import { TablaDatos } from "@/components/tables/TablaDatos";
 import { HttpError } from "@/services/http";
 import { catalogoCaja, guardarPrecioCaja, cotizarCaja, registrarCaja, recuperarCaja, listarCaja, detalleCaja, anularCaja } from "@/services/ventas";
@@ -154,6 +155,7 @@ export function CajaPresencial({ contexto }: { contexto: ContextoSesion }) {
         { clave: "ver", encabezado: "Detalle", celda: t => <button className="button-link" disabled={ocupado} onClick={() => void ver(t.id)}>Ver venta</button> }
       ]} />
     </section>
+    {admin && <CierreDia token={token} />}
     <details className="card section-space" open={catalogoAbierto} onToggle={e => setCatalogoAbierto(e.currentTarget.open)}><summary>Catálogo y precios de caja · {productos.length} productos</summary><p>Los precios se conservan por versión. {admin ? "Configura el precio antes de vender cada producto." : "Un administrador configura los precios."}</p><label className="field">Buscar producto<input type="search" value={busquedaPrecio} onChange={e => setBusquedaPrecio(e.target.value)} /></label>
       <TablaDatos filas={productos.filter(p => `${p.nombre} ${p.codigo}`.toLowerCase().includes(busquedaPrecio.toLowerCase()))} idFila={p => p.id} columnas={[
         { clave: "nombre", encabezado: "Producto", celda: p => <><strong>{p.nombre}</strong><small className="helper-text"> · {p.codigo}</small></> },
