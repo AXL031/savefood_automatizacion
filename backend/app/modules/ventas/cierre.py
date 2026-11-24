@@ -13,6 +13,8 @@ terminada y crea una revisión `CIERRE` auditable. Reglas:
   las anteriores se conservan para las evaluaciones que ya las usaron.
 - Reservas de tienda todavía activas impiden cerrar: una venta en curso podría
   quedar fuera del día.
+- Cada producto creado o actualizado reserva EVALUAR_PRONOSTICO para las corridas
+  de esa fecha; esa evaluación alimenta el control por desviación.
 """
 import hashlib
 import json
@@ -49,12 +51,14 @@ class ResultadoCierre:
     actualizadas: int = 0
     sin_cambios: int = 0
     conflictos: list[dict] = field(default_factory=list)
+    evaluaciones: list[int] = field(default_factory=list)
 
     def como_dict(self) -> dict:
         return {
             "fecha": self.fecha.isoformat(), "cierre_id": self.cierre_id, "repetido": self.repetido,
             "unidades": self.unidades, "productos": self.productos, "creadas": self.creadas,
             "actualizadas": self.actualizadas, "sin_cambios": self.sin_cambios, "conflictos": self.conflictos,
+            "evaluaciones": self.evaluaciones,
         }
 
 
@@ -128,6 +132,7 @@ def cerrar_dia(sesion: Session, fecha: date, *, usuario_id: int | None = None,
     sesion.flush()
     resultado.cierre_id = registro.id
     motivo = f"Cierre del día {fecha.isoformat()} (caja y tienda)"
+    cambiados: list[int] = []
 
     for producto_id, unidades in sorted(observados.items()):
         venta = existentes.get(producto_id)
@@ -140,6 +145,7 @@ def cerrar_dia(sesion: Session, fecha: date, *, usuario_id: int | None = None,
                                      origen_cambio="CIERRE", motivo=motivo, usuario_id=usuario_id,
                                      importacion_id=registro.id))
             resultado.creadas += 1
+            cambiados.append(producto_id)
         elif producto_id not in cerrados_antes:
             resultado.conflictos.append({
                 "producto_id": producto_id, "unidades_tickets": unidades,
@@ -156,8 +162,13 @@ def cerrar_dia(sesion: Session, fecha: date, *, usuario_id: int | None = None,
                                      unidades_vendidas=unidades, origen_cambio="CIERRE", motivo=motivo,
                                      usuario_id=usuario_id, importacion_id=registro.id))
             resultado.actualizadas += 1
+            cambiados.append(producto_id)
     registro.filas_aceptadas = resultado.creadas + resultado.actualizadas + resultado.sin_cambios
     sesion.flush()
+    if cambiados:
+        # Retroalimentación: la venta cerrada se compara con el pronóstico que ya existía para ese día.
+        from app.modules.pronosticos.evaluacion import solicitar_reevaluaciones_venta
+        resultado.evaluaciones = sorted({e for pid in cambiados for e in solicitar_reevaluaciones_venta(sesion, pid, fecha)})
     return resultado
 
 
