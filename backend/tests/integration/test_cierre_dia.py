@@ -121,3 +121,43 @@ def test_cierre_automatico_del_dia_anterior(escenario, monkeypatch):
         resultado = cierre.cerrar_dia_anterior(s, instante=HOY + timedelta(days=1))
     assert resultado.fecha == DIA and resultado.creadas == 1
     assert fila(sesiones, ids[0]).unidades_vendidas == 3
+
+
+def test_cierre_evalua_el_pronostico_del_dia_y_alimenta_el_control_de_desviacion(escenario, monkeypatch):
+    from app.modules.automatizaciones.modelos import EjecucionAutomatizacion
+    from app.modules.pronosticos.modelos import ArtefactoModelo, CorridaPronostico, Pronostico
+    (c, sesiones, admin, op, ids), _, _, _ = escenario
+    with sesiones.begin() as s:
+        origen = EjecucionAutomatizacion(tipo="GENERAR_PROPUESTA", clave_idempotencia="plan-del-dia-qa",
+                                         huella_entrada="a" * 64, datos_entrada_json={}, estado="COMPLETADA")
+        modelo = ArtefactoModelo(version_modelo="qa-cierre", ruta_local="qa", sha256="b" * 64,
+                                 huella_datos_entrenamiento="c" * 64, fecha_corte_entrenamiento=date(2026, 9, 30),
+                                 particion_json={"inicio_prueba": "2026-09-01", "fin_prueba": "2026-09-30"}, estado="LISTO_DEMO")
+        s.add_all([origen, modelo]); s.flush()
+        corrida = CorridaPronostico(ejecucion_id=origen.id, modelo_id=modelo.id, tipo="DEMO_PROGRAMADA",
+                                    clave_ejecucion="corrida-cierre-qa", huella_datos_entrada="d" * 64,
+                                    fecha_objetivo=DIA, estado="COMPLETADA")
+        s.add(corrida); s.flush()
+        s.add(Pronostico(corrida_id=corrida.id, producto_id=ids[0], estado="DISPONIBLE", cantidad_pronosticada=1))
+        corrida_id = corrida.id
+    venta_presencial(c, op, ids[0], 3, "venta-evaluada-001")
+    r = c.post(RUTA, headers=admin, json={"fecha": DIA.isoformat(), "jornada_terminada": True}).json()["datos"]
+    assert len(r["evaluaciones"]) == 1
+    with sesiones() as s:
+        tarea = s.get(EjecucionAutomatizacion, r["evaluaciones"][0])
+    assert tarea.tipo == "EVALUAR_PRONOSTICO" and tarea.estado == "PENDIENTE"
+    assert tarea.datos_entrada_json["corrida_id"] == corrida_id
+
+    # El worker ejecuta la evaluación: 1 prevista frente a 3 vendidas (WAPE 66,67 %) abre el aviso.
+    from app.modules.operaciones.modelos import AvisoOperacion
+    from app.modules.pronosticos.manejadores import evaluacion_programada
+    from app.workers.tasks.manejadores import ContextoEjecucion
+    monkeypatch.setenv("DESVIACION_MIN_PARES", "1")
+    with sesiones.begin() as s:
+        salida = evaluacion_programada(s, ContextoEjecucion(tarea.id, tarea.tipo, tarea.clave_idempotencia,
+                                                             tarea.datos_entrada_json))
+    assert salida["evaluaciones_nuevas"] == 1
+    assert salida["control_desviacion"]["control"] == "DESVIACION" and salida["control_desviacion"]["wape"] == 66.67
+    with sesiones() as s:
+        aviso = s.scalar(select(AvisoOperacion))
+    assert aviso.datos["accion"] == "REENTRENAR" and aviso.datos["corrida_id"] == corrida_id
