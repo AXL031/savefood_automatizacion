@@ -1,6 +1,44 @@
-# Estado verificado de desarrollo — 01-10-2026
+# Estado verificado de desarrollo — versión 3 · 23-11-2026
 
-## Corte vigente · 01-10-2026
+## Corte vigente · 23-11-2026 · rama `v3-control`
+
+Rama creada desde `main` (`da1398c`, PR #21). Informe de la entrega: [entregables/FoodSave-informe-V3.pdf](../../entregables/FoodSave-informe-V3.pdf) (y `.docx`). Los cortes anteriores, desde «Corte histórico · 01-10-2026», se conservan solo como historia y **no describen el estado actual**.
+
+### Estado por flujo
+
+| Flujo | Estado | Dónde |
+|---|---|---|
+| F01 Carga inicial y preparación del modelo | Implementado | `inicializacion/`, `pronosticos/entrenamiento.py` |
+| F02 Evaluación histórica del modelo | Implementado | `pronosticos/evaluacion.py` |
+| F03 Planificación y compras programadas | Implementado (Beat → pronóstico → plan → necesidades → pedidos) | `planificacion/manejadores.py`, `compras/` |
+| F04 Evaluación del pronóstico frente a la venta real | Implementado; desde V3 también se dispara al cerrar el día | `pronosticos/evaluacion.py`, `ventas/cierre.py` |
+| F05 Promoción sugerida por ajuste de stock | Implementado | `promociones/`, `operaciones/monitoreo.py` |
+| F06 Aprobación y envío por Telegram | Implementado (outbox, PENDIENTE_VERIFICACION sin reenvío ciego) | `compras/envios.py` |
+| Caja presencial y tienda por HTTP | Implementado; Payme solo preproducción (pagos simulados) | `ventas/caja.py`, `ventas/tienda.py`, `comercio/`, `tienda/` |
+| **Cierre del día (V3)** | Implementado: tickets CONFIRMADOS de caja y tienda → revisión `CIERRE` en `venta_diaria`; automático (Beat, cada 10 min, día anterior) o manual (Ventas → Caja e historial → Cierre del día) | `ventas/cierre.py`, `POST/GET /ventas/cierres` |
+| **Control por desviación (V3)** | Implementado: WAPE de la corrida > `DESVIACION_WAPE_UMBRAL` (35 %) con ≥ `DESVIACION_MIN_PARES` (5) productos → aviso «Desviación del pronóstico» con enlace a Entrenar nueva versión; una evaluación posterior dentro del umbral lo resuelve sola | `pronosticos/control_desviacion.py` |
+| **Aviso de fallo definitivo (V3)** | Implementado: ejecución `FALLIDA` → aviso en la bandeja en la misma transacción; los reintentos no avisan | `automatizaciones/avisos.py`, `workers/motor.py` |
+
+### Verificación del corte
+
+- Suite completa del backend sobre PostgreSQL 16, Redis 7 y CatBoost reales: **351 pruebas correctas, 0 fallidas, 0 omitidas** y 6 subpruebas (23-11-2026). Registro: [evidencias/suite-backend-v3-2026-11-23.log](evidencias/suite-backend-v3-2026-11-23.log).
+- Pruebas nuevas: `test_cierre_dia.py` (4), `test_control_desviacion.py` (2), `test_aviso_tarea_fallida.py` (1) y aserciones de avisos en `test_motor_a03.py`.
+- Frontend: `tsc --noEmit` y `next build` correctos.
+- Verificación visual local con datos ficticios: cierre del día, aviso de fallo y aviso de desviación (capturas en el Anexo C del informe V3).
+- Sin migraciones nuevas: el cierre usa `importacion_venta` con origen `CIERRE_OPERATIVO` y los avisos, `aviso_operacion`.
+
+### Configuración nueva
+
+`DESVIACION_WAPE_UMBRAL=35` y `DESVIACION_MIN_PARES=5` en `.env` (los lee el worker; ya están en `compose.yaml` y `.env.example`). La tarea Beat `foodsave.cerrar_jornada_anterior` no requiere configuración.
+
+### Pendiente y fuera de alcance
+
+- **Pendiente para la sustentación:** ejecutar en vivo los escenarios A (normal) y B (falla) en la instalación del grupo y conservar capturas e IDs; medir los indicadores con la misma carga (tiempo manual frente a automático).
+- **Pendiente operativo:** levantar el sistema completo (API, web, worker, Beat, PostgreSQL, Redis) en otra PC o en un servidor como plan B de la exposición.
+- **Fuera de alcance (declarado en el informe):** pagos reales, reembolsos y resolución administrativa de pagos duplicados; reentrenamiento sin aprobación humana; simuladores de jornada; calibración del umbral con operación real.
+
+## Corte histórico · 01-10-2026
+
 
 Consultar [plan de cierre del prototipo](plan-cierre-prototipo.md) y resúmenes recientes de [Cueva](avances/cueva.md)/[Aguirre](avances/aguirre.md)/[Sanchez](avances/sanchez.md). Pasos 1–6 implementados; 7 automático, conciliación humana y nuevo intento explícito conectados. Migración 0014 aplicada; 57 pruebas PostgreSQL de compras/recuperación y 7 de migraciones correctas. Falta demostración automática Telegram real autorizada; promociones y demostración conjunta/reproducción en otra PC siguen pendientes. El corte visual previo entregó navegación persistente, paginación y paneles de detalle. Los diagnósticos siguientes son cortes históricos.
 
