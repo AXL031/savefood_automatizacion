@@ -21,6 +21,7 @@ os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 from app.core.base import Base
 from app.modules.automatizaciones.modelos import EjecucionAutomatizacion, IntentoAutomatizacion, ProgramacionDemo
 from app.modules.automatizaciones.servicio import crear_o_recuperar_ejecucion, programar_ejecucion
+from app.modules.operaciones.modelos import AvisoOperacion
 from app.workers import motor
 from app.workers.retry.politica import ErrorDatos, ErrorTransitorioInterno, es_transitorio, siguiente_intento
 from app.workers.tasks.manejadores import MANEJADORES
@@ -195,6 +196,8 @@ def test_reintentos_agotan_cupo_y_revierten_efectos(entorno_pg, monkeypatch):
             ejecucion = sesion.get(EjecucionAutomatizacion, id_)
             assert "detalle interno" not in ejecucion.mensaje_error
             assert sesion.scalar(text("SELECT count(*) FROM prueba_efecto")) == 0
+            # Solo el fallo definitivo avisa en la bandeja; los reintentos no.
+            assert len(sesion.scalars(select(AvisoOperacion)).all()) == (1 if numero == 3 else 0)
         _vencer(sesiones, id_)
     assert _reclamar() == []
     with sesiones() as sesion:
