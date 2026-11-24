@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ProtectedShell, type ContextoSesion } from "@/components/layout/ProtectedShell";
 import { solicitar } from "@/services/http";
 import { Campo } from "@/components/forms/Campo";
-type Aviso = { id: number; titulo: string; leido: boolean; resolucion: string | null; creado_en: string; datos: { pedido_id?: number; descripcion?: string; trabajador?: string; diferencias?: { linea_pedido_id: number; pendiente: string; aceptada: string }[] } };
+type Aviso = { id: number; titulo: string; leido: boolean; resolucion: string | null; creado_en: string; datos: { pedido_id?: number; ejecucion_id?: number; descripcion?: string; trabajador?: string; diferencias?: { linea_pedido_id: number; pendiente: string; aceptada: string }[] } };
 function Bandeja({ contexto }: { contexto: ContextoSesion }) {
   const [avisos, setAvisos] = useState<Aviso[]>([]); const [error, setError] = useState(""); const [ocupado, setOcupado] = useState(false); const [id, setId] = useState<number | null>(null); const [resolucion, setResolucion] = useState("");
   const cargar = useCallback(async (signal?: AbortSignal) => { setAvisos(await solicitar<Aviso[]>("/operaciones/avisos", { token: contexto.token, signal })); }, [contexto.token]);
@@ -12,7 +12,7 @@ function Bandeja({ contexto }: { contexto: ContextoSesion }) {
   if (contexto.perfil.rol !== "ADMINISTRADOR") return <p>Las incidencias se enviaron al administrador. Puedes continuar en <Link href="/operaciones">Operación diaria</Link>.</p>;
   async function actualizar(id: number, resolucion?: string) { if (ocupado) return; setOcupado(true); setError(""); try { await solicitar(`/operaciones/avisos/${id}`, { token: contexto.token, method: "PATCH", body: { leido: true, ...(resolucion ? { resolucion } : {}) } }); await cargar(); setId(null); setResolucion(""); } catch (e) { setError(e instanceof Error ? e.message : "No se pudo guardar."); } finally { setOcupado(false); } }
   return <>
-    <p>Los avisos permanecen después de leerlos. La resolución registra lo acordado internamente con el proveedor.</p>
+    <p>Los avisos permanecen después de leerlos. La resolución registra lo acordado internamente con el proveedor o la corrección aplicada a una tarea fallida.</p>
     {error && <p role="alert">{error}</p>}
     <div className="operation-notices">
       {avisos.map(a => <article className={`card ${a.leido ? "" : "notice-unread"}`} key={a.id}>
@@ -23,6 +23,7 @@ function Bandeja({ contexto }: { contexto: ContextoSesion }) {
         {a.resolucion && <p><strong>Resolución:</strong> {a.resolucion}</p>}
         <div className="action-row">
           {a.datos.pedido_id && <Link href="/operaciones">Ver recepción del pedido #{a.datos.pedido_id} →</Link>}
+          {a.datos.ejecucion_id && <Link href={`/automatizaciones/ejecuciones/${a.datos.ejecucion_id}`}>Ver tarea e intentos →</Link>}
           {!a.leido && <button disabled={ocupado} className="button-secondary" onClick={() => actualizar(a.id)}>Marcar leído</button>}
           {!a.resolucion && <button type="button" disabled={ocupado} className="button-primary" onClick={() => { setId(a.id); setResolucion(""); }}>Registrar resolución</button>}
         </div>
@@ -40,4 +41,4 @@ function Bandeja({ contexto }: { contexto: ContextoSesion }) {
     </div>
   </>;
 }
-export default function Notificaciones() { return <ProtectedShell titulo="Notificaciones e incidencias" descripcion="Respuesta de proveedores y diferencias en recepción.">{contexto => <Bandeja contexto={contexto} />}</ProtectedShell>; }
+export default function Notificaciones() { return <ProtectedShell titulo="Notificaciones e incidencias" descripcion="Respuesta de proveedores, diferencias en recepción y tareas automáticas que fallaron.">{contexto => <Bandeja contexto={contexto} />}</ProtectedShell>; }
