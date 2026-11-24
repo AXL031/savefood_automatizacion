@@ -85,6 +85,8 @@ services:
       MODEL_ARTIFACT_DIR: /code/model_artifacts
       ML_COMERCIO_ID: ${ML_COMERCIO_ID:-piloto}
       ML_SUCURSAL_ID: ${ML_SUCURSAL_ID:-principal}
+      DESVIACION_WAPE_UMBRAL: ${DESVIACION_WAPE_UMBRAL:-35}
+      DESVIACION_MIN_PARES: ${DESVIACION_MIN_PARES:-5}
     volumes:
       - model_artifacts:/code/model_artifacts
       - telegram_secrets:/code/telegram_secrets:ro
