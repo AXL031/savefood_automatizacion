@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.errores import ErrorAPI
 from app.modules.automatizaciones.servicio import consultar_ejecucion_por_clave
 from app.modules.inicializacion.servicio import iniciar_preparacion, completar_preparacion, fallar_preparacion
+from app.modules.pronosticos.control_desviacion import controlar_desviacion
 from app.modules.pronosticos.entrenamiento import preparar_modelo
 from app.modules.pronosticos.evaluacion import evaluar_corrida, evaluar_modelo
 from app.workers.retry.politica import ErrorDatos
@@ -49,10 +50,14 @@ def backtest(sesion: Session, contexto: ContextoEjecucion) -> dict:
 
 def evaluacion_programada(sesion: Session, contexto: ContextoEjecucion) -> dict:
     try:
-        return evaluar_corrida(sesion, _id(contexto.datos_entrada, "corrida_id"), contexto.id,
-                               revisiones=contexto.datos_entrada.get("revisiones"))
+        corrida_id = _id(contexto.datos_entrada, "corrida_id")
+        resultado = evaluar_corrida(sesion, corrida_id, contexto.id,
+                                    revisiones=contexto.datos_entrada.get("revisiones"))
     except ErrorAPI as exc:
         raise ErrorDatos(str(exc.detail)) from exc
+    # Retroalimentación: la medición pronóstico-real abre o cierra el aviso de desviación.
+    resultado["control_desviacion"] = controlar_desviacion(sesion, corrida_id)
+    return resultado
 
 
 def iniciar(sesion: Session, contexto: ContextoEjecucion) -> None:
