@@ -13,6 +13,7 @@ from app.core.base_datos import SessionLocal
 from app.modules.autenticacion.modelos import Usuario  # noqa: F401
 from app.modules.negocios.modelos import Negocio  # noqa: F401
 from app.modules.automatizaciones.modelos import EjecucionAutomatizacion, IntentoAutomatizacion, ProgramacionDemo
+from app.modules.automatizaciones.avisos import avisar_fallo_definitivo
 from app.modules.automatizaciones.servicio import finalizar_intento, iniciar_intento
 from app.workers.retry.politica import ErrorDatos, es_transitorio, siguiente_intento
 from app.workers.tasks.manejadores import ContextoEjecucion, obtener_manejador, notificar_inicio, notificar_fallo
@@ -48,6 +49,7 @@ def _cerrar_fallo(sesion, intento, mensaje: str, transitorio: bool, ahora: datet
         mensaje_error=mensaje, proximo_intento_en=proximo,
     )
     notificar_fallo(sesion, _contexto(ejecucion), mensaje)
+    avisar_fallo_definitivo(sesion, ejecucion)
     _liberar(sesion, ejecucion)
 
 
@@ -90,6 +92,7 @@ def despachar_pendientes(publicar: Callable[[int, str], None], *, ahora: datetim
                     ejecucion.fin_en = ahora
                     ejecucion.mensaje_error = "Ejecución inconsistente: no existe intento activo."
                     notificar_fallo(sesion, _contexto(ejecucion), ejecucion.mensaje_error)
+                    avisar_fallo_definitivo(sesion, ejecucion)
                     _liberar(sesion, ejecucion)
                 else:
                     _cerrar_fallo(sesion, intento, "El worker se interrumpió antes de confirmar el resultado.", True, ahora)

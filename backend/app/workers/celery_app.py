@@ -29,6 +29,11 @@ celery_app.conf.update(
             "schedule": 30.0,
             "options": {"expires": 30},
         },
+        "cerrar-jornada-anterior": {
+            "task": "foodsave.cerrar_jornada_anterior",
+            "schedule": 600.0,
+            "options": {"expires": 600},
+        },
         "despachar-programaciones-demo": {
             "task": "foodsave.despachar_pendientes",
             "schedule": 30.0,
@@ -75,3 +80,13 @@ def despachar_envios_pedidos():
 def enviar_pedido(envio_id: int, token: str):
     from app.modules.compras.envios import ejecutar_envio
     return ejecutar_envio(envio_id, token)
+
+
+@celery_app.task(name="foodsave.cerrar_jornada_anterior", ignore_result=True)
+def cerrar_jornada_anterior():
+    """Consolida las ventas de caja y tienda del día anterior en el historial del modelo."""
+    from app.core.base_datos import SessionLocal
+    from app.modules.ventas.cierre import cerrar_dia_anterior
+    with SessionLocal.begin() as sesion:
+        resultado = cerrar_dia_anterior(sesion)
+        return resultado.como_dict() if resultado else None

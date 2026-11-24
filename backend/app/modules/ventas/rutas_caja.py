@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session
 from app.core.base_datos import obtener_sesion
 from app.core.identidad import identidad_actual, requiere_administrador
 from app.core.errores import ErrorAPI
-from .esquemas_caja import PrecioCrear, CotizarVenta, RegistrarVenta, AnularVenta
+from .esquemas_caja import PrecioCrear, CotizarVenta, RegistrarVenta, AnularVenta, CerrarDia
 from .modelos_caja import TicketVenta, LineaTicketVenta
-from . import caja
+from . import caja, cierre
 
 router = APIRouter(prefix="/ventas", tags=["ventas-presenciales"])
 
@@ -93,3 +93,16 @@ def anular(ticket_id: int, entrada: AnularVenta, usuario=Depends(requiere_admini
     caja.anular_ticket(s, ticket_id, entrada, usuario)
     confirmar(s)
     return {"datos": caja.detalle_ticket(s, ticket_id)}
+
+
+@router.post("/cierres")
+def cerrar_dia(entrada: CerrarDia, usuario=Depends(requiere_administrador), s: Session = Depends(obtener_sesion)):
+    """Consolida los tickets del día en el historial que usa el modelo de pronóstico."""
+    resultado = cierre.cerrar_dia(s, entrada.fecha, usuario_id=usuario.id, jornada_terminada=entrada.jornada_terminada)
+    confirmar(s)
+    return {"datos": resultado.como_dict()}
+
+
+@router.get("/cierres")
+def cierres(usuario=Depends(identidad_actual), s: Session = Depends(obtener_sesion)):
+    return {"datos": cierre.listar_cierres(s), "metadatos": {"hoy": cierre.fecha_local_negocio(s).isoformat()}}

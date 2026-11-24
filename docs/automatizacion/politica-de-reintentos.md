@@ -10,3 +10,5 @@ Solo fallos transitorios de tareas **internas** se reintentan automáticamente: 
 Primer intento → Fallo → Segundo intento → Fallo → Tercer intento
 → Fallo definitivo → Notificación
 ```
+
+La notificación es un aviso en la bandeja de **Notificaciones e incidencias** (campana «Avisos»). Se crea solo cuando la ejecución queda `FALLIDA` (agotó sus reintentos o tuvo un error definitivo), en la misma transacción que cierra la ejecución, con clave `tarea-fallida:<id>` para no duplicarse. Incluye el tipo de tarea, intentos, motivo y un enlace a la ejecución; el administrador puede marcarlo leído y registrar la corrección aplicada. Los intentos que pasan a `REINTENTANDO` no avisan. Código: `backend/app/modules/automatizaciones/avisos.py`, llamado desde `backend/app/workers/motor.py`. Las acciones manuales inmediatas (crear un plan, generar pedidos, registrar una venta) muestran su error en la misma pantalla y no pasan por aquí.

@@ -58,7 +58,7 @@ Ejemplo de cotización/reserva, con credencial del backend de tienda:
 
 Usar el origen recibido en el catálogo propio; agregar clave_idempotencia UUID estable del pago y cotizacion_hash devuelto al crear la reserva. El inicio Payme propio recibe origen_catalogo, cotizacion_hash y total_revisado; los contrasta antes de reservar/preparar nonce. No reutilizar los identificadores de este ejemplo como datos del comercio.
 
-Etapas 1–3 implementadas y consumidor/proveedor comprobados con datos ficticios mediante dos APIs. Esto no certifica una transacción financiera externa ni la habilitación efectiva de Yape/QR para las credenciales del comercio. La instalación local usa las dos APIs reales y publicación vacía; no se ejecutaron pagos ni se cambiaron lotes para demostrarlo. Simuladores, cierre y alimentación de venta_diaria/ML permanecen pendientes.
+Etapas 1–3 implementadas y consumidor/proveedor comprobados con datos ficticios mediante dos APIs. Esto no certifica una transacción financiera externa ni la habilitación efectiva de Yape/QR para las credenciales del comercio. La instalación local usa las dos APIs reales y publicación vacía; no se ejecutaron pagos ni se cambiaron lotes para demostrarlo. Simuladores permanecen pendientes. Desde el 23-11-2026 las ventas TIENDA confirmadas llegan al historial del modelo con el [cierre del día](contrato-caja-presencial.md), junto con las de caja. Alcance V3: pagos solo simulados en sandbox; sin reembolsos ni resolución administrativa de pagos duplicados.
 
 ## Preparación de jornada · 28-10-2026
 
