@@ -1,5 +1,6 @@
 """Entradas estrictas para caja. Los importes se reciben como texto decimal exacto."""
 import re
+from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -76,3 +77,8 @@ class AnularVenta(Entrada):
         if len(v.strip()) < 3:
             raise ValueError("Indica un motivo de al menos tres caracteres.")
         return v.strip()
+
+
+class CerrarDia(Entrada):
+    fecha: date
+    jornada_terminada: bool = False
