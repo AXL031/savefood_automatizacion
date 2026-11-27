@@ -81,6 +81,7 @@ El arranque Windows de la raíz pertenece a A04: [iniciar-foodsave.cmd](../../in
 | `frontend/src/app/automatizaciones/ejecuciones` | Axel Cueva | Demo · Programaciones, ejecuciones e intentos | [Abrir](../../frontend/src/app/automatizaciones/ejecuciones/GUIA_DESARROLLO.md) |
 | `frontend/src/app/automatizaciones/ejecuciones/[id]` | Axel Cueva | Demo · Programaciones, ejecuciones e intentos | [Abrir](../../frontend/src/app/automatizaciones/ejecuciones/[id]/GUIA_DESARROLLO.md) |
 | `frontend/src/app/compras` | Leonardo Aguirre | Demo · Pedidos, aprobación y envío | [Abrir](../../frontend/src/app/compras/GUIA_DESARROLLO.md) |
+| `frontend/src/app/como-funciona` | Edu Sanchez | Demo · Infografía del flujo | [Abrir](../../frontend/src/app/como-funciona/GUIA_DESARROLLO.md) |
 | `frontend/src/app/configuracion` | Axel Cueva | Demo · Negocio y configuración | [Abrir](../../frontend/src/app/configuracion/GUIA_DESARROLLO.md) |
 | `frontend/src/app/excedentes` | Leonardo Vera | Futuro; custodia | [Abrir](../../frontend/src/app/excedentes/GUIA_DESARROLLO.md) |
 | `frontend/src/app/informes` | Kevin Bohorquez | K04; reportes de lectura | [Abrir](../../frontend/src/app/informes/GUIA_DESARROLLO.md) |

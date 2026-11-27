@@ -6,6 +6,8 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 
 ## Resumen vigente
 
+- **27-11-2026 · Claude a solicitud del usuario, E04 (estructura visual compartida):** navegación por etapas numeradas del ciclo con barra lateral plegable, migas, barra horizontal del ciclo y recorrido anterior/siguiente generados desde [navegacion.tsx](../../../frontend/src/components/layout/navegacion.tsx); Inicio como tablero del ciclo; sistema visual Material AI con modo oscuro. Sin cambios de API, permisos ni datos. [Guía de layout](../../../frontend/src/components/layout/GUIA_DESARROLLO.md). Cambios locales, sin commit.
+
 - **20-10-2026 · Entrega por commits autorizada por el usuario:** cambios separados en [f66d1a2](https://github.com/AXL031/savefood_automatizacion/commit/f66d1a2) (backend, reevaluacion y contratos); [7ff08de](https://github.com/AXL031/savefood_automatizacion/commit/7ff08de) (pruebas de regresion y guias); [9fb094c](https://github.com/AXL031/savefood_automatizacion/commit/9fb094c) (diseno web y analitica). Los registros, contratos y auditoria se entregan en un cuarto commit documental. Rama de publicacion: `bohorquez`; sin PR ni integracion en `main`. La evidencia de pruebas del corte se conserva; esta entrega Git no ejecuta nuevas pruebas ni despliega servicios.
 
 - **20-10-2026 · Codex a solicitud del usuario, E01/E02/E04 con prioridad K03/K04:** PATCH de venta reserva reevaluaciones con rollback compartido; UI informa las tareas y la lectura pública de revisiones conserva versiones antiguas. Subidas acotadas (64 MiB/archivo, 128 MiB/entrega, hasta cinco, nombres duplicados sin mayúsculas). Inicio y piezas comunes consumen el rediseño analítico de Bohorquez. [Coordinación, archivos, contratos y evidencia completa](bohorquez.md). Suite final 271 passed, 26 skipped PostgreSQL/Redis, 6 subtests passed; typecheck/build de 23 páginas y QA aislada correctos. Sin migración, cambio habitual, mensaje externo ni publicación; rama bohorquez conservada.
@@ -17,6 +19,15 @@ Leer [dependencias](../dependencias.md) y [reglas del registro](README.md). Este
 - **Siguiente paso:** revisar los cambios locales y completar CI remoto, reproducción en otra PC y prueba Telegram real autorizada. La instalación habitual ya está actualizada y activa. Cambios locales, sin commit ni publicación.
 
 ## Bitácora
+
+### 27-11-2026 America/Bogota — Rediseño UX/UI por etapas y Material AI
+
+- **Autor/responsable/tareas/estado:** Claude a solicitud del usuario. Bloque E04 de Sanchez (estructura visual compartida); dominios de cada pantalla conservados. Estado: LISTO_PARA_INTEGRAR (revisión visual del equipo pendiente).
+- **Qué cambió:** el menú de siete grupos desplegables y las pestañas que repetían los mismos enlaces se sustituyen por un mapa único de seis etapas numeradas más Administración. Barra lateral con íconos (plegable, cajón en móvil con cierre por Escape y fondo), migas con el paso, barra horizontal del ciclo y enlaces anterior/siguiente. Encabezado compacto por pantalla en lugar de la portada verde. Inicio muestra el estado de cada etapa y el siguiente paso; se retiraron las tarjetas duplicadas. Paleta, tipografía Roboto, sombras, esqueletos, animaciones y modo oscuro según el sistema Material AI; gráficos usan variables de color.
+- **Archivos clave:** [navegacion.tsx](../../../frontend/src/components/layout/navegacion.tsx), [ProtectedShell.tsx](../../../frontend/src/components/layout/ProtectedShell.tsx), [MarcoPagina.tsx](../../../frontend/src/components/layout/MarcoPagina.tsx), [Inicio](../../../frontend/src/app/page.tsx), capa final de [styles.css](../../../frontend/src/app/styles.css).
+- **Configuración:** dependencia `@fontsource-variable/roboto` (package-lock actualizado); reconstruir la imagen web. Sin migraciones ni variables nuevas.
+- **Pruebas ejecutadas:** `npm run typecheck` y `next build` correctos; `node scripts/verificar-marco-pagina.cjs` actualizado al nuevo contrato y correcto. Revisión visual con capturas en escritorio (1440 px), móvil (390 px), menú plegado y modo oscuro, contra una API simulada local: no se probó con la API/PostgreSQL reales ni con la instalación habitual.
+- **Siguiente paso:** revisar en la instalación real con `iniciar-foodsave.cmd -Build`; ajustar contenidos internos de pantallas largas (Inventario, Ventas, Inicialización) a tarjetas Material si el equipo lo aprueba. Cambios locales, sin commit.
 
 ### 20-10-2026 America/Bogota — Separacion y entrega Git
 

@@ -1,4 +1,5 @@
 import type { ApiEnvelope, ApiErrorBody } from "@/types/api";
+import { ayudaPorEstado, notificar, tituloExito } from "@/services/avisos";
 
 const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
@@ -20,7 +21,33 @@ type Opciones = {
   body?: unknown;
   formData?: FormData;
   signal?: AbortSignal;
+  /** No mostrar avisos emergentes (consultas en segundo plano). */
+  silencioso?: boolean;
 };
+
+/**
+ * Avisos emergentes: los errores de conexión o del servidor se muestran siempre; los demás errores
+ * y los éxitos, solo en operaciones que cambian datos. Las consultas GET con error 4xx ya se
+ * explican dentro de cada pantalla. Un 401 lleva al inicio de sesión sin aviso.
+ */
+function avisarResultado(ruta: string, metodo: string, status: number, error?: HttpError, silencioso = false) {
+  if (silencioso || typeof window === "undefined") return;
+  const cambiaDatos = metodo !== "GET";
+  if (!error) {
+    const titulo = cambiaDatos ? tituloExito(ruta, metodo) : null;
+    if (titulo) notificar({ tono: "exito", titulo });
+    return;
+  }
+  if (status === 401) return;
+  if (!cambiaDatos && status !== 0 && status < 500) return;
+  const detalle = error.detalles.length ? ` ${error.detalles.map((d) => d.mensaje).join(" · ")}` : "";
+  notificar({
+    tono: status === 0 || status >= 500 ? "error" : status === 409 || status === 429 ? "advertencia" : "error",
+    titulo: status === 0 ? "Sin conexión con FoodSave" : cambiaDatos ? "No se pudo completar la operación" : "No se pudieron cargar los datos",
+    mensaje: `${error.message}${detalle}`,
+    ayuda: ayudaPorEstado(status),
+  });
+}
 
 function mensajeError(body: ApiErrorBody | null, status: number): string {
   if (body?.error?.mensaje) return body.error.mensaje;
@@ -34,6 +61,18 @@ function mensajeError(body: ApiErrorBody | null, status: number): string {
 }
 
 export async function solicitarSobre<T>(ruta: string, opciones: Opciones = {}): Promise<ApiEnvelope<T>> {
+  const metodo = opciones.method ?? "GET";
+  try {
+    const sobre = await solicitarSobreSinAviso<T>(ruta, opciones);
+    avisarResultado(ruta, metodo, 200, undefined, opciones.silencioso);
+    return sobre;
+  } catch (error) {
+    if (error instanceof HttpError) avisarResultado(ruta, metodo, error.status, error, opciones.silencioso);
+    throw error;
+  }
+}
+
+async function solicitarSobreSinAviso<T>(ruta: string, opciones: Opciones): Promise<ApiEnvelope<T>> {
   let respuesta: Response;
   try {
     respuesta = await fetch(`${baseUrl}/api/v1${ruta}`, {
@@ -82,6 +121,17 @@ export async function solicitar<T>(ruta: string, opciones: Opciones = {}): Promi
 
 /** Descarga autenticada: el token nunca se coloca en la URL. */
 export async function solicitarArchivo(ruta: string, opciones: { token: string; signal?: AbortSignal }): Promise<Blob> {
+  try {
+    const archivo = await solicitarArchivoSinAviso(ruta, opciones);
+    notificar({ tono: "exito", titulo: "Archivo CSV generado", mensaje: "La descarga empezará en tu navegador." });
+    return archivo;
+  } catch (error) {
+    if (error instanceof HttpError) notificar({ tono: "error", titulo: "No se pudo descargar el archivo", mensaje: error.message, ayuda: ayudaPorEstado(error.status) });
+    throw error;
+  }
+}
+
+async function solicitarArchivoSinAviso(ruta: string, opciones: { token: string; signal?: AbortSignal }): Promise<Blob> {
   let respuesta: Response;
   try {
     respuesta = await fetch(`${baseUrl}/api/v1${ruta}`, {
@@ -110,6 +160,21 @@ export async function enviarFormulario<T>(
   ruta: string,
   formulario: FormData,
   opciones: { token?: string; signal?: AbortSignal } = {},
+): Promise<T> {
+  try {
+    const datos = await enviarFormularioSinAviso<T>(ruta, formulario, opciones);
+    avisarResultado(ruta, "POST", 200);
+    return datos;
+  } catch (error) {
+    if (error instanceof HttpError) avisarResultado(ruta, "POST", error.status, error);
+    throw error;
+  }
+}
+
+async function enviarFormularioSinAviso<T>(
+  ruta: string,
+  formulario: FormData,
+  opciones: { token?: string; signal?: AbortSignal },
 ): Promise<T> {
   let respuesta: Response;
   try {

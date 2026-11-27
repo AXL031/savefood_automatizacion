@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { Metricas, Particion } from "@/types/pronostico";
 import { formatearEscenario } from "@/utils/fechas";
 
@@ -18,18 +16,12 @@ export function IconoAnalitica({ tipo = "grafico" }: { tipo?: "grafico" | "model
   return <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{trazos[tipo]}</svg>;
 }
 
+/**
+ * Antes repetía Inicio/Pronósticos/Evaluación/Reportes como pestañas. La barra lateral por etapas y la
+ * barra del ciclo ya cubren ese recorrido, así que se conserva la exportación sin dibujar nada.
+ */
 export function NavegacionAnalitica() {
-  const ruta = usePathname();
-  const enlaces = [
-    { href: "/", texto: "Vista general", icono: "inicio" as const },
-    { href: "/pronosticos", texto: "Pronósticos", icono: "modelo" as const },
-    { href: "/panel", texto: "Evaluación", icono: "grafico" as const },
-    { href: "/informes", texto: "Reportes", icono: "archivo" as const },
-  ];
-  return <nav className="analytics-nav" aria-label="Análisis del negocio">{enlaces.map((e) =>
-    <Link key={e.href} href={e.href} aria-current={ruta === e.href ? "page" : undefined}>
-      <IconoAnalitica tipo={e.icono} />{e.texto}
-    </Link>)}</nav>;
+  return null;
 }
 
 export function IndicadoresEvaluacion({ metricas, pendientes = 0 }: { metricas: Metricas; pendientes?: number }) {
