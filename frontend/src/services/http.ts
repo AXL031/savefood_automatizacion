@@ -31,6 +31,10 @@ type Opciones = {
  * explican dentro de cada pantalla. Un 401 lleva al inicio de sesión sin aviso.
  */
 function avisarResultado(ruta: string, metodo: string, status: number, error?: HttpError, silencioso = false) {
+  try { avisarResultadoSinProteger(ruta, metodo, status, error, silencioso); } catch { /* el aviso nunca altera la operación */ }
+}
+
+function avisarResultadoSinProteger(ruta: string, metodo: string, status: number, error?: HttpError, silencioso = false) {
   if (silencioso || typeof window === "undefined") return;
   const cambiaDatos = metodo !== "GET";
   if (!error) {

@@ -10,9 +10,14 @@ export type Aviso = { tono: TonoAviso; titulo: string; mensaje?: string; ayuda?:
 
 export const EVENTO_AVISO = "foodsave:aviso";
 
+/** Nunca lanza: un aviso que no se puede mostrar no debe cambiar el resultado de la operación. */
 export function notificar(aviso: Aviso): void {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent<Aviso>(EVENTO_AVISO, { detail: aviso }));
+  if (typeof window === "undefined" || typeof window.CustomEvent !== "function") return;
+  try {
+    window.dispatchEvent(new window.CustomEvent<Aviso>(EVENTO_AVISO, { detail: aviso }));
+  } catch {
+    // Entornos sin eventos del DOM (pruebas, SSR): se omite el aviso.
+  }
 }
 
 /** Qué hacer según el código HTTP: frases cortas para alguien sin conocimientos técnicos. */
